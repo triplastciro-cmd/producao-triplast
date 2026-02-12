@@ -159,7 +159,7 @@
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
                 <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
-                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (SOMA TOTAL DE TEMPO)</h3>
+                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (TEMPO ACUMULADO)</h3>
                     <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
                         <option value="todas">🏭 Todas as Máquinas</option>
                     </select>
@@ -171,7 +171,7 @@
                         <div id="global-timer-prod" class="text-xl sm:text-3xl font-black text-green-700">00:00:00</div>
                     </div>
                     <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
-                        <div class="text-orange-500 text-xs font-bold uppercase mb-1">BAIXA EFIC.</div>
+                        <div class="text-orange-500 text-xs font-bold uppercase mb-1">BAIXA EFICIÊNCIA</div>
                         <div id="global-timer-baixa" class="text-xl sm:text-3xl font-black text-orange-600">00:00:00</div>
                     </div>
                     <div class="bg-red-50 p-4 rounded-xl border border-red-200">
@@ -639,7 +639,6 @@
                 totalParado += m.dadosTurno[t].paradas;
             });
 
-            // ATENÇÃO: Removemos o divisor. Agora mostra a SOMA TOTAL de horas (mais preciso para gestão).
             document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd);
             document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
@@ -730,7 +729,8 @@
             // Atualiza os números globais SEMPRE (para não atrasar) se a aba estiver aberta
             if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
                 atualizarResumoGlobalNumeros(); // Rápido (Texto)
-                atualizarCharts(); // Lento (Canvas)
+                // Não chamo atualizarCharts() aqui todo segundo para não pesar o navegador, 
+                // mas os números vão andar.
             }
 
             if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) {
