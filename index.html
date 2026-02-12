@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Sistema Savant</title>
+    <title>Triplast</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,7 +11,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #add8e6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        /* Sistema de Abas - Reforçado para não sobrepor */
+        /* Sistema de Abas */
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; }
 
@@ -20,7 +20,7 @@
             border-left: 12px solid #ef4444; transition: 0.3s;
         }
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
-        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
+        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; } /* Laranja */
 
         .info-badge {
             background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
@@ -106,15 +106,31 @@
     </div>
 
     <div id="aba-graficos" class="aba-conteudo px-4">
-        <div class="max-w-4xl mx-auto bg-white p-12 rounded-3xl shadow-2xl flex flex-col items-center">
-            <div class="w-full max-w-md"><canvas id="chartOEE"></canvas></div>
-            <div id="legenda-grafico" class="w-full mt-12 grid grid-cols-3 gap-6 text-center font-black"></div>
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
+                <h3 class="font-black text-slate-700 mb-4">STATUS GERAL DAS MÁQUINAS</h3>
+                <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
+                <div id="legenda-grafico" class="w-full mt-6 grid grid-cols-3 gap-6 text-center font-black"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <h4 class="font-bold text-slate-500 text-xs mb-2 uppercase">Tempo Parado (Minutos)</h4>
+                <canvas id="chartParadas"></canvas>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <h4 class="font-bold text-slate-500 text-xs mb-2 uppercase">Refugos (Quantidade)</h4>
+                <canvas id="chartRefugos"></canvas>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-xl lg:col-span-2">
+                <h4 class="font-bold text-slate-500 text-xs mb-2 uppercase">Produtividade (Peças Boas)</h4>
+                <canvas id="chartProd"></canvas>
+            </div>
         </div>
     </div>
 
     <div id="aba-apontamento" class="aba-conteudo px-4">
-        <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl">
-            <table class="w-full text-left">
+        <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl overflow-x-auto">
+            <table class="w-full text-left min-w-[600px]">
                 <thead class="bg-slate-800 text-white uppercase text-[10px]">
                     <tr><th class="p-5">Máquina</th><th class="p-5">O.P</th><th class="p-5">Boas</th><th class="p-5">Refugo</th><th class="p-5">% Perda</th><th class="p-5">Tempo Parado</th></tr>
                 </thead>
@@ -131,14 +147,22 @@
         let maquinas = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let manualOverride = false;
-        let chartObj = null;
+        
+        let charts = { oee: null, paradas: null, refugos: null, prod: null };
 
         const paradasCodigos = [
-            "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA-PRIMA/ AJUSTE", "04-PRODUÇÃO",
+            "04-PRODUÇÃO", "21-BAIXA EFICIÊNCIA",
+            "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA-PRIMA/ AJUSTE",
             "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", "08-LANCHE",
             "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INICIO DE PROCESSO", "12-FALTA DE ENERGIA ELÉTRICA",
             "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", "15-PROBLEMA AR", "16-PROBLEMA CAMARÃ QUENTE",
             "17-TROCA DE BICO DE INJEÇÃO", "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS"
+        ];
+
+        const codigosRefugo = [
+            "Falha de injeção", "Arranhão/batido", "Fora de cor", 
+            "Peça presa no molde", "Bolha", "Mancha", 
+            "Trinca", "Espirro", "Material contaminado", "Outros"
         ];
 
         async function carregarBanco() {
@@ -192,12 +216,12 @@
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1 };
                 const d = m.dadosTurno[t];
-                const total = d.boas + d.refugo;
-                const percPerda = total > 0 ? ((d.refugo / total) * 100).toFixed(1) : 0;
+                
+                const percPerda = (d.refugo * 2).toFixed(0); 
                 
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
-                else if (m.status === "03-MATERIA-PRIMA/ AJUSTE" || m.status === "11-INICIO DE PROCESSO") sClass = "status-baixa";
+                else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
 
                 return `
                 <div class="card-producao ${sClass} p-6">
@@ -220,12 +244,25 @@
                             <div class="info-badge"><span>PERDA</span><span class="text-red-500 text-lg">${percPerda}%</span></div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <button onclick="addProd(${m.id}, 10)" class="bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all">+10</button>
-                        <button onclick="addRefugo(${m.id})" class="bg-red-600 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all">REFUGO</button>
+                    
+                    <div class="mb-4 bg-red-50 p-2 rounded-xl border border-red-100">
+                         <label class="text-[10px] font-bold text-red-400 block mb-1">LANÇAR REFUGO</label>
+                         <div class="flex gap-2">
+                            <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1">
+                                ${codigosRefugo.map(r => `<option value="${r}">${r}</option>`).join('')}
+                            </select>
+                            <button onclick="addRefugo(${m.id})" class="bg-red-500 text-white px-3 rounded font-black text-xs hover:bg-red-600">OK</button>
+                         </div>
                     </div>
-                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-3 font-bold text-xs border-2 rounded-xl bg-white">
-                        ${paradasCodigos.map(p => `<option value="${p}" ${m.status === p ? 'selected' : ''}>${p}</option>`).join('')}
+
+                    <div class="grid grid-cols-1 gap-3 mb-4">
+                        <button onclick="addProd(${m.id}, 10)" class="bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all text-xl">+10 PEÇAS</button>
+                    </div>
+                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-3 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500">
+                        ${paradasCodigos.map(p => {
+                            let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : "text-red-600");
+                            return `<option value="${p}" class="${color}" ${m.status === p ? 'selected' : ''}>${p}</option>`
+                        }).join('')}
                     </select>
                     <button onclick="finalizarOP(${m.id})" class="w-full mt-4 text-[10px] font-black text-slate-400 uppercase">Finalizar Ordem</button>
                 </div>`;
@@ -247,6 +284,7 @@
 
         function addRefugo(id) { 
             const t = document.getElementById('filtro-turno').value;
+            const motivo = document.getElementById(`sel-refugo-${id}`).value;
             maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1;
             render();
         }
@@ -271,36 +309,76 @@
             const t = document.getElementById('filtro-turno').value;
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 const d = m.dadosTurno[t];
-                const tot = d.boas + d.refugo;
-                return `<tr class="border-b">
+                const percPerda = (d.refugo * 2).toFixed(0);
+                return `<tr class="border-b hover:bg-slate-50">
                     <td class="p-5 font-black">${m.nome}</td>
                     <td class="p-5">${m.fila[0]?.op || '---'}</td>
                     <td class="p-5 text-green-600">${d.boas}</td>
                     <td class="p-5 text-red-600">${d.refugo}</td>
-                    <td class="p-5">${tot>0?((d.refugo/tot)*100).toFixed(1):0}%</td>
+                    <td class="p-5 text-red-500 font-bold">${percPerda}%</td>
                     <td class="p-5 font-mono text-blue-600">${fmtTempo(d.paradas)}</td>
                 </tr>`;
             }).join('');
         }
 
         function renderGrafico() {
+            const t = document.getElementById('filtro-turno').value;
+            
             const s = { p: 0, b: 0, s: 0 };
             maquinas.forEach(m => { 
                 if(m.status === "04-PRODUÇÃO") s.p++; 
-                else if(m.status === "03-MATERIA-PRIMA/ AJUSTE" || m.status === "11-INICIO DE PROCESSO") s.b++;
+                else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") s.b++;
                 else s.s++;
             });
-            if(chartObj) chartObj.destroy();
-            chartObj = new Chart(document.getElementById('chartOEE'), {
+
+            const labels = maquinas.map(m => m.nome);
+            const dataParadas = maquinas.map(m => Math.round(m.dadosTurno[t].paradas / 60)); 
+            const dataRefugos = maquinas.map(m => m.dadosTurno[t].refugo);
+            const dataProd = maquinas.map(m => m.dadosTurno[t].boas);
+
+            if(charts.oee) charts.oee.destroy();
+            if(charts.paradas) charts.paradas.destroy();
+            if(charts.refugos) charts.refugos.destroy();
+            if(charts.prod) charts.prod.destroy();
+
+            charts.oee = new Chart(document.getElementById('chartOEE'), {
                 type: 'doughnut',
-                data: { labels: ['PROD', 'BAIXA', 'PARADA'], datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'] }] },
-                options: { cutout: '70%', plugins: { legend: { display: false } } }
+                data: { 
+                    labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], 
+                    datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] 
+                },
+                options: { cutout: '75%', plugins: { legend: { display: false } } }
             });
+
             document.getElementById('legenda-grafico').innerHTML = `
-                <div class="text-green-600 text-xs">PRODUZINDO: ${s.p}</div>
+                <div class="text-green-600 text-xs">PROD: ${s.p}</div>
                 <div class="text-orange-500 text-xs">BAIXA: ${s.b}</div>
                 <div class="text-red-600 text-xs">PARADA: ${s.s}</div>
             `;
+
+            const barOptions = {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+            };
+
+            charts.paradas = new Chart(document.getElementById('chartParadas'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Minutos', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
+                options: barOptions
+            });
+
+            charts.refugos = new Chart(document.getElementById('chartRefugos'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
+                options: barOptions
+            });
+
+            charts.prod = new Chart(document.getElementById('chartProd'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Peças', data: dataProd, backgroundColor: '#3b82f6', borderRadius: 4 }] },
+                options: barOptions
+            });
         }
 
         function gerenciarCor(acao) {
@@ -346,11 +424,10 @@
             document.getElementById('relogio').innerText = new Date().toLocaleTimeString();
             processarTurnoAuto();
             const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => { if(m.status !== "04-PRODUÇÃO") m.dadosTurno[t].paradas++; });
+            maquinas.forEach(m => { if(m.status !== "04-PRODUÇÃO" && m.status !== "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].paradas++; });
         }, 1000);
 
         carregarBanco();
     </script>
 </body>
 </html>
-
