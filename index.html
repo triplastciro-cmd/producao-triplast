@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Sistema Savant Pro v11.0</title>
+    <title>Triplast - Savant Ultra v12.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { background-color: #add8e6; font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
+        body { background-color: #add8e6; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         
-        .aba-conteudo { display: none; }
-        .aba-ativa { display: block; animation: fadeIn 0.3s ease; }
+        /* Correção das Abas: Garante que apenas uma apareça */
+        .aba-conteudo { display: none !important; }
+        .aba-ativa { display: block !important; animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Estilos dos Cards Savant */
         .card-producao {
             background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border-left: 12px solid #ef4444; transition: 0.3s;
         }
-        /* VERDE: Produzindo */
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
-        /* LARANJA: Baixa Eficiência */
         .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
 
         .info-badge {
@@ -32,92 +30,94 @@
 
         .tab-btn {
             background: white; padding: 8px 18px; border-radius: 20px;
-            font-weight: 600; font-size: 13px; transition: 0.2s;
+            font-weight: 600; font-size: 13px; transition: 0.2s; border: 1px solid transparent;
         }
-        .tab-btn.active { background: #3b82f6; color: white; }
+        .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
 
-        .header-meta {
-            background: #1e293b; color: white; padding: 15px; border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        input, select { border: 1px solid #cbd5e1 !important; border-radius: 8px; padding: 6px; }
+        .header-meta { background: #1e293b; color: white; padding: 15px; border-radius: 12px; }
     </style>
 </head>
 <body class="p-4">
 
-    <div class="max-w-7xl mx-auto mb-6 flex flex-col gap-4">
+    <header class="max-w-7xl mx-auto mb-6">
         <div class="header-meta flex flex-col md:flex-row justify-between items-center px-6 gap-4">
             <div class="flex items-center gap-4">
                 <span class="text-2xl font-black italic">TRI<span class="text-blue-400">PLAST</span></span>
-                <div class="bg-blue-500/20 px-3 py-1 rounded text-blue-300 text-xs font-mono" id="relogio-full">00:00:00</div>
+                <div class="bg-blue-500/20 px-3 py-1 rounded text-blue-300 text-xs font-mono" id="relogio">00:00:00</div>
             </div>
 
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-400 uppercase">Turno:</span>
-                <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-700 text-white border-none font-bold p-2 rounded-lg outline-none">
-                    <option value="1">Manhã (05:00 - 14:18)</option>
-                    <option value="2">Tarde (14:18 - 23:36)</option>
-                    <option value="3">Noite (23:36 - 05:00)</option>
+                <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-700 text-white font-bold p-2 rounded-lg outline-none border-none">
+                    <option value="1">🌅 Manhã (05:00 - 14:18)</option>
+                    <option value="2">☀️ Tarde (14:18 - 23:36)</option>
+                    <option value="3">🌙 Noite (23:36 - 05:00)</option>
                 </select>
                 <div id="badge-auto" class="text-[10px] bg-green-500 text-white px-2 py-1 rounded-full font-black animate-pulse">AUTO</div>
             </div>
 
             <div class="text-right">
-                <span class="text-[10px] text-slate-400 uppercase block">Meta Global</span>
+                <span class="text-[10px] text-slate-400 uppercase block">Eficiência Global</span>
                 <span class="text-2xl font-black text-green-400" id="meta-global">0%</span>
             </div>
         </div>
-    </div>
+    </header>
 
     <nav class="max-w-7xl mx-auto mb-6 flex gap-2 overflow-x-auto pb-2">
-        <button onclick="trocarAba('painel')" id="tab-painel" class="tab-btn active shadow-sm">Painel</button>
-        <button onclick="trocarAba('lista')" id="tab-lista" class="tab-btn shadow-sm">Programação / Cores</button>
-        <button onclick="trocarAba('apontamento')" id="tab-apontamento" class="tab-btn shadow-sm">Apontamento</button>
-        <button onclick="salvarGeral()" class="ml-auto bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700">💾 SALVAR NUVEM</button>
+        <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-sm">🖥️ Painel</button>
+        <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-sm">📋 Programação</button>
+        <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-sm">📊 Gráficos</button>
+        <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-sm">📝 Apontamento</button>
+        <button onclick="salvarGeral()" class="ml-auto bg-green-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700">💾 SALVAR AGORA</button>
     </nav>
 
-    <main id="aba-painel" class="aba-conteudo aba-ativa max-w-7xl mx-auto">
+    <div id="aba-painel" class="aba-conteudo aba-ativa max-w-7xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-maquinas"></div>
-    </main>
+    </div>
 
-    <main id="aba-lista" class="aba-conteudo max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div id="aba-lista" class="aba-conteudo max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white p-8 rounded-3xl shadow-xl">
-            <h2 class="text-2xl font-black mb-6">📝 Programar O.P</h2>
+            <h2 class="text-2xl font-black mb-6">Lançar Nova O.P</h2>
             <div class="grid grid-cols-2 gap-4">
-                <select id="f-maquina" class="col-span-2 font-bold"></select>
-                <input type="text" id="f-op" placeholder="Nº da O.P">
-                <input type="text" id="f-cliente" placeholder="Cliente">
-                <input type="text" id="f-produto" placeholder="Produto" class="col-span-2">
-                <input type="number" id="f-qtd" placeholder="Qtd Meta">
-                <input type="number" id="f-padrao" placeholder="Padrão Emb.">
-                <button onclick="adicionarFila()" class="col-span-2 bg-blue-600 text-white py-4 rounded-xl font-black uppercase shadow-lg">Lançar Ordem</button>
+                <select id="f-maquina" class="col-span-2 font-bold p-3 bg-slate-50 border"></select>
+                <input type="text" id="f-op" placeholder="Nº da O.P" class="p-3 border">
+                <input type="text" id="f-cliente" placeholder="Cliente" class="p-3 border">
+                <input type="text" id="f-produto" placeholder="Produto" class="col-span-2 p-3 border">
+                <input type="number" id="f-qtd" placeholder="Qtd Meta" class="p-3 border">
+                <input type="number" id="f-padrao" placeholder="Padrão Emb." class="p-3 border">
+                <button onclick="adicionarFila()" class="col-span-2 bg-blue-600 text-white py-4 rounded-xl font-black uppercase">Adicionar à Fila</button>
             </div>
         </div>
         <div class="bg-white p-8 rounded-3xl shadow-xl">
-            <h2 class="text-2xl font-black mb-6">🎨 Cores Disponíveis</h2>
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="nova-cor" placeholder="Ex: Vermelho" class="flex-1">
-                <button onclick="gerenciarCor('add')" class="bg-green-600 text-white px-4 rounded-lg font-bold">+</button>
+            <h2 class="text-2xl font-black mb-6">Gerenciar Cores</h2>
+            <div class="flex gap-2 mb-6">
+                <input type="text" id="nova-cor" placeholder="Nome da Cor" class="flex-1 p-3 border">
+                <button onclick="gerenciarCor('add')" class="bg-green-600 text-white px-6 rounded-xl font-bold">+</button>
             </div>
             <div id="lista-cores-config" class="flex flex-wrap gap-2"></div>
         </div>
-    </main>
+    </div>
 
-    <main id="aba-apontamento" class="aba-conteudo max-w-7xl mx-auto bg-white p-6 rounded-3xl shadow-lg">
-        <h2 class="text-2xl font-black mb-6">Relatório de Turno Atual</h2>
+    <div id="aba-graficos" class="aba-conteudo max-w-5xl mx-auto">
+        <div class="bg-white p-10 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-10">
+            <div class="w-full md:w-1/2"><canvas id="chartOEE"></canvas></div>
+            <div id="legenda-grafico" class="w-full md:w-1/2 space-y-4 text-xl font-bold"></div>
+        </div>
+    </div>
+
+    <div id="aba-apontamento" class="aba-conteudo max-w-7xl mx-auto bg-white p-6 rounded-3xl shadow-lg">
+        <h2 class="text-2xl font-black mb-6">Resumo por Turno</h2>
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-800 text-white text-[10px] uppercase">
+            <table class="w-full text-left">
+                <thead class="bg-slate-800 text-white uppercase text-xs">
                     <tr>
                         <th class="p-4">Máquina</th><th class="p-4">O.P</th><th class="p-4">Boas</th>
-                        <th class="p-4">Refugo</th><th class="p-4">% Perda</th><th class="p-4">Horas Paradas</th>
+                        <th class="p-4">Refugo</th><th class="p-4">% Perda</th><th class="p-4">H. Paradas</th>
                     </tr>
                 </thead>
-                <tbody id="tabela-apontamento" class="font-bold text-slate-700"></tbody>
+                <tbody id="tabela-apontamento" class="font-bold"></tbody>
             </table>
         </div>
-    </main>
+    </div>
 
     <script>
         const S_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
@@ -127,6 +127,7 @@
         let maquinas = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let manualOverride = false;
+        let chartInstance = null;
 
         const motivosParada = [
             "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA-PRIMA/ AJUSTE", "04-PRODUÇÃO",
@@ -136,19 +137,31 @@
             "17-TROCA DE BICO DE INJEÇÃO", "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS"
         ];
 
-        async function inicializar() {
+        async function init() {
             const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data) {
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
-                maquinas.forEach(m => {
-                    if(!m.dadosTurno) m.dadosTurno = { 1: {boas:0, refugo:0, paradas:0}, 2: {boas:0, refugo:0, paradas:0}, 3: {boas:0, refugo:0, paradas:0} };
-                });
             }
             document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
             processarTurnoAuto();
             render();
             renderCoresConfig();
+        }
+
+        function trocarAba(abaId) {
+            // Remove a classe ativa de TODAS as abas primeiro
+            document.querySelectorAll('.aba-conteudo').forEach(div => {
+                div.classList.remove('aba-ativa');
+            });
+            // Ativa apenas a selecionada
+            document.getElementById('aba-' + abaId).classList.add('aba-ativa');
+            
+            // Estilo dos botões
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + abaId).classList.add('active');
+
+            if(abaId === 'graficos') atualizarGrafico();
         }
 
         function processarTurnoAuto() {
@@ -159,13 +172,12 @@
             if (min >= 300 && min < 858) t = 1; // 05:00 - 14:18
             else if (min >= 858 && min < 1416) t = 2; // 14:18 - 23:36
             
-            const sel = document.getElementById('filtro-turno');
-            if (sel.value != t) { sel.value = t; render(); }
+            document.getElementById('filtro-turno').value = t;
         }
 
         function mudarTurnoManual(v) {
             manualOverride = true;
-            document.getElementById('badge-auto').classList.add('hidden');
+            document.getElementById('badge-auto').style.display = 'none';
             render();
         }
 
@@ -187,35 +199,30 @@
                 <div class="card-producao ${sClass} p-5 flex flex-col gap-3">
                     <div class="flex justify-between items-center">
                         <span class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-xl">${m.nome}</span>
-                        <span class="font-mono font-bold text-blue-600">${formatSec(d.paradas)}</span>
+                        <span class="font-mono font-bold text-blue-600 text-lg">${formatSec(d.paradas)}</span>
                     </div>
-
-                    <div class="border rounded-2xl p-3 bg-white/50 shadow-inner">
+                    <div class="border rounded-2xl p-3 bg-white/50 shadow-inner text-xs">
                         <div class="flex justify-between mb-2">
-                            <span class="font-black text-blue-900">O.P ${op.op}</span>
-                            <select onchange="vincularCor(${m.id}, this.value)" class="text-[10px] bg-white border">
+                            <span class="font-black">O.P ${op.op}</span>
+                            <select onchange="vincularCor(${m.id}, this.value)" class="p-0 border">
                                 <option value="">Cor</option>
                                 ${coresGlobais.map(c => `<option value="${c}" ${m.corAtual === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
                         </div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase truncate">${op.cliente} | ${op.produto}</div>
-                        <div class="grid grid-cols-3 gap-2 mt-3">
-                            <div class="info-badge"><span>BOAS</span><span class="text-blue-700">${d.boas}</span></div>
-                            <div class="info-badge"><span>REFUGO</span><span class="text-red-600">${d.refugo}</span></div>
-                            <div class="info-badge"><span>PERDA</span><span class="text-red-600">${percPerda}%</span></div>
+                        <div class="uppercase truncate font-bold text-slate-500">${op.produto}</div>
+                        <div class="grid grid-cols-3 gap-2 mt-2">
+                            <div class="info-badge"><span>BOAS</span><span class="text-green-600 text-lg">${d.boas}</span></div>
+                            <div class="info-badge"><span>REFUGO</span><span class="text-red-600 text-lg">${d.refugo}</span></div>
+                            <div class="info-badge"><span>PERDA</span><span class="text-red-600 text-lg">${percPerda}%</span></div>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2">
                         <button onclick="addProd(${m.id}, 10)" class="bg-blue-50 border-2 border-blue-100 py-3 rounded-xl font-black text-blue-700 active:scale-95">+10</button>
                         <button onclick="addRefugo(${m.id})" class="bg-red-50 border-2 border-red-100 py-3 rounded-xl font-black text-red-700 active:scale-95">REFUGO</button>
                     </div>
-
-                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full font-bold text-xs">
+                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full font-bold text-xs p-2">
                         ${motivosParada.map(mot => `<option value="${mot}" ${m.status === mot ? 'selected' : ''}>${mot}</option>`).join('')}
                     </select>
-
-                    <button onclick="finalizar(${m.id})" class="w-full bg-slate-800 text-white py-2 rounded-xl font-black text-[10px] uppercase">Finalizar O.P</button>
                 </div>`;
             }).join('');
             renderApontamento();
@@ -256,37 +263,56 @@
             const t = document.getElementById('filtro-turno').value;
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 const d = m.dadosTurno[t];
-                const total = d.boas + d.refugo;
-                const p = total > 0 ? ((d.refugo/total)*100).toFixed(1) : 0;
-                return `<tr class="border-b bg-white">
-                    <td class="p-4">${m.nome}</td><td class="p-4">${m.fila[0]?.op || '--'}</td>
-                    <td class="p-4 text-green-600">${d.boas}</td><td class="p-4 text-red-500">${d.refugo}</td>
-                    <td class="p-4">${p}%</td><td class="p-4">${formatSec(d.paradas)}</td>
-                </tr>`;
+                const tot = d.boas + d.refugo;
+                const p = tot > 0 ? ((d.refugo/tot)*100).toFixed(1) : 0;
+                return `<tr class="border-b bg-white"><td class="p-4">${m.nome}</td><td class="p-4">${m.fila[0]?.op || '--'}</td><td class="p-4 text-green-600">${d.boas}</td><td class="p-4 text-red-600">${d.refugo}</td><td class="p-4">${p}%</td><td class="p-4">${formatSec(d.paradas)}</td></tr>`;
             }).join('');
         }
 
-        function vincularCor(id, cor) { maquinas.find(x=>x.id===id).corAtual = cor; }
+        function atualizarGrafico() {
+            const stats = { prod: 0, baixa: 0, parada: 0 };
+            maquinas.forEach(m => {
+                if(m.status === "04-PRODUÇÃO") stats.prod++;
+                else if(m.status === "03-MATERIA-PRIMA/ AJUSTE" || m.status === "11-INICIO DE PROCESSO") stats.baixa++;
+                else stats.parada++;
+            });
 
-        function gerenciarCor(acao, cor) {
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(document.getElementById('chartOEE'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Produzindo', 'Baixa Eficiência', 'Parada'],
+                    datasets: [{
+                        data: [stats.prod, stats.baixa, stats.parada],
+                        backgroundColor: ['#22c55e', '#f97316', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { cutout: '75%', plugins: { legend: { display: false } } }
+            });
+
+            document.getElementById('legenda-grafico').innerHTML = `
+                <div class="flex justify-between text-green-600"><span>● Produzindo</span> <span>${stats.prod}</span></div>
+                <div class="flex justify-between text-orange-500"><span>● Baixa Eficiência</span> <span>${stats.baixa}</span></div>
+                <div class="flex justify-between text-red-600"><span>● Parada</span> <span>${stats.parada}</span></div>
+            `;
+        }
+
+        function gerenciarCor(acao) {
             if(acao === 'add') {
                 const val = document.getElementById('nova-cor').value;
                 if(val) coresGlobais.push(val);
                 document.getElementById('nova-cor').value = "";
-            } else {
-                coresGlobais = coresGlobais.filter(x => x !== cor);
             }
             renderCoresConfig();
             render();
         }
 
         function renderCoresConfig() {
-            document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
-                <div class="bg-slate-100 px-3 py-1 rounded-full flex gap-2 items-center font-bold text-xs">
-                    ${c} <button onclick="gerenciarCor('del','${c}')" class="text-red-500 font-black">×</button>
-                </div>
-            `).join('');
+            document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `<div class="bg-slate-100 px-3 py-1 rounded-full text-xs font-bold">${c}</div>`).join('');
         }
+
+        function vincularCor(id, cor) { maquinas.find(x=>x.id===id).corAtual = cor; }
 
         function adicionarFila() {
             const mId = parseInt(document.getElementById('f-maquina').value);
@@ -302,16 +328,14 @@
             render();
         }
 
-        function finalizar(id) {
-            const m = maquinas.find(x => x.id === id);
-            if(confirm("Deseja finalizar a O.P atual? Os dados serão salvos no histórico.")) {
-                m.fila.shift();
-                render();
-            }
+        async function salvarGeral() {
+            await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais } }).eq('id', 1);
+            alert("Salvo com sucesso!");
         }
 
+        // Loop de Tempo Real
         setInterval(() => {
-            document.getElementById('relogio-full').innerText = new Date().toLocaleTimeString();
+            document.getElementById('relogio').innerText = new Date().toLocaleTimeString();
             processarTurnoAuto();
             const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
@@ -319,19 +343,7 @@
             });
         }, 1000);
 
-        async function salvarGeral() {
-            await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais } }).eq('id', 1);
-            alert("Sistema Atualizado na Nuvem!");
-        }
-
-        function trocarAba(aba) {
-            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('aba-' + aba).classList.add('aba-ativa');
-            document.getElementById('tab-' + aba).classList.add('active');
-        }
-
-        inicializar();
+        init();
     </script>
 </body>
 </html>
