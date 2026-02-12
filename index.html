@@ -10,7 +10,6 @@
     <style>
         .aba-conteudo { display: none; }
         .aba-ativa { display: block; }
-        /* Cores de Status adaptadas para o tema */
         .card-Produzindo { background-color: #ffffff; border-left: 12px solid #f97316; color: #1c1917; }
         .card-Parada { background-color: #fff7ed; border-left: 12px solid #1c1917; color: #1c1917; }
         .card-Manutenção { background-color: #f4f4f5; border-left: 12px solid #78716c; color: #1c1917; }
@@ -30,7 +29,7 @@
         </div>
 
         <div class="flex items-center gap-3 bg-stone-900 p-2 rounded-xl border border-stone-800 shadow-sm">
-            <span class="text-xs font-black uppercase text-orange-500">⚠️ TURNO:</span>
+            <span class="text-xs font-black uppercase text-orange-500">⚠️ TURNO ATUAL:</span>
             <select id="sel-turno" class="bg-stone-800 font-black text-white p-2 rounded-lg border-2 border-orange-600 outline-none text-sm uppercase cursor-pointer">
                 <option value="1">🌞 TURNO 01</option>
                 <option value="2">🌙 TURNO 02</option>
@@ -52,6 +51,15 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="grid-maquinas"></div>
     </main>
 
+    <main id="aba-paradas" class="aba-conteudo p-8">
+        <h2 class="font-black text-stone-900 mb-6 text-2xl uppercase border-b-4 border-orange-600 pb-2 inline-block">📊 Desempenho por Turno (Ranking)</h2>
+        <div id="cards-turnos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"></div>
+        <div class="bg-white p-8 rounded-2xl shadow-xl mb-8 border border-stone-200">
+            <h2 class="font-black text-stone-900 mb-6 text-xl uppercase border-l-4 border-orange-600 pl-3">Análise de Máquina Parada (Horas)</h2>
+            <div class="h-[400px]"><canvas id="graficoParadas"></canvas></div>
+        </div>
+    </main>
+
     <main id="aba-lista" class="aba-conteudo p-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-orange-600">
@@ -68,15 +76,6 @@
                 <h2 class="text-xl font-black mb-6 text-stone-900 uppercase">Fila de Produção Ativa</h2>
                 <div id="lista-espera" class="space-y-3 text-sm"></div>
             </div>
-        </div>
-    </main>
-
-    <main id="aba-paradas" class="aba-conteudo p-8">
-        <h2 class="font-black text-stone-900 mb-6 text-2xl uppercase border-b-4 border-orange-600 pb-2 inline-block">📊 Apontamentos por Turno</h2>
-        <div id="cards-turnos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"></div>
-        <div class="bg-white p-8 rounded-2xl shadow-xl mb-8 border border-stone-200">
-            <h2 class="font-black text-stone-900 mb-6 text-xl uppercase border-l-4 border-orange-600 pl-3">Análise de Máquina Parada (Horas)</h2>
-            <div class="h-[400px]"><canvas id="graficoParadas"></canvas></div>
         </div>
     </main>
 
@@ -113,7 +112,7 @@
         let maquinas = [];
         let historico = [];
         let paradasChart = null;
-        const motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador"];
+        const motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador", "Manutenção"];
 
         const mPadrao = [
             { id: 1, nome: "MÁQUINA 01", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {} },
@@ -128,11 +127,6 @@
                 if (data) {
                     maquinas = data.conteudo.maquinas || mPadrao;
                     historico = data.conteudo.historico || [];
-                    maquinas.forEach(m => { 
-                        if(m.producao_t3 === undefined) m.producao_t3 = 0;
-                        if(m.refugo_t1 === undefined) { m.refugo_t1 = 0; m.refugo_t2 = 0; m.refugo_t3 = 0; }
-                        if(m.parada_t1 === undefined) { m.parada_t1 = 0; m.parada_t2 = 0; m.parada_t3 = 0; }
-                    });
                 } else {
                     maquinas = mPadrao;
                     await sb.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico } }]);
@@ -166,7 +160,7 @@
             const btn = document.getElementById('btn-' + nome);
             btn.classList.replace('bg-stone-800', 'bg-orange-600');
             btn.classList.replace('text-stone-400', 'text-white');
-            if(nome === 'paradas') { renderGrafico(); renderTurnos(); }
+            if(nome === 'paradas') { renderTurnos(); renderGrafico(); }
             if(nome === 'rastreio') renderRastreio();
             if(nome === 'lista') renderLista();
         }
@@ -178,7 +172,7 @@
                 const sClasse = m.status === "Produzindo" ? "Produzindo" : (m.status === "Manutenção" ? "Manutenção" : "Parada");
                 return `
                     <div class="card-${sClasse} rounded-3xl shadow-xl p-6 flex flex-col gap-4 border-b-8 border-stone-300">
-                        <div class="flex justify-between items-start"><h2 class="font-black text-2xl tracking-tighter">${m.nome}</h2><span class="text-[9px] font-black uppercase bg-stone-100 px-2 py-1 rounded-lg border border-stone-200">${m.status}</span></div>
+                        <div class="flex justify-between items-start"><h2 class="font-black text-2xl tracking-tighter text-stone-900">${m.nome}</h2><span class="text-[9px] font-black uppercase bg-stone-100 px-2 py-1 rounded-lg border border-stone-200">${m.status}</span></div>
                         <div class="bg-stone-100 rounded-2xl p-4 text-[11px] font-bold leading-tight border border-stone-200"><p class="truncate uppercase text-stone-500">OP: ${item.op}</p><p class="truncate text-orange-600 font-black">${item.produto}</p></div>
                         <div class="bg-stone-900 rounded-3xl py-6 shadow-inner text-center border-2 border-orange-600">
                             <div class="text-[10px] font-black text-stone-400 uppercase">Produção Total</div>
@@ -194,8 +188,12 @@
                             <select onchange="altStatus(${m.id}, this.value)" class="w-full text-[10px] p-3 rounded-xl border-2 font-black uppercase bg-white border-stone-200">
                                 <option value="Produzindo" ${m.status==='Produzindo'?'selected':''}>🟢 PRODUZINDO</option>
                                 <option value="Parada" ${m.status==='Parada'?'selected':''}>🔴 PARADA</option>
-                                <option value="Troca de Molde" ${m.status==='Troca de Molde'?'selected':''}>🌸 MOLDE</option>
-                                <option value="Troca de Cor" ${m.status==='Troca de Cor'?'selected':''}>🎨 COR</option>
+                                <option value="Baixa Eficiência" ${m.status==='Baixa Eficiência'?'selected':''}>📉 BAIXA EFICIÊNCIA</option>
+                                <option value="Troca de Molde" ${m.status==='Troca de Molde'?'selected':''}>🌸 TROCA DE MOLDE</option>
+                                <option value="Troca de Cor" ${m.status==='Troca de Cor'?'selected':''}>🎨 TROCA DE COR</option>
+                                <option value="Troca de Postiços" ${m.status==='Troca de Postiços'?'selected':''}>🛠️ POSTIÇOS</option>
+                                <option value="Falta de Operador" ${m.status==='Falta de Operador'?'selected':''}>👤 FALTA OPERADOR</option>
+                                <option value="Manutenção" ${m.status==='Manutenção'?'selected':''}>🔧 MANUTENÇÃO</option>
                             </select>
                             <div class="flex gap-2">
                                 <button onclick="addRefugo(${m.id})" class="flex-1 bg-stone-100 border-2 border-stone-200 text-stone-600 p-3 rounded-xl text-[10px] font-black uppercase">+ Refugo</button>
@@ -214,37 +212,37 @@
 
         function renderTurnos() {
             document.getElementById('cards-turnos').innerHTML = maquinas.map(m => {
-                const percT1 = m.producao_t1 > 0 ? ((m.refugo_t1 / (m.producao_t1 + m.refugo_t1)) * 100).toFixed(0) : 0;
-                const percT2 = m.producao_t2 > 0 ? ((m.refugo_t2 / (m.producao_t2 + m.refugo_t2)) * 100).toFixed(0) : 0;
-                const percT3 = m.producao_t3 > 0 ? ((m.refugo_t3 / (m.producao_t3 + m.refugo_t3)) * 100).toFixed(0) : 0;
+                // Cria array de turnos para ordenar por produção
+                let ranking = [
+                    { t: 1, prod: m.producao_t1 || 0, ref: m.refugo_t1 || 0, par: m.parada_t1 || 0 },
+                    { t: 2, prod: m.producao_t2 || 0, ref: m.refugo_t2 || 0, par: m.parada_t2 || 0 },
+                    { t: 3, prod: m.producao_t3 || 0, ref: m.refugo_t3 || 0, par: m.parada_t3 || 0 }
+                ];
+
+                // Ordena por produção (maior primeiro). Se igual, mantém ordem t1, t2, t3.
+                ranking.sort((a, b) => b.prod - a.prod || a.t - b.t);
 
                 return `
                 <div class="bg-white rounded-xl shadow-lg border border-stone-200 p-4">
                     <h3 class="font-black text-center text-white mb-4 bg-stone-900 py-2 rounded-lg text-xl border-b-4 border-orange-600">${m.nome}</h3>
                     <div class="space-y-4">
-                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100 shadow-sm text-center">
-                            <h4 class="font-black text-stone-400 uppercase text-xs mb-2">Turno 3</h4>
-                            <p class="text-sm font-bold text-stone-800">Peças Boas: <span class="text-lg text-orange-600">${m.producao_t3 || 0}</span></p>
-                            <p class="text-sm font-bold text-stone-500">Refugo: <span class="text-lg">${m.refugo_t3 || 0} (${percT3}%)</span></p>
-                            <p class="text-sm font-bold text-stone-500">Horas Paradas: <span class="text-lg">${formatarHora(m.parada_t3 || 0)}</span></p>
-                        </div>
-                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100 shadow-sm text-center">
-                            <h4 class="font-black text-stone-400 uppercase text-xs mb-2">Turno 1</h4>
-                            <p class="text-sm font-bold text-stone-800">Peças Boas: <span class="text-lg text-orange-600">${m.producao_t1 || 0}</span></p>
-                            <p class="text-sm font-bold text-stone-500">Refugo: <span class="text-lg">${m.refugo_t1 || 0} (${percT1}%)</span></p>
-                            <p class="text-sm font-bold text-stone-500">Horas Paradas: <span class="text-lg">${formatarHora(m.parada_t1 || 0)}</span></p>
-                        </div>
-                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-100 shadow-sm text-center">
-                            <h4 class="font-black text-stone-400 uppercase text-xs mb-2">Turno 2</h4>
-                            <p class="text-sm font-bold text-stone-800">Peças Boas: <span class="text-lg text-orange-600">${m.producao_t2 || 0}</span></p>
-                            <p class="text-sm font-bold text-stone-500">Refugo: <span class="text-lg">${m.refugo_t2 || 0} (${percT2}%)</span></p>
-                            <p class="text-sm font-bold text-stone-500">Horas Paradas: <span class="text-lg">${formatarHora(m.parada_t2 || 0)}</span></p>
-                        </div>
+                        ${ranking.map(tk => {
+                            const perc = tk.prod > 0 ? ((tk.ref / (tk.prod + tk.ref)) * 100).toFixed(0) : 0;
+                            return `
+                            <div class="bg-stone-50 p-4 rounded-xl border border-stone-100 shadow-sm text-center relative overflow-hidden">
+                                ${ranking[0] === tk && tk.prod > 0 ? '<div class="absolute top-0 right-0 bg-orange-500 text-[8px] font-black px-2 text-white">LÍDER</div>' : ''}
+                                <h4 class="font-black text-stone-400 uppercase text-xs mb-2">Turno ${tk.t}</h4>
+                                <p class="text-sm font-bold text-stone-800">Peças Boas: <span class="text-lg text-orange-600">${tk.prod}</span></p>
+                                <p class="text-sm font-bold text-stone-500">Refugo: <span class="text-lg">${tk.ref} (${perc}%)</span></p>
+                                <p class="text-sm font-bold text-stone-500">Horas Paradas: <span class="text-lg">${formatarHora(tk.par)}</span></p>
+                            </div>`;
+                        }).join('')}
                     </div>
                 </div>`;
             }).join('');
         }
 
+        // Funções de lógica (incrementos, refugo, fila, etc) - Mantidas as mesmas
         function addProd(id, qtd) {
             const m = maquinas.find(x => x.id === id);
             if(m) { 
@@ -301,7 +299,7 @@
 
         function renderGrafico() {
             const ctx = document.getElementById('graficoParadas').getContext('2d');
-            const dsets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), backgroundColor: ['#1c1917','#f97316','#44403c','#fb923c','#78716c','#fdba74'][i] }));
+            const dsets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), backgroundColor: ['#1c1917','#f97316','#44403c','#fb923c','#78716c','#fdba74','#000000'][i] }));
             if (paradasChart) paradasChart.destroy();
             paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: dsets }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } });
         }
