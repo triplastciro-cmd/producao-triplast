@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Monitoramento</title>
+    <title>Triplast - Monitoramento Real-Time</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -159,7 +159,7 @@
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
                 <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
-                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (MÉDIA DE TEMPO)</h3>
+                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (SOMA TOTAL DE TEMPO)</h3>
                     <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
                         <option value="todas">🏭 Todas as Máquinas</option>
                     </select>
@@ -295,7 +295,10 @@
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
             
-            if(id === 'graficos') atualizarDadosGraficos(); 
+            if(id === 'graficos') {
+                atualizarResumoGlobalNumeros(); // Atualiza numeros imediatamente
+                atualizarCharts(); // Atualiza graficos
+            }
             if(id === 'apontamento') renderApontamento();
             if(id === 'lista') { renderListaOPs(); renderHistorico(); }
         }
@@ -519,7 +522,6 @@
             });
             alert("O.P Agendada!"); 
             
-            // LIMPEZA COMPLETA DOS CAMPOS
             document.getElementById('f-op').value = '';
             document.getElementById('f-cliente').value = '';
             document.getElementById('f-operador').value = '';
@@ -588,7 +590,8 @@
 
         function alterarFiltroGrafico(valor) {
             filtroGraficoId = valor;
-            atualizarDadosGraficos();
+            atualizarResumoGlobalNumeros();
+            atualizarCharts();
         }
 
         function iniciarGraficos() {
@@ -618,15 +621,37 @@
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
             });
 
-            atualizarDadosGraficos();
+            atualizarResumoGlobalNumeros();
+            atualizarCharts();
         }
 
-        function atualizarDadosGraficos() {
+        // NOVA FUNÇÃO: Atualiza apenas os números de texto (LEVE E RÁPIDO)
+        function atualizarResumoGlobalNumeros() {
+            if(!document.getElementById('global-timer-prod')) return;
+
+            const t = document.getElementById('filtro-turno').value;
+            let totalProd = 0, totalBaixa = 0, totalParado = 0;
+
+            maquinas.forEach(m => {
+                if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
+                totalProd += m.dadosTurno[t].tempoProducao;
+                totalBaixa += m.dadosTurno[t].tempoBaixa;
+                totalParado += m.dadosTurno[t].paradas;
+            });
+
+            // ATENÇÃO: Removemos o divisor. Agora mostra a SOMA TOTAL de horas (mais preciso para gestão).
+            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd);
+            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
+            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
+        }
+
+        // Função separada para gráficos (MAIS PESADO)
+        function atualizarCharts() {
             if(!charts.oee || !charts.paradas || !charts.refugos) return;
 
             const t = document.getElementById('filtro-turno').value;
-            
             const selectFiltro = document.getElementById('filtro-grafico-status');
+            
             if(selectFiltro.options.length === 1 && maquinas.length > 0) {
                 maquinas.forEach(m => {
                     const opt = document.createElement('option');
@@ -634,29 +659,13 @@
                 });
             }
 
-            let totalProd = 0, totalBaixa = 0, totalParado = 0;
-            let countMaquinas = 0;
             let s = { p: 0, b: 0, s: 0 };
-
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
-                
-                countMaquinas++;
-                
                 if(m.status === "04-PRODUÇÃO") s.p++; 
                 else if(m.status === "21-BAIXA EFICIÊNCIA") s.b++;
                 else s.s++;
-                
-                totalProd += m.dadosTurno[t].tempoProducao;
-                totalBaixa += m.dadosTurno[t].tempoBaixa;
-                totalParado += m.dadosTurno[t].paradas;
             });
-
-            const divisor = countMaquinas || 1; 
-
-            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
-            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa / divisor);
-            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
 
             charts.oee.data.datasets[0].data = [s.p, s.b, s.s];
             charts.oee.update('none');
@@ -715,13 +724,15 @@
                 else m.dadosTurno[t].paradas++;
             });
 
-            updateTimersVisualOnly(); 
+            // ATUALIZAÇÃO SINCRONIZADA
+            updateTimersVisualOnly(); // Atualiza Cards
             
+            // Atualiza os números globais SEMPRE (para não atrasar) se a aba estiver aberta
             if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
-                atualizarDadosGraficos();
+                atualizarResumoGlobalNumeros(); // Rápido (Texto)
+                atualizarCharts(); // Lento (Canvas)
             }
 
-            // CORREÇÃO: Atualiza a tabela de apontamento a cada segundo se a aba estiver aberta
             if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) {
                 renderApontamento();
             }
