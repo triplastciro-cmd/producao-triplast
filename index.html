@@ -129,7 +129,7 @@
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
                 <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
-                    <h3 class="font-black text-slate-700 text-xl">STATUS GERAL / RELÓGIO</h3>
+                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (MÉDIA DE TEMPO)</h3>
                     <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
                         <option value="todas">🏭 Todas as Máquinas</option>
                     </select>
@@ -150,10 +150,20 @@
                     </div>
                 </div>
             </div>
+            
             <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <div class="flex items-center gap-3 mb-4 border-b pb-2">
+                    <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-clock"></i></div>
+                    <h3 class="font-black text-slate-700 text-lg">RANKING DE PARADAS (MINUTOS)</h3>
+                </div>
                 <canvas id="chartParadas"></canvas>
             </div>
+
             <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <div class="flex items-center gap-3 mb-4 border-b pb-2">
+                    <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-trash"></i></div>
+                    <h3 class="font-black text-slate-700 text-lg">RANKING DE REFUGO (QTD)</h3>
+                </div>
                 <canvas id="chartRefugos"></canvas>
             </div>
         </div>
@@ -184,8 +194,6 @@
         let manualOverride = false;
         let saveTimeout = null;
         let filtroGraficoId = 'todas';
-        
-        // Armazena as instâncias dos gráficos para não recriar
         let charts = { oee: null, paradas: null, refugos: null };
 
         function getBrasiliaDate() {
@@ -207,7 +215,9 @@
             if (data) {
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
+                
                 maquinas.forEach(m => {
+                    if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
                     if(!m.dadosTurno) m.dadosTurno = { 1:{}, 2:{}, 3:{} };
                     for(let i=1; i<=3; i++) {
                         if(!m.dadosTurno[i]) m.dadosTurno[i] = {};
@@ -224,8 +234,8 @@
                 render(); 
                 renderListaOPs();
                 renderCoresConfig();
-                // Inicializa os gráficos vazios uma única vez
                 iniciarGraficos();
+                salvarGeral(); 
             }
         }
 
@@ -235,7 +245,7 @@
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
             
-            if(id === 'graficos') atualizarDadosGraficos(); // Apenas atualiza dados, não recria
+            if(id === 'graficos') atualizarDadosGraficos(); 
             if(id === 'apontamento') renderApontamento();
             if(id === 'lista') renderListaOPs();
         }
@@ -370,6 +380,7 @@
         }
 
         function fmtTempo(s) { 
+            s = Math.floor(s); // Arredonda para baixo para evitar decimais no display
             const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
         }
@@ -444,10 +455,7 @@
             atualizarDadosGraficos();
         }
 
-        // --- SISTEMA DE GRÁFICOS CORRIGIDO ---
-
         function iniciarGraficos() {
-            // Cria os gráficos apenas UMA vez com dados zerados
             const ctxOEE = document.getElementById('chartOEE');
             const ctxParadas = document.getElementById('chartParadas');
             const ctxRefugos = document.getElementById('chartRefugos');
@@ -464,7 +472,7 @@
 
             charts.paradas = new Chart(ctxParadas, {
                 type: 'bar',
-                data: { labels: [], datasets: [{ label: 'Horas', data: [], backgroundColor: '#cbd5e1', borderRadius: 4 }] },
+                data: { labels: [], datasets: [{ label: 'Minutos', data: [], backgroundColor: '#cbd5e1', borderRadius: 4 }] },
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
             });
 
@@ -474,16 +482,14 @@
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
             });
 
-            atualizarDadosGraficos(); // Popula com dados iniciais
+            atualizarDadosGraficos();
         }
 
         function atualizarDadosGraficos() {
-            // Esta função NÃO cria gráficos novos, apenas injeta dados e atualiza
             if(!charts.oee || !charts.paradas || !charts.refugos) return;
 
             const t = document.getElementById('filtro-turno').value;
             
-            // Popula filtro se necessário
             const selectFiltro = document.getElementById('filtro-grafico-status');
             if(selectFiltro.options.length === 1 && maquinas.length > 0) {
                 maquinas.forEach(m => {
@@ -493,29 +499,37 @@
             }
 
             let totalProd = 0, totalBaixa = 0, totalParado = 0;
+            let countMaquinas = 0;
             let s = { p: 0, b: 0, s: 0 };
 
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
+                
+                countMaquinas++;
+                
                 if(m.status === "04-PRODUÇÃO") s.p++; 
                 else if(m.status === "21-BAIXA EFICIÊNCIA") s.b++;
                 else s.s++;
+                
                 totalProd += m.dadosTurno[t].tempoProducao;
                 totalBaixa += m.dadosTurno[t].tempoBaixa;
                 totalParado += m.dadosTurno[t].paradas;
             });
 
-            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd);
-            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
-            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
+            // CORREÇÃO: Divide pelo número de máquinas para simular a contagem "1 por 1" (Média)
+            // Se todas estiverem paradas, o tempo "Produzindo" para de subir.
+            const divisor = countMaquinas || 1; 
 
-            // Atualiza Pizza - Modo 'none' para não animar
+            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
+            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa / divisor);
+            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
+
             charts.oee.data.datasets[0].data = [s.p, s.b, s.s];
             charts.oee.update('none');
 
-            // Atualiza Barras
             const labels = maquinas.map(m => m.nome);
-            const dataParadas = maquinas.map(m => (m.dadosTurno[t].paradas / 3600).toFixed(2)); 
+            // CORREÇÃO: Converte segundos para MINUTOS para o gráfico ficar visível mais rápido
+            const dataParadas = maquinas.map(m => (m.dadosTurno[t].paradas / 60).toFixed(1)); 
             const dataRefugos = maquinas.map(m => m.dadosTurno[t].refugo);
 
             charts.paradas.data.labels = labels;
@@ -551,7 +565,8 @@
             if(error) console.error("Erro ao salvar:", error);
         }
 
-        // --- LOOP PRINCIPAL (1 Segundo) ---
+        window.addEventListener('beforeunload', () => { salvarGeral(); });
+
         setInterval(() => {
             const agora = getBrasiliaDate();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
@@ -567,7 +582,6 @@
                 else m.dadosTurno[t].paradas++;
             });
 
-            // Atualiza apenas números e dados do gráfico (sem redesenhar o HTML todo)
             updateTimersVisualOnly(); 
             
             if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
