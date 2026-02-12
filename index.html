@@ -8,457 +8,275 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        body { background-color: #add8e6; font-family: 'Inter', sans-serif; }
         
-        :root {
-            --bg-principal: #add8e6;
-            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-
-        body { 
-            background-color: var(--bg-principal); 
-            font-family: 'Inter', sans-serif; 
-            overflow-x: hidden;
-            color: #1e293b;
-        }
-
-        /* Melhoria de Nitidez conforme Imagem 5 */
+        /* CARD NITIDEZ IMAGEM 5 */
         .card-maquina {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s;
         }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 99px;
-            font-size: 11px;
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-
-        /* Cores de Status */
-        .produzindo { border-left: 12px solid #22c55e; }
-        .parada { border-left: 12px solid #ef4444; }
-        .ajuste { border-left: 12px solid #f97316; }
-
-        .aba-conteudo { display: none !important; }
-        .aba-ativa { display: block !important; }
-
-        /* Botões Estilizados */
-        .btn-acao {
-            @apply shadow-sm transition-all active:scale-95 font-bold py-2 px-4 rounded-xl;
-        }
+        .aba-conteudo { display: none; }
+        .aba-ativa { display: block; }
         
-        .btn-refugo-item {
-            @apply bg-slate-50 border border-slate-200 p-3 rounded-xl text-[10px] font-black hover:bg-red-500 hover:text-white hover:border-red-600 transition-all;
-        }
+        /* CORES DE STATUS */
+        .border-produzindo { border-top: 10px solid #22c55e; }
+        .border-ajuste { border-top: 10px solid #f97316; }
+        .border-parada { border-top: 10px solid #ef4444; }
 
-        header {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-radius: 0 0 30px 30px;
+        .btn-refugo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 10px; }
+        .btn-falha {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-falha:hover { background: #fee2e2; border-color: #ef4444; }
     </style>
 </head>
 <body>
 
-    <header class="max-w-7xl mx-auto p-6 mb-6 shadow-2xl">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-6">
-                <h1 class="text-4xl font-black italic tracking-tighter text-white">TRI<span class="text-blue-400">PLAST</span></h1>
-                <div id="relogio" class="bg-slate-800/50 border border-slate-700 px-6 py-2 rounded-2xl font-mono text-2xl text-blue-400 shadow-inner">18:59:21</div>
-            </div>
-
-            <div class="flex items-center gap-4 bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-black text-slate-400 ml-1">TURNO ATUAL</span>
-                    <select id="filtro-turno" onchange="renderDados()" class="bg-transparent text-white font-black outline-none cursor-pointer text-sm">
-                        <option value="1">🌅 Manhã (06:00 - 14:18)</option>
-                        <option value="2" selected>☀️ Tarde (14:18 - 23:36)</option>
-                        <option value="3">🌙 Noite (23:36 - 06:00)</option>
-                    </select>
-                </div>
-                <div id="badge-auto" class="bg-green-500 text-[10px] px-3 py-1 rounded-full font-black text-white animate-pulse">AUTO</div>
-            </div>
-
-            <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-right min-w-[150px]">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">OEE GLOBAL</p>
-                <span id="meta-global" class="text-4xl font-black text-green-400">0%</span>
+    <header class="bg-[#1e293b] text-white p-5 shadow-2xl rounded-b-3xl mb-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-black italic">TRI<span class="text-blue-400">PLAST</span></h1>
+            <div id="relogio" class="text-2xl font-mono bg-slate-800 px-4 py-1 rounded-xl">00:00:00</div>
+            <div class="flex items-center gap-4">
+                <select id="filtro-turno" onchange="renderizar()" class="bg-slate-700 p-2 rounded-lg font-bold">
+                    <option value="1">🌅 Manhã</option>
+                    <option value="2" selected>☀️ Tarde</option>
+                    <option value="3">🌙 Noite</option>
+                </select>
+                <span id="meta-global" class="text-3xl font-black text-green-400">0%</span>
             </div>
         </div>
     </header>
 
-    <nav class="max-w-7xl mx-auto px-4 mb-8 flex flex-wrap gap-3">
-        <button onclick="trocarAba('painel')" id="btn-painel" class="btn-acao bg-white text-slate-800 shadow-lg">🖥️ PAINEL DE PRODUÇÃO</button>
-        <button onclick="trocarAba('lista')" id="btn-lista" class="btn-acao bg-white/80">📋 PROGRAMAÇÃO</button>
-        <button onclick="trocarAba('graficos')" id="btn-graficos" class="btn-acao bg-white/80">📊 GRÁFICOS & OEE</button>
-        <button onclick="trocarAba('historico')" id="btn-historico" class="btn-acao bg-white/80">📜 HISTÓRICO</button>
-        <button onclick="salvarSistema()" class="ml-auto bg-green-500 text-white px-10 py-3 rounded-2xl font-black shadow-lg shadow-green-500/30 hover:bg-green-600">SALVAR DADOS</button>
+    <nav class="max-w-7xl mx-auto px-4 mb-6 flex gap-2 overflow-x-auto">
+        <button onclick="trocarAba('painel')" class="bg-white px-6 py-2 rounded-lg font-bold shadow">Painel</button>
+        <button onclick="trocarAba('graficos')" class="bg-white px-6 py-2 rounded-lg font-bold shadow">Gráficos</button>
+        <button onclick="trocarAba('historico')" class="bg-white px-6 py-2 rounded-lg font-bold shadow">Histórico</button>
+        <button onclick="salvarGeral()" class="ml-auto bg-green-600 text-white px-8 py-2 rounded-lg font-black">SALVAR</button>
     </nav>
 
-    <div id="aba-painel" class="aba-conteudo aba-ativa px-4 pb-20">
-        <div id="grid-maquinas" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            </div>
+    <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
+        <div id="grid-maquinas" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </div>
 
-    <div id="aba-graficos" class="aba-conteudo px-4 pb-20">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-white p-8 rounded-[32px] shadow-xl border border-slate-100">
-                <h2 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
-                    <span class="w-2 h-6 bg-blue-500 rounded-full"></span> EFICIÊNCIA DE STATUS (OEE)
-                </h2>
-                <div class="aspect-square max-h-[400px] mx-auto">
-                    <canvas id="chartOEE"></canvas>
-                </div>
+    <div id="aba-graficos" class="aba-conteudo px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <h3 class="font-black mb-4 uppercase text-slate-400">OEE Status</h3>
+                <canvas id="chartStatus"></canvas>
             </div>
-            <div class="bg-white p-8 rounded-[32px] shadow-xl border border-slate-100">
-                <h2 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
-                    <span class="w-2 h-6 bg-red-500 rounded-full"></span> TEMPO DE PARADA POR MÁQUINA
-                </h2>
-                <div class="h-[400px]">
-                    <canvas id="chartParadas"></canvas>
-                </div>
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <h3 class="font-black mb-4 uppercase text-slate-400">Horas Paradas (Indiv.)</h3>
+                <canvas id="chartParadas"></canvas>
             </div>
         </div>
     </div>
 
-    <div id="aba-historico" class="aba-conteudo px-4 pb-20">
-        <div class="max-w-7xl mx-auto bg-white p-8 rounded-[32px] shadow-xl">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-black">Histórico de Produção</h2>
-                <div class="flex gap-2">
-                    <select id="filtro-periodo" class="p-2 border rounded-xl font-bold text-sm">
-                        <option value="hoje">Hoje</option>
-                        <option value="ontem">Ontem</option>
-                        <option value="semana">Esta Semana</option>
-                        <option value="mes">Este Mês</option>
-                        <option value="personalizado">Intervalo Personalizado</option>
-                    </select>
-                </div>
+    <div id="modal-refugo" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full">
+            <h2 class="text-xl font-black mb-4">Motivo do Refugo (+2%)</h2>
+            <div class="btn-refugo-grid mb-4">
+                <button onclick="addRefugoEspecial()" class="btn-falha">Falha de Injeção</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Arranhão/Batido</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Fora de Cor</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Peça Presa Molde</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Bolha</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Manchas</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Trinca</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Espirros</button>
+                <button onclick="addRefugoEspecial()" class="btn-falha">Material Contam.</button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="text-slate-400 text-xs font-black uppercase tracking-widest border-b">
-                            <th class="pb-4">Máquina</th>
-                            <th class="pb-4">OP</th>
-                            <th class="pb-4">Boas</th>
-                            <th class="pb-4">Refugo</th>
-                            <th class="pb-4">Parada</th>
-                            <th class="pb-4">Data</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-historico">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-refugo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-[32px] p-8 max-w-lg w-full shadow-2xl border border-white">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-800">Apontar Falha Técnica</h2>
-                    <p class="text-sm font-bold text-red-500">Atenção: Adiciona +2% de refugo sobre a produção</p>
-                </div>
-                <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-800">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3 mb-8">
-                <button onclick="processarRefugo2Porcento('Falha de Injeção')" class="btn-refugo-item">FALHA DE INJEÇÃO</button>
-                <button onclick="processarRefugo2Porcento('Arranhão/Batido')" class="btn-refugo-item">ARRANHÃO/BATIDO</button>
-                <button onclick="processarRefugo2Porcento('Fora de Cor')" class="btn-refugo-item">FORA DE COR</button>
-                <button onclick="processarRefugo2Porcento('Peça Presa')" class="btn-refugo-item">PEÇA PRESA NO MOLDE</button>
-                <button onclick="processarRefugo2Porcento('Bolha')" class="btn-refugo-item">BOLHA</button>
-                <button onclick="processarRefugo2Porcento('Manchas')" class="btn-refugo-item">MANCHAS</button>
-                <button onclick="processarRefugo2Porcento('Trinca')" class="btn-refugo-item">TRINCA</button>
-                <button onclick="processarRefugo2Porcento('Espirros')" class="btn-refugo-item">ESPIRROS</button>
-                <button onclick="processarRefugo2Porcento('Contaminação')" class="btn-refugo-item">MATERIAL CONTAMINADO</button>
-            </div>
-
-            <div class="flex flex-col gap-2">
-                <p class="text-[10px] font-black text-slate-400 uppercase center">Ou adicione manualmente:</p>
-                <div class="flex gap-2">
-                    <input type="number" id="qtd-manual" value="1" class="flex-1 bg-slate-100 p-4 rounded-2xl font-black text-center text-xl">
-                    <button onclick="addRefugoManual()" class="bg-slate-800 text-white px-8 rounded-2xl font-black">ADICIONAR</button>
-                </div>
+            <div class="flex gap-2">
+                <input type="number" id="qtd-manual" value="1" class="w-20 border rounded-lg p-2 font-bold text-center">
+                <button onclick="addRefugoManual()" class="flex-1 bg-slate-800 text-white rounded-lg font-bold">Add Manual</button>
+                <button onclick="fecharModal()" class="p-2 text-slate-400">Sair</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÕES SUPABASE
-        const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const S_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
+        const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
+        const sb = window.supabase.createClient(S_URL, S_KEY);
 
         let maquinas = [];
-        let maquinaAtivaId = null;
-        let chartOEEObj = null;
-        let chartParadasObj = null;
+        let idFoco = null;
+        let cStatus = null;
+        let cParadas = null;
 
-        async function inicializar() {
-            const { data, error } = await supabase.from('sistema').select('*').eq('id', 1).single();
+        async function init() {
+            const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data) {
                 maquinas = data.conteudo.maquinas;
-                construirEstruturaPainel(); // Cria o HTML fixo
-                renderDados();              // Preenche os valores
+                renderizarEstrutura(); // Cria o HTML fixo
+                renderizar();          // Preenche os valores
             }
         }
 
-        // 1. CONSTRUIR ESTRUTURA (Evita que menus fechem sozinhos)
-        function construirEstruturaPainel() {
+        // CORREÇÃO: CRIA OS CARDS SÓ UMA VEZ
+        function renderizarEstrutura() {
             const grid = document.getElementById('grid-maquinas');
             grid.innerHTML = maquinas.map(m => `
-                <div id="card-${m.id}" class="card-maquina p-6 flex flex-col gap-4">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-4">
-                        <div class="flex flex-col">
-                            <span class="text-3xl font-black text-slate-800">${m.nome}</span>
-                            <span id="status-label-${m.id}" class="text-[10px] font-black text-slate-400">CARREGANDO...</span>
-                        </div>
-                        <div id="crono-${m.id}" class="bg-blue-50 text-blue-600 font-mono font-bold px-4 py-2 rounded-xl border border-blue-100">00:00:00</div>
+                <div id="card-${m.id}" class="card-maquina p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-black text-slate-800">${m.nome}</h2>
+                        <div id="crono-${m.id}" class="font-mono font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border">00:00:00</div>
+                    </div>
+                    
+                    <div id="op-${m.id}" class="bg-slate-50 p-3 rounded-xl border mb-4"></div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <button onclick="abrirModal(${m.id})" class="bg-red-50 text-red-600 py-3 rounded-xl font-black text-xs border border-red-100">REFUGO +</button>
+                        <button onclick="addBoas(${m.id})" class="bg-green-50 text-green-600 py-3 rounded-xl font-black text-xs border border-green-100">BOAS +</button>
                     </div>
 
-                    <div id="op-info-${m.id}" class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-2">
-                        </div>
-
-                    <div class="grid grid-cols-2 gap-3 mt-2">
-                        <button onclick="abrirModalRefugo(${m.id})" class="bg-red-50 text-red-600 p-4 rounded-2xl font-black text-xs border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm">REFUGO +</button>
-                        <button onclick="incrementarBoas(${m.id})" class="bg-green-50 text-green-600 p-4 rounded-2xl font-black text-xs border border-green-100 hover:bg-green-500 hover:text-white transition-all shadow-sm">PRODUÇÃO +</button>
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <span class="text-[9px] font-black text-slate-400 ml-1 uppercase">Alterar Situação</span>
-                        <select id="select-status-${m.id}" onchange="alterarStatus(${m.id}, this.value)" class="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-sm shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="04-PRODUÇÃO">🟢 PRODUZINDO</option>
-                            <option value="03-MATERIA-PRIMA/ AJUSTE">🟠 BAIXA EFICIÊNCIA (AJUSTE)</option>
-                            <option value="14-MANUTENÇÃO">🔴 MANUTENÇÃO MECÂNICA</option>
-                            <option value="01-TROCA DE MOLDE">🔴 TROCA DE MOLDE</option>
-                            <option value="PARADA">⚪ MÁQUINA PARADA</option>
-                        </select>
-                    </div>
+                    <select id="sel-${m.id}" onchange="mudarStatus(${m.id}, this.value)" class="w-full p-2 rounded-xl font-bold text-xs border bg-white outline-none">
+                        <option value="04-PRODUÇÃO">🟢 Produzindo</option>
+                        <option value="03-MATERIA-PRIMA/ AJUSTE">🟠 Baixa Eficiência (Ajuste)</option>
+                        <option value="14-MANUTENÇÃO">🔴 Manutenção</option>
+                        <option value="01-TROCA DE MOLDE">🔴 Troca de Molde</option>
+                    </select>
                 </div>
             `).join('');
         }
 
-        // 2. ATUALIZAR APENAS OS DADOS (Sem destruir o HTML)
-        function renderDados() {
-            const turno = document.getElementById('filtro-turno').value;
-            
+        function renderizar() {
+            const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
-                const dados = m.dadosTurno[turno] || { boas: 0, refugo: 0, paradas: 0 };
-                const opAtiva = m.fila[0] || { op: '----', produto: 'SEM PROGRAMAÇÃO', cliente: '---', qtd: 0 };
+                const dados = m.dadosTurno[t] || { boas: 0, refugo: 0, paradas: 0 };
+                const op = m.fila[0] || { op: '---', produto: 'LIVRE', qtd: 0 };
                 const card = document.getElementById(`card-${m.id}`);
-                const selStatus = document.getElementById(`select-status-${m.id}`);
-                
-                // Atualizar Cores do Card
-                card.className = 'card-maquina p-6 flex flex-col gap-4';
-                if(m.status === "04-PRODUÇÃO") card.classList.add('produzindo');
-                else if(m.status.includes('AJUSTE')) card.classList.add('ajuste');
-                else card.classList.add('parada');
+                const opDiv = document.getElementById(`op-${m.id}`);
+                const sel = document.getElementById(`sel-${m.id}`);
 
-                // Sincronizar Select sem fechar
-                if(selStatus.value !== m.status) selStatus.value = m.status;
+                // Sincroniza Status e Cores
+                sel.value = m.status;
+                card.className = `card-maquina p-5 ${m.status === '04-PRODUÇÃO' ? 'border-produzindo' : m.status.includes('AJUSTE') ? 'border-ajuste' : 'border-parada'}`;
 
-                // Atualizar Informações da OP
-                document.getElementById(`op-info-${m.id}`).innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black text-blue-500">OP ${opAtiva.op}</span>
-                        <span class="text-[10px] font-black text-slate-400">${opAtiva.cliente}</span>
+                opDiv.innerHTML = `
+                    <div class="flex justify-between text-[10px] font-black text-blue-500 mb-1">
+                        <span>OP ${op.op}</span>
+                        <span>META: ${op.qtd}</span>
                     </div>
-                    <p class="font-bold text-slate-700 text-sm truncate">${opAtiva.produto}</p>
-                    <div class="grid grid-cols-2 gap-4 mt-2">
-                        <div>
-                            <span class="block text-[9px] font-black text-slate-400 uppercase">Boas</span>
-                            <span class="text-2xl font-black text-green-600">${dados.boas.toLocaleString()}</span>
-                        </div>
-                        <div>
-                            <span class="block text-[9px] font-black text-slate-400 uppercase">Refugo</span>
-                            <span class="text-2xl font-black text-red-600">${dados.refugo.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    <div class="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                        <div class="bg-blue-500 h-full" style="width: ${Math.min((dados.boas / opAtiva.qtd) * 100, 100)}%"></div>
+                    <div class="text-sm font-bold truncate mb-3">${op.produto}</div>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div><div class="text-[9px] text-slate-400 font-bold">BOAS</div><div class="text-xl font-black text-green-600">${dados.boas}</div></div>
+                        <div><div class="text-[9px] text-slate-400 font-bold">REFUGO</div><div class="text-xl font-black text-red-600">${dados.refugo}</div></div>
                     </div>
                 `;
             });
-
-            atualizarOEEGlobal();
+            calcGlobal();
         }
 
-        // 3. LÓGICA DE REFUGO +2% (Aumentada conforme solicitado)
-        function abrirModalRefugo(id) {
-            maquinaAtivaId = id;
-            document.getElementById('modal-refugo').classList.remove('hidden');
+        function addBoas(id) {
+            const t = document.getElementById('filtro-turno').value;
+            const m = maquinas.find(x => x.id === id);
+            m.dadosTurno[t].boas += (m.fila[0]?.padrao || 1);
+            renderizar();
         }
 
-        function fecharModal() {
-            document.getElementById('modal-refugo').classList.add('hidden');
-        }
-
-        function processarRefugo2Porcento(motivo) {
-            const turno = document.getElementById('filtro-turno').value;
-            const m = maquinas.find(x => x.id === maquinaAtivaId);
-            const dados = m.dadosTurno[turno];
-            
-            // Regra: Adiciona 2% da produção atual de BOAS (mínimo de 1 peça)
-            const acrescimo = Math.ceil(dados.boas * 0.02) || 1;
-            dados.refugo += acrescimo;
-            
-            console.log(`Refugo registrado: ${motivo} na ${m.nome}. +${acrescimo} peças (2%)`);
+        // REGRA DOS 2% SOLICITADA
+        function addRefugoEspecial() {
+            const t = document.getElementById('filtro-turno').value;
+            const m = maquinas.find(x => x.id === idFoco);
+            const adicional = Math.ceil(m.dadosTurno[t].boas * 0.02) || 1;
+            m.dadosTurno[t].refugo += adicional;
             fecharModal();
-            renderDados();
+            renderizar();
         }
 
         function addRefugoManual() {
-            const turno = document.getElementById('filtro-turno').value;
+            const t = document.getElementById('filtro-turno').value;
             const qtd = parseInt(document.getElementById('qtd-manual').value);
-            const m = maquinas.find(x => x.id === maquinaAtivaId);
-            
-            m.dadosTurno[turno].refugo += qtd;
+            maquinas.find(x => x.id === idFoco).dadosTurno[t].refugo += qtd;
             fecharModal();
-            renderDados();
+            renderizar();
         }
 
-        // 4. FUNÇÕES DE PRODUÇÃO
-        function incrementarBoas(id) {
-            const turno = document.getElementById('filtro-turno').value;
-            const m = maquinas.find(x => x.id === id);
-            const padrao = m.fila[0]?.padrao || 1;
-            
-            m.dadosTurno[turno].boas += padrao;
-            renderDados();
+        function mudarStatus(id, val) {
+            maquinas.find(x => x.id === id).status = val;
+            renderizar();
         }
 
-        function alterarStatus(id, novoStatus) {
-            const m = maquinas.find(x => x.id === id);
-            m.status = novoStatus;
-            renderDados();
-        }
+        function abrirModal(id) { idFoco = id; document.getElementById('modal-refugo').classList.remove('hidden'); }
+        function fecharModal() { document.getElementById('modal-refugo').classList.add('hidden'); }
 
-        // 5. GRÁFICOS MELHORADOS
-        function renderizarGraficos() {
-            const turno = document.getElementById('filtro-turno').value;
-            const ctxOEE = document.getElementById('chartOEE').getContext('2d');
-            const ctxParadas = document.getElementById('chartParadas').getContext('2d');
-
-            let prod = 0, ajuste = 0, parada = 0;
-            const labels = [], dadosHoras = [];
-
-            maquinas.forEach(m => {
-                labels.push(m.nome);
-                dadosHoras.push((m.dadosTurno[turno].paradas / 3600).toFixed(2));
-
-                if(m.status === "04-PRODUÇÃO") prod++;
-                else if(m.status.includes("AJUSTE")) ajuste++;
-                else parada++;
-            });
-
-            // Gráfico OEE (Status da Fábrica)
-            if(chartOEEObj) chartOEEObj.destroy();
-            chartOEEObj = new Chart(ctxOEE, {
-                type: 'doughnut',
-                data: {
-                    labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'],
-                    datasets: [{
-                        data: [prod, ajuste, parada],
-                        backgroundColor: ['#22c55e', '#f97316', '#ef4444'],
-                        borderWidth: 0,
-                        hoverOffset: 20
-                    }]
-                },
-                options: { 
-                    cutout: '75%',
-                    plugins: { legend: { position: 'bottom', labels: { font: { weight: 'bold' } } } }
-                }
-            });
-
-            // Gráfico de Tempo de Parada
-            if(chartParadasObj) chartParadasObj.destroy();
-            chartParadasObj = new Chart(ctxParadas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Horas Paradas',
-                        data: dadosHoras,
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 12
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Horas' } } }
-                }
-            });
-        }
-
-        // 6. UTILITÁRIOS
         function trocarAba(id) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
             document.getElementById('aba-' + id).classList.add('aba-ativa');
-            
-            // Estilo dos botões
-            document.querySelectorAll('nav button').forEach(b => b.classList.replace('bg-white', 'bg-white/80'));
-            document.getElementById('btn-' + id).classList.replace('bg-white/80', 'bg-white');
-
-            if(id === 'graficos') renderizarGraficos();
+            if(id === 'graficos') renderGraficos();
         }
 
-        function atualizarOEEGlobal() {
-            const turno = document.getElementById('filtro-turno').value;
-            let totalBoas = 0, totalMeta = 0;
+        function calcGlobal() {
+            const t = document.getElementById('filtro-turno').value;
+            let b = 0, m = 0;
+            maquinas.forEach(x => { b += x.dadosTurno[t].boas; m += (x.fila[0]?.qtd || 0); });
+            document.getElementById('meta-global').innerText = (m > 0 ? Math.round((b/m)*100) : 0) + '%';
+        }
+
+        function renderGraficos() {
+            const t = document.getElementById('filtro-turno').value;
+            const s = { p: 0, a: 0, st: 0 };
+            const stopH = maquinas.map(m => (m.dadosTurno[t].paradas / 3600).toFixed(2));
+            const labels = maquinas.map(m => m.nome);
+
             maquinas.forEach(m => {
-                totalBoas += m.dadosTurno[turno].boas;
-                totalMeta += (m.fila[0]?.qtd || 0);
+                if(m.status === '04-PRODUÇÃO') s.p++;
+                else if(m.status.includes('AJUSTE')) s.a++;
+                else s.st++;
             });
-            const perc = totalMeta > 0 ? Math.round((totalBoas / totalMeta) * 100) : 0;
-            document.getElementById('meta-global').innerText = perc + '%';
+
+            if(cStatus) cStatus.destroy();
+            cStatus = new Chart(document.getElementById('chartStatus'), {
+                type: 'doughnut',
+                data: { labels: ['Prod', 'Ajuste', 'Parada'], datasets: [{ data: [s.p, s.a, s.st], backgroundColor: ['#22c55e', '#f97316', '#ef4444'] }] }
+            });
+
+            if(cParadas) cParadas.destroy();
+            cParadas = new Chart(document.getElementById('chartParadas'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Horas Paradas', data: stopH, backgroundColor: '#3b82f6' }] }
+            });
         }
 
-        function formatarTempo(segundos) {
-            const h = Math.floor(segundos / 3600);
-            const m = Math.floor((segundos % 3600) / 60);
-            const s = segundos % 60;
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        async function salvarGeral() {
+            const { error } = await sb.from('sistema').update({ conteudo: { maquinas } }).eq('id', 1);
+            alert(error ? "Erro!" : "Salvo!");
         }
 
-        async function salvarSistema() {
-            const { error } = await supabase.from('sistema').update({ conteudo: { maquinas } }).eq('id', 1);
-            alert(error ? "Erro ao salvar!" : "Fábrica Sincronizada com Sucesso!");
-        }
-
-        // LOOP DE TEMPO REAL (1 SEGUNDO)
+        // LOOP SEGUNDO A SEGUNDO
         setInterval(() => {
-            const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString();
+            document.getElementById('relogio').innerText = new Date().toLocaleTimeString();
+            const t = document.getElementById('filtro-turno').value;
 
-            const turno = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
-                // Se não estiver produzindo, conta tempo de parada
-                if(m.status !== "04-PRODUÇÃO") {
-                    if(!m.dadosTurno[turno]) m.dadosTurno[turno] = { boas: 0, refugo: 0, paradas: 0 };
-                    m.dadosTurno[turno].paradas += 1;
+                if(m.status !== '04-PRODUÇÃO') {
+                    if(!m.dadosTurno[t]) m.dadosTurno[t] = { boas: 0, refugo: 0, paradas: 0 };
+                    m.dadosTurno[t].paradas++;
                     
-                    const elCrono = document.getElementById(`crono-${m.id}`);
-                    if(elCrono) elCrono.innerText = formatarTempo(m.dadosTurno[turno].paradas);
+                    const el = document.getElementById(`crono-${m.id}`);
+                    if(el) {
+                        const sec = m.dadosTurno[t].paradas;
+                        el.innerText = new Date(sec * 1000).toISOString().substr(11, 8);
+                    }
                 }
             });
         }, 1000);
 
-        inicializar();
+        init();
     </script>
 </body>
 </html>
