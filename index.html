@@ -41,7 +41,12 @@
             <div class="bg-white rounded-xl shadow p-6 border h-fit">
                 <h2 class="text-lg font-bold mb-4 text-blue-700">Agendar</h2>
                 <div class="space-y-3">
-                    <select id="f-maquina" class="w-full p-2 border rounded text-sm"><option value="1">Máquina 01</option><option value="2">Máquina 02</option><option value="3">Máquina 03</option><option value="4">Máquina 04</option></select>
+                    <select id="f-maquina" class="w-full p-2 border rounded text-sm">
+                        <option value="1">Máquina 01</option>
+                        <option value="2">Máquina 02</option>
+                        <option value="3">Máquina 03</option>
+                        <option value="4">Máquina 04</option>
+                    </select>
                     <input type="text" id="f-op" placeholder="OP" class="w-full p-2 border rounded text-sm">
                     <input type="text" id="f-cliente" placeholder="Cliente" class="w-full p-2 border rounded text-sm">
                     <input type="text" id="f-produto" placeholder="Produto" class="w-full p-2 border rounded text-sm">
@@ -64,18 +69,24 @@
         <button onclick="limparRastreio()" class="mb-4 text-red-500 text-xs font-bold border border-red-200 px-3 py-1 rounded hover:bg-red-50">Limpar Histórico</button>
         <div class="bg-white p-4 rounded shadow overflow-x-auto">
             <table class="w-full text-left text-[11px]">
-                <thead class="bg-slate-100 font-bold"><tr><th class="p-2">Hora</th><th class="p-2">Maq</th><th class="p-2">OP</th><th class="p-2">Prod</th><th class="p-2">Qtd</th></tr></thead>
+                <thead class="bg-slate-100 font-bold">
+                    <tr><th class="p-2">Hora</th><th class="p-2">Maq</th><th class="p-2">OP</th><th class="p-2">Prod</th><th class="p-2">Qtd</th></tr>
+                </thead>
                 <tbody id="tabela-rastreio"></tbody>
             </table>
         </div>
     </main>
 
-    <div class="fixed bottom-4 right-4"><button onclick="salvarManualmente()" id="btn-salvar" class="bg-green-600 text-white p-3 rounded-full shadow-lg text-xs font-bold">💾 Salvar</button></div>
+    <div class="fixed bottom-4 right-4">
+        <button onclick="salvarManualmente()" id="btn-salvar" class="bg-green-600 text-white p-3 rounded-full shadow-lg text-xs font-bold">💾 Salvar</button>
+    </div>
 
     <script>
+        // CONFIGURAÇÃO DO SUPABASE
         const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
 
+        // CRIAÇÃO DO CLIENTE (APENAS UMA VEZ!)
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let maquinas = [];
@@ -95,14 +106,14 @@
                 let { data, error } = await supabase.from('sistema').select('*').eq('id', 1);
                 if (data && data.length > 0) {
                     const conteudo = data[0].conteudo;
-                    maquinas = conteudo.maquinas;
-                    historico = conteudo.historico;
+                    maquinas = conteudo.maquinas || maquinasPadrao;
+                    historico = conteudo.historico || [];
                 } else {
                     maquinas = maquinasPadrao;
                     await supabase.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico } }]);
                 }
             } catch (e) {
-                console.error(e);
+                console.error("Erro ao carregar:", e);
                 maquinas = maquinasPadrao;
             }
             document.getElementById('loading').style.display = 'none';
@@ -113,31 +124,39 @@
             const btn = document.getElementById('btn-salvar');
             btn.innerText = "⏳ ...";
             const { error } = await supabase.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
+            if (error) console.error("Erro ao salvar:", error);
             btn.innerText = "💾 Salvar";
         }
 
         function salvarManualmente() { salvarNoBanco(); }
 
         setInterval(() => {
-            document.getElementById('relogio').innerText = new Date().toLocaleTimeString();
+            const relogio = document.getElementById('relogio');
+            if (relogio) relogio.innerText = new Date().toLocaleTimeString();
+            
             let mudouAlgo = false;
             maquinas.forEach(m => {
                 if (motivosParada.includes(m.status)) {
+                    if (!m.tempos) m.tempos = { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 };
                     m.tempos[m.status]++;
                     mudouAlgo = true;
                 }
             });
-            if(mudouAlgo && new Date().getSeconds() % 10 === 0) salvarNoBanco(); 
+            if(mudouAlgo && new Date().getSeconds() % 30 === 0) salvarNoBanco(); 
         }, 1000);
 
         function trocarAba(nome) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-            document.querySelectorAll('.btn-aba').forEach(b => b.classList.replace('bg-blue-600', 'bg-slate-100'));
-            document.querySelectorAll('.btn-aba').forEach(b => b.classList.replace('text-white', 'text-slate-600'));
+            document.querySelectorAll('.btn-aba').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            
             document.getElementById('aba-' + nome).classList.add('aba-ativa');
             const btn = document.getElementById('btn-' + nome);
-            btn.classList.replace('bg-slate-100', 'bg-blue-600');
-            btn.classList.replace('text-slate-600', 'text-white');
+            btn.classList.remove('bg-slate-100', 'text-slate-600');
+            btn.classList.add('bg-blue-600', 'text-white');
+
             if(nome === 'paradas') renderGrafico();
             if(nome === 'rastreio') renderRastreio();
             if(nome === 'lista') renderLista();
@@ -145,9 +164,10 @@
 
         function atualizarPainel() {
             const grid = document.getElementById('grid-maquinas');
+            if (!grid) return;
             grid.innerHTML = '';
             maquinas.forEach(m => {
-                const item = m.fila[0] || { op: "---", cliente: "LIVRE", produto: "AGUARDANDO" };
+                const item = m.fila && m.fila[0] ? m.fila[0] : { op: "---", cliente: "LIVRE", produto: "AGUARDANDO" };
                 const sBase = m.status.split(' ')[0];
                 grid.innerHTML += `
                     <div class="card-${sBase} rounded-xl shadow p-4 border-b-4 border-black/10">
@@ -179,19 +199,25 @@
 
         function addProd(id) {
             const m = maquinas.find(x => x.id === id);
-            if(m.status === "Produzindo") { m.producao++; atualizarPainel(); salvarNoBanco(); }
+            if(m && m.status === "Produzindo") { 
+                m.producao++; 
+                atualizarPainel(); 
+                salvarNoBanco(); 
+            }
         }
 
         function mudarStatus(id, novoStatus) {
             const m = maquinas.find(x => x.id === id);
-            m.status = novoStatus;
-            atualizarPainel();
-            salvarNoBanco();
+            if (m) {
+                m.status = novoStatus;
+                atualizarPainel();
+                salvarNoBanco();
+            }
         }
 
         function concluirProduto(id) {
             const m = maquinas.find(x => x.id === id);
-            if (m.fila.length > 0) {
+            if (m && m.fila && m.fila.length > 0) {
                 if(confirm("Finalizar OP?")) {
                     const c = m.fila.shift();
                     historico.push({ hora: new Date().toLocaleString(), maquina: m.nome, op: c.op, produto: c.produto, total: m.producao });
@@ -199,46 +225,83 @@
                     atualizarPainel();
                     salvarNoBanco();
                 }
-            } else alert("Sem OP.");
+            } else alert("Sem OP na fila.");
         }
 
         function adicionarAFila() {
             const mId = parseInt(document.getElementById('f-maquina').value);
-            maquinas.find(m => m.id === mId).fila.push({ 
-                op: document.getElementById('f-op').value, 
-                cliente: document.getElementById('f-cliente').value, 
-                produto: document.getElementById('f-produto').value 
-            });
-            renderLista(); 
-            atualizarPainel();
-            salvarNoBanco();
+            const maq = maquinas.find(m => m.id === mId);
+            if (maq) {
+                maq.fila.push({ 
+                    op: document.getElementById('f-op').value, 
+                    cliente: document.getElementById('f-cliente').value, 
+                    produto: document.getElementById('f-produto').value 
+                });
+                renderLista(); 
+                atualizarPainel();
+                salvarNoBanco();
+                alert("Adicionado!");
+            }
         }
 
         function renderLista() {
-            document.getElementById('lista-espera').innerHTML = maquinas.map(m => m.fila.map((f,i) => 
-                `<div class="text-xs p-2 border rounded bg-slate-50 flex justify-between"><b>${m.nome}</b> ${f.produto} <button onclick="rmFila(${m.id},${i})" class="text-red-500 font-bold">X</button></div>`
+            const lista = document.getElementById('lista-espera');
+            if (!lista) return;
+            lista.innerHTML = maquinas.map(m => (m.fila || []).map((f,i) => 
+                `<div class="text-xs p-2 border rounded bg-slate-50 flex justify-between">
+                    <span><b>${m.nome}</b> - OP: ${f.op} (${f.produto})</span>
+                    <button onclick="rmFila(${m.id},${i})" class="text-red-500 font-bold px-2">X</button>
+                </div>`
             ).join('')).join('');
         }
-        function rmFila(mid, idx) { maquinas.find(x=>x.id===mid).fila.splice(idx,1); renderLista(); atualizarPainel(); salvarNoBanco(); }
+
+        function rmFila(mid, idx) { 
+            const m = maquinas.find(x=>x.id===mid);
+            if (m && m.fila) {
+                m.fila.splice(idx,1); 
+                renderLista(); 
+                atualizarPainel(); 
+                salvarNoBanco(); 
+            }
+        }
 
         function renderRastreio() {
-            document.getElementById('tabela-rastreio').innerHTML = historico.map(h => 
-                `<tr class="border-b"><td class="p-2">${h.hora.split(' ')[1]}</td><td class="p-2 font-bold">${h.maquina}</td><td class="p-2">${h.op}</td><td class="p-2 text-blue-600 font-bold">${h.produto}</td><td class="p-2 font-black">${h.total}</td></tr>`
-            ).reverse().join('');
+            const tab = document.getElementById('tabela-rastreio');
+            if (!tab) return;
+            tab.innerHTML = historico.map(h => 
+                `<tr class="border-b">
+                    <td class="p-2">${h.hora.split(',')[1] || h.hora}</td>
+                    <td class="p-2 font-bold">${h.maquina}</td>
+                    <td class="p-2">${h.op}</td>
+                    <td class="p-2 text-blue-600 font-bold">${h.produto}</td>
+                    <td class="p-2 font-black">${h.total}</td>
+                </tr>`
+            ).reverse().slice(0, 50).join('');
         }
-        function limparRastreio() { if(confirm("Apagar histórico?")) { historico=[]; renderRastreio(); salvarNoBanco(); } }
 
-        function formatarTempo(s) { return new Date(s * 1000).toISOString().substr(11, 8); }
-        function renderTabelaTempos() {
-            document.getElementById('tabela-tempos').innerHTML = maquinas.map(m => 
-                `<div class="bg-white p-2 rounded shadow"><b>${m.nome}</b><div class="mt-1">${Object.entries(m.tempos).map(([k,v]) => `<div class="flex justify-between text-[10px]"><span>${k}</span><span>${formatarTempo(v)}</span></div>`).join('')}</div></div>`
-            ).join('');
+        function limparRastreio() { 
+            if(confirm("Apagar todo o histórico?")) { 
+                historico=[]; 
+                renderRastreio(); 
+                salvarNoBanco(); 
+            } 
         }
+
         function renderGrafico() {
-            const ctx = document.getElementById('graficoParadas').getContext('2d');
-            const datasets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => (m.tempos[mot]/3600).toFixed(2)), backgroundColor: ['#ef4444','#f59e0b','#ec4899','#3b82f6','#10b981','#6366f1'][i] }));
+            const canvas = document.getElementById('graficoParadas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const datasets = motivosParada.map((mot, i) => ({ 
+                label: mot, 
+                data: maquinas.map(m => ((m.tempos ? m.tempos[mot] : 0)/3600).toFixed(2)), 
+                backgroundColor: ['#ef4444','#f59e0b','#ec4899','#3b82f6','#10b981','#6366f1'][i] 
+            }));
             if (paradasChart) paradasChart.destroy();
-            paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } });
+            paradasChart = new Chart(ctx, { 
+                type: 'bar', 
+                data: { labels: maquinas.map(m=>m.nome), datasets }, 
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } 
+            });
         }
 
         carregarDados();
