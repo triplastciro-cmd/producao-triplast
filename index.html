@@ -243,6 +243,7 @@
         let saveTimeout = null;
         let filtroGraficoId = 'todas';
         let charts = { oee: null, paradas: null, refugos: null };
+        let relogioInterval = null; // Variável para controlar o relógio único
 
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
@@ -285,8 +286,51 @@
                 renderHistorico();
                 renderCoresConfig();
                 iniciarGraficos();
+                
+                // Reinicia o relógio para garantir que só existe 1 rodando
+                iniciarRelogio();
                 salvarGeral(); 
             }
+        }
+
+        function iniciarRelogio() {
+            if (relogioInterval) clearInterval(relogioInterval); // MATA qualquer relógio anterior
+
+            relogioInterval = setInterval(() => {
+                const agora = getBrasiliaDate();
+                document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+                const diaSemana = agora.getDay();
+                
+                // Se for Domingo (0) ou Sábado (6), não conta tempo de produção? (Depende da sua regra)
+                // Se sua fábrica roda fim de semana, remova a linha abaixo:
+                if (diaSemana === 0 || diaSemana === 6) return; 
+
+                processarTurnoAuto();
+                const t = document.getElementById('filtro-turno').value;
+                
+                // LÓGICA DE CONTAGEM: Incrementa APENAS 1 segundo por máquina
+                maquinas.forEach(m => {
+                    if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao++;
+                    else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa++;
+                    else m.dadosTurno[t].paradas++;
+                });
+
+                // ATUALIZAÇÃO VISUAL (O SEGREDO PARA NÃO PRECISAR DAR F5)
+                
+                // 1. Atualiza os cronômetros nos cards (Aba Painel)
+                updateTimersVisualOnly(); 
+                
+                // 2. Se a aba de GRÁFICOS estiver aberta, atualiza os números grandes na hora
+                if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
+                    atualizarResumoGlobalNumeros(); 
+                }
+
+                // 3. Se a aba de APONTAMENTO estiver aberta, atualiza a tabela na hora
+                if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) {
+                    renderApontamento();
+                }
+
+            }, 1000); // 1000ms = 1 segundo
         }
 
         function trocarAba(id) {
@@ -296,8 +340,8 @@
             document.getElementById('btn-' + id).classList.add('active');
             
             if(id === 'graficos') {
-                atualizarResumoGlobalNumeros(); // Atualiza numeros imediatamente
-                atualizarCharts(); // Atualiza graficos
+                atualizarResumoGlobalNumeros();
+                atualizarCharts();
             }
             if(id === 'apontamento') renderApontamento();
             if(id === 'lista') { renderListaOPs(); renderHistorico(); }
@@ -625,7 +669,6 @@
             atualizarCharts();
         }
 
-        // NOVA FUNÇÃO: Atualiza apenas os números de texto (LEVE E RÁPIDO)
         function atualizarResumoGlobalNumeros() {
             if(!document.getElementById('global-timer-prod')) return;
 
@@ -644,7 +687,6 @@
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
         }
 
-        // Função separada para gráficos (MAIS PESADO)
         function atualizarCharts() {
             if(!charts.oee || !charts.paradas || !charts.refugos) return;
 
@@ -707,37 +749,6 @@
         }
 
         window.addEventListener('beforeunload', () => { salvarGeral(); });
-
-        setInterval(() => {
-            const agora = getBrasiliaDate();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
-            const diaSemana = agora.getDay();
-            if (diaSemana === 0 || diaSemana === 6) return; 
-
-            processarTurnoAuto();
-            const t = document.getElementById('filtro-turno').value;
-            
-            maquinas.forEach(m => {
-                if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao++;
-                else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa++;
-                else m.dadosTurno[t].paradas++;
-            });
-
-            // ATUALIZAÇÃO SINCRONIZADA
-            updateTimersVisualOnly(); // Atualiza Cards
-            
-            // Atualiza os números globais SEMPRE (para não atrasar) se a aba estiver aberta
-            if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
-                atualizarResumoGlobalNumeros(); // Rápido (Texto)
-                // Não chamo atualizarCharts() aqui todo segundo para não pesar o navegador, 
-                // mas os números vão andar.
-            }
-
-            if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) {
-                renderApontamento();
-            }
-
-        }, 1000);
 
         setInterval(() => { salvarGeral(); }, 60000);
         carregarBanco();
