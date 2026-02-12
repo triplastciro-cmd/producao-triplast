@@ -13,8 +13,7 @@
         .card-Produzindo { background-color: #dcfce7; border-left: 10px solid #16a34a; color: #14532d; }
         .card-Parada { background-color: #fee2e2; border-left: 10px solid #dc2626; color: #7f1d1d; }
         .card-Manutenção { background-color: #f3e8ff; border-left: 10px solid #9333ea; color: #581c87; }
-        /* Animação de carregamento */
-        #loading { position: fixed; top:0; left:0; width:100%; height:100%; bg:white; display:flex; justify-content:center; align-items:center; z-index:9999; background: rgba(255,255,255,0.9); }
+        #loading { position: fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:9999; background: rgba(255,255,255,0.9); }
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-900">
@@ -74,12 +73,8 @@
     <div class="fixed bottom-4 right-4"><button onclick="salvarManualmente()" id="btn-salvar" class="bg-green-600 text-white p-3 rounded-full shadow-lg text-xs font-bold">💾 Salvar</button></div>
 
     <script>
-        // ==========================================
-        // CONFIGURAÇÃO DO SUPABASE (COLE AQUI!!!)
-        // ==========================================
-        const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; // <--- Troque isso
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';           // <--- Troque isso
-        // ==========================================
+        const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -88,7 +83,6 @@
         let paradasChart;
         const motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador"];
 
-        // Configuração Inicial (Padrão se o banco estiver vazio)
         const maquinasPadrao = [
             { id: 1, nome: "M1", status: "Produzindo", producao: 0, meta: 1000, fila: [], tempos: { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 } },
             { id: 2, nome: "M2", status: "Produzindo", producao: 0, meta: 1000, fila: [], tempos: { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 } },
@@ -96,54 +90,34 @@
             { id: 4, nome: "M4", status: "Produzindo", producao: 0, meta: 1000, fila: [], tempos: { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 } }
         ];
 
-        // --- FUNÇÕES DE BANCO DE DADOS ---
         async function carregarDados() {
             try {
-                // Tenta pegar a linha com ID 1 da tabela 'sistema'
                 let { data, error } = await supabase.from('sistema').select('*').eq('id', 1);
-                
                 if (data && data.length > 0) {
-                    // Se achou, carrega
                     const conteudo = data[0].conteudo;
                     maquinas = conteudo.maquinas;
                     historico = conteudo.historico;
-                    console.log("Dados carregados do banco!");
                 } else {
-                    // Se não achou (primeira vez), cria a linha 1
                     maquinas = maquinasPadrao;
                     await supabase.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico } }]);
-                    console.log("Banco criado pela primeira vez.");
                 }
             } catch (e) {
-                alert("Erro ao conectar no banco. Verifique as Chaves.");
                 console.error(e);
-                maquinas = maquinasPadrao; // Fallback
+                maquinas = maquinasPadrao;
             }
             document.getElementById('loading').style.display = 'none';
             atualizarPainel();
-            renderLista();
-            renderRastreio();
         }
 
         async function salvarNoBanco() {
             const btn = document.getElementById('btn-salvar');
             btn.innerText = "⏳ ...";
-            
-            // Atualiza a linha 1 com os dados atuais
-            const { error } = await supabase
-                .from('sistema')
-                .update({ conteudo: { maquinas, historico } })
-                .eq('id', 1);
-
-            if (error) console.error("Erro ao salvar:", error);
-            else console.log("Salvo com sucesso!");
-            
+            const { error } = await supabase.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
             btn.innerText = "💾 Salvar";
         }
 
         function salvarManualmente() { salvarNoBanco(); }
 
-        // --- SISTEMA LOGICA ---
         setInterval(() => {
             document.getElementById('relogio').innerText = new Date().toLocaleTimeString();
             let mudouAlgo = false;
@@ -153,22 +127,17 @@
                     mudouAlgo = true;
                 }
             });
-            // Salva a cada 10 segundos automaticamente se estiver na aba paradas, ou manual
             if(mudouAlgo && new Date().getSeconds() % 10 === 0) salvarNoBanco(); 
-            
-            if(document.getElementById('aba-paradas').classList.contains('aba-ativa')) renderTabelaTempos();
         }, 1000);
 
         function trocarAba(nome) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
             document.querySelectorAll('.btn-aba').forEach(b => b.classList.replace('bg-blue-600', 'bg-slate-100'));
             document.querySelectorAll('.btn-aba').forEach(b => b.classList.replace('text-white', 'text-slate-600'));
-            
             document.getElementById('aba-' + nome).classList.add('aba-ativa');
             const btn = document.getElementById('btn-' + nome);
             btn.classList.replace('bg-slate-100', 'bg-blue-600');
             btn.classList.replace('text-slate-600', 'text-white');
-
             if(nome === 'paradas') renderGrafico();
             if(nome === 'rastreio') renderRastreio();
             if(nome === 'lista') renderLista();
@@ -243,10 +212,8 @@
             renderLista(); 
             atualizarPainel();
             salvarNoBanco();
-            alert("Adicionado!");
         }
 
-        // Renderizadores
         function renderLista() {
             document.getElementById('lista-espera').innerHTML = maquinas.map(m => m.fila.map((f,i) => 
                 `<div class="text-xs p-2 border rounded bg-slate-50 flex justify-between"><b>${m.nome}</b> ${f.produto} <button onclick="rmFila(${m.id},${i})" class="text-red-500 font-bold">X</button></div>`
@@ -274,10 +241,7 @@
             paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } });
         }
 
-        // Iniciar
         carregarDados();
     </script>
 </body>
-
 </html>
-
