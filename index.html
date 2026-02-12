@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast</title>
+    <title>Triplast - Monitoramento</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,10 +17,10 @@
 
         .card-producao {
             background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-left: 12px solid #ef4444; transition: 0.3s;
+            border-left: 12px solid #ef4444; transition: 0.3s; position: relative;
         }
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
-        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; } /* Laranja */
+        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
 
         .info-badge {
             background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
@@ -34,7 +34,20 @@
         }
         .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
 
+        .btn-prod {
+            background: #3b82f6; color: white; border-radius: 8px; font-weight: 900;
+            font-size: 0.75rem; padding: 8px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: 0.1s;
+        }
+        .btn-prod:active { transform: scale(0.95); background: #2563eb; }
+
         header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; }
+        
+        /* Modal de Reset */
+        .modal-reset {
+            display: none; position: absolute; top: 50px; right: 10px; background: white;
+            border: 1px solid #ccc; padding: 10px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 50;
+        }
     </style>
 </head>
 <body>
@@ -54,6 +67,7 @@
                     <option value="3">🌙 Noite (23:36 - 05:00)</option>
                 </select>
                 <div id="badge-auto" class="bg-green-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse">AUTO</div>
+                <div id="status-nuvem" class="text-[10px] text-gray-400 font-mono">☁️</div>
             </div>
 
             <div class="text-right">
@@ -63,12 +77,11 @@
         </div>
     </header>
 
-    <nav class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto">
+    <nav class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto justify-center">
         <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
-        <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 PROGRAMAÇÃO / CORES</button>
+        <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 O.P / CORES</button>
         <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
         <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 APONTAMENTO</button>
-        <button onclick="salvarGeral()" class="ml-auto bg-green-600 text-white px-8 py-3 rounded-2xl font-black shadow-xl hover:bg-green-500">💾 SALVAR NUVEM</button>
     </nav>
 
     <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
@@ -114,7 +127,7 @@
             </div>
 
             <div class="bg-white p-6 rounded-3xl shadow-xl">
-                <h4 class="font-bold text-slate-500 text-xs mb-2 uppercase">Tempo Parado (Minutos)</h4>
+                <h4 class="font-bold text-slate-500 text-xs mb-2 uppercase">Tempo Parado (HORAS)</h4>
                 <canvas id="chartParadas"></canvas>
             </div>
             <div class="bg-white p-6 rounded-3xl shadow-xl">
@@ -147,6 +160,7 @@
         let maquinas = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let manualOverride = false;
+        let saveTimeout = null;
         
         let charts = { oee: null, paradas: null, refugos: null, prod: null };
 
@@ -172,7 +186,15 @@
                 coresGlobais = data.conteudo.cores || coresGlobais;
                 
                 maquinas.forEach(m => {
-                    if(!m.dadosTurno) m.dadosTurno = { 1:{boas:0,refugo:0,paradas:0}, 2:{boas:0,refugo:0,paradas:0}, 3:{boas:0,refugo:0,paradas:0} };
+                    if(!m.dadosTurno) m.dadosTurno = { 
+                        1:{boas:0, refugo:0, paradas:0, tempoProducao:0}, 
+                        2:{boas:0, refugo:0, paradas:0, tempoProducao:0}, 
+                        3:{boas:0, refugo:0, paradas:0, tempoProducao:0} 
+                    };
+                    // Garantir que tempoProducao exista para dados antigos
+                    for(let i=1; i<=3; i++) {
+                        if(m.dadosTurno[i].tempoProducao === undefined) m.dadosTurno[i].tempoProducao = 0;
+                    }
                 });
                 
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
@@ -206,6 +228,22 @@
             manualOverride = true;
             document.getElementById('badge-auto').style.display = 'none';
             render();
+            salvarAutomatico();
+        }
+
+        function toggleReset(id) {
+            const el = document.getElementById(`modal-reset-${id}`);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function resetarValor(id, campo) {
+            if(confirm("Tem certeza que deseja zerar este valor?")) {
+                const t = document.getElementById('filtro-turno').value;
+                maquinas.find(x => x.id === id).dadosTurno[t][campo] = 0;
+                document.getElementById(`modal-reset-${id}`).style.display = 'none';
+                render();
+                salvarAutomatico();
+            }
         }
 
         function render() {
@@ -220,24 +258,45 @@
                 const percPerda = (d.refugo * 2).toFixed(0); 
                 
                 let sClass = "";
-                if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
-                else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
+                let tempoShow = "";
+                
+                // Lógica de exibição de tempo no card
+                if (m.status === "04-PRODUÇÃO") {
+                    sClass = "status-produzindo";
+                    tempoShow = `<span class="text-green-600 text-[10px] font-bold block">PRODUZINDO HÁ: ${fmtTempo(d.tempoProducao)}</span>`;
+                } else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
+                    sClass = "status-baixa";
+                    tempoShow = `<span class="text-orange-500 text-[10px] font-bold block">TEMPO PARADO: ${fmtTempo(d.paradas)}</span>`;
+                } else {
+                    tempoShow = `<span class="text-red-600 text-[10px] font-bold block">TEMPO PARADO: ${fmtTempo(d.paradas)}</span>`;
+                }
 
                 return `
-                <div class="card-producao ${sClass} p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="bg-blue-600 text-white px-4 py-1 rounded-lg font-black text-xl shadow-md">${m.nome}</span>
-                        <span class="font-mono font-black text-blue-600 text-xl">${fmtTempo(d.paradas)}</span>
+                <div class="card-producao ${sClass} p-4">
+                    <button onclick="toggleReset(${m.id})" class="absolute top-2 right-2 text-gray-300 hover:text-gray-600 text-xl z-10">⚙️</button>
+                    
+                    <div id="modal-reset-${m.id}" class="modal-reset">
+                        <div class="text-xs font-bold text-slate-500 mb-2">ZERAR CONTADORES</div>
+                        <button onclick="resetarValor(${m.id}, 'boas')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Peças Boas</button>
+                        <button onclick="resetarValor(${m.id}, 'refugo')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Refugos</button>
+                        <button onclick="resetarValor(${m.id}, 'paradas')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Tempo Parado</button>
+                        <button onclick="resetarValor(${m.id}, 'tempoProducao')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Tempo Produção</button>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-2xl border mb-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="font-black text-slate-800">O.P ${op.op}</span>
-                            <select onchange="vincularCor(${m.id}, this.value)" class="text-[10px] font-bold p-1 border rounded bg-white">
+
+                    <div class="flex flex-col mb-2">
+                        <span class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-lg w-fit shadow-md mb-1">${m.nome}</span>
+                        ${tempoShow}
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-2xl border mb-3">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-black text-slate-800 text-sm">O.P ${op.op}</span>
+                            <select onchange="vincularCor(${m.id}, this.value)" class="text-[10px] font-bold p-1 border rounded bg-white w-20">
                                 <option value="">COR</option>
                                 ${coresGlobais.map(c => `<option value="${c}" ${m.corAtual === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
                         </div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-3">${op.produto}</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-2">${op.produto}</div>
                         <div class="grid grid-cols-3 gap-2">
                             <div class="info-badge"><span>BOAS</span><span class="text-green-600 text-lg">${d.boas}</span></div>
                             <div class="info-badge"><span>REFUGO</span><span class="text-red-600 text-lg">${d.refugo}</span></div>
@@ -245,26 +304,33 @@
                         </div>
                     </div>
                     
-                    <div class="mb-4 bg-red-50 p-2 rounded-xl border border-red-100">
+                    <div class="mb-3 bg-red-50 p-2 rounded-xl border border-red-100">
                          <label class="text-[10px] font-bold text-red-400 block mb-1">LANÇAR REFUGO</label>
                          <div class="flex gap-2">
-                            <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1">
+                            <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1 w-full">
                                 ${codigosRefugo.map(r => `<option value="${r}">${r}</option>`).join('')}
                             </select>
                             <button onclick="addRefugo(${m.id})" class="bg-red-500 text-white px-3 rounded font-black text-xs hover:bg-red-600">OK</button>
                          </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-3 mb-4">
-                        <button onclick="addProd(${m.id}, 10)" class="bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all text-xl">+10 PEÇAS</button>
+                    <label class="text-[10px] font-bold text-blue-400 block mb-1">APONTAR PEÇAS</label>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <button onclick="addProd(${m.id}, 10)" class="btn-prod">+10</button>
+                        <button onclick="addProd(${m.id}, 20)" class="btn-prod">+20</button>
+                        <button onclick="addProd(${m.id}, 25)" class="btn-prod">+25</button>
+                        <button onclick="addProd(${m.id}, 50)" class="btn-prod">+50</button>
+                        <button onclick="addProd(${m.id}, 100)" class="btn-prod">+100</button>
+                        <button onclick="addProd(${m.id}, 1000)" class="btn-prod text-yellow-300">+1000</button>
                     </div>
-                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-3 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500">
+
+                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500 mb-2">
                         ${paradasCodigos.map(p => {
                             let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : "text-red-600");
                             return `<option value="${p}" class="${color}" ${m.status === p ? 'selected' : ''}>${p}</option>`
                         }).join('')}
                     </select>
-                    <button onclick="finalizarOP(${m.id})" class="w-full mt-4 text-[10px] font-black text-slate-400 uppercase">Finalizar Ordem</button>
+                    <button onclick="finalizarOP(${m.id})" class="w-full text-[10px] font-black text-slate-400 uppercase">Finalizar Ordem</button>
                 </div>`;
             }).join('');
             calcEficienciaGlobal();
@@ -273,29 +339,33 @@
         function fmtTempo(s) { 
             const h = Math.floor(s / 3600); 
             const m = Math.floor((s % 3600) / 60); 
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; 
+            const seg = s % 60;
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
         }
 
         function addProd(id, v) { 
             const t = document.getElementById('filtro-turno').value;
             maquinas.find(x => x.id === id).dadosTurno[t].boas += v;
             render();
+            salvarAutomatico();
         }
 
         function addRefugo(id) { 
             const t = document.getElementById('filtro-turno').value;
-            const motivo = document.getElementById(`sel-refugo-${id}`).value;
             maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1;
             render();
+            salvarAutomatico();
         }
 
         function atualizarStatus(id, st) { 
             maquinas.find(x => x.id === id).status = st; 
             render(); 
+            salvarAutomatico();
         }
 
         function vincularCor(id, cor) { 
             maquinas.find(x => x.id === id).corAtual = cor; 
+            salvarAutomatico();
         }
 
         function calcEficienciaGlobal() {
@@ -332,7 +402,8 @@
             });
 
             const labels = maquinas.map(m => m.nome);
-            const dataParadas = maquinas.map(m => Math.round(m.dadosTurno[t].paradas / 60)); 
+            // CONVERTIDO PARA HORAS (dividido por 3600 e fixado 1 casa decimal)
+            const dataParadas = maquinas.map(m => (m.dadosTurno[t].paradas / 3600).toFixed(2)); 
             const dataRefugos = maquinas.map(m => m.dadosTurno[t].refugo);
             const dataProd = maquinas.map(m => m.dadosTurno[t].boas);
 
@@ -364,7 +435,7 @@
 
             charts.paradas = new Chart(document.getElementById('chartParadas'), {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Minutos', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
+                data: { labels: labels, datasets: [{ label: 'Horas', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
                 options: barOptions
             });
 
@@ -389,12 +460,13 @@
             }
             renderCoresConfig();
             render();
+            salvarAutomatico();
         }
 
         function renderCoresConfig() {
             document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
                 <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">
-                    ${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig();" class="text-red-500">×</button>
+                    ${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig(); salvarAutomatico();" class="text-red-500">×</button>
                 </div>
             `).join('');
         }
@@ -408,24 +480,64 @@
                 produto: document.getElementById('f-produto').value,
                 qtd: parseInt(document.getElementById('f-qtd').value) || 0
             });
-            alert("O.P Agendada!"); render();
+            alert("O.P Agendada!"); render(); salvarAutomatico();
         }
 
         function finalizarOP(id) {
-            if(confirm("Finalizar O.P?")) { maquinas.find(x=>x.id===id).fila.shift(); render(); }
+            if(confirm("Finalizar O.P?")) { maquinas.find(x=>x.id===id).fila.shift(); render(); salvarAutomatico(); }
+        }
+
+        async function salvarAutomatico() {
+            document.getElementById('status-nuvem').innerText = "⏳";
+            if(saveTimeout) clearTimeout(saveTimeout);
+            
+            // Debounce: espera 1 segundo sem atividade antes de enviar para não travar
+            saveTimeout = setTimeout(async () => {
+                await salvarGeral();
+                document.getElementById('status-nuvem').innerText = "☁️";
+            }, 1000);
         }
 
         async function salvarGeral() {
             const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais } }).eq('id', 1);
-            if(!error) alert("SALVO COM SUCESSO!");
+            if(error) console.error("Erro ao salvar:", error);
         }
 
+        // Timer de 1 segundo (Heartbeat)
         setInterval(() => {
-            document.getElementById('relogio').innerText = new Date().toLocaleTimeString();
+            const agora = new Date();
+            document.getElementById('relogio').innerText = agora.toLocaleTimeString();
+            
+            // Verifica se é fim de semana (0=Domingo, 6=Sábado)
+            const diaSemana = agora.getDay();
+            if (diaSemana === 0 || diaSemana === 6) {
+                // Fim de semana: Não conta tempo
+                return;
+            }
+
             processarTurnoAuto();
             const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => { if(m.status !== "04-PRODUÇÃO" && m.status !== "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].paradas++; });
+            
+            maquinas.forEach(m => {
+                // Se estiver produzindo: Conta tempo de produção
+                if(m.status === "04-PRODUÇÃO") {
+                    if(m.dadosTurno[t].tempoProducao === undefined) m.dadosTurno[t].tempoProducao = 0;
+                    m.dadosTurno[t].tempoProducao++;
+                }
+                // Se NÃO estiver produzindo E NÃO estiver em Baixa Eficiência: Conta Parada
+                else if(m.status !== "21-BAIXA EFICIÊNCIA") {
+                    m.dadosTurno[t].paradas++;
+                }
+            });
+            
+            // Atualiza visual a cada segundo para ver o relogio correr
+            // Nota: Se ficar muito pesado, podemos atualizar só o DOM do relógio
+            render(); 
+
         }, 1000);
+
+        // Salvar Backup a cada 1 minuto garantido
+        setInterval(() => { salvarGeral(); }, 60000);
 
         carregarBanco();
     </script>
