@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Monitoramento</title>
+    <title>Triplast - Monitoramento 24h</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -159,7 +159,7 @@
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
                 <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
-                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL</h3>
+                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
                     <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
                         <option value="todas">🏭 Todas as Máquinas</option>
                     </select>
@@ -244,6 +244,7 @@
         let filtroGraficoId = 'todas';
         let charts = { oee: null, paradas: null, refugos: null };
         let relogioInterval = null; 
+        let lastUpdateTimestamp = 0; // Armazena a hora do último salvamento
 
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
@@ -265,6 +266,8 @@
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
                 historico = data.conteudo.historico || []; 
+                // Recupera quando foi o último "tique" do relógio salvo
+                const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
@@ -281,20 +284,39 @@
                 
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
                 processarTurnoAuto();
+                
+                // LÓGICA MÁGICA: COMPENSAR TEMPO OFFLINE
+                // Calcula quantos segundos passaram desde que o banco foi salvo
+                const now = Date.now();
+                const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
+                
+                if (secondsPassed > 0) {
+                    console.log(`Sistema ficou offline por ${secondsPassed} segundos. Compensando contadores...`);
+                    compensarTempoOffline(secondsPassed);
+                }
+
                 render(); 
                 renderListaOPs();
                 renderHistorico();
                 renderCoresConfig();
                 iniciarGraficos();
                 
-                // INICIA O LOOP DE TEMPO AQUI (E SOMENTE AQUI)
                 iniciarRelogio();
                 salvarGeral(); 
             }
         }
 
+        function compensarTempoOffline(segundos) {
+            const t = document.getElementById('filtro-turno').value;
+            // Adiciona o tempo que ficou "desligado" ao status que a máquina estava
+            maquinas.forEach(m => {
+                if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao += segundos;
+                else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa += segundos;
+                else m.dadosTurno[t].paradas += segundos;
+            });
+        }
+
         function iniciarRelogio() {
-            // LIMPA qualquer relógio que já esteja rodando para evitar contagem dupla
             if (relogioInterval) clearInterval(relogioInterval);
 
             relogioInterval = setInterval(() => {
@@ -302,32 +324,25 @@
                 document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
                 const diaSemana = agora.getDay();
                 
-                // Se for Domingo (0) ou Sábado (6), não conta
                 if (diaSemana === 0 || diaSemana === 6) return; 
 
                 processarTurnoAuto();
                 const t = document.getElementById('filtro-turno').value;
                 
-                // CONTAGEM DE TEMPO (1 SEGUNDO POR VEZ)
                 maquinas.forEach(m => {
                     if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao++;
                     else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa++;
                     else m.dadosTurno[t].paradas++;
                 });
 
-                // ATUALIZAÇÃO VISUAL AUTOMÁTICA
-                updateTimersVisualOnly(); // Atualiza Cards
-                
-                if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
-                    atualizarResumoGlobalNumeros(); // Atualiza números grandes do gráfico
-                }
-
-                if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) {
-                    renderApontamento(); // Atualiza tabela de resumo
-                }
+                updateTimersVisualOnly(); 
+                if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) atualizarResumoGlobalNumeros();
+                if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
 
             }, 1000);
         }
+
+        // --- MANTEVE AS OUTRAS FUNÇÕES IGUAIS ---
 
         function trocarAba(id) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
@@ -562,7 +577,6 @@
             });
             alert("O.P Agendada!"); 
             
-            // LIMPEZA COMPLETA DOS CAMPOS
             document.getElementById('f-op').value = '';
             document.getElementById('f-cliente').value = '';
             document.getElementById('f-operador').value = '';
@@ -681,7 +695,7 @@
                 totalParado += m.dadosTurno[t].paradas;
             });
 
-            // Se for "TODAS", mostra a MÉDIA para não parecer acelerado
+            // Se for "TODAS", mostra a MÉDIA
             let divisor = 1;
             if(filtroGraficoId === 'todas' && countMaquinas > 0) divisor = countMaquinas;
 
@@ -747,7 +761,16 @@
         }
 
         async function salvarGeral() {
-            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico } }).eq('id', 1);
+            // Salva também o timestamp (hora exata) de agora
+            const timestamp = Date.now();
+            const { error } = await sb.from('sistema').update({ 
+                conteudo: { 
+                    maquinas, 
+                    cores: coresGlobais, 
+                    historico: historico,
+                    lastUpdateTimestamp: timestamp 
+                } 
+            }).eq('id', 1);
             if(error) console.error("Erro ao salvar:", error);
         }
 
