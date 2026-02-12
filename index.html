@@ -20,17 +20,17 @@
 
     <div id="loading"><div class="text-xl font-bold text-blue-600">Carregando Banco de Dados...</div></div>
 
+    <header class="p-4 bg-white border-b flex justify-between items-center">
+        <h1 class="text-2xl font-black text-blue-700 italic">TRIPLAST <span class="text-xs text-green-500 not-italic border border-green-200 bg-green-50 px-2 rounded">ONLINE</span></h1>
+        <div id="relogio" class="font-mono font-bold text-slate-500 text-sm">00:00:00</div>
+    </header>
+
     <nav class="bg-white p-3 shadow-sm flex gap-2 sticky top-0 z-50 border-b overflow-x-auto">
         <button onclick="trocarAba('painel')" id="btn-painel" class="btn-aba px-5 py-1.5 rounded-full bg-blue-600 text-white text-xs font-bold">Painel</button>
         <button onclick="trocarAba('lista')" id="btn-lista" class="btn-aba px-5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">Lista / Agendar</button>
         <button onclick="trocarAba('paradas')" id="btn-paradas" class="btn-aba px-5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">Relatório Paradas</button>
         <button onclick="trocarAba('rastreio')" id="btn-rastreio" class="btn-aba px-5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">Rastreio</button>
     </nav>
-
-    <header class="p-4 bg-white border-b flex justify-between items-center">
-        <h1 class="text-2xl font-black text-blue-700 italic">TRIPLAST <span class="text-xs text-green-500 not-italic border border-green-200 bg-green-50 px-2 rounded">ONLINE</span></h1>
-        <div id="relogio" class="font-mono font-bold text-slate-500 text-sm">00:00:00</div>
-    </header>
 
     <main id="aba-painel" class="aba-conteudo aba-ativa p-4">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="grid-maquinas"></div>
@@ -82,11 +82,11 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SUPABASE
-        const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
+        // CONFIGURAÇÕES DO BANCO
+        const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
 
-        // CRIAÇÃO DO CLIENTE (APENAS UMA VEZ!)
+        // Inicialização única do Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let maquinas = [];
@@ -113,19 +113,21 @@
                     await supabase.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico } }]);
                 }
             } catch (e) {
-                console.error("Erro ao carregar:", e);
+                console.error("Erro ao carregar banco:", e);
                 maquinas = maquinasPadrao;
             }
             document.getElementById('loading').style.display = 'none';
             atualizarPainel();
+            renderLista();
+            renderRastreio();
         }
 
         async function salvarNoBanco() {
             const btn = document.getElementById('btn-salvar');
-            btn.innerText = "⏳ ...";
+            if(btn) btn.innerText = "⏳ ...";
             const { error } = await supabase.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
             if (error) console.error("Erro ao salvar:", error);
-            btn.innerText = "💾 Salvar";
+            if(btn) btn.innerText = "💾 Salvar";
         }
 
         function salvarManualmente() { salvarNoBanco(); }
@@ -152,10 +154,13 @@
                 b.classList.add('bg-slate-100', 'text-slate-600');
             });
             
-            document.getElementById('aba-' + nome).classList.add('aba-ativa');
-            const btn = document.getElementById('btn-' + nome);
-            btn.classList.remove('bg-slate-100', 'text-slate-600');
-            btn.classList.add('bg-blue-600', 'text-white');
+            const abaAlvo = document.getElementById('aba-' + nome);
+            const btnAlvo = document.getElementById('btn-' + nome);
+            if(abaAlvo) abaAlvo.classList.add('aba-ativa');
+            if(btnAlvo) {
+                btnAlvo.classList.remove('bg-slate-100', 'text-slate-600');
+                btnAlvo.classList.add('bg-blue-600', 'text-white');
+            }
 
             if(nome === 'paradas') renderGrafico();
             if(nome === 'rastreio') renderRastreio();
