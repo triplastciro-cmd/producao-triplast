@@ -97,7 +97,12 @@
 
         <div id="aba-paradas" class="aba-conteudo">
             <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl">
-                <h2 class="text-2xl font-black mb-8 italic">ANÁLISE DE TEMPO DE PARADA (HORAS)</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <h2 class="text-2xl font-black italic">ANÁLISE DE TEMPO DE PARADA (HORAS)</h2>
+                    <button onclick="zerarGraficoManual()" class="bg-red-500/10 text-red-500 px-6 py-3 rounded-xl font-black text-xs hover:bg-red-500 hover:text-white transition-all uppercase border border-red-500/20">
+                        🗑️ Resetar Gráfico (Mês)
+                    </button>
+                </div>
                 <div class="h-[500px]">
                     <canvas id="graficoParadas"></canvas>
                 </div>
@@ -110,11 +115,11 @@
         const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
         
-        // Criando a conexão com nome ÚNICO para evitar conflito
         const supabaseConn = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let maquinas = [];
         let historico = [];
+        let mesControle = ""; // Variável para controlar o mês atual
         let paradasChart = null;
         const motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador"];
 
@@ -133,9 +138,21 @@
                     const c = data[0].conteudo;
                     maquinas = c.maquinas || maquinasPadrao;
                     historico = c.historico || [];
+                    mesControle = c.mesControle || ""; // Recupera o mês salvo
+                    
+                    // LÓGICA DE VIRADA DE MÊS AUTOMÁTICA
+                    const mesAtual = new Date().getMonth() + "/" + new Date().getFullYear();
+                    if (mesControle !== mesAtual) {
+                        console.log("Virada de mês detectada! Resetando tempos...");
+                        maquinas.forEach(m => m.tempos = {});
+                        mesControle = mesAtual;
+                        salvarNoBanco(); // Salva o novo mês e os tempos zerados
+                    }
+
                 } else {
                     maquinas = maquinasPadrao;
-                    await supabaseConn.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico } }]);
+                    mesControle = new Date().getMonth() + "/" + new Date().getFullYear();
+                    await supabaseConn.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico, mesControle } }]);
                 }
             } catch (e) { 
                 console.error("Erro ao carregar:", e);
@@ -150,7 +167,8 @@
             const btn = document.getElementById('btn-salvar');
             try {
                 if(btn) btn.innerText = "⏳ SINCRONIZANDO...";
-                const { error } = await supabaseConn.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
+                // Salvamos também o 'mesControle' para saber quando zerar
+                const { error } = await supabaseConn.from('sistema').update({ conteudo: { maquinas, historico, mesControle } }).eq('id', 1);
                 if (error) throw error;
             } catch (e) {
                 console.error("Erro ao salvar:", e);
@@ -278,9 +296,7 @@
             const maq = maquinas.find(m => m.id === mId);
             maq.fila.push({ op, cliente: cli, produto: prod, funcionario: func });
             
-            // Limpa campos
             ['f-op', 'f-cliente', 'f-produto', 'f-funcionario'].forEach(id => document.getElementById(id).value = '');
-            
             renderLista(); atualizarPainel(); salvarNoBanco();
         }
 
@@ -318,6 +334,16 @@
 
         function limparRastreio() { if(confirm("Apagar histórico permanentemente?")) { historico=[]; renderRastreio(); salvarNoBanco(); } }
 
+        // NOVA FUNÇÃO: ZERAR GRÁFICO MANUALMENTE
+        function zerarGraficoManual() {
+            if(confirm("Tem certeza? Isso zerará os tempos acumulados no gráfico (o reset mensal automático faz isso também).")) {
+                maquinas.forEach(m => m.tempos = {});
+                renderGrafico();
+                salvarNoBanco();
+                alert("Gráfico zerado com sucesso!");
+            }
+        }
+
         function renderGrafico() {
             const ctx = document.getElementById('graficoParadas').getContext('2d');
             const dsets = motivosParada.map((mot, i) => ({ 
@@ -334,7 +360,6 @@
             });
         }
 
-        // Relógio e Contador de Tempo
         setInterval(() => {
             document.getElementById('relogio').innerText = new Date().toLocaleString('pt-BR');
             let mudou = false;
@@ -345,7 +370,6 @@
                     mudou = true;
                 }
             });
-            // Auto-salvamento a cada minuto se houver máquina parada
             if(mudou && new Date().getSeconds() === 0) salvarNoBanco();
         }, 1000);
 
