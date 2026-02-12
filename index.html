@@ -62,7 +62,7 @@
     </main>
 
     <main id="aba-paradas" class="aba-conteudo p-8">
-        <h2 class="font-black text-white mb-6 text-2xl uppercase border-b-4 border-orange-600 pb-2 inline-block">📊 Ranking por Turno Ativo</h2>
+        <h2 class="font-black text-white mb-6 text-2xl uppercase border-b-4 border-orange-600 pb-2 inline-block">📊 Desempenho Detalhado por Turno</h2>
         <div id="cards-turnos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"></div>
         <div class="bg-stone-900 p-8 rounded-2xl shadow-xl border border-stone-800">
             <h2 class="font-black text-orange-500 mb-6 text-xl uppercase border-l-4 border-orange-600 pl-3">Analítico de Paradas (Horas)</h2>
@@ -177,9 +177,13 @@
                         <div class="flex justify-between items-start font-black text-2xl uppercase"><h2>${m.nome}</h2><span class="text-[9px] bg-black/40 px-2 py-1 rounded-lg border border-white/10">${m.status}</span></div>
                         <div class="bg-black/20 rounded-2xl p-4 text-[11px] font-bold border border-white/5"><p class="opacity-60 uppercase">OP: ${item.op}</p><p class="font-black text-white">${item.produto}</p></div>
                         <div class="bg-[#0c0a09] rounded-3xl py-6 border-2 border-orange-500 text-center">
-                            <div class="text-[10px] font-black text-stone-500 uppercase">Produção Total</div>
+                            <div class="text-[10px] font-black text-stone- stone-500 uppercase">Produção Total</div>
                             <div class="text-6xl font-mono font-black text-white my-2">${m.producao}</div>
-                            <div class="flex items-center justify-center gap-2"><span class="text-[10px] text-orange-500">META:</span><input type="number" value="${m.meta}" onchange="altMeta(${m.id}, this.value)" class="w-16 bg-transparent text-center font-bold text-white border-b border-stone-800"></div>
+                            <div class="flex flex-col items-center justify-center gap-1 mt-2">
+                                <span class="text-[10px] text-orange-500 font-black">META:</span>
+                                <input type="number" value="${m.meta}" onchange="altMeta(${m.id}, this.value)" 
+                                class="w-full max-w-[150px] bg-stone-900 text-center font-black text-white border-2 border-orange-900 rounded-lg p-1 outline-none focus:border-orange-500 transition-all">
+                            </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             <button onclick="addProd(${m.id}, 1)" class="btn-incremento p-3 rounded-xl font-black">+1</button>
@@ -204,7 +208,13 @@
             }).join('');
         }
 
-        // LÓGICA DE TURNOS ATIVOS (SÓ CONTA NO SELECIONADO)
+        // FORMATADOR DE HORA PARA OS TURNOS
+        function fmtHora(seg) {
+            const h = Math.floor(seg / 3600);
+            const m = Math.floor((seg % 3600) / 60);
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}h`;
+        }
+
         function addProd(id, qtd) {
             const m = maquinas.find(x => x.id === id);
             const t = document.getElementById('sel-turno').value;
@@ -260,14 +270,25 @@
                 ];
                 ranking.sort((a, b) => b.p - a.p || a.t - b.t);
                 return `
-                <div class="bg-stone-900 border border-stone-800 p-4 rounded-xl">
-                    <h3 class="bg-black text-orange-500 p-2 text-center rounded mb-4 font-black">${m.nome}</h3>
-                    <div class="space-y-2">
-                        ${ranking.map(tk => `<div class="bg-stone-950 p-3 rounded flex justify-between items-center border border-white/5">
-                            <span class="text-xs font-black">T${tk.t}</span>
-                            <span class="text-orange-500 font-bold">${tk.p} Peças</span>
-                            <span class="text-[10px] text-stone-500">${Math.floor(tk.h/60)}m Parado</span>
-                        </div>`).join('')}
+                <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl shadow-xl">
+                    <h3 class="bg-black text-orange-500 p-3 text-center rounded-2xl mb-4 font-black border border-orange-900/30 uppercase tracking-tighter">${m.nome}</h3>
+                    <div class="space-y-3">
+                        ${ranking.map(tk => {
+                            const total_ref = tk.p + tk.r;
+                            const perc = total_ref > 0 ? ((tk.r / total_ref) * 100).toFixed(1) : "0.0";
+                            return `
+                            <div class="bg-stone-950 p-4 rounded-2xl border border-white/5 shadow-inner">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-black text-stone-500 uppercase">Turno ${tk.t}</span>
+                                    ${ranking[0] === tk && tk.p > 0 ? '<span class="text-[9px] bg-orange-600 text-white px-2 py-0.5 rounded-full font-black animate-pulse">LÍDER</span>' : ''}
+                                </div>
+                                <div class="grid grid-cols-1 gap-1">
+                                    <div class="flex justify-between"><span class="text-[11px] font-bold text-stone-400">Peças Boas:</span> <span class="text-sm font-black text-white">${tk.p}</span></div>
+                                    <div class="flex justify-between"><span class="text-[11px] font-bold text-stone-400">Refugo:</span> <span class="text-sm font-black text-red-500">${tk.r} (${perc}%)</span></div>
+                                    <div class="flex justify-between border-t border-white/5 mt-1 pt-1"><span class="text-[11px] font-bold text-stone-400">Horas Paradas:</span> <span class="text-sm font-black text-orange-500">${fmtHora(tk.h)}</span></div>
+                                </div>
+                            </div>`;
+                        }).join('')}
                     </div>
                 </div>`;
             }).join('');
