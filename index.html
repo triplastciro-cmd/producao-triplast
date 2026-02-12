@@ -58,6 +58,8 @@
                     <input type="text" id="f-op" placeholder="Número da OP (Ex: 2024-001)" class="w-full p-3 border-2 rounded-xl font-bold outline-none focus:border-blue-500">
                     <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 border-2 rounded-xl font-bold outline-none focus:border-blue-500">
                     <input type="text" id="f-produto" placeholder="Nome do Produto / Molde" class="w-full p-3 border-2 rounded-xl font-bold outline-none focus:border-blue-500">
+                    <input type="text" id="f-funcionario" placeholder="Nome do Funcionário (Realizador)" class="w-full p-3 border-2 rounded-xl font-bold outline-none focus:border-blue-500 bg-yellow-50">
+                    
                     <button onclick="adicionarAFila()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl font-black uppercase shadow-lg transition-all active:scale-95">Inserir na Fila de Espera</button>
                 </div>
             </div>
@@ -84,7 +86,13 @@
         <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border">
             <table class="w-full text-left text-sm">
                 <thead class="bg-slate-800 text-white font-bold uppercase tracking-wider text-[10px]">
-                    <tr><th class="p-5">Encerramento</th><th class="p-5">Maq</th><th class="p-5">Ordem (OP)</th><th class="p-5">Produto/Molde</th><th class="p-5 text-center">Qtd Final</th></tr>
+                    <tr>
+                        <th class="p-5">Encerramento</th>
+                        <th class="p-5">Maq</th>
+                        <th class="p-5">Funcionário</th> <th class="p-5">Ordem (OP)</th>
+                        <th class="p-5">Produto/Molde</th>
+                        <th class="p-5 text-center">Qtd Final</th>
+                    </tr>
                 </thead>
                 <tbody id="tabela-rastreio" class="divide-y divide-slate-100"></tbody>
             </table>
@@ -98,11 +106,9 @@
     </div>
 
     <script>
-        // CONFIGURAÇÕES DO BANCO (FIXADO PARA NÃO DAR ERRO DE DUPLICIDADE)
         var SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
         var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
         
-        // Inicialização única
         if (typeof supabase === 'undefined') {
             var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
@@ -130,16 +136,26 @@
                     maquinas = maquinasPadrao;
                     await supabase.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico } }]);
                 }
-            } catch (e) { maquinas = maquinasPadrao; }
-            document.getElementById('loading').style.display = 'none';
-            atualizarPainel();
+            } catch (e) { 
+                console.error("Erro ao carregar:", e);
+                maquinas = maquinasPadrao; 
+            } finally {
+                // ISSO GARANTE QUE O LOADING SUMA MESMO COM ERRO
+                document.getElementById('loading').style.display = 'none';
+                atualizarPainel();
+            }
         }
 
         async function salvarNoBanco() {
             const b = document.getElementById('btn-salvar');
-            if(b) b.innerText = "⏳ SINCRONIZANDO...";
-            await supabase.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
-            if(b) b.innerHTML = "<span class='text-2xl'>💾</span> SALVAR DADOS NO CLOUD";
+            try {
+                if(b) b.innerText = "⏳ SINCRONIZANDO...";
+                await supabase.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
+            } catch (e) {
+                alert("Erro ao salvar! Verifique a conexão.");
+            } finally {
+                if(b) b.innerHTML = "<span class='text-2xl'>💾</span> SALVAR DADOS NO CLOUD";
+            }
         }
 
         function salvarManualmente() { salvarNoBanco(); }
@@ -165,7 +181,7 @@
             const grid = document.getElementById('grid-maquinas');
             if (!grid) return;
             grid.innerHTML = maquinas.map(m => {
-                const item = m.fila && m.fila[0] ? m.fila[0] : { op: "SEM ORDEM", cliente: "---", produto: "AGUARDANDO" };
+                const item = m.fila && m.fila[0] ? m.fila[0] : { op: "SEM ORDEM", cliente: "---", produto: "AGUARDANDO", funcionario: "---" };
                 const sClasse = m.status === "Produzindo" ? "Produzindo" : (m.status === "Manutenção" ? "Manutenção" : "Parada");
                 return `
                     <div class="card-${sClasse} rounded-3xl shadow-xl p-6 flex flex-col gap-4 border-b-8 border-black/10">
@@ -178,6 +194,7 @@
                             <div class="opacity-50 text-[9px] mb-1">PRODUZINDO AGORA:</div>
                             <p class="truncate text-slate-900 uppercase">OP: ${item.op}</p>
                             <p class="truncate text-blue-800">${item.produto}</p>
+                            <p class="mt-1 text-green-700 font-black">👤 ${item.funcionario || 'NÃO INFORMADO'}</p>
                         </div>
 
                         <div class="bg-white/90 rounded-3xl py-6 shadow-inner text-center border-2 border-white">
@@ -243,6 +260,7 @@
                     historico.push({ 
                         hora: new Date().toLocaleString('pt-BR'), 
                         maquina: m.nome, 
+                        funcionario: c.funcionario || '---',
                         op: c.op, 
                         produto: c.produto, 
                         total: m.producao 
@@ -260,15 +278,16 @@
             const op = document.getElementById('f-op').value;
             const cli = document.getElementById('f-cliente').value;
             const prod = document.getElementById('f-produto').value;
+            const func = document.getElementById('f-funcionario').value;
             
-            if(!op || !prod) return alert("Por favor, preencha o número da OP e o Produto.");
+            if(!op || !prod || !func) return alert("Preencha OP, Produto e o Funcionário!");
             
-            maq.fila.push({ op, cliente: cli, produto: prod });
+            maq.fila.push({ op, cliente: cli, produto: prod, funcionario: func });
             
-            // Limpa campos
             document.getElementById('f-op').value = '';
             document.getElementById('f-cliente').value = '';
             document.getElementById('f-produto').value = '';
+            document.getElementById('f-funcionario').value = '';
             
             renderLista(); atualizarPainel(); salvarNoBanco();
         }
@@ -283,6 +302,7 @@
                         <span class="ml-3 font-black text-slate-700">OP: ${f.op}</span>
                         <span class="mx-2 text-slate-300">|</span>
                         <span class="font-bold text-slate-500">${f.produto} (${f.cliente})</span>
+                        <p class="text-[10px] font-black text-blue-600 mt-1 uppercase">Responsável: ${f.funcionario}</p>
                     </div>
                     <button onclick="rmFila(${m.id},${i})" class="text-red-500 font-black hover:bg-red-100 px-4 py-2 rounded-xl transition-all">REMOVER</button>
                 </div>`
@@ -301,6 +321,7 @@
                 `<tr class="hover:bg-blue-50 transition-colors">
                     <td class="p-5 font-mono text-slate-400 text-xs">${h.hora}</td>
                     <td class="p-5 font-black text-slate-700">${h.maquina}</td>
+                    <td class="p-5 font-bold text-blue-600 uppercase text-xs">${h.funcionario || '---'}</td>
                     <td class="p-5 font-bold">${h.op}</td>
                     <td class="p-5 font-black text-blue-800 uppercase">${h.produto}</td>
                     <td class="p-5 text-center font-black text-xl text-slate-800">${h.total}</td>
@@ -331,7 +352,6 @@
             });
         }
 
-        // LOOP DE TEMPO REAL
         setInterval(() => {
             const rel = document.getElementById('relogio');
             if(rel) rel.innerText = new Date().toLocaleTimeString('pt-BR');
@@ -344,7 +364,6 @@
                     mudou = true;
                 }
             });
-            // Salvamento automático a cada 60 segundos se estiver parado
             if(mudou && new Date().getSeconds() === 0) salvarNoBanco();
         }, 1000);
 
