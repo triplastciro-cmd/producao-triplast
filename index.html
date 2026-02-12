@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Sistema Integrado v4.3</title>
+    <title>Triplast - Sistema Integrado v4.5</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,18 +11,15 @@
         .aba-conteudo { display: none; }
         .aba-ativa { display: block; }
         
-        /* STATUS COM CORES SUAVES E TRANSPARENTES */
-        .card-Produzindo { background-color: rgba(6, 78, 59, 0.4); border-left: 8px solid #22c55e; color: #ecfdf5; }
-        .card-Parada { background-color: rgba(127, 29, 29, 0.4); border-left: 8px solid #ef4444; color: #fef2f2; }
-        .card-Baixa-Eficiência { background-color: rgba(113, 63, 18, 0.4); border-left: 8px solid #eab308; color: #fefce8; }
-        .card-Troca-de-Molde { background-color: rgba(131, 24, 67, 0.4); border-left: 8px solid #ec4899; color: #fdf2f8; }
-        .card-Troca-de-Cor { background-color: rgba(76, 29, 149, 0.4); border-left: 8px solid #8b5cf6; color: #f5f3ff; }
-        .card-Troca-de-Postiços { background-color: rgba(22, 78, 99, 0.4); border-left: 8px solid #06b6d4; color: #ecfeff; }
-        .card-Falta-de-Operador { background-color: rgba(124, 45, 18, 0.4); border-left: 8px solid #f97316; color: #fff7ed; }
-        .card-Manutenção { background-color: rgba(39, 39, 42, 0.4); border-left: 8px solid #a1a1aa; color: #f4f4f5; }
+        /* CORES SUAVES E TRANSPARENTES SOLICITADAS */
+        .card-producao { background-color: rgba(6, 78, 59, 0.45); border-left: 10px solid #22c55e; color: #ecfdf5; }
+        .card-parada-geral { background-color: rgba(127, 29, 29, 0.45); border-left: 10px solid #ef4444; color: #fef2f2; }
+        .card-alerta { background-color: rgba(113, 63, 18, 0.45); border-left: 10px solid #eab308; color: #fefce8; }
+        .card-manutencao { background-color: rgba(39, 39, 42, 0.5); border-left: 10px solid #a1a1aa; color: #f4f4f5; }
+        .card-especial { background-color: rgba(76, 29, 149, 0.45); border-left: 10px solid #8b5cf6; color: #f5f3ff; }
 
         #loading { position: fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:9999; background: #0c0a09; color: #f97316; }
-        .btn-incremento { transition: all 0.1s; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(68, 64, 60, 0.5); color: white; }
+        .btn-incremento { transition: all 0.1s; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(68, 64, 60, 0.6); color: white; }
         .btn-incremento:active { transform: scale(0.9); background-color: #f97316; }
 
         ::-webkit-scrollbar { width: 8px; }
@@ -36,7 +33,7 @@
 
     <header class="p-4 bg-black border-b border-orange-600 flex flex-col md:flex-row justify-between items-center shadow-2xl gap-4">
         <div>
-            <h1 class="text-3xl font-black text-white italic tracking-tighter">TRI<span class="text-orange-500">PLAST</span> <span class="text-[10px] text-orange-600 not-italic border border-orange-900 bg-stone-900 px-2 py-1 rounded-md ml-2 uppercase">v4.3</span></h1>
+            <h1 class="text-3xl font-black text-white italic tracking-tighter">TRI<span class="text-orange-500">PLAST</span> <span class="text-[10px] text-orange-600 not-italic border border-orange-900 bg-stone-900 px-2 py-1 rounded-md ml-2 uppercase">v4.5</span></h1>
             <p class="text-[10px] text-stone-500 font-bold uppercase tracking-widest mt-1">Gestão de Produção Industrial</p>
         </div>
         <div class="flex items-center gap-3 bg-stone-900 p-2 rounded-xl border border-stone-800 shadow-sm">
@@ -123,31 +120,32 @@
 
         let maquinas = [];
         let historico = [];
-        let listaCores = ["Preto", "Branco", "Azul", "Vermelho", "Natural"]; // Cores iniciais
+        let listaCores = ["Natural", "Preto", "Branco", "Azul", "Vermelho"];
         let paradasChart = null;
-        const motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador", "Manutenção"];
+
+        // TODOS OS 20 CÓDIGOS DA IMAGEM
+        const motivosParada = [
+            "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA- PRIMA/ AJUSTE", "04-PRODUÇÃO",
+            "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", "08-LANCHE",
+            "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INICIO DE PROCESSO", "12-FALTA DE ENERGIA ELÉTRICA",
+            "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", "15-PROBLEMA AR", "16-PROBLEMA CAMARÃ QUENTE",
+            "17-TROCA DE BICO DE INJEÇÃO", "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS"
+        ];
 
         const mPadrao = [
-            { id: 1, nome: "MÁQUINA 01", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
-            { id: 2, nome: "MÁQUINA 02", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
-            { id: 3, nome: "MÁQUINA 03", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
-            { id: 4, nome: "MÁQUINA 04", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" }
+            { id: 1, nome: "MÁQUINA 01", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 2, nome: "MÁQUINA 02", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 3, nome: "MÁQUINA 03", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 4, nome: "MÁQUINA 04", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" }
         ];
 
         async function carregarDados() {
             try {
-                let { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
+                let { data } = await sb.from('sistema').select('*').eq('id', 1).single();
                 if (data) {
                     maquinas = data.conteudo.maquinas || mPadrao;
                     historico = data.conteudo.historico || [];
-                    listaCores = data.conteudo.listaCores || ["Preto", "Branco", "Azul", "Vermelho", "Natural"];
-                    maquinas.forEach(m => {
-                        for(let i=1; i<=3; i++) {
-                            if(m[`producao_t${i}`] === undefined) m[`producao_t${i}`] = 0;
-                            if(m[`refugo_t${i}`] === undefined) m[`refugo_t${i}`] = 0;
-                            if(m[`parada_t${i}`] === undefined) m[`parada_t${i}`] = 0;
-                        }
-                    });
+                    listaCores = data.conteudo.listaCores || ["Natural", "Preto", "Branco", "Azul", "Vermelho"];
                 } else {
                     maquinas = mPadrao;
                     await sb.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico, listaCores } }]);
@@ -162,12 +160,10 @@
             btn.innerHTML = "⏳ SINCRONIZANDO...";
             btn.disabled = true;
             try {
-                const { error } = await sb.from('sistema').update({ conteudo: { maquinas, historico, listaCores } }).eq('id', 1);
-                if (error) throw error;
+                await sb.from('sistema').update({ conteudo: { maquinas, historico, listaCores } }).eq('id', 1);
                 btn.innerHTML = "✅ DADOS SALVOS";
-            } catch (e) { 
-                btn.innerHTML = "❌ ERRO AO SALVAR"; 
-            } finally {
+            } catch (e) { btn.innerHTML = "❌ ERRO AO SALVAR"; }
+            finally {
                 btn.disabled = false;
                 setTimeout(() => { btn.innerHTML = "<span class='text-2xl'>💾</span> SALVAR DADOS GERAIS"; }, 2000);
             }
@@ -192,37 +188,46 @@
             const grid = document.getElementById('grid-maquinas');
             grid.innerHTML = maquinas.map(m => {
                 const item = m.fila && m.fila[0] ? m.fila[0] : { op: "SEM ORDEM", produto: "AGUARDANDO", operador: "N/A" };
-                const sClasse = "card-" + m.status.replace(/\s+/g, '-');
                 
-                // Opções do select de cores
+                // LÓGICA DE CORES TRANSLÚCIDAS
+                let sClasse = "card-producao";
+                if(m.status !== "04-PRODUÇÃO") {
+                    if(m.status.includes("MOLDE") || m.status.includes("POSTIÇO")) sClasse = "card-especial";
+                    else if(m.status.includes("MANUTENÇÃO") || m.status.includes("PROBLEMA")) sClasse = "card-manutencao";
+                    else if(m.status.includes("FALTA") || m.status.includes("ENERGIA")) sClasse = "card-parada-geral";
+                    else sClasse = "card-alerta";
+                }
+
                 const optionsCores = listaCores.map(cor => `<option value="${cor}" ${m.corPeca === cor ? 'selected' : ''}>${cor}</option>`).join('');
+                const optionsStatus = motivosParada.map(st => `<option value="${st}" ${m.status === st ? 'selected' : ''}>${st}</option>`).join('');
 
                 return `
                     <div class="${sClasse} rounded-3xl shadow-2xl p-6 flex flex-col gap-4 border-b-8 border-black/30 transition-all duration-300">
-                        <div class="flex justify-between items-start font-black text-2xl uppercase"><h2>${m.nome}</h2><span class="text-[9px] bg-black/40 px-2 py-1 rounded-lg border border-white/10">${m.status}</span></div>
+                        <div class="flex justify-between items-start font-black text-2xl uppercase"><h2>${m.nome}</h2><span class="text-[9px] bg-black/40 px-2 py-1 rounded-lg border border-white/10 italic">v4.5</span></div>
+                        
                         <div class="bg-black/20 rounded-2xl p-4 text-[11px] font-bold border border-white/5">
                             <p class="opacity-60 uppercase">OP: ${item.op} | OPERADOR: ${item.operador}</p>
-                            <p class="font-black text-white">${item.produto}</p>
+                            <p class="font-black text-white text-sm">${item.produto}</p>
                         </div>
 
                         <div class="bg-black/30 p-3 rounded-2xl border border-white/5 space-y-2">
                             <div class="flex justify-between items-center text-[10px] font-black uppercase text-stone-400 px-1">
-                                <span>Cor da Peça</span>
-                                <button onclick="deletarCor('${m.corPeca}')" class="text-red-500 hover:text-red-400">Excluir Cor</button>
+                                <span>Cor da Peça Atual</span>
+                                <button onclick="deletarCor('${m.corPeca}')" class="text-red-500 hover:text-red-400">Excluir</button>
                             </div>
                             <div class="flex gap-2">
                                 <select onchange="altCorPeca(${m.id}, this.value)" class="flex-1 bg-stone-950 text-white font-bold p-2 rounded-lg text-xs outline-none border border-stone-800">
                                     ${optionsCores}
                                 </select>
-                                <button onclick="abrirAddCor()" class="bg-orange-600 px-3 rounded-lg text-white font-black">+</button>
+                                <button onclick="abrirAddCor()" class="bg-orange-600 px-3 rounded-lg text-white font-black" title="Adicionar Cor">+</button>
                             </div>
                         </div>
 
                         <div class="bg-[#0c0a09]/60 rounded-3xl py-6 border-2 border-orange-500/50 text-center">
-                            <div class="text-[10px] font-black text-stone-500 uppercase">Produção Total</div>
+                            <div class="text-[10px] font-black text-stone-500 uppercase">Peças Produzidas</div>
                             <div class="text-6xl font-mono font-black text-white my-2">${m.producao}</div>
                             <div class="flex flex-col items-center justify-center gap-1 mt-2 px-4">
-                                <span class="text-[10px] text-orange-500 font-black uppercase">Meta:</span>
+                                <span class="text-[10px] text-orange-500 font-black uppercase">Meta do Turno:</span>
                                 <input type="number" value="${m.meta}" onchange="altMeta(${m.id}, this.value)" 
                                 class="w-full bg-stone-900 text-center font-black text-white border-2 border-orange-900 rounded-lg p-1 outline-none text-sm">
                             </div>
@@ -233,30 +238,24 @@
                             <button onclick="addProd(${m.id}, 10)" class="btn-incremento p-3 rounded-xl font-black">+10</button>
                             <button onclick="addProd(${m.id}, 100)" class="btn-incremento p-3 rounded-xl font-black">+100</button>
                         </div>
-                        <select onchange="altStatus(${m.id}, this.value)" class="w-full p-3 rounded-xl bg-stone-950 text-white font-black uppercase text-[10px] border border-white/10">
-                            <option value="Produzindo" ${m.status==='Produzindo'?'selected':''}>🟢 Produzindo</option>
-                            <option value="Parada" ${m.status==='Parada'?'selected':''}>🔴 Parada</option>
-                            <option value="Baixa Eficiência" ${m.status==='Baixa Eficiência'?'selected':''}>📉 Baixa Eficiência</option>
-                            <option value="Troca de Molde" ${m.status==='Troca de Molde'?'selected':''}>🌸 Troca de Molde</option>
-                            <option value="Troca de Cor" ${m.status==='Troca de Cor'?'selected':''}>🎨 Troca de Cor</option>
-                            <option value="Troca de Postiços" ${m.status==='Troca de Postiços'?'selected':''}>🛠️ Postiços</option>
-                            <option value="Falta de Operador" ${m.status==='Falta de Operador'?'selected':''}>👤 Falta Operador</option>
-                            <option value="Manutenção" ${m.status==='Manutenção'?'selected':''}>🔧 Manutenção</option>
-                        </select>
+
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-black text-stone-500 uppercase ml-1">Código de Apontamento:</label>
+                            <select onchange="altStatus(${m.id}, this.value)" class="w-full p-3 rounded-xl bg-stone-950 text-white font-black uppercase text-[10px] border border-white/10 outline-none">
+                                ${optionsStatus}
+                            </select>
+                        </div>
+
                         <div class="flex gap-2">
                             <button onclick="addRefugo(${m.id})" class="flex-1 bg-black/30 p-3 rounded-xl text-[10px] font-black uppercase">Refugo</button>
-                            <button onclick="concluirProduto(${m.id})" class="flex-[2] bg-orange-600 p-3 rounded-xl text-[10px] font-black uppercase shadow-lg border-b-4 border-orange-800">Finalizar</button>
+                            <button onclick="concluirProduto(${m.id})" class="flex-[2] bg-orange-600 p-3 rounded-xl text-[10px] font-black uppercase shadow-lg border-b-4 border-orange-800">Finalizar OP</button>
                         </div>
                     </div>`;
             }).join('');
         }
 
-        // LÓGICA DE GESTÃO DE CORES
-        function altCorPeca(id, cor) {
-            const m = maquinas.find(x => x.id === id);
-            m.corPeca = cor;
-        }
-
+        // LÓGICA DE GESTÃO DE CORES RESTAURADA
+        function altCorPeca(id, cor) { maquinas.find(x => x.id === id).corPeca = cor; }
         function abrirAddCor() {
             const nova = prompt("Digite o nome da nova cor:");
             if (nova && !listaCores.includes(nova)) {
@@ -265,10 +264,9 @@
                 salvarNoBanco();
             }
         }
-
         function deletarCor(cor) {
-            if (listaCores.length <= 1) return alert("Deve haver pelo menos uma cor na lista.");
-            if (confirm(`Deseja deletar a cor "${cor}" de todo o sistema?`)) {
+            if (listaCores.length <= 1) return alert("Mínimo de 1 cor necessário.");
+            if (confirm(`Excluir a cor "${cor}"?`)) {
                 listaCores = listaCores.filter(c => c !== cor);
                 maquinas.forEach(m => { if(m.corPeca === cor) m.corPeca = listaCores[0]; });
                 atualizarPainel();
@@ -288,11 +286,11 @@
             const m = maquinas.find(x => x.id === id);
             const t = document.getElementById('sel-turno').value;
             m[`refugo_t${t}`] = (m[`refugo_t${t}`] || 0) + 1;
-            alert(`Refugo no Turno ${t} registrado!`);
+            atualizarPainel();
         }
 
         function resetarRefugoTurno(maqId, turno) {
-            if(confirm(`Zerar o refugo do Turno 0${turno}?`)) {
+            if(confirm(`Zerar o refugo do Turno 0${turno} desta máquina?`)) {
                 const m = maquinas.find(x => x.id === maqId);
                 m[`refugo_t${turno}`] = 0;
                 renderTurnos();
@@ -300,14 +298,20 @@
             }
         }
 
-        function altMeta(id, val) { const m = maquinas.find(x => x.id === id); m.meta = parseInt(val) || 0; }
-        function altStatus(id, st) { const m = maquinas.find(x => x.id === id); m.status = st; atualizarPainel(); }
+        function altMeta(id, val) { maquinas.find(x => x.id === id).meta = parseInt(val) || 0; }
+        function altStatus(id, st) { maquinas.find(x => x.id === id).status = st; atualizarPainel(); }
 
         function concluirProduto(id) {
             const m = maquinas.find(x => x.id === id);
             if (m && m.fila[0]) {
                 const c = m.fila.shift();
-                historico.push({ hora: new Date().toLocaleString(), maquina: m.nome, op: c.op, produto: c.produto + " (" + m.corPeca + ")", total: m.producao });
+                historico.push({ 
+                    hora: new Date().toLocaleString(), 
+                    maquina: m.nome, 
+                    op: c.op, 
+                    produto: `${c.produto} (${m.corPeca})`, 
+                    total: m.producao 
+                });
                 m.producao = 0; 
                 for(let i=1; i<=3; i++) { m[`producao_t${i}`] = 0; m[`parada_t${i}`] = 0; m[`refugo_t${i}`] = 0; }
                 atualizarPainel(); salvarNoBanco();
@@ -331,7 +335,7 @@
         }
 
         function renderLista() {
-            document.getElementById('lista-espera').innerHTML = maquinas.map(m => (m.fila || []).map((f,i) => `<div class="p-4 bg-black border border-stone-800 rounded flex justify-between items-center mb-2 font-bold text-stone-300"><span>${m.nome} | OP: ${f.op} | ${f.produto} <br><span class="text-orange-600 text-[10px] uppercase">Operador: ${f.operador || 'Não informado'}</span></span><button onclick="rmFila(${m.id},${i})" class="text-red-600 text-xs">REMOVER</button></div>`).join('')).join('');
+            document.getElementById('lista-espera').innerHTML = maquinas.map(m => (m.fila || []).map((f,i) => `<div class="p-4 bg-black border border-stone-800 rounded flex justify-between items-center mb-2 font-bold text-stone-300"><span>${m.nome} | OP: ${f.op} | ${f.produto} <br><span class="text-orange-600 text-[10px] uppercase">Operador: ${f.operador || 'N/A'}</span></span><button onclick="rmFila(${m.id},${i})" class="text-red-600 text-xs">REMOVER</button></div>`).join('')).join('');
         }
         function rmFila(mid, idx) { maquinas.find(x=>x.id===mid).fila.splice(idx,1); renderLista(); }
 
@@ -348,36 +352,28 @@
         function renderTurnos() {
             document.getElementById('cards-turnos').innerHTML = maquinas.map(m => {
                 let ranking = [
+                    { t: 3, p: m.producao_t3 || 0, r: m.refugo_t3 || 0, h: m.parada_t3 || 0 },
                     { t: 1, p: m.producao_t1 || 0, r: m.refugo_t1 || 0, h: m.parada_t1 || 0 },
-                    { t: 2, p: m.producao_t2 || 0, r: m.refugo_t2 || 0, h: m.parada_t2 || 0 },
-                    { t: 3, p: m.producao_t3 || 0, r: m.refugo_t3 || 0, h: m.parada_t3 || 0 }
+                    { t: 2, p: m.producao_t2 || 0, r: m.refugo_t2 || 0, h: m.parada_t2 || 0 }
                 ];
-                ranking.sort((a, b) => b.p - a.p || a.t - b.t);
-                return `
-                <div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl shadow-xl">
-                    <h3 class="bg-black text-orange-500 p-3 text-center rounded-2xl mb-4 font-black border border-orange-900/30 uppercase tracking-tighter">${m.nome}</h3>
+                return `<div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl shadow-xl">
+                    <h3 class="bg-black text-orange-500 p-3 text-center rounded-2xl mb-4 font-black uppercase tracking-tighter">${m.nome}</h3>
                     <div class="space-y-3">
-                        ${ranking.map(tk => {
-                            const total_geral = tk.p + tk.r;
-                            const perc = total_geral > 0 ? ((tk.r / total_geral) * 100).toFixed(1) : "0.0";
-                            return `
+                        ${ranking.map(tk => `
                             <div class="bg-stone-950 p-4 rounded-2xl border border-white/5 shadow-inner">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-xs font-black text-stone-500 uppercase">Turno ${tk.t}</span>
-                                </div>
+                                <div class="text-xs font-black text-stone-500 uppercase mb-2">Turno ${tk.t}</div>
                                 <div class="grid grid-cols-1 gap-1">
                                     <div class="flex justify-between"><span class="text-[11px] font-bold text-stone-400">Peças Boas:</span> <span class="text-sm font-black text-white">${tk.p}</span></div>
                                     <div class="flex justify-between items-center">
                                         <span class="text-[11px] font-bold text-stone-400">Refugo:</span> 
                                         <div class="flex items-center gap-2">
                                             <span class="text-sm font-black text-red-500">${tk.r}</span>
-                                            <button onclick="resetarRefugoTurno(${m.id}, ${tk.t})" class="text-stone-600 hover:text-orange-500 transition-colors text-xs">🔄</button>
+                                            <button onclick="resetarRefugoTurno(${m.id}, ${tk.t})" class="text-stone-600 hover:text-orange-500 text-[10px]">🔄</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between border-t border-white/5 mt-1 pt-1"><span class="text-[11px] font-bold text-stone-400">Horas Paradas:</span> <span class="text-sm font-black text-orange-500">${fmtHora(tk.h)}</span></div>
                                 </div>
-                            </div>`;
-                        }).join('')}
+                            </div>`).join('')}
                     </div>
                 </div>`;
             }).join('');
@@ -385,9 +381,13 @@
 
         function renderGrafico() {
             const ctx = document.getElementById('graficoParadas').getContext('2d');
-            const dsets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), backgroundColor: ['rgba(239, 68, 68, 0.6)','rgba(234, 179, 8, 0.6)','rgba(236, 72, 153, 0.6)','rgba(139, 92, 246, 0.6)','rgba(6, 182, 212, 0.6)','rgba(249, 115, 22, 0.6)','rgba(161, 161, 170, 0.6)'][i] }));
+            const dsets = motivosParada.map((mot, i) => ({ 
+                label: mot, 
+                data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), 
+                backgroundColor: `hsla(${i * 18}, 70%, 50%, 0.6)` 
+            }));
             if (paradasChart) paradasChart.destroy();
-            paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: dsets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#a8a29e' } } }, scales: { x: { stacked: true, grid: { color: '#292524' }, ticks: { color: '#a8a29e' } }, y: { stacked: true, grid: { color: '#292524' }, ticks: { color: '#a8a29e' } } } } });
+            paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: dsets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#292524' } } } } });
         }
 
         function limparRastreio() { if(confirm("Limpar todo o histórico?")) { historico = []; renderRastreio(); salvarNoBanco(); } }
@@ -396,7 +396,7 @@
             document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR');
             const tAtivo = document.getElementById('sel-turno').value;
             maquinas.forEach(m => {
-                if (motivosParada.includes(m.status)) {
+                if (m.status !== "04-PRODUÇÃO") {
                     if (!m.tempos) m.tempos = {};
                     m.tempos[m.status] = (m.tempos[m.status] || 0) + 1;
                     m[`parada_t${tAtivo}`] = (m[`parada_t${tAtivo}`] || 0) + 1;
