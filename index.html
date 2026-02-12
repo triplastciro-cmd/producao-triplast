@@ -99,7 +99,6 @@
                     <input type="text" id="f-op" placeholder="Nº O.P" class="p-4 bg-slate-50 border rounded-xl font-bold">
                     <input type="text" id="f-cliente" placeholder="Cliente" class="p-4 bg-slate-50 border rounded-xl font-bold">
                     <input type="text" id="f-operador" placeholder="Nome do Operador" class="col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-xl font-bold">
-                    
                     <input type="text" id="f-produto" placeholder="Produto" class="col-span-2 p-4 bg-slate-50 border rounded-xl font-bold">
                     <input type="number" id="f-qtd" placeholder="Meta Qtd" class="p-4 bg-slate-50 border rounded-xl font-bold">
                     <input type="number" id="f-padrao" placeholder="Padrão Emb." class="p-4 bg-slate-50 border rounded-xl font-bold">
@@ -264,7 +263,7 @@
             if (data) {
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
-                historico = data.conteudo.historico || []; // Carrega histórico
+                historico = data.conteudo.historico || []; 
                 
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
@@ -483,7 +482,6 @@
         function renderHistorico() {
             const tbody = document.getElementById('lista-historico');
             let html = '';
-            // Ordena histórico do mais recente para o mais antigo
             const histOrdenado = [...historico].reverse();
             
             histOrdenado.forEach(h => {
@@ -517,13 +515,17 @@
                 cliente: document.getElementById('f-cliente').value,
                 produto: document.getElementById('f-produto').value, 
                 qtd: parseInt(document.getElementById('f-qtd').value) || 0,
-                operador: document.getElementById('f-operador').value // Salva Operador
+                operador: document.getElementById('f-operador').value
             });
             alert("O.P Agendada!"); 
-            // Limpa campos
+            
+            // LIMPEZA COMPLETA DOS CAMPOS
             document.getElementById('f-op').value = '';
+            document.getElementById('f-cliente').value = '';
+            document.getElementById('f-operador').value = '';
             document.getElementById('f-produto').value = '';
             document.getElementById('f-qtd').value = '';
+            document.getElementById('f-padrao').value = '';
             
             renderListaOPs(); render(); salvarAutomatico();
         }
@@ -531,9 +533,8 @@
         function finalizarOP(id) {
             if(confirm("Finalizar O.P? Isso salvará no histórico e ZERARÁ os contadores desta máquina.")) { 
                 const m = maquinas.find(x => x.id === id);
-                const opConcluida = m.fila.shift(); // Remove da fila
+                const opConcluida = m.fila.shift(); 
                 
-                // 1. Adiciona ao Histórico
                 if(opConcluida) {
                     historico.push({
                         ...opConcluida,
@@ -542,7 +543,6 @@
                     });
                 }
 
-                // 2. Zera contadores da máquina no turno atual
                 const t = document.getElementById('filtro-turno').value;
                 m.dadosTurno[t] = { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 };
 
@@ -554,13 +554,12 @@
         }
 
         function renderApontamento() {
-            const filtro = document.getElementById('filtro-resumo').value; // 'todas', '1', '2', '3'
+            const filtro = document.getElementById('filtro-resumo').value; 
             
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
 
                 if (filtro === 'todas') {
-                    // Soma todos os turnos
                     for(let i=1; i<=3; i++) {
                         d.boas += m.dadosTurno[i].boas;
                         d.refugo += m.dadosTurno[i].refugo;
@@ -569,7 +568,6 @@
                         d.tempoBaixa += m.dadosTurno[i].tempoBaixa;
                     }
                 } else {
-                    // Pega turno específico
                     d = m.dadosTurno[filtro];
                 }
 
