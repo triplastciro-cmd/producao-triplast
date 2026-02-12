@@ -59,7 +59,7 @@
             </div>
 
             <div class="flex items-center gap-4 bg-slate-700 p-2 rounded-xl">
-                <span class="text-xs font-bold text-slate-400 ml-2">TURNO (BSB):</span>
+                <span class="text-xs font-bold text-slate-400 ml-2">TURNO ATUAL (BSB):</span>
                 <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-800 text-white font-bold p-2 rounded-lg outline-none border-none">
                     <option value="1">🌅 Manhã (05:00 - 14:18)</option>
                     <option value="2">☀️ Tarde (14:18 - 23:36)</option>
@@ -98,6 +98,8 @@
                     </div>
                     <input type="text" id="f-op" placeholder="Nº O.P" class="p-4 bg-slate-50 border rounded-xl font-bold">
                     <input type="text" id="f-cliente" placeholder="Cliente" class="p-4 bg-slate-50 border rounded-xl font-bold">
+                    <input type="text" id="f-operador" placeholder="Nome do Operador" class="col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-xl font-bold">
+                    
                     <input type="text" id="f-produto" placeholder="Produto" class="col-span-2 p-4 bg-slate-50 border rounded-xl font-bold">
                     <input type="number" id="f-qtd" placeholder="Meta Qtd" class="p-4 bg-slate-50 border rounded-xl font-bold">
                     <input type="number" id="f-padrao" placeholder="Padrão Emb." class="p-4 bg-slate-50 border rounded-xl font-bold">
@@ -109,7 +111,36 @@
                 <h2 class="text-2xl font-black mb-4 border-b pb-4">📋 FILA DE PRODUÇÃO</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
+                        <thead class="bg-slate-100 text-slate-500 text-xs uppercase">
+                            <tr>
+                                <th class="p-3">Máquina</th>
+                                <th class="p-3">O.P</th>
+                                <th class="p-3">Operador</th>
+                                <th class="p-3">Produto</th>
+                                <th class="p-3">Qtd</th>
+                                <th class="p-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
                         <tbody id="lista-ops-geral" class="text-sm font-bold text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl shadow-2xl">
+                <h2 class="text-2xl font-black mb-4 border-b pb-4 text-green-700">✅ HISTÓRICO DE PEDIDOS CONCLUÍDOS</h2>
+                <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-green-50 text-green-800 text-xs uppercase sticky top-0">
+                            <tr>
+                                <th class="p-3">Data/Hora</th>
+                                <th class="p-3">Máquina</th>
+                                <th class="p-3">O.P</th>
+                                <th class="p-3">Operador</th>
+                                <th class="p-3">Produto</th>
+                                <th class="p-3">Meta</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
                     </table>
                 </div>
             </div>
@@ -154,7 +185,7 @@
             <div class="bg-white p-6 rounded-3xl shadow-xl">
                 <div class="flex items-center gap-3 mb-4 border-b pb-2">
                     <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-clock"></i></div>
-                    <h3 class="font-black text-slate-700 text-lg">RANKING DE PARADAS (MINUTOS)</h3>
+                    <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Paradas (Minutos)</h3>
                 </div>
                 <canvas id="chartParadas"></canvas>
             </div>
@@ -162,7 +193,7 @@
             <div class="bg-white p-6 rounded-3xl shadow-xl">
                 <div class="flex items-center gap-3 mb-4 border-b pb-2">
                     <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-trash"></i></div>
-                    <h3 class="font-black text-slate-700 text-lg">RANKING DE REFUGO (QTD)</h3>
+                    <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Refugo (Peças)</h3>
                 </div>
                 <canvas id="chartRefugos"></canvas>
             </div>
@@ -171,15 +202,32 @@
 
     <div id="aba-apontamento" class="aba-conteudo px-4">
         <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl overflow-x-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black text-slate-700">RESUMO DO TURNO</h2>
-                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR TURNO</button>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-black text-slate-700">RESUMO</h2>
+                    <select id="filtro-resumo" onchange="renderApontamento()" class="bg-blue-100 text-blue-800 font-bold p-2 rounded-lg border border-blue-300">
+                        <option value="todas">📊 TODOS OS TURNOS (GERAL)</option>
+                        <option value="1">🌅 Manhã</option>
+                        <option value="2">☀️ Tarde</option>
+                        <option value="3">🌙 Noite</option>
+                    </select>
+                </div>
+                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR TURNO ATUAL</button>
             </div>
-            <table class="w-full text-left min-w-[600px]">
+            <table class="w-full text-left min-w-[800px]">
                 <thead class="bg-slate-800 text-white uppercase text-[10px]">
-                    <tr><th class="p-5">Máquina</th><th class="p-5">O.P</th><th class="p-5">Boas</th><th class="p-5">Refugo</th><th class="p-5">% Perda</th><th class="p-5">Tempo Parado</th></tr>
+                    <tr>
+                        <th class="p-4">Máquina</th>
+                        <th class="p-4">O.P</th>
+                        <th class="p-4">Boas</th>
+                        <th class="p-4">Refugo</th>
+                        <th class="p-4">% Perda</th>
+                        <th class="p-4 bg-green-900">T. Prod</th>
+                        <th class="p-4 bg-orange-900">T. Baixa</th>
+                        <th class="p-4 bg-red-900">T. Parado</th>
+                    </tr>
                 </thead>
-                <tbody id="tabela-apontamento" class="font-bold text-slate-700"></tbody>
+                <tbody id="tabela-apontamento" class="font-bold text-slate-700 text-xs"></tbody>
             </table>
         </div>
     </div>
@@ -190,6 +238,7 @@
         const sb = window.supabase.createClient(S_URL, S_KEY);
 
         let maquinas = [];
+        let historico = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let manualOverride = false;
         let saveTimeout = null;
@@ -215,6 +264,7 @@
             if (data) {
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
+                historico = data.conteudo.historico || []; // Carrega histórico
                 
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
@@ -233,6 +283,7 @@
                 processarTurnoAuto();
                 render(); 
                 renderListaOPs();
+                renderHistorico();
                 renderCoresConfig();
                 iniciarGraficos();
                 salvarGeral(); 
@@ -247,7 +298,7 @@
             
             if(id === 'graficos') atualizarDadosGraficos(); 
             if(id === 'apontamento') renderApontamento();
-            if(id === 'lista') renderListaOPs();
+            if(id === 'lista') { renderListaOPs(); renderHistorico(); }
         }
 
         function processarTurnoAuto() {
@@ -298,7 +349,7 @@
             if(!grid) return;
 
             grid.innerHTML = maquinas.map(m => {
-                const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1 };
+                const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: '---' };
                 const d = m.dadosTurno[t];
                 const percPerda = (d.refugo * 2).toFixed(0); 
                 let sClass = "";
@@ -328,7 +379,8 @@
                                 ${coresGlobais.map(c => `<option value="${c}" ${m.corAtual === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
                         </div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-2">${op.produto}</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-1">${op.produto}</div>
+                        <div class="text-[9px] font-bold text-blue-500 uppercase truncate mb-2">👤 ${op.operador || '---'}</div>
                         <div class="grid grid-cols-3 gap-2">
                             <div class="info-badge"><span>BOAS</span><span class="text-green-600 text-lg">${d.boas}</span></div>
                             <div class="info-badge"><span>REFUGO</span><span class="text-red-600 text-lg">${d.refugo}</span></div>
@@ -380,7 +432,7 @@
         }
 
         function fmtTempo(s) { 
-            s = Math.floor(s); // Arredonda para baixo para evitar decimais no display
+            s = Math.floor(s); 
             const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
         }
@@ -412,11 +464,40 @@
             let html = '';
             maquinas.forEach(m => {
                 m.fila.forEach((op, index) => {
-                    html += `<tr class="border-b hover:bg-slate-50"><td class="p-3 font-bold text-blue-600">${m.nome}</td><td class="p-3">${op.op}</td><td class="p-3">${op.produto}</td><td class="p-3">${op.qtd}</td>
-                    <td class="p-3 text-right"><button onclick="editarOP(${m.id}, ${index})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fa-solid fa-pen"></i></button><button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                    html += `<tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-bold text-blue-600">${m.nome}</td>
+                        <td class="p-3">${op.op}</td>
+                        <td class="p-3 text-xs text-slate-500">${op.operador || '-'}</td>
+                        <td class="p-3">${op.produto}</td>
+                        <td class="p-3">${op.qtd}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="editarOP(${m.id}, ${index})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
                 });
             });
-            tbody.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
+        }
+
+        function renderHistorico() {
+            const tbody = document.getElementById('lista-historico');
+            let html = '';
+            // Ordena histórico do mais recente para o mais antigo
+            const histOrdenado = [...historico].reverse();
+            
+            histOrdenado.forEach(h => {
+                const dataFmt = new Date(h.data).toLocaleString('pt-BR');
+                html += `<tr class="border-b hover:bg-green-50">
+                    <td class="p-3 text-xs text-slate-500">${dataFmt}</td>
+                    <td class="p-3 font-bold text-blue-600">${h.maquina}</td>
+                    <td class="p-3">${h.op}</td>
+                    <td class="p-3 text-xs">${h.operador || '-'}</td>
+                    <td class="p-3 text-xs uppercase">${h.produto}</td>
+                    <td class="p-3 font-bold">${h.qtd}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
         }
 
         function deletarOP(maqId, index) {
@@ -432,21 +513,78 @@
             const id = parseInt(document.getElementById('f-maquina').value);
             const m = maquinas.find(x => x.id === id);
             m.fila.push({
-                op: document.getElementById('f-op').value, cliente: document.getElementById('f-cliente').value,
-                produto: document.getElementById('f-produto').value, qtd: parseInt(document.getElementById('f-qtd').value) || 0
+                op: document.getElementById('f-op').value, 
+                cliente: document.getElementById('f-cliente').value,
+                produto: document.getElementById('f-produto').value, 
+                qtd: parseInt(document.getElementById('f-qtd').value) || 0,
+                operador: document.getElementById('f-operador').value // Salva Operador
             });
-            alert("O.P Agendada!"); renderListaOPs(); render(); salvarAutomatico();
+            alert("O.P Agendada!"); 
+            // Limpa campos
+            document.getElementById('f-op').value = '';
+            document.getElementById('f-produto').value = '';
+            document.getElementById('f-qtd').value = '';
+            
+            renderListaOPs(); render(); salvarAutomatico();
         }
 
         function finalizarOP(id) {
-            if(confirm("Finalizar O.P?")) { maquinas.find(x=>x.id===id).fila.shift(); render(); renderListaOPs(); salvarAutomatico(); }
+            if(confirm("Finalizar O.P? Isso salvará no histórico e ZERARÁ os contadores desta máquina.")) { 
+                const m = maquinas.find(x => x.id === id);
+                const opConcluida = m.fila.shift(); // Remove da fila
+                
+                // 1. Adiciona ao Histórico
+                if(opConcluida) {
+                    historico.push({
+                        ...opConcluida,
+                        data: new Date().toISOString(),
+                        maquina: m.nome
+                    });
+                }
+
+                // 2. Zera contadores da máquina no turno atual
+                const t = document.getElementById('filtro-turno').value;
+                m.dadosTurno[t] = { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 };
+
+                render(); 
+                renderListaOPs(); 
+                renderHistorico();
+                salvarAutomatico(); 
+            }
         }
 
         function renderApontamento() {
-            const t = document.getElementById('filtro-turno').value;
+            const filtro = document.getElementById('filtro-resumo').value; // 'todas', '1', '2', '3'
+            
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
-                const d = m.dadosTurno[t];
-                return `<tr class="border-b hover:bg-slate-50"><td class="p-5 font-black">${m.nome}</td><td class="p-5">${m.fila[0]?.op || '---'}</td><td class="p-5 text-green-600">${d.boas}</td><td class="p-5 text-red-600">${d.refugo}</td><td class="p-5 text-red-500 font-bold">${(d.refugo * 2).toFixed(0)}%</td><td class="p-5 font-mono text-blue-600">${fmtTempo(d.paradas)}</td></tr>`;
+                let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
+
+                if (filtro === 'todas') {
+                    // Soma todos os turnos
+                    for(let i=1; i<=3; i++) {
+                        d.boas += m.dadosTurno[i].boas;
+                        d.refugo += m.dadosTurno[i].refugo;
+                        d.paradas += m.dadosTurno[i].paradas;
+                        d.tempoProducao += m.dadosTurno[i].tempoProducao;
+                        d.tempoBaixa += m.dadosTurno[i].tempoBaixa;
+                    }
+                } else {
+                    // Pega turno específico
+                    d = m.dadosTurno[filtro];
+                }
+
+                const percPerda = (d.refugo * 2).toFixed(0);
+                
+                return `<tr class="border-b hover:bg-slate-50">
+                    <td class="p-4 font-black">${m.nome}</td>
+                    <td class="p-4">${m.fila[0]?.op || '---'}</td>
+                    <td class="p-4 text-green-600 text-lg">${d.boas}</td>
+                    <td class="p-4 text-red-600 text-lg">${d.refugo}</td>
+                    <td class="p-4 text-red-500 font-bold">${percPerda}%</td>
+                    <td class="p-4 font-mono text-green-700 bg-green-50">${fmtTempo(d.tempoProducao)}</td>
+                    <td class="p-4 font-mono text-orange-600 bg-orange-50">${fmtTempo(d.tempoBaixa)}</td>
+                    <td class="p-4 font-mono text-red-600 bg-red-50">${fmtTempo(d.paradas)}</td>
+                </tr>`;
             }).join('');
         }
 
@@ -516,8 +654,6 @@
                 totalParado += m.dadosTurno[t].paradas;
             });
 
-            // CORREÇÃO: Divide pelo número de máquinas para simular a contagem "1 por 1" (Média)
-            // Se todas estiverem paradas, o tempo "Produzindo" para de subir.
             const divisor = countMaquinas || 1; 
 
             document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
@@ -528,7 +664,6 @@
             charts.oee.update('none');
 
             const labels = maquinas.map(m => m.nome);
-            // CORREÇÃO: Converte segundos para MINUTOS para o gráfico ficar visível mais rápido
             const dataParadas = maquinas.map(m => (m.dadosTurno[t].paradas / 60).toFixed(1)); 
             const dataRefugos = maquinas.map(m => m.dadosTurno[t].refugo);
 
@@ -561,7 +696,7 @@
         }
 
         async function salvarGeral() {
-            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais } }).eq('id', 1);
+            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico } }).eq('id', 1);
             if(error) console.error("Erro ao salvar:", error);
         }
 
