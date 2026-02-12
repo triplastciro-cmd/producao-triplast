@@ -721,6 +721,11 @@
                 atualizarDadosGraficos();
             }
 
+            // CORREÇÃO: Atualiza a tabela de apontamento a cada segundo se a aba estiver aberta
+            if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) {
+                renderApontamento();
+            }
+
         }, 1000);
 
         setInterval(() => { salvarGeral(); }, 60000);
