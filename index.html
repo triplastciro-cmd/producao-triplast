@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Savant v12.8 PRO</title>
+    <title>Triplast - Sistema Savant</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #add8e6; font-family: 'Inter', sans-serif; }
+        body { background-color: #add8e6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        /* Sistema de Abas - AGORA FUNCIONA SEM CONFLITO */
+        /* Sistema de Abas - Reforçado para não sobrepor */
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; }
 
@@ -19,9 +19,7 @@
             background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border-left: 12px solid #ef4444; transition: 0.3s;
         }
-        /* Verde: Produzindo */
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
-        /* Laranja: Baixa Eficiência (03 e 11) */
         .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
 
         .info-badge {
@@ -32,14 +30,14 @@
         .tab-btn {
             background: white; padding: 10px 20px; border-radius: 20px;
             font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: 0.2s; border: 2px solid transparent;
+            transition: 0.2s; border: 2px solid transparent; cursor: pointer;
         }
         .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
 
-        header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; }
     </style>
 </head>
-<body class="p-0">
+<body>
 
     <header class="max-w-7xl mx-auto mb-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -50,12 +48,12 @@
 
             <div class="flex items-center gap-4 bg-slate-700 p-2 rounded-xl">
                 <span class="text-xs font-bold text-slate-400 ml-2">TURNO:</span>
-                <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-800 text-white font-bold p-2 rounded-lg outline-none border-none cursor-pointer">
+                <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-800 text-white font-bold p-2 rounded-lg outline-none border-none">
                     <option value="1">🌅 Manhã (05:00 - 14:18)</option>
                     <option value="2">☀️ Tarde (14:18 - 23:36)</option>
                     <option value="3">🌙 Noite (23:36 - 05:00)</option>
                 </select>
-                <div id="badge-auto" class="bg-green-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse shadow-lg shadow-green-500/20">AUTO</div>
+                <div id="badge-auto" class="bg-green-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse">AUTO</div>
             </div>
 
             <div class="text-right">
@@ -68,9 +66,9 @@
     <nav class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto">
         <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
         <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 PROGRAMAÇÃO / CORES</button>
-        <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS OEE</button>
+        <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
         <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 APONTAMENTO</button>
-        <button onclick="salvarGeral()" class="ml-auto bg-green-600 text-white px-8 py-3 rounded-2xl font-black shadow-xl hover:bg-green-500 active:scale-95 transition-all">💾 SALVAR NA NUVEM</button>
+        <button onclick="salvarGeral()" class="ml-auto bg-green-600 text-white px-8 py-3 rounded-2xl font-black shadow-xl hover:bg-green-500">💾 SALVAR NUVEM</button>
     </nav>
 
     <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
@@ -80,76 +78,48 @@
 
     <div id="aba-lista" class="aba-conteudo px-4">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100">
-                <h2 class="text-2xl font-black mb-8 text-slate-800 border-b pb-4">📝 NOVA ORDEM DE PRODUÇÃO</h2>
+            <div class="bg-white p-8 rounded-3xl shadow-2xl">
+                <h2 class="text-2xl font-black mb-8 border-b pb-4">📝 NOVA O.P</h2>
                 <div class="grid grid-cols-2 gap-5">
                     <div class="col-span-2">
-                        <label class="text-xs font-bold text-slate-400 block mb-1">MÁQUINA</label>
+                        <label class="text-[10px] font-bold text-slate-400">MÁQUINA</label>
                         <select id="f-maquina" class="w-full p-4 bg-slate-50 border rounded-xl font-bold"></select>
                     </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 block mb-1">Nº O.P</label>
-                        <input type="text" id="f-op" placeholder="0000" class="w-full p-4 bg-slate-50 border rounded-xl font-bold">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 block mb-1">CLIENTE</label>
-                        <input type="text" id="f-cliente" placeholder="Nome" class="w-full p-4 bg-slate-50 border rounded-xl font-bold">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="text-xs font-bold text-slate-400 block mb-1">PRODUTO</label>
-                        <input type="text" id="f-produto" placeholder="Descrição do Produto" class="w-full p-4 bg-slate-50 border rounded-xl font-bold">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 block mb-1">META QTD</label>
-                        <input type="number" id="f-qtd" class="w-full p-4 bg-slate-50 border rounded-xl font-bold">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 block mb-1">PEÇAS / EMB</label>
-                        <input type="number" id="f-padrao" class="w-full p-4 bg-slate-50 border rounded-xl font-bold">
-                    </div>
-                    <button onclick="adicionarFila()" class="col-span-2 bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-lg shadow-lg hover:bg-blue-700 transition">🚀 LANÇAR NA PRODUÇÃO</button>
+                    <input type="text" id="f-op" placeholder="Nº O.P" class="p-4 bg-slate-50 border rounded-xl font-bold">
+                    <input type="text" id="f-cliente" placeholder="Cliente" class="p-4 bg-slate-50 border rounded-xl font-bold">
+                    <input type="text" id="f-produto" placeholder="Produto" class="col-span-2 p-4 bg-slate-50 border rounded-xl font-bold">
+                    <input type="number" id="f-qtd" placeholder="Meta Qtd" class="p-4 bg-slate-50 border rounded-xl font-bold">
+                    <input type="number" id="f-padrao" placeholder="Padrão Emb." class="p-4 bg-slate-50 border rounded-xl font-bold">
+                    <button onclick="adicionarFila()" class="col-span-2 bg-blue-600 text-white py-5 rounded-2xl font-black uppercase shadow-lg">LANÇAR ORDEM</button>
                 </div>
             </div>
 
-            <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100">
-                <h2 class="text-2xl font-black mb-8 text-slate-800 border-b pb-4">🎨 GESTÃO DE CORES</h2>
+            <div class="bg-white p-8 rounded-3xl shadow-2xl">
+                <h2 class="text-2xl font-black mb-8 border-b pb-4">🎨 CORES</h2>
                 <div class="flex gap-4 mb-8">
-                    <input type="text" id="nova-cor" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Digite uma cor...">
-                    <button onclick="gerenciarCor('add')" class="bg-green-600 text-white px-8 rounded-xl font-black text-2xl shadow-lg hover:bg-green-700">+</button>
+                    <input type="text" id="nova-cor" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nova Cor...">
+                    <button onclick="gerenciarCor('add')" class="bg-green-600 text-white px-8 rounded-xl font-black text-2xl">+</button>
                 </div>
-                <div id="lista-cores-config" class="flex flex-wrap gap-3">
-                    </div>
+                <div id="lista-cores-config" class="flex flex-wrap gap-3"></div>
             </div>
         </div>
     </div>
 
     <div id="aba-graficos" class="aba-conteudo px-4">
-        <div class="max-w-4xl mx-auto bg-white p-12 rounded-3xl shadow-2xl border border-slate-100 flex flex-col items-center">
-            <h2 class="text-3xl font-black mb-10 text-slate-800">📊 STATUS DA FÁBRICA (OEE)</h2>
+        <div class="max-w-4xl mx-auto bg-white p-12 rounded-3xl shadow-2xl flex flex-col items-center">
             <div class="w-full max-w-md"><canvas id="chartOEE"></canvas></div>
-            <div id="legenda-grafico" class="w-full mt-12 grid grid-cols-3 gap-6 text-center text-lg font-black"></div>
+            <div id="legenda-grafico" class="w-full mt-12 grid grid-cols-3 gap-6 text-center font-black"></div>
         </div>
     </div>
 
     <div id="aba-apontamento" class="aba-conteudo px-4">
-        <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-            <h2 class="text-2xl font-black mb-6 text-slate-800">📋 RESUMO DO TURNO SELECIONADO</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800 text-white uppercase text-xs font-bold">
-                        <tr>
-                            <th class="p-5">Máquina</th>
-                            <th class="p-5">O.P Atual</th>
-                            <th class="p-5 text-green-400">Peças Boas</th>
-                            <th class="p-5 text-red-400">Refugo</th>
-                            <th class="p-5">Perda (%)</th>
-                            <th class="p-5">Tempo Parado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-apontamento" class="text-sm font-bold text-slate-700">
-                        </tbody>
-                </table>
-            </div>
+        <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl">
+            <table class="w-full text-left">
+                <thead class="bg-slate-800 text-white uppercase text-[10px]">
+                    <tr><th class="p-5">Máquina</th><th class="p-5">O.P</th><th class="p-5">Boas</th><th class="p-5">Refugo</th><th class="p-5">% Perda</th><th class="p-5">Tempo Parado</th></tr>
+                </thead>
+                <tbody id="tabela-apontamento" class="font-bold text-slate-700"></tbody>
+            </table>
         </div>
     </div>
 
@@ -172,18 +142,13 @@
         ];
 
         async function carregarBanco() {
-            const { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
+            const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data) {
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
                 
-                // Inicialização de segurança para dados de turno
                 maquinas.forEach(m => {
-                    if(!m.dadosTurno) m.dadosTurno = { 
-                        1:{boas:0,refugo:0,paradas:0}, 
-                        2:{boas:0,refugo:0,paradas:0}, 
-                        3:{boas:0,refugo:0,paradas:0} 
-                    };
+                    if(!m.dadosTurno) m.dadosTurno = { 1:{boas:0,refugo:0,paradas:0}, 2:{boas:0,refugo:0,paradas:0}, 3:{boas:0,refugo:0,paradas:0} };
                 });
                 
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
@@ -194,17 +159,11 @@
         }
 
         function trocarAba(id) {
-            // Esconde todas
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-            // Remove destaque dos botões
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            // Mostra a selecionada
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
-            
             if(id === 'graficos') renderGrafico();
-            if(id === 'painel') render();
             if(id === 'apontamento') renderApontamento();
         }
 
@@ -213,14 +172,10 @@
             const agora = new Date();
             const min = agora.getHours() * 60 + agora.getMinutes();
             let t = 3; 
-            if (min >= 300 && min < 858) t = 1; // 05h às 14:18
-            else if (min >= 858 && min < 1416) t = 2; // 14:18 às 23:36
-            
+            if (min >= 300 && min < 858) t = 1; 
+            else if (min >= 858 && min < 1416) t = 2;
             const sel = document.getElementById('filtro-turno');
-            if(sel.value != t) {
-                sel.value = t;
-                render();
-            }
+            if(sel.value != t) { sel.value = t; render(); }
         }
 
         function mudarTurnoManual(v) {
@@ -237,8 +192,8 @@
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1 };
                 const d = m.dadosTurno[t];
-                const totalInjetado = d.boas + d.refugo;
-                const percPerda = totalInjetado > 0 ? ((d.refugo / totalInjetado) * 100).toFixed(1) : 0;
+                const total = d.boas + d.refugo;
+                const percPerda = total > 0 ? ((d.refugo / total) * 100).toFixed(1) : 0;
                 
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
@@ -248,47 +203,36 @@
                 <div class="card-producao ${sClass} p-6">
                     <div class="flex justify-between items-center mb-4">
                         <span class="bg-blue-600 text-white px-4 py-1 rounded-lg font-black text-xl shadow-md">${m.nome}</span>
-                        <div class="text-right">
-                            <span class="text-[10px] block font-bold text-slate-400">TEMPO PARADO</span>
-                            <span class="font-mono font-black text-blue-600 text-xl">${fmtTempo(d.paradas)}</span>
-                        </div>
+                        <span class="font-mono font-black text-blue-600 text-xl">${fmtTempo(d.paradas)}</span>
                     </div>
-
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-4">
-                        <div class="flex justify-between items-center mb-3">
+                    <div class="bg-slate-50 p-4 rounded-2xl border mb-4">
+                        <div class="flex justify-between items-center mb-2">
                             <span class="font-black text-slate-800">O.P ${op.op}</span>
                             <select onchange="vincularCor(${m.id}, this.value)" class="text-[10px] font-bold p-1 border rounded bg-white">
-                                <option value="">DEFINIR COR</option>
+                                <option value="">COR</option>
                                 ${coresGlobais.map(c => `<option value="${c}" ${m.corAtual === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
                         </div>
-                        <div class="text-[11px] font-bold text-slate-500 uppercase truncate mb-3">${op.cliente} | ${op.produto}</div>
-                        
+                        <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-3">${op.produto}</div>
                         <div class="grid grid-cols-3 gap-2">
                             <div class="info-badge"><span>BOAS</span><span class="text-green-600 text-lg">${d.boas}</span></div>
                             <div class="info-badge"><span>REFUGO</span><span class="text-red-600 text-lg">${d.refugo}</span></div>
                             <div class="info-badge"><span>PERDA</span><span class="text-red-500 text-lg">${percPerda}%</span></div>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3 mb-4">
-                        <button onclick="addProd(${m.id}, 10)" class="bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all">+10 PEÇAS</button>
+                        <button onclick="addProd(${m.id}, 10)" class="bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all">+10</button>
                         <button onclick="addRefugo(${m.id})" class="bg-red-600 text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-all">REFUGO</button>
                     </div>
-
-                    <label class="text-[10px] font-bold text-slate-400 block mb-1">STATUS ATUAL</label>
-                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-3 font-bold text-xs border-2 rounded-xl bg-white cursor-pointer">
+                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-3 font-bold text-xs border-2 rounded-xl bg-white">
                         ${paradasCodigos.map(p => `<option value="${p}" ${m.status === p ? 'selected' : ''}>${p}</option>`).join('')}
                     </select>
-
-                    <button onclick="finalizarOP(${m.id})" class="w-full mt-4 text-[10px] font-black text-slate-400 hover:text-red-500 uppercase transition">Finalizar Ordem</button>
+                    <button onclick="finalizarOP(${m.id})" class="w-full mt-4 text-[10px] font-black text-slate-400 uppercase">Finalizar Ordem</button>
                 </div>`;
             }).join('');
-            
             calcEficienciaGlobal();
         }
 
-        // Funções de Lógica
         function fmtTempo(s) { 
             const h = Math.floor(s / 3600); 
             const m = Math.floor((s % 3600) / 60); 
@@ -297,15 +241,13 @@
 
         function addProd(id, v) { 
             const t = document.getElementById('filtro-turno').value;
-            const m = maquinas.find(x => x.id === id);
-            m.dadosTurno[t].boas += v;
+            maquinas.find(x => x.id === id).dadosTurno[t].boas += v;
             render();
         }
 
         function addRefugo(id) { 
             const t = document.getElementById('filtro-turno').value;
-            const m = maquinas.find(x => x.id === id);
-            m.dadosTurno[t].refugo += 1;
+            maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1;
             render();
         }
 
@@ -319,70 +261,52 @@
         }
 
         function calcEficienciaGlobal() {
-            let totalProduzido = 0, totalMeta = 0;
+            let prod = 0, meta = 0;
             const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => {
-                totalProduzido += m.dadosTurno[t].boas;
-                totalMeta += m.fila[0]?.qtd || 0;
-            });
-            const perc = totalMeta > 0 ? Math.round((totalProduzido / totalMeta) * 100) : 0;
-            document.getElementById('meta-global').innerText = Math.min(perc, 100) + "%";
+            maquinas.forEach(m => { prod += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
+            document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
         }
 
         function renderApontamento() {
             const t = document.getElementById('filtro-turno').value;
-            const tbody = document.getElementById('tabela-apontamento');
-            tbody.innerHTML = maquinas.map(m => {
+            document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 const d = m.dadosTurno[t];
-                const total = d.boas + d.refugo;
-                const perda = total > 0 ? ((d.refugo / total) * 100).toFixed(1) : 0;
-                return `
-                    <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-5 font-black">${m.nome}</td>
-                        <td class="p-5 text-blue-600">${m.fila[0]?.op || '---'}</td>
-                        <td class="p-5 text-green-600">${d.boas}</td>
-                        <td class="p-5 text-red-600">${d.refugo}</td>
-                        <td class="p-5">${perda}%</td>
-                        <td class="p-5 font-mono text-blue-600">${fmtTempo(d.paradas)}</td>
-                    </tr>
-                `;
+                const tot = d.boas + d.refugo;
+                return `<tr class="border-b">
+                    <td class="p-5 font-black">${m.nome}</td>
+                    <td class="p-5">${m.fila[0]?.op || '---'}</td>
+                    <td class="p-5 text-green-600">${d.boas}</td>
+                    <td class="p-5 text-red-600">${d.refugo}</td>
+                    <td class="p-5">${tot>0?((d.refugo/tot)*100).toFixed(1):0}%</td>
+                    <td class="p-5 font-mono text-blue-600">${fmtTempo(d.paradas)}</td>
+                </tr>`;
             }).join('');
         }
 
         function renderGrafico() {
-            const stats = { p: 0, b: 0, s: 0 };
+            const s = { p: 0, b: 0, s: 0 };
             maquinas.forEach(m => { 
-                if(m.status === "04-PRODUÇÃO") stats.p++; 
-                else if(m.status === "03-MATERIA-PRIMA/ AJUSTE" || m.status === "11-INICIO DE PROCESSO") stats.b++;
-                else stats.s++;
+                if(m.status === "04-PRODUÇÃO") s.p++; 
+                else if(m.status === "03-MATERIA-PRIMA/ AJUSTE" || m.status === "11-INICIO DE PROCESSO") s.b++;
+                else s.s++;
             });
-
             if(chartObj) chartObj.destroy();
             chartObj = new Chart(document.getElementById('chartOEE'), {
                 type: 'doughnut',
-                data: {
-                    labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'],
-                    datasets: [{
-                        data: [stats.p, stats.b, stats.s],
-                        backgroundColor: ['#22c55e', '#f97316', '#ef4444'],
-                        borderWidth: 5,
-                        borderColor: '#ffffff'
-                    }]
-                },
+                data: { labels: ['PROD', 'BAIXA', 'PARADA'], datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'] }] },
                 options: { cutout: '70%', plugins: { legend: { display: false } } }
             });
-
             document.getElementById('legenda-grafico').innerHTML = `
-                <div class="text-green-600">🟢 EM PRODUÇÃO<br><span class="text-2xl">${stats.p}</span></div>
-                <div class="text-orange-500">🟠 AJUSTE / INÍCIO<br><span class="text-2xl">${stats.b}</span></div>
-                <div class="text-red-600">🔴 MÁQUINA PARADA<br><span class="text-2xl">${stats.s}</span></div>
+                <div class="text-green-600 text-xs">PRODUZINDO: ${s.p}</div>
+                <div class="text-orange-500 text-xs">BAIXA: ${s.b}</div>
+                <div class="text-red-600 text-xs">PARADA: ${s.s}</div>
             `;
         }
 
         function gerenciarCor(acao) {
             if(acao === 'add') {
-                const val = document.getElementById('nova-cor').value;
-                if(val && !coresGlobais.includes(val)) coresGlobais.push(val);
+                const v = document.getElementById('nova-cor').value;
+                if(v) coresGlobais.push(v);
                 document.getElementById('nova-cor').value = "";
             }
             renderCoresConfig();
@@ -391,74 +315,40 @@
 
         function renderCoresConfig() {
             document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
-                <div class="bg-slate-100 px-4 py-2 rounded-xl flex gap-3 items-center font-bold text-slate-700 border border-slate-200">
-                    ${c} <button onclick="removerCor('${c}')" class="text-red-500 hover:scale-125 transition">×</button>
+                <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">
+                    ${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig();" class="text-red-500">×</button>
                 </div>
             `).join('');
-        }
-
-        function removerCor(cor) {
-            coresGlobais = coresGlobais.filter(c => c !== cor);
-            renderCoresConfig();
-            render();
         }
 
         function adicionarFila() {
             const id = parseInt(document.getElementById('f-maquina').value);
             const m = maquinas.find(x => x.id === id);
-            const novaOP = {
+            m.fila.push({
                 op: document.getElementById('f-op').value,
                 cliente: document.getElementById('f-cliente').value,
                 produto: document.getElementById('f-produto').value,
-                qtd: parseInt(document.getElementById('f-qtd').value) || 0,
-                padrao: parseInt(document.getElementById('f-padrao').value) || 1
-            };
-            m.fila.push(novaOP);
-            alert("O.P Agendada com sucesso!");
-            render();
+                qtd: parseInt(document.getElementById('f-qtd').value) || 0
+            });
+            alert("O.P Agendada!"); render();
         }
 
         function finalizarOP(id) {
-            if(confirm("Deseja realmente finalizar a O.P atual?")) {
-                const m = maquinas.find(x => x.id === id);
-                m.fila.shift();
-                render();
-            }
+            if(confirm("Finalizar O.P?")) { maquinas.find(x=>x.id===id).fila.shift(); render(); }
         }
 
         async function salvarGeral() {
-            const { error } = await sb.from('sistema').update({ 
-                conteudo: { maquinas, cores: coresGlobais } 
-            }).eq('id', 1);
-            if(!error) {
-                alert("✅ DADOS SINCRONIZADOS COM A NUVEM!");
-            } else {
-                alert("❌ ERRO AO SALVAR: " + error.message);
-            }
+            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais } }).eq('id', 1);
+            if(!error) alert("SALVO COM SUCESSO!");
         }
 
-        // Loop Infinito: Relógio, Turno e Cronômetro de Paradas
         setInterval(() => {
-            const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString();
-            
+            document.getElementById('relogio').innerText = new Date().toLocaleTimeString();
             processarTurnoAuto();
-            
             const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => {
-                // Se o status NÃO for Produção (04), acumula segundos de parada no turno
-                if(m.status !== "04-PRODUÇÃO") {
-                    m.dadosTurno[t].paradas += 1;
-                }
-            });
-            
-            // Atualização visual suave do cronômetro no painel
-            if(document.getElementById('aba-painel').classList.contains('aba-ativa')) {
-                render(); 
-            }
+            maquinas.forEach(m => { if(m.status !== "04-PRODUÇÃO") m.dadosTurno[t].paradas++; });
         }, 1000);
 
-        // Inicialização
         carregarBanco();
     </script>
 </body>
