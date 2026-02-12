@@ -20,17 +20,17 @@
 
     <div id="loading"><div class="text-xl font-bold text-blue-600">Carregando Banco de Dados...</div></div>
 
+    <header class="p-4 bg-white border-b flex justify-between items-center">
+        <h1 class="text-2xl font-black text-blue-700 italic">TRIPLAST <span class="text-xs text-green-500 not-italic border border-green-200 bg-green-50 px-2 rounded">ONLINE</span></h1>
+        <div id="relogio" class="font-mono font-bold text-slate-500 text-sm">00:00:00</div>
+    </header>
+
     <nav class="bg-white p-3 shadow-sm flex gap-2 sticky top-0 z-50 border-b overflow-x-auto">
         <button onclick="trocarAba('painel')" id="btn-painel" class="btn-aba px-5 py-1.5 rounded-full bg-blue-600 text-white text-xs font-bold">Painel</button>
         <button onclick="trocarAba('lista')" id="btn-lista" class="btn-aba px-5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">Lista / Agendar</button>
         <button onclick="trocarAba('paradas')" id="btn-paradas" class="btn-aba px-5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">Relatório Paradas</button>
         <button onclick="trocarAba('rastreio')" id="btn-rastreio" class="btn-aba px-5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">Rastreio</button>
     </nav>
-
-    <header class="p-4 bg-white border-b flex justify-between items-center">
-        <h1 class="text-2xl font-black text-blue-700 italic">TRIPLAST <span class="text-xs text-green-500 not-italic border border-green-200 bg-green-50 px-2 rounded">ONLINE</span></h1>
-        <div id="relogio" class="font-mono font-bold text-slate-500 text-sm">00:00:00</div>
-    </header>
 
     <main id="aba-painel" class="aba-conteudo aba-ativa p-4">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="grid-maquinas"></div>
@@ -39,7 +39,7 @@
     <main id="aba-lista" class="aba-conteudo p-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white rounded-xl shadow p-6 border h-fit">
-                <h2 class="text-lg font-bold mb-4 text-blue-700">Agendar</h2>
+                <h2 class="text-lg font-bold mb-4 text-blue-700">Agendar Próxima OP</h2>
                 <div class="space-y-3">
                     <select id="f-maquina" class="w-full p-2 border rounded text-sm">
                         <option value="1">Máquina 01</option>
@@ -47,14 +47,14 @@
                         <option value="3">Máquina 03</option>
                         <option value="4">Máquina 04</option>
                     </select>
-                    <input type="text" id="f-op" placeholder="OP" class="w-full p-2 border rounded text-sm">
+                    <input type="text" id="f-op" placeholder="Número da OP" class="w-full p-2 border rounded text-sm">
                     <input type="text" id="f-cliente" placeholder="Cliente" class="w-full p-2 border rounded text-sm">
-                    <input type="text" id="f-produto" placeholder="Produto" class="w-full p-2 border rounded text-sm">
-                    <button onclick="adicionarAFila()" class="w-full bg-blue-600 text-white p-2 rounded font-bold uppercase text-xs">Adicionar</button>
+                    <input type="text" id="f-produto" placeholder="Nome do Produto" class="w-full p-2 border rounded text-sm">
+                    <button onclick="adicionarAFila()" class="w-full bg-blue-600 text-white p-2 rounded font-bold uppercase text-xs">Adicionar na Fila</button>
                 </div>
             </div>
             <div class="bg-white rounded-xl shadow p-6 border lg:col-span-2">
-                <h2 class="text-lg font-bold mb-4">Fila de Espera</h2>
+                <h2 class="text-lg font-bold mb-4">Fila de Espera por Máquina</h2>
                 <div id="lista-espera" class="space-y-3"></div>
             </div>
         </div>
@@ -66,11 +66,14 @@
     </main>
 
     <main id="aba-rastreio" class="aba-conteudo p-6">
-        <button onclick="limparRastreio()" class="mb-4 text-red-500 text-xs font-bold border border-red-200 px-3 py-1 rounded hover:bg-red-50">Limpar Histórico</button>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold">Histórico de Produção</h2>
+            <button onclick="limparRastreio()" class="text-red-500 text-xs font-bold border border-red-200 px-3 py-1 rounded hover:bg-red-50">Limpar Histórico</button>
+        </div>
         <div class="bg-white p-4 rounded shadow overflow-x-auto">
             <table class="w-full text-left text-[11px]">
                 <thead class="bg-slate-100 font-bold">
-                    <tr><th class="p-2">Hora</th><th class="p-2">Maq</th><th class="p-2">OP</th><th class="p-2">Prod</th><th class="p-2">Qtd</th></tr>
+                    <tr><th class="p-2">Data/Hora Final</th><th class="p-2">Máquina</th><th class="p-2">OP</th><th class="p-2">Produto</th><th class="p-2">Qtd Final</th></tr>
                 </thead>
                 <tbody id="tabela-rastreio"></tbody>
             </table>
@@ -78,23 +81,22 @@
     </main>
 
     <div class="fixed bottom-4 right-4">
-        <button onclick="salvarManualmente()" id="btn-salvar" class="bg-green-600 text-white p-3 rounded-full shadow-lg text-xs font-bold">💾 Salvar</button>
+        <button onclick="salvarManualmente()" id="btn-salvar" class="bg-green-600 text-white p-3 rounded-full shadow-lg text-xs font-bold">💾 Salvar Alterações</button>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO ÚNICA DO SUPABASE ---
-        const SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
+        // Usei 'var' para evitar o erro de "already declared" caso o script rode duas vezes
+        var SUPABASE_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
+        var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
+        
+        var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        // --------------------------------------
+        var maquinas = [];
+        var historico = [];
+        var paradasChart;
+        var motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador"];
 
-        let maquinas = [];
-        let historico = [];
-        let paradasChart;
-        const motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador"];
-
-        const maquinasPadrao = [
+        var maquinasPadrao = [
             { id: 1, nome: "M1", status: "Produzindo", producao: 0, meta: 1000, fila: [], tempos: { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 } },
             { id: 2, nome: "M2", status: "Produzindo", producao: 0, meta: 1000, fila: [], tempos: { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 } },
             { id: 3, nome: "M3", status: "Produzindo", producao: 0, meta: 1000, fila: [], tempos: { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 } },
@@ -106,7 +108,8 @@
                 let { data, error } = await supabase.from('sistema').select('*').eq('id', 1);
                 if (data && data.length > 0) {
                     const conteudo = data[0].conteudo;
-                    maquinas = conteudo.maquinas || maquinasPadrao;
+                    // Se o banco estiver vazio (como no seu print), usa o padrão
+                    maquinas = (conteudo.maquinas && conteudo.maquinas.length > 0) ? conteudo.maquinas : maquinasPadrao;
                     historico = conteudo.historico || [];
                 } else {
                     maquinas = maquinasPadrao;
@@ -122,26 +125,28 @@
 
         async function salvarNoBanco() {
             const btn = document.getElementById('btn-salvar');
-            btn.innerText = "⏳ ...";
+            btn.innerText = "⏳ Gravando...";
             const { error } = await supabase.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
             if (error) console.error("Erro ao salvar:", error);
-            btn.innerText = "💾 Salvar";
+            btn.innerText = "💾 Salvar Alterações";
         }
 
         function salvarManualmente() { salvarNoBanco(); }
 
         setInterval(() => {
-            const relogio = document.getElementById('relogio');
-            if (relogio) relogio.innerText = new Date().toLocaleTimeString();
+            const rel = document.getElementById('relogio');
+            if (rel) rel.innerText = new Date().toLocaleTimeString();
             
             let mudouAlgo = false;
             maquinas.forEach(m => {
                 if (motivosParada.includes(m.status)) {
-                    if (!m.tempos) m.tempos = { "Parada": 0, "Baixa Eficiência": 0, "Troca de Molde": 0, "Troca de Cor": 0, "Troca de Postiços": 0, "Falta de Operador": 0 };
+                    if (!m.tempos) m.tempos = {};
+                    motivosParada.forEach(mot => { if(!m.tempos[mot]) m.tempos[mot] = 0; });
                     m.tempos[m.status]++;
                     mudouAlgo = true;
                 }
             });
+            // Auto-salvamento a cada 30 segundos se houver paradas ativas
             if(mudouAlgo && new Date().getSeconds() % 30 === 0) salvarNoBanco(); 
         }, 1000);
 
@@ -168,9 +173,9 @@
             grid.innerHTML = '';
             maquinas.forEach(m => {
                 const item = m.fila && m.fila[0] ? m.fila[0] : { op: "---", cliente: "LIVRE", produto: "AGUARDANDO" };
-                const sBase = m.status.split(' ')[0];
+                const statusClasse = m.status === "Produzindo" ? "Produzindo" : (m.status === "Manutenção" ? "Manutenção" : "Parada");
                 grid.innerHTML += `
-                    <div class="card-${sBase} rounded-xl shadow p-4 border-b-4 border-black/10">
+                    <div class="card-${statusClasse} rounded-xl shadow p-4 border-b-4 border-black/10">
                         <div class="flex justify-between items-center mb-2">
                             <h2 class="font-black text-lg">${m.nome}</h2>
                             <span class="text-[10px] font-bold uppercase bg-white/50 px-2 rounded">${m.status}</span>
@@ -183,15 +188,16 @@
                             <div class="text-3xl font-mono font-black">${m.producao}</div>
                             <div class="text-[9px]">Meta: ${m.meta}</div>
                         </div>
-                        <select onchange="mudarStatus(${m.id}, this.value)" class="w-full text-xs p-1 rounded mb-2 border">
+                        <select onchange="mudarStatus(${m.id}, this.value)" class="w-full text-[10px] p-1 rounded mb-2 border font-bold">
                             <option value="Produzindo" ${m.status==='Produzindo'?'selected':''}>🟢 PRODUZINDO</option>
-                            <option value="Parada" ${m.status==='Parada'?'selected':''}>🔴 PARADA</option>
-                            <option value="Troca de Molde" ${m.status==='Troca de Molde'?'selected':''}>🌸 MOLDE</option>
-                            <option value="Falta de Operador" ${m.status==='Falta de Operador'?'selected':''}>👤 OPERADOR</option>
+                            <option value="Parada" ${m.status==='Parada'?'selected':''}>🔴 PARADA GERAL</option>
+                            <option value="Troca de Molde" ${m.status==='Troca de Molde'?'selected':''}>🌸 TROCA MOLDE</option>
+                            <option value="Troca de Cor" ${m.status==='Troca de Cor'?'selected':''}>🎨 TROCA COR</option>
+                            <option value="Falta de Operador" ${m.status==='Falta de Operador'?'selected':''}>👤 SEM OPERADOR</option>
                         </select>
                         <div class="flex gap-1">
-                            <button onclick="addProd(${m.id})" class="flex-1 bg-black text-white p-2 rounded text-xs font-bold">+1</button>
-                            <button onclick="concluirProduto(${m.id})" class="bg-blue-600 text-white p-2 rounded text-xs font-bold">OK</button>
+                            <button onclick="addProd(${m.id})" class="flex-1 bg-black text-white p-2 rounded text-xs font-bold shadow-sm">+1</button>
+                            <button onclick="concluirProduto(${m.id})" class="bg-blue-600 text-white p-2 rounded text-xs font-bold shadow-sm">OK</button>
                         </div>
                     </div>`;
             });
@@ -202,7 +208,6 @@
             if(m && m.status === "Produzindo") { 
                 m.producao++; 
                 atualizarPainel(); 
-                salvarNoBanco(); 
             }
         }
 
@@ -218,29 +223,39 @@
         function concluirProduto(id) {
             const m = maquinas.find(x => x.id === id);
             if (m && m.fila && m.fila.length > 0) {
-                if(confirm("Finalizar OP?")) {
-                    const c = m.fila.shift();
-                    historico.push({ hora: new Date().toLocaleString(), maquina: m.nome, op: c.op, produto: c.produto, total: m.producao });
+                if(confirm("Finalizar OP atual e registrar histórico?")) {
+                    const concluida = m.fila.shift();
+                    historico.push({ 
+                        hora: new Date().toLocaleString(), 
+                        maquina: m.nome, 
+                        op: concluida.op, 
+                        produto: concluida.produto, 
+                        total: m.producao 
+                    });
                     m.producao = 0; 
                     atualizarPainel();
                     salvarNoBanco();
                 }
-            } else alert("Sem OP na fila.");
+            } else alert("Não há OP agendada para finalizar.");
         }
 
         function adicionarAFila() {
             const mId = parseInt(document.getElementById('f-maquina').value);
             const maq = maquinas.find(m => m.id === mId);
             if (maq) {
-                maq.fila.push({ 
-                    op: document.getElementById('f-op').value, 
-                    cliente: document.getElementById('f-cliente').value, 
-                    produto: document.getElementById('f-produto').value 
-                });
+                const op = document.getElementById('f-op').value;
+                const cli = document.getElementById('f-cliente').value;
+                const prod = document.getElementById('f-produto').value;
+                if(!op || !prod) return alert("Preencha OP e Produto!");
+                
+                maq.fila.push({ op, cliente: cli, produto: prod });
+                document.getElementById('f-op').value = '';
+                document.getElementById('f-cliente').value = '';
+                document.getElementById('f-produto').value = '';
+                
                 renderLista(); 
                 atualizarPainel();
                 salvarNoBanco();
-                alert("Adicionado!");
             }
         }
 
@@ -248,9 +263,9 @@
             const lista = document.getElementById('lista-espera');
             if (!lista) return;
             lista.innerHTML = maquinas.map(m => (m.fila || []).map((f,i) => 
-                `<div class="text-xs p-2 border rounded bg-slate-50 flex justify-between">
-                    <span><b>${m.nome}</b> - OP: ${f.op} (${f.produto})</span>
-                    <button onclick="rmFila(${m.id},${i})" class="text-red-500 font-bold px-2">X</button>
+                `<div class="text-xs p-2 border rounded bg-slate-50 flex justify-between items-center">
+                    <span><b>${m.nome}</b> - OP: ${f.op} | ${f.produto} (${f.cliente})</span>
+                    <button onclick="rmFila(${m.id},${i})" class="text-red-500 font-bold px-2 hover:bg-red-100 rounded">REMOVER</button>
                 </div>`
             ).join('')).join('');
         }
@@ -269,8 +284,8 @@
             const tab = document.getElementById('tabela-rastreio');
             if (!tab) return;
             tab.innerHTML = historico.map(h => 
-                `<tr class="border-b">
-                    <td class="p-2">${h.hora.split(',')[1] || h.hora}</td>
+                `<tr class="border-b hover:bg-slate-50">
+                    <td class="p-2">${h.hora}</td>
                     <td class="p-2 font-bold">${h.maquina}</td>
                     <td class="p-2">${h.op}</td>
                     <td class="p-2 text-blue-600 font-bold">${h.produto}</td>
@@ -280,7 +295,7 @@
         }
 
         function limparRastreio() { 
-            if(confirm("Apagar todo o histórico?")) { 
+            if(confirm("Apagar permanentemente todo o histórico?")) { 
                 historico=[]; 
                 renderRastreio(); 
                 salvarNoBanco(); 
@@ -293,14 +308,14 @@
             const ctx = canvas.getContext('2d');
             const datasets = motivosParada.map((mot, i) => ({ 
                 label: mot, 
-                data: maquinas.map(m => ((m.tempos ? m.tempos[mot] : 0)/3600).toFixed(2)), 
+                data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), 
                 backgroundColor: ['#ef4444','#f59e0b','#ec4899','#3b82f6','#10b981','#6366f1'][i] 
             }));
             if (paradasChart) paradasChart.destroy();
             paradasChart = new Chart(ctx, { 
                 type: 'bar', 
                 data: { labels: maquinas.map(m=>m.nome), datasets }, 
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } } 
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, title: { display:true, text:'Horas' } } } } 
             });
         }
 
