@@ -3,54 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Sistema Savant</title>
+    <title>Triplast - Savant Ultra v12.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #add8e6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        
+        body { background-color: #add8e6; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; }
-
-        .card-maquina {
-            background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-left: 10px solid #ccc; transition: 0.3s; padding: 1.5rem;
-        }
+        .card-maquina { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 10px solid #ccc; padding: 1.5rem; transition: 0.3s; }
         .status-produzindo { border-left-color: #22c55e !important; }
         .status-parada { border-left-color: #ef4444 !important; }
         .status-baixa { border-left-color: #f97316 !important; }
-
-        .btn-acao {
-            border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px;
-            font-weight: 900; color: #1e293b; transition: 0.2s; cursor: pointer;
-        }
-        .btn-acao:hover { background: #f1f5f9; }
-
-        .area-refugo {
-            background: #fff5f5; border: 1px solid #fed7d7; border-radius: 15px;
-            padding: 15px; margin-top: 15px;
-        }
-
-        .tab-btn {
-            background: white; padding: 8px 20px; border-radius: 20px;
-            font-weight: 700; font-size: 14px; cursor: pointer; border: none;
-        }
+        .btn-acao { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; font-weight: 900; color: #1e293b; cursor: pointer; text-align: center; }
+        .area-refugo { background: #fff5f5; border: 1px solid #fed7d7; border-radius: 15px; padding: 15px; margin-top: 15px; }
+        .tab-btn { background: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; cursor: pointer; border: none; font-size: 14px; }
         .tab-btn.active { background: #3b82f6; color: white; }
-
         header { background: #1e293b; color: white; padding: 15px 20px; }
     </style>
 </head>
 <body>
 
-    <header class="max-w-full flex justify-between items-center mb-6 shadow-xl">
+    <header class="flex justify-between items-center mb-6 shadow-xl">
         <div class="flex items-center gap-4">
             <span class="text-2xl font-black italic">TRI<span class="text-blue-400">PLAST</span></span>
-            <div id="relogio" class="bg-slate-800 px-3 py-1 rounded text-blue-300 font-mono border border-slate-700">00:00:00</div>
+            <div id="relogio" class="bg-slate-800 px-3 py-1 rounded text-blue-300 font-mono">00:00:00</div>
         </div>
         <div class="flex items-center gap-3">
-            <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-700 p-2 rounded font-bold text-sm outline-none text-white border-none">
+            <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-700 p-2 rounded font-bold text-sm text-white outline-none border-none">
                 <option value="1">🌅 Manhã (05:00 - 14:18)</option>
                 <option value="2">☀️ Tarde (14:18 - 23:36)</option>
                 <option value="3">🌙 Noite (23:36 - 05:00)</option>
@@ -76,42 +57,31 @@
     </div>
 
     <div id="aba-lista" class="aba-conteudo px-6">
-        <div class="max-w-6xl mx-auto space-y-8">
-            <div class="bg-white p-8 rounded-3xl shadow-xl">
-                <h2 class="text-xl font-black mb-6 border-b pb-4 uppercase">Lançar Nova Ordem de Produção</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <select id="f-maquina" class="p-3 bg-slate-50 border rounded-xl font-bold"></select>
-                    <input type="text" id="f-op" placeholder="Nº O.P" class="p-3 border rounded-xl font-bold">
-                    <input type="text" id="f-cliente" placeholder="Cliente" class="p-3 border rounded-xl font-bold">
-                    <input type="text" id="f-produto" placeholder="Nome do Produto" class="md:col-span-2 p-3 border rounded-xl font-bold">
-                    <input type="number" id="f-qtd" placeholder="Meta Total" class="p-3 border rounded-xl font-bold">
-                    <button onclick="adicionarOP()" class="md:col-span-3 bg-blue-600 text-white py-4 rounded-xl font-black uppercase hover:bg-blue-700">Adicionar à Fila de Espera</button>
-                </div>
+        <div class="max-w-4xl mx-auto bg-white p-8 rounded-3xl shadow-xl">
+            <h2 class="text-xl font-black mb-6 uppercase border-b pb-4">Nova O.P</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <select id="f-maquina" class="col-span-2 p-3 bg-slate-50 border rounded-xl font-bold"></select>
+                <input type="text" id="f-op" placeholder="O.P" class="p-3 border rounded-xl font-bold">
+                <input type="text" id="f-cliente" placeholder="Cliente" class="p-3 border rounded-xl font-bold">
+                <input type="text" id="f-produto" placeholder="Produto" class="col-span-2 p-3 border rounded-xl font-bold">
+                <input type="number" id="f-qtd" placeholder="Meta" class="p-3 border rounded-xl font-bold">
+                <button onclick="adicionarOP()" class="col-span-2 bg-blue-600 text-white py-4 rounded-xl font-black uppercase">Adicionar à Fila</button>
             </div>
-            <div id="lista-fila-geral" class="space-y-4"></div>
         </div>
     </div>
 
     <div id="aba-graficos" class="aba-conteudo px-6">
-        <div class="max-w-4xl mx-auto bg-white p-10 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-10">
-            <div class="w-64"><canvas id="chartOEE"></canvas></div>
-            <div id="legenda-grafico" class="flex-1 grid grid-cols-1 gap-4 font-black uppercase text-sm"></div>
+        <div class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl">
+            <canvas id="chartOEE"></canvas>
+            <div id="legenda-grafico" class="mt-6 space-y-2"></div>
         </div>
     </div>
 
     <div id="aba-apontamento" class="aba-conteudo px-6">
-        <div class="bg-white p-6 rounded-3xl shadow-xl overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-slate-800 text-white text-[10px] uppercase">
-                        <th class="p-4 rounded-l-xl">Máquina</th>
-                        <th class="p-4">Status Atual</th>
-                        <th class="p-4">O.P Atual</th>
-                        <th class="p-4 text-center">Boas</th>
-                        <th class="p-4 text-center">Refugo</th>
-                        <th class="p-4 text-center">% Perda</th>
-                        <th class="p-4 text-right rounded-r-xl">Tempo Parado</th>
-                    </tr>
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-slate-800 text-white text-[10px] uppercase">
+                    <tr><th class="p-4">Máquina</th><th class="p-4">O.P</th><th class="p-4 text-center">Boas</th><th class="p-4 text-center">Refugo</th><th class="p-4 text-right">Tempo Parado</th></tr>
                 </thead>
                 <tbody id="tabela-apontamento" class="font-bold text-slate-700"></tbody>
             </table>
@@ -127,21 +97,20 @@
         let manualOverride = false;
         let chartObj = null;
 
-        const listaStatus = [
-            "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA-PRIMA/ AJUSTE", "04-PRODUÇÃO",
-            "06-TROCA DE COR", "08-LANCHE", "09-LIMPEZA", "11-INICIO DE PROCESSO", "14-MANUTENÇÃO DE MÁQUINA", "20-OUTROS"
-        ];
+        const listaStatus = ["01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA-PRIMA/ AJUSTE", "04-PRODUÇÃO", "06-TROCA DE COR", "08-LANCHE", "09-LIMPEZA", "11-INICIO DE PROCESSO", "14-MANUTENÇÃO DE MÁQUINA", "20-OUTROS"];
 
         async function init() {
-            const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
+            const { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data && data.conteudo) {
                 maquinas = data.conteudo.maquinas || [];
                 
-                // Correção Preventiva: Garante estrutura completa para evitar erro 'undefined'
+                // PROTEÇÃO CONTRA O ERRO '2' (Lendo Turno inexistente)
                 maquinas.forEach(m => {
                     if (!m.dadosTurno) m.dadosTurno = {};
                     [1, 2, 3].forEach(t => {
-                        if (!m.dadosTurno[t]) m.dadosTurno[t] = { boas: 0, refugo: 0, paradas: 0 };
+                        if (!m.dadosTurno[t]) {
+                            m.dadosTurno[t] = { boas: 0, refugo: 0, paradas: 0 };
+                        }
                     });
                     if (!m.fila) m.fila = [];
                     if (!m.status) m.status = "20-OUTROS";
@@ -153,16 +122,6 @@
             }
         }
 
-        function trocarAba(id) {
-            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('aba-' + id).classList.add('aba-ativa');
-            document.getElementById('btn-' + id).classList.add('active');
-            if(id === 'graficos') renderGrafico();
-            if(id === 'apontamento') renderApontamento();
-            if(id === 'lista') renderFila();
-        }
-
         function render() {
             const t = document.getElementById('filtro-turno').value;
             const grid = document.getElementById('grid-maquinas');
@@ -170,75 +129,79 @@
 
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---' };
-                const d = m.dadosTurno[t];
-                const total = d.boas + d.refugo;
-                const perc = total > 0 ? ((d.refugo / total) * 100).toFixed(1) : 0;
+                const d = m.dadosTurno[t] || { boas: 0, refugo: 0, paradas: 0 }; // Proteção extra
                 
                 let sClass = m.status === "04-PRODUÇÃO" ? "status-produzindo" : (["03-MATERIA-PRIMA/ AJUSTE", "11-INICIO DE PROCESSO"].includes(m.status) ? "status-baixa" : "status-parada");
 
                 return `
                 <div class="card-maquina ${sClass}">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="bg-blue-600 text-white px-3 py-1 rounded font-black text-lg">${m.nome}</span>
+                        <span class="bg-blue-600 text-white px-3 py-1 rounded font-black">${m.nome}</span>
                         <span class="font-mono font-black text-blue-600 border px-2 rounded bg-slate-50">${fmt(d.paradas)}</span>
                     </div>
-
-                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">O.P ${op.op} - ${op.cliente}</div>
-                    <div class="text-xs font-black mb-4 h-8 overflow-hidden">${op.produto}</div>
-
+                    <div class="text-[10px] font-bold text-slate-400 uppercase">O.P ${op.op} - ${op.cliente}</div>
+                    <div class="text-xs font-black mb-4 truncate">${op.produto}</div>
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <button onclick="add(1, ${m.id})" class="btn-acao">+1</button>
                         <button onclick="add(10, ${m.id})" class="btn-acao">+10</button>
                         <button onclick="add(100, ${m.id})" class="btn-acao">+100</button>
                     </div>
-
                     <div class="area-refugo">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-red-500 font-black text-[10px]">REFUGO (${perc}%)</span>
-                            <span class="text-red-700 font-black text-lg">${d.refugo}</span>
+                        <div class="flex justify-between font-black text-xs mb-2">
+                            <span class="text-red-500">REFUGO</span>
+                            <span class="text-red-700">${d.refugo}</span>
                         </div>
-                        <button onclick="ref(${m.id})" class="w-full bg-white border border-red-200 text-red-600 py-2 rounded-xl font-black text-xs hover:bg-red-50">SOMA REFUGO (+1)</button>
+                        <button onclick="ref(${m.id})" class="w-full bg-white border border-red-200 text-red-600 py-2 rounded-xl font-black text-xs">SOMA REFUGO (+1)</button>
                     </div>
-
-                    <select onchange="st(${m.id}, this.value)" class="w-full mt-4 p-3 bg-slate-50 border rounded-xl font-bold text-xs">
+                    <select onchange="st(${m.id}, this.value)" class="w-full mt-4 p-2 border rounded-xl font-bold text-xs bg-slate-50">
                         ${listaStatus.map(s => `<option value="${s}" ${m.status === s ? 'selected' : ''}>${s}</option>`).join('')}
                     </select>
-
-                    <button onclick="finalizar(${m.id})" class="w-full mt-4 bg-slate-800 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all">Finalizar O.P Atual</button>
                 </div>`;
             }).join('');
             calcGlobal();
         }
 
-        function renderFila() {
-            document.getElementById('lista-fila-geral').innerHTML = maquinas.map(m => `
-                <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center border-l-8 border-blue-500">
-                    <div>
-                        <span class="font-black text-blue-600">${m.nome}</span>
-                        <div class="text-xs font-bold text-slate-500">FILA: ${m.fila.length} ordens agendadas</div>
-                    </div>
-                    <div class="flex gap-2">
-                        ${m.fila.slice(1).map(f => `<span class="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold">OP ${f.op}</span>`).join('')}
-                    </div>
-                </div>
-            `).join('');
+        // Funções de ação
+        function add(v, id) { 
+            const t = document.getElementById('filtro-turno').value;
+            maquinas.find(x => x.id === id).dadosTurno[t].boas += v;
+            render(); 
+        }
+        function ref(id) { 
+            const t = document.getElementById('filtro-turno').value;
+            maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1;
+            render(); 
+        }
+        function st(id, val) { 
+            maquinas.find(x => x.id === id).status = val; 
+            render(); 
+        }
+
+        function fmt(s) { 
+            const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60);
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; 
+        }
+
+        function trocarAba(id) {
+            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('aba-' + id).classList.add('aba-ativa');
+            document.getElementById('btn-' + id).classList.add('active');
+            if(id === 'graficos') renderGrafico();
+            if(id === 'apontamento') renderApontamento();
         }
 
         function renderApontamento() {
             const t = document.getElementById('filtro-turno').value;
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 const d = m.dadosTurno[t];
-                const total = d.boas + d.refugo;
-                const perc = total > 0 ? ((d.refugo / total) * 100).toFixed(1) : 0;
                 return `
-                <tr class="border-b hover:bg-slate-50">
-                    <td class="p-4 font-black">${m.nome}</td>
-                    <td class="p-4"><span class="text-[10px] px-2 py-1 rounded-full bg-slate-100">${m.status}</span></td>
-                    <td class="p-4 font-normal text-xs">${m.fila[0]?.op || 'SEM O.P'}</td>
-                    <td class="p-4 text-center text-green-600 text-lg">${d.boas}</td>
-                    <td class="p-4 text-center text-red-600 text-lg">${d.refugo}</td>
-                    <td class="p-4 text-center">${perc}%</td>
-                    <td class="p-4 text-right font-mono text-blue-600">${fmt(d.paradas)}</td>
+                <tr class="border-b">
+                    <td class="p-4">${m.nome}</td>
+                    <td class="p-4 text-xs">${m.fila[0]?.op || '---'}</td>
+                    <td class="p-4 text-center text-green-600">${d.boas}</td>
+                    <td class="p-4 text-center text-red-600">${d.refugo}</td>
+                    <td class="p-4 text-right font-mono">${fmt(d.paradas)}</td>
                 </tr>`;
             }).join('');
         }
@@ -253,80 +216,20 @@
             if(chartObj) chartObj.destroy();
             chartObj = new Chart(document.getElementById('chartOEE'), {
                 type: 'doughnut',
-                data: { 
-                    labels: ['Produzindo', 'Ajuste', 'Parada'], 
-                    datasets: [{ data: [s.p, s.b, s.par], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] 
-                },
-                options: { plugins: { legend: { display: false } }, cutout: '70%' }
+                data: { labels: ['Prod', 'Ajuste', 'Parada'], datasets: [{ data: [s.p, s.b, s.par], backgroundColor: ['#22c55e', '#f97316', '#ef4444'] }] }
             });
-            document.getElementById('legenda-grafico').innerHTML = `
-                <div class="flex justify-between border-b pb-2"><span class="text-green-600">● PRODUZINDO</span> <span>${s.p} MÁQ</span></div>
-                <div class="flex justify-between border-b pb-2"><span class="text-orange-500">● EM AJUSTE</span> <span>${s.b} MÁQ</span></div>
-                <div class="flex justify-between border-b pb-2"><span class="text-red-600">● PARADAS</span> <span>${s.par} MÁQ</span></div>
-            `;
-        }
-
-        // Funções de Operação
-        function add(v, id) { 
-            const t = document.getElementById('filtro-turno').value;
-            maquinas.find(x => x.id === id).dadosTurno[t].boas += v;
-            render(); 
-        }
-        function ref(id) { 
-            const t = document.getElementById('filtro-turno').value;
-            maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1;
-            render(); 
-        }
-        function st(id, status) { maquinas.find(x => x.id === id).status = status; render(); }
-        
-        function fmt(s) { 
-            const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60);
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; 
-        }
-
-        function calcGlobal() {
-            let p = 0, meta = 0;
-            const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => { p += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
-            document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((p/meta)*100) : 0) + "%";
-        }
-
-        function adicionarOP() {
-            const id = parseInt(document.getElementById('f-maquina').value);
-            const m = maquinas.find(x => x.id === id);
-            m.fila.push({
-                op: document.getElementById('f-op').value || '---',
-                cliente: document.getElementById('f-cliente').value || '---',
-                produto: document.getElementById('f-produto').value || '---',
-                qtd: parseInt(document.getElementById('f-qtd').value) || 0
-            });
-            alert("Ordem adicionada com sucesso!");
-            renderFila();
-            render();
-        }
-
-        function finalizar(id) {
-            if(confirm("Deseja encerrar a O.P atual e iniciar a próxima da fila?")) {
-                maquinas.find(x => x.id === id).fila.shift();
-                render();
-            }
+            document.getElementById('legenda-grafico').innerHTML = `<div class="font-black text-center text-xs">MÁQUINAS: PROD: ${s.p} | AJUSTE: ${s.b} | PARADA: ${s.par}</div>`;
         }
 
         async function salvarGeral() {
-            const btn = event.target;
-            btn.innerText = "⏳ SALVANDO...";
             const { error } = await sb.from('sistema').update({ conteudo: { maquinas } }).eq('id', 1);
-            if(!error) {
-                btn.innerText = "✅ SALVO COM SUCESSO";
-                setTimeout(() => btn.innerText = "💾 SALVAR AGORA", 2000);
-            }
+            if(!error) alert("Sincronizado com o Banco de Dados!");
         }
 
         function processarTurnoAuto() {
             if (manualOverride) return;
-            const agora = new Date();
-            const min = agora.getHours() * 60 + agora.getMinutes();
-            let t = (min >= 300 && min < 858) ? 1 : (min >= 858 && min < 1416 ? 2 : 3);
+            const h = new Date().getHours();
+            let t = (h >= 5 && h < 14) ? 1 : (h >= 14 && h < 23 ? 2 : 3);
             document.getElementById('filtro-turno').value = t;
         }
 
@@ -334,6 +237,13 @@
             manualOverride = true;
             document.getElementById('badge-auto').style.display = 'none';
             render();
+        }
+
+        function calcGlobal() {
+            let p = 0, m = 0;
+            const t = document.getElementById('filtro-turno').value;
+            maquinas.forEach(maq => { p += maq.dadosTurno[t].boas; m += maq.fila[0]?.qtd || 0; });
+            document.getElementById('meta-global').innerText = (m > 0 ? Math.round((p/m)*100) : 0) + "%";
         }
 
         setInterval(() => {
