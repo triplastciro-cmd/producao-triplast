@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Sistema Integrado v4.2</title>
+    <title>Triplast - Sistema Integrado v4.3</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,18 +11,18 @@
         .aba-conteudo { display: none; }
         .aba-ativa { display: block; }
         
-        /* STATUS MODO ESCURO VIBRANTE */
-        .card-Produzindo { background-color: #064e3b; border-left: 12px solid #22c55e; color: #ecfdf5; }
-        .card-Parada { background-color: #7f1d1d; border-left: 12px solid #ef4444; color: #fef2f2; }
-        .card-Baixa-Eficiência { background-color: #713f12; border-left: 12px solid #eab308; color: #fefce8; }
-        .card-Troca-de-Molde { background-color: #831843; border-left: 12px solid #ec4899; color: #fdf2f8; }
-        .card-Troca-de-Cor { background-color: #4c1d95; border-left: 12px solid #8b5cf6; color: #f5f3ff; }
-        .card-Troca-de-Postiços { background-color: #164e63; border-left: 12px solid #06b6d4; color: #ecfeff; }
-        .card-Falta-de-Operador { background-color: #7c2d12; border-left: 12px solid #f97316; color: #fff7ed; }
-        .card-Manutenção { background-color: #27272a; border-left: 12px solid #a1a1aa; color: #f4f4f5; }
+        /* STATUS COM CORES SUAVES E TRANSPARENTES */
+        .card-Produzindo { background-color: rgba(6, 78, 59, 0.4); border-left: 8px solid #22c55e; color: #ecfdf5; }
+        .card-Parada { background-color: rgba(127, 29, 29, 0.4); border-left: 8px solid #ef4444; color: #fef2f2; }
+        .card-Baixa-Eficiência { background-color: rgba(113, 63, 18, 0.4); border-left: 8px solid #eab308; color: #fefce8; }
+        .card-Troca-de-Molde { background-color: rgba(131, 24, 67, 0.4); border-left: 8px solid #ec4899; color: #fdf2f8; }
+        .card-Troca-de-Cor { background-color: rgba(76, 29, 149, 0.4); border-left: 8px solid #8b5cf6; color: #f5f3ff; }
+        .card-Troca-de-Postiços { background-color: rgba(22, 78, 99, 0.4); border-left: 8px solid #06b6d4; color: #ecfeff; }
+        .card-Falta-de-Operador { background-color: rgba(124, 45, 18, 0.4); border-left: 8px solid #f97316; color: #fff7ed; }
+        .card-Manutenção { background-color: rgba(39, 39, 42, 0.4); border-left: 8px solid #a1a1aa; color: #f4f4f5; }
 
         #loading { position: fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:9999; background: #0c0a09; color: #f97316; }
-        .btn-incremento { transition: all 0.1s; border: 1px solid rgba(255,255,255,0.1); background-color: #44403c; color: white; }
+        .btn-incremento { transition: all 0.1s; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(68, 64, 60, 0.5); color: white; }
         .btn-incremento:active { transform: scale(0.9); background-color: #f97316; }
 
         ::-webkit-scrollbar { width: 8px; }
@@ -36,7 +36,7 @@
 
     <header class="p-4 bg-black border-b border-orange-600 flex flex-col md:flex-row justify-between items-center shadow-2xl gap-4">
         <div>
-            <h1 class="text-3xl font-black text-white italic tracking-tighter">TRI<span class="text-orange-500">PLAST</span> <span class="text-[10px] text-orange-600 not-italic border border-orange-900 bg-stone-900 px-2 py-1 rounded-md ml-2 uppercase">v4.2</span></h1>
+            <h1 class="text-3xl font-black text-white italic tracking-tighter">TRI<span class="text-orange-500">PLAST</span> <span class="text-[10px] text-orange-600 not-italic border border-orange-900 bg-stone-900 px-2 py-1 rounded-md ml-2 uppercase">v4.3</span></h1>
             <p class="text-[10px] text-stone-500 font-bold uppercase tracking-widest mt-1">Gestão de Produção Industrial</p>
         </div>
         <div class="flex items-center gap-3 bg-stone-900 p-2 rounded-xl border border-stone-800 shadow-sm">
@@ -123,14 +123,15 @@
 
         let maquinas = [];
         let historico = [];
+        let listaCores = ["Preto", "Branco", "Azul", "Vermelho", "Natural"]; // Cores iniciais
         let paradasChart = null;
         const motivosParada = ["Parada", "Baixa Eficiência", "Troca de Molde", "Troca de Cor", "Troca de Postiços", "Falta de Operador", "Manutenção"];
 
         const mPadrao = [
-            { id: 1, nome: "MÁQUINA 01", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {} },
-            { id: 2, nome: "MÁQUINA 02", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {} },
-            { id: 3, nome: "MÁQUINA 03", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {} },
-            { id: 4, nome: "MÁQUINA 04", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {} }
+            { id: 1, nome: "MÁQUINA 01", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 2, nome: "MÁQUINA 02", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 3, nome: "MÁQUINA 03", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 4, nome: "MÁQUINA 04", status: "Produzindo", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" }
         ];
 
         async function carregarDados() {
@@ -139,6 +140,7 @@
                 if (data) {
                     maquinas = data.conteudo.maquinas || mPadrao;
                     historico = data.conteudo.historico || [];
+                    listaCores = data.conteudo.listaCores || ["Preto", "Branco", "Azul", "Vermelho", "Natural"];
                     maquinas.forEach(m => {
                         for(let i=1; i<=3; i++) {
                             if(m[`producao_t${i}`] === undefined) m[`producao_t${i}`] = 0;
@@ -148,7 +150,7 @@
                     });
                 } else {
                     maquinas = mPadrao;
-                    await sb.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico } }]);
+                    await sb.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico, listaCores } }]);
                 }
             } catch (e) { maquinas = mPadrao; }
             document.getElementById('loading').style.display = 'none';
@@ -160,7 +162,7 @@
             btn.innerHTML = "⏳ SINCRONIZANDO...";
             btn.disabled = true;
             try {
-                const { error } = await sb.from('sistema').update({ conteudo: { maquinas, historico } }).eq('id', 1);
+                const { error } = await sb.from('sistema').update({ conteudo: { maquinas, historico, listaCores } }).eq('id', 1);
                 if (error) throw error;
                 btn.innerHTML = "✅ DADOS SALVOS";
             } catch (e) { 
@@ -191,6 +193,10 @@
             grid.innerHTML = maquinas.map(m => {
                 const item = m.fila && m.fila[0] ? m.fila[0] : { op: "SEM ORDEM", produto: "AGUARDANDO", operador: "N/A" };
                 const sClasse = "card-" + m.status.replace(/\s+/g, '-');
+                
+                // Opções do select de cores
+                const optionsCores = listaCores.map(cor => `<option value="${cor}" ${m.corPeca === cor ? 'selected' : ''}>${cor}</option>`).join('');
+
                 return `
                     <div class="${sClasse} rounded-3xl shadow-2xl p-6 flex flex-col gap-4 border-b-8 border-black/30 transition-all duration-300">
                         <div class="flex justify-between items-start font-black text-2xl uppercase"><h2>${m.nome}</h2><span class="text-[9px] bg-black/40 px-2 py-1 rounded-lg border border-white/10">${m.status}</span></div>
@@ -198,15 +204,30 @@
                             <p class="opacity-60 uppercase">OP: ${item.op} | OPERADOR: ${item.operador}</p>
                             <p class="font-black text-white">${item.produto}</p>
                         </div>
-                        <div class="bg-[#0c0a09] rounded-3xl py-6 border-2 border-orange-500 text-center">
+
+                        <div class="bg-black/30 p-3 rounded-2xl border border-white/5 space-y-2">
+                            <div class="flex justify-between items-center text-[10px] font-black uppercase text-stone-400 px-1">
+                                <span>Cor da Peça</span>
+                                <button onclick="deletarCor('${m.corPeca}')" class="text-red-500 hover:text-red-400">Excluir Cor</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <select onchange="altCorPeca(${m.id}, this.value)" class="flex-1 bg-stone-950 text-white font-bold p-2 rounded-lg text-xs outline-none border border-stone-800">
+                                    ${optionsCores}
+                                </select>
+                                <button onclick="abrirAddCor()" class="bg-orange-600 px-3 rounded-lg text-white font-black">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#0c0a09]/60 rounded-3xl py-6 border-2 border-orange-500/50 text-center">
                             <div class="text-[10px] font-black text-stone-500 uppercase">Produção Total</div>
                             <div class="text-6xl font-mono font-black text-white my-2">${m.producao}</div>
                             <div class="flex flex-col items-center justify-center gap-1 mt-2 px-4">
-                                <span class="text-[10px] text-orange-500 font-black uppercase">Meta de Produção:</span>
+                                <span class="text-[10px] text-orange-500 font-black uppercase">Meta:</span>
                                 <input type="number" value="${m.meta}" onchange="altMeta(${m.id}, this.value)" 
-                                class="w-full bg-stone-900 text-center font-black text-white border-2 border-orange-900 rounded-lg p-1 outline-none focus:border-orange-500 transition-all">
+                                class="w-full bg-stone-900 text-center font-black text-white border-2 border-orange-900 rounded-lg p-1 outline-none text-sm">
                             </div>
                         </div>
+
                         <div class="grid grid-cols-3 gap-2">
                             <button onclick="addProd(${m.id}, 1)" class="btn-incremento p-3 rounded-xl font-black">+1</button>
                             <button onclick="addProd(${m.id}, 10)" class="btn-incremento p-3 rounded-xl font-black">+10</button>
@@ -230,10 +251,29 @@
             }).join('');
         }
 
-        function fmtHora(seg) {
-            const h = Math.floor(seg / 3600);
-            const m = Math.floor((seg % 3600) / 60);
-            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}h`;
+        // LÓGICA DE GESTÃO DE CORES
+        function altCorPeca(id, cor) {
+            const m = maquinas.find(x => x.id === id);
+            m.corPeca = cor;
+        }
+
+        function abrirAddCor() {
+            const nova = prompt("Digite o nome da nova cor:");
+            if (nova && !listaCores.includes(nova)) {
+                listaCores.push(nova);
+                atualizarPainel();
+                salvarNoBanco();
+            }
+        }
+
+        function deletarCor(cor) {
+            if (listaCores.length <= 1) return alert("Deve haver pelo menos uma cor na lista.");
+            if (confirm(`Deseja deletar a cor "${cor}" de todo o sistema?`)) {
+                listaCores = listaCores.filter(c => c !== cor);
+                maquinas.forEach(m => { if(m.corPeca === cor) m.corPeca = listaCores[0]; });
+                atualizarPainel();
+                salvarNoBanco();
+            }
         }
 
         function addProd(id, qtd) {
@@ -251,9 +291,8 @@
             alert(`Refugo no Turno ${t} registrado!`);
         }
 
-        // NOVO: Função para resetar refugo específico
         function resetarRefugoTurno(maqId, turno) {
-            if(confirm(`Deseja zerar o refugo do Turno 0${turno} da Máquina 0${maqId}?`)) {
+            if(confirm(`Zerar o refugo do Turno 0${turno}?`)) {
                 const m = maquinas.find(x => x.id === maqId);
                 m[`refugo_t${turno}`] = 0;
                 renderTurnos();
@@ -268,7 +307,7 @@
             const m = maquinas.find(x => x.id === id);
             if (m && m.fila[0]) {
                 const c = m.fila.shift();
-                historico.push({ hora: new Date().toLocaleString(), maquina: m.nome, op: c.op, produto: c.produto, total: m.producao });
+                historico.push({ hora: new Date().toLocaleString(), maquina: m.nome, op: c.op, produto: c.produto + " (" + m.corPeca + ")", total: m.producao });
                 m.producao = 0; 
                 for(let i=1; i<=3; i++) { m[`producao_t${i}`] = 0; m[`parada_t${i}`] = 0; m[`refugo_t${i}`] = 0; }
                 atualizarPainel(); salvarNoBanco();
@@ -300,6 +339,12 @@
             document.getElementById('tabela-rastreio').innerHTML = historico.map(h => `<tr class="hover:bg-white/5 transition-colors"><td class="p-5 font-mono text-xs text-stone-500">${h.hora}</td><td class="p-5 font-black text-white">${h.maquina}</td><td class="p-5 text-stone-400">${h.op}</td><td class="p-5 font-black text-orange-500">${h.produto}</td><td class="p-5 text-center font-black text-white">${h.total}</td></tr>`).reverse().join('');
         }
 
+        function fmtHora(seg) {
+            const h = Math.floor(seg / 3600);
+            const m = Math.floor((seg % 3600) / 60);
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}h`;
+        }
+
         function renderTurnos() {
             document.getElementById('cards-turnos').innerHTML = maquinas.map(m => {
                 let ranking = [
@@ -319,15 +364,14 @@
                             <div class="bg-stone-950 p-4 rounded-2xl border border-white/5 shadow-inner">
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="text-xs font-black text-stone-500 uppercase">Turno ${tk.t}</span>
-                                    ${ranking[0] === tk && tk.p > 0 ? '<span class="text-[9px] bg-orange-600 text-white px-2 py-0.5 rounded-full font-black animate-pulse">LÍDER</span>' : ''}
                                 </div>
                                 <div class="grid grid-cols-1 gap-1">
                                     <div class="flex justify-between"><span class="text-[11px] font-bold text-stone-400">Peças Boas:</span> <span class="text-sm font-black text-white">${tk.p}</span></div>
                                     <div class="flex justify-between items-center">
                                         <span class="text-[11px] font-bold text-stone-400">Refugo:</span> 
                                         <div class="flex items-center gap-2">
-                                            <span class="text-sm font-black text-red-500">${tk.r} (${perc}%)</span>
-                                            <button onclick="resetarRefugoTurno(${m.id}, ${tk.t})" class="text-stone-600 hover:text-orange-500 transition-colors text-xs" title="Zerar refugo deste turno">🔄</button>
+                                            <span class="text-sm font-black text-red-500">${tk.r}</span>
+                                            <button onclick="resetarRefugoTurno(${m.id}, ${tk.t})" class="text-stone-600 hover:text-orange-500 transition-colors text-xs">🔄</button>
                                         </div>
                                     </div>
                                     <div class="flex justify-between border-t border-white/5 mt-1 pt-1"><span class="text-[11px] font-bold text-stone-400">Horas Paradas:</span> <span class="text-sm font-black text-orange-500">${fmtHora(tk.h)}</span></div>
@@ -341,7 +385,7 @@
 
         function renderGrafico() {
             const ctx = document.getElementById('graficoParadas').getContext('2d');
-            const dsets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), backgroundColor: ['#ef4444','#eab308','#ec4899','#8b5cf6','#06b6d4','#f97316','#a1a1aa'][i] }));
+            const dsets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), backgroundColor: ['rgba(239, 68, 68, 0.6)','rgba(234, 179, 8, 0.6)','rgba(236, 72, 153, 0.6)','rgba(139, 92, 246, 0.6)','rgba(6, 182, 212, 0.6)','rgba(249, 115, 22, 0.6)','rgba(161, 161, 170, 0.6)'][i] }));
             if (paradasChart) paradasChart.destroy();
             paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: dsets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#a8a29e' } } }, scales: { x: { stacked: true, grid: { color: '#292524' }, ticks: { color: '#a8a29e' } }, y: { stacked: true, grid: { color: '#292524' }, ticks: { color: '#a8a29e' } } } } });
         }
