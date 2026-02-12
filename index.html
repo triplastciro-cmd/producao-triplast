@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Sistema Integrado v4.7</title>
+    <title>Triplast - Gestão Industrial v5.2</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,117 +11,110 @@
         .aba-conteudo { display: none; }
         .aba-ativa { display: block; }
         
-        /* CORES SUAVES E TRANSPARENTES - RESTAURADAS */
-        .card-producao { background-color: rgba(6, 78, 59, 0.45); border-left: 10px solid #22c55e; color: #ecfdf5; }
-        .card-parada-geral { background-color: rgba(127, 29, 29, 0.45); border-left: 10px solid #ef4444; color: #fef2f2; }
-        .card-alerta { background-color: rgba(113, 63, 18, 0.45); border-left: 10px solid #eab308; color: #fefce8; }
-        .card-manutencao { background-color: rgba(39, 39, 42, 0.5); border-left: 10px solid #a1a1aa; color: #f4f4f5; }
-        .card-especial { background-color: rgba(76, 29, 149, 0.45); border-left: 10px solid #8b5cf6; color: #f5f3ff; }
+        body { background-color: #f1f5f9; color: #1e293b; }
 
-        #loading { position: fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:9999; background: #0c0a09; color: #f97316; }
-        .btn-incremento { transition: all 0.1s; border: 1px solid rgba(255,255,255,0.1); background-color: rgba(68, 64, 60, 0.6); color: white; }
-        .btn-incremento:active { transform: scale(0.9); background-color: #f97316; }
+        /* Estilo Corporativo Triplast - Branco Translúcido */
+        .card-maq { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); border-radius: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        
+        /* Indicadores de Status nas Bordas */
+        .status-producao { border-top: 8px solid #22c55e; }
+        .status-parada { border-top: 8px solid #ef4444; }
+        .status-alerta { border-top: 8px solid #f59e0b; }
+        .status-manutencao { border-top: 8px solid #64748b; }
+        .status-especial { border-top: 8px solid #8b5cf6; }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1c1917; }
+        .btn-incremento { background: #f8fafc; font-weight: 800; border: 1px solid #cbd5e1; transition: 0.2s; }
+        .btn-incremento:hover { background: #000; color: #fff; }
+        .btn-incremento:active { transform: scale(0.9); }
+
+        #loading { position: fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:9999; background: #fff; color: #f97316; font-weight: 900; }
+        
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; width: 100%; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
-
-        /* Ajuste do cabeçalho para acomodar o botão fixo */
-        .header-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            align-items: center;
-            width: 100%;
-        }
     </style>
 </head>
-<body class="bg-[#0c0a09] font-sans text-stone-200">
+<body class="font-sans">
 
-    <div id="loading"><div class="text-2xl font-black animate-pulse uppercase tracking-tighter text-orange-500">Triplast Cloud...</div></div>
+    <div id="loading" class="uppercase tracking-widest">Iniciando Sistema Triplast...</div>
 
-    <header class="p-4 bg-black border-b border-orange-600 shadow-2xl">
+    <header class="p-4 bg-white border-b-4 border-orange-500 shadow-sm sticky top-0 z-50">
         <div class="header-grid">
             <div>
-                <h1 class="text-3xl font-black text-white italic tracking-tighter">TRI<span class="text-orange-500">PLAST</span> <span class="text-[10px] text-orange-600 not-italic border border-orange-900 bg-stone-900 px-2 py-1 rounded-md ml-2 uppercase">v4.7</span></h1>
-                <p class="text-[10px] text-stone-500 font-bold uppercase tracking-widest mt-1">Gestão de Produção Industrial</p>
+                <h1 class="text-3xl font-black text-black italic tracking-tighter uppercase">Tri<span class="text-orange-500">plast</span></h1>
+                <p class="text-[10px] text-slate-400 font-black tracking-widest uppercase">Industrial Management</p>
             </div>
 
             <div class="flex justify-center">
-                <button onclick="salvarNoBanco()" id="btn-salvar" class="w-full max-w-xs bg-orange-600 hover:bg-orange-700 text-white py-4 px-8 rounded-2xl shadow-lg text-sm font-black flex items-center justify-center gap-3 transition-all border-b-4 border-orange-800 active:scale-95">
+                <button onclick="salvarNoBanco()" id="btn-salvar" class="bg-black hover:bg-orange-600 text-white px-10 py-4 rounded-2xl font-black text-sm flex items-center gap-3 transition-all shadow-xl active:scale-95">
                     <span class="text-xl">💾</span> SALVAR DADOS GERAIS
                 </button>
             </div>
 
-            <div class="flex items-center justify-end gap-3">
-                <div class="flex items-center gap-3 bg-stone-900 p-2 rounded-xl border border-stone-800 shadow-sm">
-                    <span class="text-xs font-black uppercase text-orange-500">⚠️ TURNO:</span>
-                    <select id="sel-turno" class="bg-stone-950 font-black text-white p-2 rounded-lg border-2 border-orange-600 outline-none text-sm uppercase cursor-pointer">
+            <div class="flex items-center justify-end gap-4">
+                <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <select id="sel-turno" class="bg-transparent font-black text-xs outline-none cursor-pointer">
                         <option value="1">🌞 TURNO 01</option>
-                        <option value="2">🌙 TURNO 02</option>
-                        <option value="3">🌑 TURNO 03</option>
+                        <option value="2">⛅ TURNO 02</option>
+                        <option value="3">🌙 TURNO 03</option>
                     </select>
                 </div>
-                <div id="relogio" class="font-mono font-black text-orange-500 bg-black px-4 py-2 rounded-xl border-2 border-orange-900 text-lg shadow-inner">00:00:00</div>
+                <div id="relogio" class="font-mono font-black text-xl bg-slate-100 text-black px-4 py-2 rounded-xl border border-slate-200">00:00:00</div>
             </div>
         </div>
     </header>
 
-    <nav class="bg-stone-950 p-3 shadow-xl flex gap-3 sticky top-0 z-50 overflow-x-auto border-b-4 border-orange-600">
-        <button onclick="trocarAba('painel')" id="btn-painel" class="btn-aba px-6 py-3 rounded-lg bg-orange-600 text-white text-xs font-black uppercase tracking-wider transition-all">Painel de Máquinas</button>
-        <button onclick="trocarAba('lista')" id="btn-lista" class="btn-aba px-6 py-3 rounded-lg bg-stone-900 text-stone-500 text-xs font-black uppercase tracking-wider transition-all">Fila de Espera</button>
-        <button onclick="trocarAba('paradas')" id="btn-paradas" class="btn-aba px-6 py-3 rounded-lg bg-stone-900 text-stone-500 text-xs font-black uppercase tracking-wider transition-all">Gráficos & Turnos</button>
-        <button onclick="trocarAba('rastreio')" id="btn-rastreio" class="btn-aba px-6 py-3 rounded-lg bg-stone-900 text-stone-500 text-xs font-black uppercase tracking-wider transition-all">Histórico Final</button>
+    <nav class="bg-black p-2 flex gap-2 justify-center shadow-lg">
+        <button onclick="trocarAba('painel')" id="btn-painel" class="btn-aba px-6 py-2 rounded-xl text-white font-black text-xs uppercase bg-orange-500 transition-all">Painel</button>
+        <button onclick="trocarAba('lista')" id="btn-lista" class="btn-aba px-6 py-2 rounded-xl text-slate-400 font-black text-xs uppercase hover:text-white transition-all">Fila</button>
+        <button onclick="trocarAba('paradas')" id="btn-paradas" class="btn-aba px-6 py-2 rounded-xl text-slate-400 font-black text-xs uppercase hover:text-white transition-all">Gráficos</button>
+        <button onclick="trocarAba('rastreio')" id="btn-rastreio" class="btn-aba px-6 py-2 rounded-xl text-slate-400 font-black text-xs uppercase hover:text-white transition-all">Histórico</button>
     </nav>
 
     <main id="aba-painel" class="aba-conteudo aba-ativa p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="grid-maquinas"></div>
     </main>
 
-    <main id="aba-paradas" class="aba-conteudo p-8">
-        <h2 class="font-black text-white mb-6 text-2xl uppercase border-b-4 border-orange-600 pb-2 inline-block">📊 Desempenho Detalhado por Turno</h2>
-        <div id="cards-turnos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"></div>
-        <div class="bg-stone-900 p-8 rounded-2xl shadow-xl border border-stone-800">
-            <h2 class="font-black text-orange-500 mb-6 text-xl uppercase border-l-4 border-orange-600 pl-3">Analítico de Paradas (Horas)</h2>
-            <div class="h-[400px]"><canvas id="graficoParadas"></canvas></div>
+    <main id="aba-lista" class="aba-conteudo p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                <h2 class="font-black text-xl mb-6 uppercase border-l-4 border-orange-500 pl-3">Agendar OP</h2>
+                <div class="space-y-4">
+                    <select id="f-maquina" class="w-full p-3 border rounded-xl font-bold bg-slate-50"></select>
+                    <input type="text" id="f-op" placeholder="Número da OP" class="w-full p-3 border rounded-xl font-bold bg-slate-50">
+                    <input type="text" id="f-produto" placeholder="Nome do Produto / Molde" class="w-full p-3 border rounded-xl font-bold bg-slate-50">
+                    <input type="text" id="f-operador" placeholder="Nome do Operador" class="w-full p-3 border rounded-xl font-bold bg-slate-50">
+                    <button onclick="adicionarAFila()" class="w-full bg-orange-500 text-white p-4 rounded-xl font-black uppercase hover:bg-orange-600 shadow-lg transition-all">Colocar na Fila</button>
+                </div>
+            </div>
+            <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                <h2 class="font-black text-xl mb-6 uppercase">Ordens em Espera</h2>
+                <div id="lista-espera" class="space-y-3"></div>
+            </div>
         </div>
     </main>
 
-    <main id="aba-lista" class="aba-conteudo p-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-stone-900 rounded-2xl shadow-xl p-8 border-t-4 border-orange-600">
-                <h2 class="text-xl font-black mb-6 text-white uppercase">📝 Agendar Ordem</h2>
-                <div class="space-y-4">
-                    <select id="f-maquina" class="w-full p-3 border-2 rounded-xl bg-stone-950 text-white font-bold outline-none border-stone-800">
-                        <option value="1">Máquina 01</option>
-                        <option value="2">Máquina 02</option>
-                        <option value="3">Máquina 03</option>
-                        <option value="4">Máquina 04</option>
-                    </select>
-                    <input type="text" id="f-op" placeholder="Número da OP" class="w-full p-3 border-2 rounded-xl bg-stone-950 text-white font-bold outline-none border-stone-800">
-                    <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 border-2 rounded-xl bg-stone-950 text-white font-bold outline-none border-stone-800">
-                    <input type="text" id="f-produto" placeholder="Produto / Molde" class="w-full p-3 border-2 rounded-xl bg-stone-950 text-white font-bold outline-none border-stone-800">
-                    <input type="text" id="f-operador" placeholder="Nome do Operador" class="w-full p-3 border-2 rounded-xl bg-stone-950 text-white font-bold outline-none border-stone-800">
-                    <button onclick="adicionarAFila()" class="w-full bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-xl font-black uppercase shadow-lg transition-all active:scale-95">Inserir na Fila</button>
-                </div>
-            </div>
-            <div class="bg-stone-900 rounded-2xl shadow-xl p-8 border border-stone-800 lg:col-span-2">
-                <h2 class="text-xl font-black mb-6 text-white uppercase">Fila de Produção Ativa</h2>
-                <div id="lista-espera" class="space-y-3 text-sm"></div>
-            </div>
+    <main id="aba-paradas" class="aba-conteudo p-8">
+        <div id="cards-turnos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"></div>
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+            <h2 class="font-black text-black mb-6 text-xl uppercase">Analítico de Paradas (Horas)</h2>
+            <div class="h-[450px]"><canvas id="graficoParadas"></canvas></div>
         </div>
     </main>
 
     <main id="aba-rastreio" class="aba-conteudo p-8">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-2xl font-black text-white uppercase">Histórico Final</h2>
-            <button onclick="limparRastreio()" class="bg-stone-900 text-stone-400 text-xs font-black px-6 py-3 rounded-xl border border-stone-800 hover:bg-orange-600 hover:text-white transition-all uppercase">Limpar Histórico</button>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black uppercase">Relatório Final de Produção</h2>
+            <button onclick="limparRastreio()" class="bg-red-500 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md">Limpar Tudo</button>
         </div>
-        <div class="bg-stone-900 rounded-3xl shadow-2xl overflow-hidden border border-stone-800">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-black text-orange-500 font-bold uppercase text-[10px]">
-                    <tr><th class="p-5">Encerramento</th><th class="p-5">Maq</th><th class="p-5">OP</th><th class="p-5">Produto</th><th class="p-5 text-center">Total</th></tr>
+        <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-200">
+            <table class="w-full text-left">
+                <thead class="bg-slate-100 text-slate-600 font-black text-[10px] uppercase">
+                    <tr><th class="p-5">Encerramento</th><th class="p-5">Máquina</th><th class="p-5">OP</th><th class="p-5">Produto</th><th class="p-5 text-center">Peças Boas</th><th class="p-5 text-center">% Refugo</th></tr>
                 </thead>
-                <tbody id="tabela-rastreio" class="divide-y divide-stone-800"></tbody>
+                <tbody id="tabela-rastreio" class="divide-y divide-slate-100 text-sm font-bold"></tbody>
             </table>
         </div>
     </main>
@@ -136,7 +129,6 @@
         let listaCores = ["Natural", "Preto", "Branco", "Azul", "Vermelho"];
         let paradasChart = null;
 
-        // OS 20 CÓDIGOS DA IMAGEM - RESTAURADOS
         const motivosParada = [
             "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA- PRIMA/ AJUSTE", "04-PRODUÇÃO",
             "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", "08-LANCHE",
@@ -146,10 +138,10 @@
         ];
 
         const mPadrao = [
-            { id: 1, nome: "M1", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
-            { id: 2, nome: "M2", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
-            { id: 3, nome: "M3", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
-            { id: 4, nome: "M4", status: "04-PRODUÇÃO", producao: 0, producao_t1: 0, producao_t2: 0, producao_t3: 0, refugo_t1: 0, refugo_t2: 0, refugo_t3: 0, parada_t1: 0, parada_t2: 0, parada_t3: 0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" }
+            { id: 1, nome: "MÁQUINA 01", status: "04-PRODUÇÃO", producao: 0, refugo: 0, producao_t1:0, producao_t2:0, producao_t3:0, refugo_t1:0, refugo_t2:0, refugo_t3:0, parada_t1:0, parada_t2:0, parada_t3:0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 2, nome: "MÁQUINA 02", status: "04-PRODUÇÃO", producao: 0, refugo: 0, producao_t1:0, producao_t2:0, producao_t3:0, refugo_t1:0, refugo_t2:0, refugo_t3:0, parada_t1:0, parada_t2:0, parada_t3:0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 3, nome: "MÁQUINA 03", status: "04-PRODUÇÃO", producao: 0, refugo: 0, producao_t1:0, producao_t2:0, producao_t3:0, refugo_t1:0, refugo_t2:0, refugo_t3:0, parada_t1:0, parada_t2:0, parada_t3:0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" },
+            { id: 4, nome: "MÁQUINA 04", status: "04-PRODUÇÃO", producao: 0, refugo: 0, producao_t1:0, producao_t2:0, producao_t3:0, refugo_t1:0, refugo_t2:0, refugo_t3:0, parada_t1:0, parada_t2:0, parada_t3:0, meta: 1000, fila: [], tempos: {}, corPeca: "Natural" }
         ];
 
         async function carregarDados() {
@@ -159,12 +151,10 @@
                     maquinas = data.conteudo.maquinas || mPadrao;
                     historico = data.conteudo.historico || [];
                     listaCores = data.conteudo.listaCores || ["Natural", "Preto", "Branco", "Azul", "Vermelho"];
-                } else {
-                    maquinas = mPadrao;
-                    await sb.from('sistema').insert([{ id: 1, conteudo: { maquinas, historico, listaCores } }]);
                 }
             } catch (e) { maquinas = mPadrao; }
             document.getElementById('loading').style.display = 'none';
+            document.getElementById('f-maquina').innerHTML = maquinas.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('');
             atualizarPainel();
         }
 
@@ -174,24 +164,20 @@
             btn.disabled = true;
             try {
                 await sb.from('sistema').update({ conteudo: { maquinas, historico, listaCores } }).eq('id', 1);
-                btn.innerHTML = "✅ DADOS SALVOS";
+                btn.innerHTML = "✅ DADOS ATUALIZADOS";
             } catch (e) { btn.innerHTML = "❌ ERRO AO SALVAR"; }
-            finally {
-                btn.disabled = false;
-                setTimeout(() => { btn.innerHTML = "<span class='text-xl'>💾</span> SALVAR DADOS GERAIS"; }, 2000);
-            }
+            setTimeout(() => { btn.innerHTML = "<span>💾</span> SALVAR DADOS GERAIS"; btn.disabled = false; }, 2000);
         }
 
         function trocarAba(nome) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
             document.querySelectorAll('.btn-aba').forEach(b => {
-                b.classList.replace('bg-orange-600', 'bg-stone-900');
-                b.classList.replace('text-white', 'text-stone-500');
+                b.classList.remove('bg-orange-500', 'text-white');
+                b.classList.add('text-slate-400');
             });
             document.getElementById('aba-' + nome).classList.add('aba-ativa');
             const btn = document.getElementById('btn-' + nome);
-            btn.classList.replace('bg-stone-900', 'bg-orange-600');
-            btn.classList.replace('text-stone-500', 'text-white');
+            btn.classList.add('bg-orange-500', 'text-white');
             if(nome === 'paradas') { renderTurnos(); renderGrafico(); }
             if(nome === 'rastreio') renderRastreio();
             if(nome === 'lista') renderLista();
@@ -200,92 +186,94 @@
         function atualizarPainel() {
             const grid = document.getElementById('grid-maquinas');
             grid.innerHTML = maquinas.map(m => {
-                const item = m.fila && m.fila[0] ? m.fila[0] : { op: "SEM ORDEM", produto: "AGUARDANDO", operador: "N/A" };
+                const item = m.fila && m.fila[0] ? m.fila[0] : { op: "SEM OP", produto: "AGUARDANDO", operador: "N/A" };
+                const totalInjetado = m.producao + m.refugo;
+                const percRefugo = totalInjetado > 0 ? ((m.refugo / totalInjetado) * 100).toFixed(1) : 0;
                 
-                // CLASSES DE STATUS RESTAURADAS
-                let sClasse = "card-producao";
+                let sClasse = "status-producao";
                 if(m.status !== "04-PRODUÇÃO") {
-                    if(m.status.includes("MOLDE") || m.status.includes("POSTIÇO")) sClasse = "card-especial";
-                    else if(m.status.includes("MANUTENÇÃO") || m.status.includes("PROBLEMA")) sClasse = "card-manutencao";
-                    else if(m.status.includes("FALTA") || m.status.includes("ENERGIA")) sClasse = "card-parada-geral";
-                    else sClasse = "card-alerta";
+                    if(m.status.includes("MOLDE") || m.status.includes("POSTIÇO")) sClasse = "status-especial";
+                    else if(m.status.includes("MANUTENÇÃO")) sClasse = "status-manutencao";
+                    else sClasse = "status-parada";
                 }
 
-                const optCores = listaCores.map(c => `<option value="${c}" ${m.corPeca === c ? 'selected' : ''}>${c}</option>`).join('');
-                const optStatus = motivosParada.map(st => `<option value="${st}" ${m.status === st ? 'selected' : ''}>${st}</option>`).join('');
-
                 return `
-                    <div class="${sClasse} rounded-3xl shadow-2xl p-6 flex flex-col gap-4 border-b-8 border-black/30 transition-all duration-300">
-                        <div class="flex justify-between items-start font-black text-2xl uppercase"><h2>${m.nome}</h2><span class="text-[9px] bg-black/40 px-2 py-1 rounded-lg border border-white/10 italic">v4.7</span></div>
+                    <div class="card-maq ${sClasse} p-6 flex flex-col gap-4 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <h2 class="font-black text-xl text-black">${m.nome}</h2>
+                            <span class="text-[9px] bg-black text-white px-2 py-1 rounded-lg uppercase">${m.status.split('-')[1]}</span>
+                        </div>
                         
-                        <div class="bg-black/20 rounded-2xl p-4 text-[11px] font-bold border border-white/5">
-                            <p class="opacity-60 uppercase">OP: ${item.op} | OPERADOR: ${item.operador}</p>
-                            <p class="font-black text-white text-sm">${item.produto}</p>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-[9px] text-slate-400 font-black uppercase">OP: ${item.op} | Operador: ${item.operador}</p>
+                            <p class="font-black text-black text-xs mt-1 uppercase truncate">${item.produto}</p>
                         </div>
 
-                        <div class="bg-black/30 p-3 rounded-2xl border border-white/5 space-y-2">
-                            <div class="flex justify-between items-center text-[10px] font-black uppercase text-stone-400 px-1">
-                                <span>Cor da Peça</span>
-                                <button onclick="deletarCor('${m.corPeca}')" class="text-red-500 hover:text-red-400">Excluir</button>
-                            </div>
-                            <div class="flex gap-2">
-                                <select onchange="altCorPeca(${m.id}, this.value)" class="flex-1 bg-stone-950 text-white font-bold p-2 rounded-lg text-xs outline-none border border-stone-800">
-                                    ${optCores}
-                                </select>
-                                <button onclick="abrirAddCor()" class="bg-orange-600 px-3 rounded-lg text-white font-black">+</button>
-                            </div>
-                        </div>
-
-                        <div class="bg-[#0c0a09]/60 rounded-3xl py-6 border-2 border-orange-500/50 text-center">
-                            <div class="text-[10px] font-black text-stone-500 uppercase">Produção Atual</div>
-                            <div class="text-6xl font-mono font-black text-white my-2">${m.producao}</div>
-                            <div class="flex flex-col items-center justify-center gap-1 mt-2 px-4">
-                                <span class="text-[10px] text-orange-500 font-black uppercase">Meta do Turno:</span>
-                                <input type="number" value="${m.meta}" onchange="altMeta(${m.id}, this.value)" 
-                                class="w-full bg-stone-900 text-center font-black text-white border-2 border-orange-900 rounded-lg p-1 outline-none text-sm">
-                            </div>
+                        <div class="bg-white rounded-3xl py-6 border-2 border-orange-50 text-center shadow-inner">
+                            <div class="text-[10px] font-black text-slate-400 uppercase">Peças Boas</div>
+                            <div class="text-6xl font-black text-black my-2">${m.producao}</div>
+                            <input type="number" value="${m.meta}" onchange="altMeta(${m.id}, this.value)" 
+                            class="w-full text-center font-black text-orange-500 bg-transparent outline-none text-sm">
                         </div>
 
                         <div class="grid grid-cols-3 gap-2">
-                            <button onclick="addProd(${m.id}, 1)" class="btn-incremento p-3 rounded-xl font-black">+1</button>
-                            <button onclick="addProd(${m.id}, 10)" class="btn-incremento p-3 rounded-xl font-black">+10</button>
-                            <button onclick="addProd(${m.id}, 100)" class="btn-incremento p-3 rounded-xl font-black">+100</button>
+                            <button onclick="addProd(${m.id}, 1)" class="btn-incremento p-3 rounded-xl text-xs">+1</button>
+                            <button onclick="addProd(${m.id}, 10)" class="btn-incremento p-3 rounded-xl text-xs">+10</button>
+                            <button onclick="addProd(${m.id}, 100)" class="btn-incremento p-3 rounded-xl text-xs">+100</button>
                         </div>
 
-                        <div class="space-y-1">
-                            <label class="text-[9px] font-black text-stone-500 uppercase ml-1">Código de Apontamento:</label>
-                            <select onchange="altStatus(${m.id}, this.value)" class="w-full p-3 rounded-xl bg-stone-950 text-white font-black uppercase text-[10px] border border-white/10 outline-none">
-                                ${optStatus}
-                            </select>
+                        <div class="bg-red-50 p-3 rounded-2xl border border-red-100">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[10px] font-black text-red-400 uppercase">Refugo (${percRefugo}%)</span>
+                                <span class="font-black text-red-700">${m.refugo}</span>
+                            </div>
+                            <button onclick="addRefugo(${m.id})" class="w-full bg-white border border-red-200 text-red-600 font-black p-2 rounded-xl text-xs hover:bg-red-600 hover:text-white transition-all">SOMA REFUGO (+1)</button>
                         </div>
 
-                        <div class="flex gap-2">
-                            <button onclick="addRefugo(${m.id})" class="flex-1 bg-black/30 p-3 rounded-xl text-[10px] font-black uppercase">Refugo</button>
-                            <button onclick="concluirProduto(${m.id})" class="flex-[2] bg-orange-600 p-3 rounded-xl text-[10px] font-black uppercase shadow-lg border-b-4 border-orange-800">Finalizar OP</button>
-                        </div>
+                        <select onchange="altStatus(${m.id}, this.value)" class="w-full p-3 rounded-xl font-black uppercase text-[10px] bg-white border-slate-200 outline-none">
+                            ${motivosParada.map(st => `<option value="${st}" ${m.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+                        </select>
+
+                        <button onclick="concluirProduto(${m.id})" class="w-full bg-black text-white p-3 rounded-xl font-black text-[10px] uppercase shadow-lg active:scale-95">Finalizar Produção</button>
                     </div>`;
             }).join('');
         }
 
-        // LÓGICA DE GESTÃO RESTAURADA
-        function altCorPeca(id, cor) { maquinas.find(x => x.id === id).corPeca = cor; }
-        function abrirAddCor() { const n = prompt("Nova cor:"); if(n && !listaCores.includes(n)){ listaCores.push(n); atualizarPainel(); salvarNoBanco(); } }
-        function deletarCor(c) { if(listaCores.length > 1 && confirm(`Excluir ${c}?`)) { listaCores = listaCores.filter(x => x !== c); maquinas.forEach(m => { if(m.corPeca === c) m.corPeca = listaCores[0]; }); atualizarPainel(); salvarNoBanco(); } }
-        
-        function addProd(id, qtd) { const m = maquinas.find(x => x.id === id); const t = document.getElementById('sel-turno').value; m.producao += qtd; m[`producao_t${t}`] = (m[`producao_t${t}`] || 0) + qtd; atualizarPainel(); }
-        function addRefugo(id) { const m = maquinas.find(x => x.id === id); const t = document.getElementById('sel-turno').value; m[`refugo_t${t}`] = (m[`refugo_t${t}`] || 0) + 1; atualizarPainel(); }
-        function resetarRefugoTurno(mid, t) { if(confirm(`Zerar refugo T0${t}?`)){ maquinas.find(x=>x.id===mid)[`refugo_t${t}`] = 0; renderTurnos(); salvarNoBanco(); } }
-        
-        function altMeta(id, v) { maquinas.find(x => x.id === id).meta = parseInt(v) || 0; }
+        function addProd(id, qtd) {
+            const m = maquinas.find(x => x.id === id);
+            const t = document.getElementById('sel-turno').value;
+            m.producao += qtd;
+            m[`producao_t${t}`] = (m[`producao_t${t}`] || 0) + qtd;
+            atualizarPainel();
+        }
+
+        function addRefugo(id) {
+            const m = maquinas.find(x => x.id === id);
+            const t = document.getElementById('sel-turno').value;
+            m.refugo += 1;
+            m[`refugo_t${t}`] = (m[`refugo_t${t}`] || 0) + 1;
+            atualizarPainel();
+        }
+
         function altStatus(id, s) { maquinas.find(x => x.id === id).status = s; atualizarPainel(); }
+        function altMeta(id, v) { maquinas.find(x => x.id === id).meta = parseInt(v) || 0; }
 
         function concluirProduto(id) {
             const m = maquinas.find(x => x.id === id);
             if (m && m.fila[0]) {
-                const c = m.fila.shift();
-                historico.push({ hora: new Date().toLocaleString(), maquina: m.nome, op: c.op, produto: `${c.produto} (${m.corPeca})`, total: m.producao });
-                m.producao = 0; 
+                const totalInjetado = m.producao + m.refugo;
+                const perc = totalInjetado > 0 ? ((m.refugo / totalInjetado) * 100).toFixed(1) : 0;
+                historico.push({ 
+                    hora: new Date().toLocaleString(), 
+                    maquina: m.nome, 
+                    op: m.fila[0].op, 
+                    produto: m.fila[0].produto, 
+                    total: m.producao, 
+                    perc: perc + "%" 
+                });
+                m.producao = 0; m.refugo = 0;
                 for(let i=1; i<=3; i++) { m[`producao_t${i}`] = 0; m[`parada_t${i}`] = 0; m[`refugo_t${i}`] = 0; }
+                m.fila.shift();
                 atualizarPainel(); salvarNoBanco();
             }
         }
@@ -293,17 +281,34 @@
         function adicionarAFila() {
             const mId = parseInt(document.getElementById('f-maquina').value);
             const mq = maquinas.find(m => m.id === mId);
-            mq.fila.push({ op: document.getElementById('f-op').value, cliente: document.getElementById('f-cliente').value, produto: document.getElementById('f-produto').value, operador: document.getElementById('f-operador').value });
+            mq.fila.push({ 
+                op: document.getElementById('f-op').value, 
+                produto: document.getElementById('f-produto').value, 
+                operador: document.getElementById('f-operador').value 
+            });
+            document.getElementById('f-op').value = ''; document.getElementById('f-produto').value = '';
             renderLista(); atualizarPainel();
         }
 
         function renderLista() {
-            document.getElementById('lista-espera').innerHTML = maquinas.map(m => (m.fila || []).map((f,i) => `<div class="p-4 bg-black border border-stone-800 rounded flex justify-between items-center mb-2 font-bold text-stone-300"><span>${m.nome} | OP: ${f.op} | ${f.produto}</span><button onclick="rmFila(${m.id},${i})" class="text-red-600 text-xs">REMOVER</button></div>`).join('')).join('');
+            document.getElementById('lista-espera').innerHTML = maquinas.map(m => (m.fila || []).map((f,i) => `
+                <div class="p-4 bg-white border border-slate-200 rounded-2xl flex justify-between items-center font-bold shadow-sm">
+                    <span class="text-sm">${m.nome} | <span class="text-orange-500">OP: ${f.op}</span> | ${f.produto}</span>
+                    <button onclick="rmFila(${m.id},${i})" class="text-red-500 text-xs font-black uppercase">Excluir</button>
+                </div>`).join('')).join('');
         }
         function rmFila(mid, idx) { maquinas.find(x=>x.id===mid).fila.splice(idx,1); renderLista(); }
 
         function renderRastreio() {
-            document.getElementById('tabela-rastreio').innerHTML = historico.map(h => `<tr class="hover:bg-white/5 transition-colors"><td class="p-5 font-mono text-xs text-stone-500">${h.hora}</td><td class="p-5 font-black text-white">${h.maquina}</td><td class="p-5 text-stone-400">${h.op}</td><td class="p-5 font-black text-orange-500">${h.produto}</td><td class="p-5 text-center font-black text-white">${h.total}</td></tr>`).reverse().join('');
+            document.getElementById('tabela-rastreio').innerHTML = historico.map(h => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-5 text-slate-400 text-xs font-mono">${h.hora}</td>
+                    <td class="p-5 text-black">${h.maquina}</td>
+                    <td class="p-5 text-orange-600 font-black">${h.op}</td>
+                    <td class="p-5 text-black">${h.produto}</td>
+                    <td class="p-5 text-center text-black font-black">${h.total}</td>
+                    <td class="p-5 text-center text-red-600 font-black">${h.perc}</td>
+                </tr>`).reverse().join('');
         }
 
         function fmtHora(seg) { const h = Math.floor(seg / 3600); const m = Math.floor((seg % 3600) / 60); return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}h`; }
@@ -311,15 +316,15 @@
         function renderTurnos() {
             document.getElementById('cards-turnos').innerHTML = maquinas.map(m => {
                 let rnk = [ { t: 3, p: m.producao_t3 || 0, r: m.refugo_t3 || 0, h: m.parada_t3 || 0 }, { t: 1, p: m.producao_t1 || 0, r: m.refugo_t1 || 0, h: m.parada_t1 || 0 }, { t: 2, p: m.producao_t2 || 0, r: m.refugo_t2 || 0, h: m.parada_t2 || 0 } ];
-                return `<div class="bg-stone-900 border border-stone-800 p-5 rounded-3xl shadow-xl">
-                    <h3 class="bg-black text-orange-500 p-3 text-center rounded-2xl mb-4 font-black uppercase tracking-tighter">${m.nome}</h3>
-                    <div class="space-y-3">
+                return `<div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm">
+                    <h3 class="bg-black text-white p-2 text-center rounded-xl mb-4 font-black uppercase text-xs">${m.nome}</h3>
+                    <div class="space-y-2">
                         ${rnk.map(tk => `
-                            <div class="bg-stone-950 p-4 rounded-2xl border border-white/5">
-                                <div class="text-xs font-black text-stone-500 uppercase mb-2">Turno ${tk.t}</div>
-                                <div class="flex justify-between"><span class="text-[11px] font-bold text-stone-400">Peças:</span> <span class="text-sm font-black text-white">${tk.p}</span></div>
-                                <div class="flex justify-between items-center"><span class="text-[11px] font-bold text-stone-400">Refugo:</span> <span class="text-sm font-black text-red-500">${tk.r} <button onclick="resetarRefugoTurno(${m.id}, ${tk.t})" class="ml-1 text-[10px]">🔄</button></span></div>
-                                <div class="flex justify-between border-t border-white/5 mt-1 pt-1"><span class="text-[11px] font-bold text-stone-400">Paradas:</span> <span class="text-sm font-black text-orange-500">${fmtHora(tk.h)}</span></div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <div class="text-[9px] font-black text-slate-400 uppercase mb-1">Turno 0${tk.t}</div>
+                                <div class="flex justify-between text-xs"><span>Peças:</span> <span class="font-black">${tk.p}</span></div>
+                                <div class="flex justify-between text-xs"><span>Refugo:</span> <span class="font-black text-red-500">${tk.r}</span></div>
+                                <div class="flex justify-between text-xs mt-1 pt-1 border-t"><span>Parado:</span> <span class="font-black text-orange-500">${fmtHora(tk.h)}</span></div>
                             </div>`).join('')}
                     </div>
                 </div>`;
@@ -328,9 +333,9 @@
 
         function renderGrafico() {
             const ctx = document.getElementById('graficoParadas').getContext('2d');
-            const dsets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), backgroundColor: `hsla(${i * 18}, 70%, 50%, 0.6)` }));
+            const dsets = motivosParada.map((mot, i) => ({ label: mot, data: maquinas.map(m => ((m.tempos && m.tempos[mot] ? m.tempos[mot] : 0)/3600).toFixed(2)), backgroundColor: `hsla(${i * 18}, 70%, 50%, 0.8)` }));
             if (paradasChart) paradasChart.destroy();
-            paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: dsets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#292524' } } } } });
+            paradasChart = new Chart(ctx, { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: dsets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { stacked: true }, y: { stacked: true } } } });
         }
 
         function limparRastreio() { if(confirm("Limpar Histórico?")) { historico = []; renderRastreio(); salvarNoBanco(); } }
