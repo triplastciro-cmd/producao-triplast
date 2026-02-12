@@ -12,7 +12,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #add8e6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        /* Sistema de Abas */
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; }
 
@@ -44,7 +43,6 @@
 
         header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; }
         
-        /* Modal de Reset */
         .modal-reset {
             display: none; position: absolute; top: 40px; right: 10px; background: white;
             border: 1px solid #ccc; padding: 10px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 50; width: 150px;
@@ -61,7 +59,7 @@
             </div>
 
             <div class="flex items-center gap-4 bg-slate-700 p-2 rounded-xl">
-                <span class="text-xs font-bold text-slate-400 ml-2">TURNO:</span>
+                <span class="text-xs font-bold text-slate-400 ml-2">TURNO (BSB):</span>
                 <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-800 text-white font-bold p-2 rounded-lg outline-none border-none">
                     <option value="1">🌅 Manhã (05:00 - 14:18)</option>
                     <option value="2">☀️ Tarde (14:18 - 23:36)</option>
@@ -86,8 +84,7 @@
     </nav>
 
     <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
-        <div id="grid-maquinas" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            </div>
+        <div id="grid-maquinas" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </div>
 
     <div id="aba-lista" class="aba-conteudo px-4">
@@ -107,27 +104,17 @@
                     <button onclick="adicionarFila()" class="col-span-2 bg-blue-600 text-white py-4 rounded-2xl font-black uppercase shadow-lg hover:bg-blue-500">LANÇAR ORDEM</button>
                 </div>
             </div>
-
+            
             <div class="bg-white p-8 rounded-3xl shadow-2xl">
-                <h2 class="text-2xl font-black mb-4 border-b pb-4">📋 FILA DE PRODUÇÃO (EDITAR / APAGAR)</h2>
+                <h2 class="text-2xl font-black mb-4 border-b pb-4">📋 FILA DE PRODUÇÃO</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-100 text-slate-500 text-xs uppercase">
-                            <tr>
-                                <th class="p-3">Máquina</th>
-                                <th class="p-3">O.P</th>
-                                <th class="p-3">Produto</th>
-                                <th class="p-3">Qtd</th>
-                                <th class="p-3 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lista-ops-geral" class="text-sm font-bold text-slate-700">
-                            </tbody>
+                        <tbody id="lista-ops-geral" class="text-sm font-bold text-slate-700"></tbody>
                     </table>
                 </div>
             </div>
 
-             <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
                 <h2 class="text-2xl font-black mb-8 border-b pb-4">🎨 CORES</h2>
                 <div class="flex gap-4 mb-8">
                     <input type="text" id="nova-cor" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nova Cor...">
@@ -141,31 +128,32 @@
     <div id="aba-graficos" class="aba-conteudo px-4">
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
-                <h3 class="font-black text-slate-700 mb-4">STATUS GERAL DAS MÁQUINAS (TEMPO ACUMULADO)</h3>
+                <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
+                    <h3 class="font-black text-slate-700 text-xl">STATUS GERAL / RELÓGIO</h3>
+                    <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
+                        <option value="todas">🏭 Todas as Máquinas</option>
+                    </select>
+                </div>
                 <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
-                
                 <div class="w-full mt-6 grid grid-cols-3 gap-4 text-center">
                     <div class="bg-green-50 p-4 rounded-xl border border-green-200">
                         <div class="text-green-600 text-xs font-bold uppercase mb-1">PRODUZINDO</div>
-                        <div id="global-timer-prod" class="text-2xl font-black text-green-700">00:00:00</div>
+                        <div id="global-timer-prod" class="text-xl sm:text-3xl font-black text-green-700">00:00:00</div>
                     </div>
                     <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
-                        <div class="text-orange-500 text-xs font-bold uppercase mb-1">BAIXA EFICIÊNCIA</div>
-                        <div id="global-timer-baixa" class="text-2xl font-black text-orange-600">00:00:00</div>
+                        <div class="text-orange-500 text-xs font-bold uppercase mb-1">BAIXA EFIC.</div>
+                        <div id="global-timer-baixa" class="text-xl sm:text-3xl font-black text-orange-600">00:00:00</div>
                     </div>
                     <div class="bg-red-50 p-4 rounded-xl border border-red-200">
                         <div class="text-red-600 text-xs font-bold uppercase mb-1">PARADO</div>
-                        <div id="global-timer-parado" class="text-2xl font-black text-red-700">00:00:00</div>
+                        <div id="global-timer-parado" class="text-xl sm:text-3xl font-black text-red-700">00:00:00</div>
                     </div>
                 </div>
             </div>
-
             <div class="bg-white p-6 rounded-3xl shadow-xl">
-                <h4 class="font-bold text-slate-500 text-xs mb-2 uppercase">Tempo Parado (HORAS)</h4>
                 <canvas id="chartParadas"></canvas>
             </div>
             <div class="bg-white p-6 rounded-3xl shadow-xl">
-                <h4 class="font-bold text-slate-500 text-xs mb-2 uppercase">Refugos (Quantidade)</h4>
                 <canvas id="chartRefugos"></canvas>
             </div>
         </div>
@@ -175,7 +163,7 @@
         <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl overflow-x-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-black text-slate-700">RESUMO DO TURNO</h2>
-                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR APONTAMENTOS DO TURNO</button>
+                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR TURNO</button>
             </div>
             <table class="w-full text-left min-w-[600px]">
                 <thead class="bg-slate-800 text-white uppercase text-[10px]">
@@ -195,31 +183,29 @@
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let manualOverride = false;
         let saveTimeout = null;
-        
+        let filtroGraficoId = 'todas';
         let charts = { oee: null, paradas: null, refugos: null };
 
-        const paradasCodigos = [
-            "04-PRODUÇÃO", "21-BAIXA EFICIÊNCIA",
-            "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATERIA-PRIMA/ AJUSTE",
-            "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", "08-LANCHE",
-            "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INICIO DE PROCESSO", "12-FALTA DE ENERGIA ELÉTRICA",
-            "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", "15-PROBLEMA AR", "16-PROBLEMA CAMARÃ QUENTE",
-            "17-TROCA DE BICO DE INJEÇÃO", "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS"
-        ];
+        // Helper para Hora de Brasília
+        function getBrasiliaDate() {
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        }
 
-        const codigosRefugo = [
-            "Falha de injeção", "Arranhão/batido", "Fora de cor", 
-            "Peça presa no molde", "Bolha", "Mancha", 
-            "Trinca", "Espirro", "Material contaminado", "Outros"
+        const paradasCodigos = [
+            "04-PRODUÇÃO", "21-BAIXA EFICIÊNCIA", "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", 
+            "03-MATERIA-PRIMA/ AJUSTE", "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", 
+            "08-LANCHE", "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INICIO DE PROCESSO", 
+            "12-FALTA DE ENERGIA ELÉTRICA", "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", 
+            "15-PROBLEMA AR", "16-PROBLEMA CAMARÃ QUENTE", "17-TROCA DE BICO DE INJEÇÃO", 
+            "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS"
         ];
+        const codigosRefugo = ["Falha de injeção", "Arranhão/batido", "Fora de cor", "Peça presa no molde", "Bolha", "Mancha", "Trinca", "Espirro", "Material contaminado", "Outros"];
 
         async function carregarBanco() {
             const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data) {
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
-                
-                // Normalização de dados (garantir que novos campos existam)
                 maquinas.forEach(m => {
                     if(!m.dadosTurno) m.dadosTurno = { 1:{}, 2:{}, 3:{} };
                     for(let i=1; i<=3; i++) {
@@ -228,7 +214,7 @@
                         if(m.dadosTurno[i].refugo === undefined) m.dadosTurno[i].refugo = 0;
                         if(m.dadosTurno[i].paradas === undefined) m.dadosTurno[i].paradas = 0;
                         if(m.dadosTurno[i].tempoProducao === undefined) m.dadosTurno[i].tempoProducao = 0;
-                        if(m.dadosTurno[i].tempoBaixa === undefined) m.dadosTurno[i].tempoBaixa = 0; // Novo campo
+                        if(m.dadosTurno[i].tempoBaixa === undefined) m.dadosTurno[i].tempoBaixa = 0;
                     }
                 });
                 
@@ -246,7 +232,6 @@
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
             
-            // Renderiza apenas se necessário ao trocar de aba
             if(id === 'graficos') renderGrafico();
             if(id === 'apontamento') renderApontamento();
             if(id === 'lista') renderListaOPs();
@@ -254,7 +239,7 @@
 
         function processarTurnoAuto() {
             if (manualOverride) return;
-            const agora = new Date();
+            const agora = getBrasiliaDate();
             const min = agora.getHours() * 60 + agora.getMinutes();
             let t = 3; 
             if (min >= 300 && min < 858) t = 1; 
@@ -271,11 +256,7 @@
         }
 
         function toggleReset(id) {
-            // Fecha todos os outros primeiro
-            document.querySelectorAll('.modal-reset').forEach(m => {
-                if(m.id !== `modal-reset-${id}`) m.style.display = 'none';
-            });
-            
+            document.querySelectorAll('.modal-reset').forEach(m => { if(m.id !== `modal-reset-${id}`) m.style.display = 'none'; });
             const el = document.getElementById(`modal-reset-${id}`);
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
@@ -291,57 +272,41 @@
         }
 
         function resetarTurnoCompleto() {
-            if(confirm("ATENÇÃO: Isso irá zerar TODA a produção, refugo e tempos de TODAS as máquinas para o turno atual. Confirmar?")) {
+            if(confirm("ZERAR TUDO DO TURNO ATUAL?")) {
                 const t = document.getElementById('filtro-turno').value;
-                maquinas.forEach(m => {
-                    m.dadosTurno[t] = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
-                });
-                render();
-                renderApontamento();
-                salvarAutomatico();
+                maquinas.forEach(m => { m.dadosTurno[t] = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 }; });
+                render(); renderApontamento(); salvarAutomatico();
             }
         }
 
-        // ========================
-        // RENDERIZAÇÃO DO PAINEL
-        // ========================
         function render() {
             const t = document.getElementById('filtro-turno').value;
             const grid = document.getElementById('grid-maquinas');
             if(!grid) return;
 
-            // Salva o estado dos menus abertos antes de redesenhar (embora agora não vamos chamar render() no loop)
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1 };
                 const d = m.dadosTurno[t];
-                
                 const percPerda = (d.refugo * 2).toFixed(0); 
-                
                 let sClass = "";
-                // Logica visual de cor
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
 
                 return `
                 <div class="card-producao ${sClass} p-4" id="card-${m.id}">
-                    <button onclick="toggleReset(${m.id})" class="absolute top-2 right-2 text-gray-300 hover:text-gray-600 text-xl z-10 p-2">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                    
+                    <button onclick="toggleReset(${m.id})" class="absolute top-2 right-2 text-gray-300 hover:text-gray-600 text-xl z-10 p-2"><i class="fa-solid fa-gear"></i></button>
                     <div id="modal-reset-${m.id}" class="modal-reset">
                         <div class="text-xs font-bold text-slate-500 mb-2 border-b pb-1">ZERAR CONTADORES</div>
                         <button onclick="resetarValor(${m.id}, 'boas')" class="w-full text-left p-2 hover:bg-slate-100 text-xs text-blue-600 font-bold">Zerar Peças</button>
                         <button onclick="resetarValor(${m.id}, 'refugo')" class="w-full text-left p-2 hover:bg-slate-100 text-xs text-red-600 font-bold">Zerar Refugo</button>
                         <button onclick="resetarValor(${m.id}, 'paradas')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Zerar Parada</button>
                         <button onclick="resetarValor(${m.id}, 'tempoProducao')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Zerar T. Prod</button>
-                         <button onclick="resetarValor(${m.id}, 'tempoBaixa')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Zerar T. Baixa</button>
+                        <button onclick="resetarValor(${m.id}, 'tempoBaixa')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Zerar T. Baixa</button>
                     </div>
-
                     <div class="flex flex-col mb-2">
                         <span class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-lg w-fit shadow-md mb-1">${m.nome}</span>
                         <span id="timer-display-${m.id}" class="text-[10px] font-bold block min-h-[15px]">--:--:--</span>
                     </div>
-
                     <div class="bg-slate-50 p-3 rounded-2xl border mb-3">
                         <div class="flex justify-between items-center mb-1">
                             <span class="font-black text-slate-800 text-sm">O.P ${op.op}</span>
@@ -357,7 +322,6 @@
                             <div class="info-badge"><span>PERDA</span><span class="text-red-500 text-lg">${percPerda}%</span></div>
                         </div>
                     </div>
-                    
                     <div class="mb-3 bg-red-50 p-2 rounded-xl border border-red-100">
                          <label class="text-[10px] font-bold text-red-400 block mb-1">LANÇAR REFUGO</label>
                          <div class="flex gap-2">
@@ -367,7 +331,6 @@
                             <button onclick="addRefugo(${m.id})" class="bg-red-500 text-white px-3 rounded font-black text-xs hover:bg-red-600">OK</button>
                          </div>
                     </div>
-
                     <label class="text-[10px] font-bold text-blue-400 block mb-1">APONTAR PEÇAS</label>
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <button onclick="addProd(${m.id}, 10)" class="btn-prod">+10</button>
@@ -377,7 +340,6 @@
                         <button onclick="addProd(${m.id}, 100)" class="btn-prod">+100</button>
                         <button onclick="addProd(${m.id}, 1000)" class="btn-prod text-yellow-300">+1000</button>
                     </div>
-
                     <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500 mb-2">
                         ${paradasCodigos.map(p => {
                             let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : "text-red-600");
@@ -387,250 +349,185 @@
                     <button onclick="finalizarOP(${m.id})" class="w-full text-[10px] font-black text-slate-400 uppercase">Finalizar Ordem</button>
                 </div>`;
             }).join('');
-            
             calcEficienciaGlobal();
-            updateTimersVisualOnly(); // Atualiza os textos dos timers imediatamente
+            updateTimersVisualOnly();
         }
 
-        // ============================
-        // ATUALIZAÇÃO VISUAL (TIMERS)
-        // ============================
         function updateTimersVisualOnly() {
             const t = document.getElementById('filtro-turno').value;
-            
             maquinas.forEach(m => {
                 const el = document.getElementById(`timer-display-${m.id}`);
                 if(el) {
                     const d = m.dadosTurno[t];
-                    if (m.status === "04-PRODUÇÃO") {
-                        el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
-                    } else if (m.status === "21-BAIXA EFICIÊNCIA") {
-                        el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
-                    } else {
-                        el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
-                    }
+                    if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
+                    else if (m.status === "21-BAIXA EFICIÊNCIA") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
+                    else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
                 }
             });
         }
 
         function fmtTempo(s) { 
-            const h = Math.floor(s / 3600); 
-            const m = Math.floor((s % 3600) / 60); 
-            const seg = s % 60;
+            const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
         }
 
         function addProd(id, v) { 
-            const t = document.getElementById('filtro-turno').value;
-            maquinas.find(x => x.id === id).dadosTurno[t].boas += v;
-            render();
-            salvarAutomatico();
+            const t = document.getElementById('filtro-turno').value; maquinas.find(x => x.id === id).dadosTurno[t].boas += v; render(); salvarAutomatico();
         }
 
         function addRefugo(id) { 
-            const t = document.getElementById('filtro-turno').value;
-            maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1;
-            render();
-            salvarAutomatico();
+            const t = document.getElementById('filtro-turno').value; maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1; render(); salvarAutomatico();
         }
 
         function atualizarStatus(id, st) { 
-            maquinas.find(x => x.id === id).status = st; 
-            render(); 
-            salvarAutomatico();
+            maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico();
         }
 
         function vincularCor(id, cor) { 
-            maquinas.find(x => x.id === id).corAtual = cor; 
-            salvarAutomatico();
+            maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico();
         }
 
         function calcEficienciaGlobal() {
-            let prod = 0, meta = 0;
-            const t = document.getElementById('filtro-turno').value;
+            let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => { prod += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
             document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
         }
 
-        // ========================
-        // GESTÃO DE O.P (TABELA)
-        // ========================
         function renderListaOPs() {
             const tbody = document.getElementById('lista-ops-geral');
             let html = '';
             maquinas.forEach(m => {
                 m.fila.forEach((op, index) => {
-                    html += `
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="p-3 font-bold text-blue-600">${m.nome}</td>
-                        <td class="p-3">${op.op}</td>
-                        <td class="p-3">${op.produto}</td>
-                        <td class="p-3">${op.qtd}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="editarOP(${m.id}, ${index})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
+                    html += `<tr class="border-b hover:bg-slate-50"><td class="p-3 font-bold text-blue-600">${m.nome}</td><td class="p-3">${op.op}</td><td class="p-3">${op.produto}</td><td class="p-3">${op.qtd}</td>
+                    <td class="p-3 text-right"><button onclick="editarOP(${m.id}, ${index})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fa-solid fa-pen"></i></button><button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td></tr>`;
                 });
             });
             tbody.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
         }
 
         function deletarOP(maqId, index) {
-            if(confirm("Deseja apagar esta O.P da fila?")) {
-                const m = maquinas.find(x => x.id === maqId);
-                m.fila.splice(index, 1);
-                renderListaOPs();
-                render(); // Atualiza painel caso seja a O.P atual
-                salvarAutomatico();
-            }
+            if(confirm("Apagar?")) { maquinas.find(x => x.id === maqId).fila.splice(index, 1); renderListaOPs(); render(); salvarAutomatico(); }
         }
         
         function editarOP(maqId, index) {
-            const m = maquinas.find(x => x.id === maqId);
-            const op = m.fila[index];
-            const novaQtd = prompt("Nova Quantidade:", op.qtd);
-            if(novaQtd !== null) {
-                op.qtd = parseInt(novaQtd);
-                renderListaOPs();
-                render();
-                salvarAutomatico();
-            }
+            const m = maquinas.find(x => x.id === maqId); const op = m.fila[index]; const n = prompt("Nova Qtd:", op.qtd);
+            if(n !== null) { op.qtd = parseInt(n); renderListaOPs(); render(); salvarAutomatico(); }
         }
 
         function adicionarFila() {
             const id = parseInt(document.getElementById('f-maquina').value);
             const m = maquinas.find(x => x.id === id);
             m.fila.push({
-                op: document.getElementById('f-op').value,
-                cliente: document.getElementById('f-cliente').value,
-                produto: document.getElementById('f-produto').value,
-                qtd: parseInt(document.getElementById('f-qtd').value) || 0
+                op: document.getElementById('f-op').value, cliente: document.getElementById('f-cliente').value,
+                produto: document.getElementById('f-produto').value, qtd: parseInt(document.getElementById('f-qtd').value) || 0
             });
-            alert("O.P Agendada!"); 
-            renderListaOPs();
-            render(); 
-            salvarAutomatico();
+            alert("O.P Agendada!"); renderListaOPs(); render(); salvarAutomatico();
         }
 
         function finalizarOP(id) {
-            if(confirm("Finalizar O.P atual? Ela sairá da fila.")) { 
-                maquinas.find(x=>x.id===id).fila.shift(); 
-                render(); 
-                renderListaOPs();
-                salvarAutomatico(); 
-            }
+            if(confirm("Finalizar O.P?")) { maquinas.find(x=>x.id===id).fila.shift(); render(); renderListaOPs(); salvarAutomatico(); }
         }
 
-        // ========================
-        // APONTAMENTO & GRÁFICOS
-        // ========================
         function renderApontamento() {
             const t = document.getElementById('filtro-turno').value;
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 const d = m.dadosTurno[t];
-                const percPerda = (d.refugo * 2).toFixed(0);
-                return `<tr class="border-b hover:bg-slate-50">
-                    <td class="p-5 font-black">${m.nome}</td>
-                    <td class="p-5">${m.fila[0]?.op || '---'}</td>
-                    <td class="p-5 text-green-600">${d.boas}</td>
-                    <td class="p-5 text-red-600">${d.refugo}</td>
-                    <td class="p-5 text-red-500 font-bold">${percPerda}%</td>
-                    <td class="p-5 font-mono text-blue-600">${fmtTempo(d.paradas)}</td>
-                </tr>`;
+                return `<tr class="border-b hover:bg-slate-50"><td class="p-5 font-black">${m.nome}</td><td class="p-5">${m.fila[0]?.op || '---'}</td><td class="p-5 text-green-600">${d.boas}</td><td class="p-5 text-red-600">${d.refugo}</td><td class="p-5 text-red-500 font-bold">${(d.refugo * 2).toFixed(0)}%</td><td class="p-5 font-mono text-blue-600">${fmtTempo(d.paradas)}</td></tr>`;
             }).join('');
+        }
+
+        function alterarFiltroGrafico(valor) {
+            filtroGraficoId = valor;
+            renderGrafico();
         }
 
         function renderGrafico() {
             const t = document.getElementById('filtro-turno').value;
             
-            // Variáveis globais de tempo
-            let totalProd = 0;
-            let totalBaixa = 0;
-            let totalParado = 0;
-            
-            let s = { p: 0, b: 0, s: 0 }; // Contagem de máquinas
+            const selectFiltro = document.getElementById('filtro-grafico-status');
+            if(selectFiltro.options.length === 1) {
+                maquinas.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id; opt.text = m.nome; selectFiltro.appendChild(opt);
+                });
+            }
 
-            maquinas.forEach(m => { 
+            let totalProd = 0, totalBaixa = 0, totalParado = 0;
+            let s = { p: 0, b: 0, s: 0 };
+
+            maquinas.forEach(m => {
+                if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
                 if(m.status === "04-PRODUÇÃO") s.p++; 
                 else if(m.status === "21-BAIXA EFICIÊNCIA") s.b++;
                 else s.s++;
-
                 totalProd += m.dadosTurno[t].tempoProducao;
                 totalBaixa += m.dadosTurno[t].tempoBaixa;
                 totalParado += m.dadosTurno[t].paradas;
             });
 
-            // Atualiza os relógios do gráfico
             document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd);
             document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
+
+            // ATUALIZAÇÃO SUAVE (SEM RESETAR O CANVAS)
+            if(charts.oee) {
+                charts.oee.data.datasets[0].data = [s.p, s.b, s.s];
+                charts.oee.update('none'); // 'none' evita animação brusca
+            } else {
+                charts.oee = new Chart(document.getElementById('chartOEE'), {
+                    type: 'doughnut',
+                    data: { 
+                        labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], 
+                        datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] 
+                    },
+                    options: { cutout: '60%', plugins: { legend: { display: false } } }
+                });
+            }
 
             const labels = maquinas.map(m => m.nome);
             const dataParadas = maquinas.map(m => (m.dadosTurno[t].paradas / 3600).toFixed(2)); 
             const dataRefugos = maquinas.map(m => m.dadosTurno[t].refugo);
 
-            if(charts.oee) charts.oee.destroy();
-            if(charts.paradas) charts.paradas.destroy();
-            if(charts.refugos) charts.refugos.destroy();
+            if(charts.paradas) {
+                charts.paradas.data.datasets[0].data = dataParadas;
+                charts.paradas.update('none');
+            } else {
+                charts.paradas = new Chart(document.getElementById('chartParadas'), {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ label: 'Horas', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+                });
+            }
 
-            charts.oee = new Chart(document.getElementById('chartOEE'), {
-                type: 'doughnut',
-                data: { 
-                    labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], 
-                    datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] 
-                },
-                options: { cutout: '60%', plugins: { legend: { display: false } } }
-            });
-
-            const barOptions = {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
-            };
-
-            charts.paradas = new Chart(document.getElementById('chartParadas'), {
-                type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Horas', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
-                options: barOptions
-            });
-
-            charts.refugos = new Chart(document.getElementById('chartRefugos'), {
-                type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
-                options: barOptions
-            });
+            if(charts.refugos) {
+                charts.refugos.data.datasets[0].data = dataRefugos;
+                charts.refugos.update('none');
+            } else {
+                charts.refugos = new Chart(document.getElementById('chartRefugos'), {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+                });
+            }
         }
 
-        // ========================
-        // CORES E SALVAMENTO
-        // ========================
         function gerenciarCor(acao) {
             if(acao === 'add') {
-                const v = document.getElementById('nova-cor').value;
-                if(v) coresGlobais.push(v);
-                document.getElementById('nova-cor').value = "";
+                const v = document.getElementById('nova-cor').value; if(v) coresGlobais.push(v); document.getElementById('nova-cor').value = "";
             }
-            renderCoresConfig();
-            render(); // Atualiza dropdowns
-            salvarAutomatico();
+            renderCoresConfig(); render(); salvarAutomatico();
         }
 
         function renderCoresConfig() {
             document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
-                <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">
-                    ${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig(); salvarAutomatico();" class="text-red-500">×</button>
-                </div>
+                <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig(); salvarAutomatico();" class="text-red-500">×</button></div>
             `).join('');
         }
 
         async function salvarAutomatico() {
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                await salvarGeral();
-                document.getElementById('status-nuvem').innerText = "☁️";
-            }, 1000);
+            saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000);
         }
 
         async function salvarGeral() {
@@ -638,43 +535,32 @@
             if(error) console.error("Erro ao salvar:", error);
         }
 
-        // ========================
-        // LOOP PRINCIPAL (1 SEGUNDO)
-        // ========================
         setInterval(() => {
-            const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString();
-            
+            const agora = getBrasiliaDate();
+            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
             const diaSemana = agora.getDay();
-            if (diaSemana === 0 || diaSemana === 6) return; // Fim de semana pausa
+            if (diaSemana === 0 || diaSemana === 6) return; 
 
             processarTurnoAuto();
             const t = document.getElementById('filtro-turno').value;
             
-            let mudouAlgo = false;
-
             maquinas.forEach(m => {
-                if(m.status === "04-PRODUÇÃO") {
-                    m.dadosTurno[t].tempoProducao++;
-                } else if (m.status === "21-BAIXA EFICIÊNCIA") {
-                    m.dadosTurno[t].tempoBaixa++;
-                } else {
-                    m.dadosTurno[t].paradas++;
-                }
+                if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao++;
+                else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa++;
+                else m.dadosTurno[t].paradas++;
             });
 
-            // ATENÇÃO: NÃO CHAMAMOS render() AQUI PARA NÃO FECHAR OS MENUS
-            // Apenas atualizamos os textos dos timers
+            // Apenas atualiza o texto, não redesenha a tela toda
             updateTimersVisualOnly(); 
             
-            // Se estiver na aba gráficos, atualiza os relógios globais
+            // Se a aba gráficos estiver ativa, atualiza os dados do gráfico SUAVEMENTE (sem recriar)
             if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
-                 renderGrafico(); // O gráfico precisa de refresh, mas não fecha menus de input
+                renderGrafico();
             }
 
         }, 1000);
 
-        setInterval(() => { salvarGeral(); }, 60000); // Backup 1min
+        setInterval(() => { salvarGeral(); }, 60000);
         carregarBanco();
     </script>
 </body>
