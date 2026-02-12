@@ -80,7 +80,7 @@
         <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
         <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
         <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
-        <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 APONTAMENTO</button>
+        <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
     </nav>
 
     <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
@@ -244,7 +244,7 @@
         let filtroGraficoId = 'todas';
         let charts = { oee: null, paradas: null, refugos: null };
         let relogioInterval = null; 
-        let lastUpdateTimestamp = 0; // Armazena a hora do último salvamento
+        let lastUpdateTimestamp = 0; 
 
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
@@ -266,7 +266,6 @@
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
                 historico = data.conteudo.historico || []; 
-                // Recupera quando foi o último "tique" do relógio salvo
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
                 maquinas.forEach(m => {
@@ -285,8 +284,6 @@
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
                 processarTurnoAuto();
                 
-                // LÓGICA MÁGICA: COMPENSAR TEMPO OFFLINE
-                // Calcula quantos segundos passaram desde que o banco foi salvo
                 const now = Date.now();
                 const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
                 
@@ -308,7 +305,6 @@
 
         function compensarTempoOffline(segundos) {
             const t = document.getElementById('filtro-turno').value;
-            // Adiciona o tempo que ficou "desligado" ao status que a máquina estava
             maquinas.forEach(m => {
                 if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao += segundos;
                 else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa += segundos;
@@ -336,13 +332,13 @@
                 });
 
                 updateTimersVisualOnly(); 
+                
+                // ATUALIZAÇÃO CONSTANTE DAS OUTRAS TELAS SE ESTIVEREM VISÍVEIS
                 if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) atualizarResumoGlobalNumeros();
                 if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
 
             }, 1000);
         }
-
-        // --- MANTEVE AS OUTRAS FUNÇÕES IGUAIS ---
 
         function trocarAba(id) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
@@ -445,8 +441,9 @@
                         </div>
                     </div>
                     <div class="mb-3 bg-red-50 p-2 rounded-xl border border-red-100">
-                         <label class="text-[10px] font-bold text-red-400 block mb-1">LANÇAR REFUGO</label>
+                         <label class="text-[10px] font-bold text-red-400 block mb-1">LANÇAR REFUGO (Qtd / Tipo)</label>
                          <div class="flex gap-2">
+                            <input type="number" id="qtd-refugo-${m.id}" value="1" min="1" class="w-12 text-center text-xs font-bold border rounded p-1">
                             <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1 w-full">
                                 ${codigosRefugo.map(r => `<option value="${r}">${r}</option>`).join('')}
                             </select>
@@ -495,11 +492,28 @@
         }
 
         function addProd(id, v) { 
-            const t = document.getElementById('filtro-turno').value; maquinas.find(x => x.id === id).dadosTurno[t].boas += v; render(); salvarAutomatico();
+            const t = document.getElementById('filtro-turno').value; maquinas.find(x => x.id === id).dadosTurno[t].boas += v; 
+            render(); 
+            // Força atualização das tabelas se estiverem visíveis
+            if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
+            salvarAutomatico();
         }
 
         function addRefugo(id) { 
-            const t = document.getElementById('filtro-turno').value; maquinas.find(x => x.id === id).dadosTurno[t].refugo += 1; render(); salvarAutomatico();
+            const t = document.getElementById('filtro-turno').value; 
+            // Pega a quantidade do input
+            const qtdInput = document.getElementById(`qtd-refugo-${id}`);
+            const qtd = parseInt(qtdInput.value) || 1;
+            
+            maquinas.find(x => x.id === id).dadosTurno[t].refugo += qtd; 
+            
+            // Reseta input para 1
+            qtdInput.value = 1;
+            
+            render(); 
+            // Força atualização das tabelas
+            if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
+            salvarAutomatico();
         }
 
         function atualizarStatus(id, st) { 
@@ -617,15 +631,20 @@
                 let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
 
                 if (filtro === 'todas') {
+                    // SOMA ACUMULATIVA ROBUSTA
                     for(let i=1; i<=3; i++) {
-                        d.boas += m.dadosTurno[i].boas;
-                        d.refugo += m.dadosTurno[i].refugo;
-                        d.paradas += m.dadosTurno[i].paradas;
-                        d.tempoProducao += m.dadosTurno[i].tempoProducao;
-                        d.tempoBaixa += m.dadosTurno[i].tempoBaixa;
+                        if(m.dadosTurno[i]) {
+                            d.boas += (m.dadosTurno[i].boas || 0);
+                            d.refugo += (m.dadosTurno[i].refugo || 0);
+                            d.paradas += (m.dadosTurno[i].paradas || 0);
+                            d.tempoProducao += (m.dadosTurno[i].tempoProducao || 0);
+                            d.tempoBaixa += (m.dadosTurno[i].tempoBaixa || 0);
+                        }
                     }
                 } else {
-                    d = m.dadosTurno[filtro];
+                    if(m.dadosTurno[filtro]) {
+                        d = m.dadosTurno[filtro];
+                    }
                 }
 
                 const percPerda = (d.refugo * 2).toFixed(0);
