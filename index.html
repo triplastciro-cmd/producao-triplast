@@ -184,9 +184,10 @@
         let manualOverride = false;
         let saveTimeout = null;
         let filtroGraficoId = 'todas';
+        
+        // Armazena as instâncias dos gráficos para não recriar
         let charts = { oee: null, paradas: null, refugos: null };
 
-        // Helper para Hora de Brasília
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
@@ -223,6 +224,8 @@
                 render(); 
                 renderListaOPs();
                 renderCoresConfig();
+                // Inicializa os gráficos vazios uma única vez
+                iniciarGraficos();
             }
         }
 
@@ -232,7 +235,7 @@
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
             
-            if(id === 'graficos') renderGrafico();
+            if(id === 'graficos') atualizarDadosGraficos(); // Apenas atualiza dados, não recria
             if(id === 'apontamento') renderApontamento();
             if(id === 'lista') renderListaOPs();
         }
@@ -438,14 +441,51 @@
 
         function alterarFiltroGrafico(valor) {
             filtroGraficoId = valor;
-            renderGrafico();
+            atualizarDadosGraficos();
         }
 
-        function renderGrafico() {
+        // --- SISTEMA DE GRÁFICOS CORRIGIDO ---
+
+        function iniciarGraficos() {
+            // Cria os gráficos apenas UMA vez com dados zerados
+            const ctxOEE = document.getElementById('chartOEE');
+            const ctxParadas = document.getElementById('chartParadas');
+            const ctxRefugos = document.getElementById('chartRefugos');
+
+            if (charts.oee) charts.oee.destroy();
+            if (charts.paradas) charts.paradas.destroy();
+            if (charts.refugos) charts.refugos.destroy();
+
+            charts.oee = new Chart(ctxOEE, {
+                type: 'doughnut',
+                data: { labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], datasets: [{ data: [0,0,0], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] },
+                options: { cutout: '60%', plugins: { legend: { display: false } }, animation: false }
+            });
+
+            charts.paradas = new Chart(ctxParadas, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Horas', data: [], backgroundColor: '#cbd5e1', borderRadius: 4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
+            });
+
+            charts.refugos = new Chart(ctxRefugos, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Qtd', data: [], backgroundColor: '#ef4444', borderRadius: 4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
+            });
+
+            atualizarDadosGraficos(); // Popula com dados iniciais
+        }
+
+        function atualizarDadosGraficos() {
+            // Esta função NÃO cria gráficos novos, apenas injeta dados e atualiza
+            if(!charts.oee || !charts.paradas || !charts.refugos) return;
+
             const t = document.getElementById('filtro-turno').value;
             
+            // Popula filtro se necessário
             const selectFiltro = document.getElementById('filtro-grafico-status');
-            if(selectFiltro.options.length === 1) {
+            if(selectFiltro.options.length === 1 && maquinas.length > 0) {
                 maquinas.forEach(m => {
                     const opt = document.createElement('option');
                     opt.value = m.id; opt.text = m.nome; selectFiltro.appendChild(opt);
@@ -469,46 +509,22 @@
             document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
 
-            // ATUALIZAÇÃO SUAVE (SEM RESETAR O CANVAS)
-            if(charts.oee) {
-                charts.oee.data.datasets[0].data = [s.p, s.b, s.s];
-                charts.oee.update('none'); // 'none' evita animação brusca
-            } else {
-                charts.oee = new Chart(document.getElementById('chartOEE'), {
-                    type: 'doughnut',
-                    data: { 
-                        labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], 
-                        datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] 
-                    },
-                    options: { cutout: '60%', plugins: { legend: { display: false } } }
-                });
-            }
+            // Atualiza Pizza - Modo 'none' para não animar
+            charts.oee.data.datasets[0].data = [s.p, s.b, s.s];
+            charts.oee.update('none');
 
+            // Atualiza Barras
             const labels = maquinas.map(m => m.nome);
             const dataParadas = maquinas.map(m => (m.dadosTurno[t].paradas / 3600).toFixed(2)); 
             const dataRefugos = maquinas.map(m => m.dadosTurno[t].refugo);
 
-            if(charts.paradas) {
-                charts.paradas.data.datasets[0].data = dataParadas;
-                charts.paradas.update('none');
-            } else {
-                charts.paradas = new Chart(document.getElementById('chartParadas'), {
-                    type: 'bar',
-                    data: { labels: labels, datasets: [{ label: 'Horas', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
-                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
-                });
-            }
+            charts.paradas.data.labels = labels;
+            charts.paradas.data.datasets[0].data = dataParadas;
+            charts.paradas.update('none');
 
-            if(charts.refugos) {
-                charts.refugos.data.datasets[0].data = dataRefugos;
-                charts.refugos.update('none');
-            } else {
-                charts.refugos = new Chart(document.getElementById('chartRefugos'), {
-                    type: 'bar',
-                    data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
-                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
-                });
-            }
+            charts.refugos.data.labels = labels;
+            charts.refugos.data.datasets[0].data = dataRefugos;
+            charts.refugos.update('none');
         }
 
         function gerenciarCor(acao) {
@@ -535,6 +551,7 @@
             if(error) console.error("Erro ao salvar:", error);
         }
 
+        // --- LOOP PRINCIPAL (1 Segundo) ---
         setInterval(() => {
             const agora = getBrasiliaDate();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
@@ -550,12 +567,11 @@
                 else m.dadosTurno[t].paradas++;
             });
 
-            // Apenas atualiza o texto, não redesenha a tela toda
+            // Atualiza apenas números e dados do gráfico (sem redesenhar o HTML todo)
             updateTimersVisualOnly(); 
             
-            // Se a aba gráficos estiver ativa, atualiza os dados do gráfico SUAVEMENTE (sem recriar)
             if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) {
-                renderGrafico();
+                atualizarDadosGraficos();
             }
 
         }, 1000);
