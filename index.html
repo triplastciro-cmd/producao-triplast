@@ -8,66 +8,174 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { background-color: #add8e6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        
+        .aba-conteudo { display: none !important; }
+        .aba-ativa { display: block !important; }
+
+        .card-producao {
+            background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-left: 12px solid #ef4444; transition: 0.3s; position: relative;
+        }
+        .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
+        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
+    </style>
 </head>
 <body>
+    <!-- → (todo o seu HTML acima permanece igual — não repetido aqui por brevidade) -->
+
+    <!-- ====== ABA GRÁFICOS ====== -->
+    <div id="aba-graficos" class="aba-conteudo px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
+                <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
+                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
+                    <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
+                        <option value="todas">🏭 Todas as Máquinas</option>
+                    </select>
+                </div>
+                <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
+                <!-- (restante da aba gráficos) -->
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <canvas id="chartParadas"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <canvas id="chartRefugos"></canvas>
+            </div>
+        </div>
+    </div>
 
 <script>
-// 🔧 CORREÇÕES PRINCIPAIS APLICADAS:
-// 1) Filtro de gráfico agora lista TODAS as máquinas corretamente
-// 2) Resumo de turno nunca mais retorna undefined
-// 3) Nenhuma lógica original removida — só proteção contra erro
+    const S_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
+    const sb = window.supabase.createClient(S_URL, S_KEY);
 
-function createZero(){
-  return { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
-}
+    let maquinas = [];
+    let historico = [];
+    let coresGlobais = ["Natural", "Preto", "Branco"];
+    let filtroGraficoId = 'todas';
+    let charts = { oee: null, paradas: null, refugos: null };
 
-function garantirResumoSeguro(maquinas){
-  maquinas.forEach(m=>{
-    if(!m.resumoTurno) m.resumoTurno={1:createZero(),2:createZero(),3:createZero()};
-    for(let i=1;i<=3;i++){
-      if(!m.resumoTurno[i]) m.resumoTurno[i]=createZero();
+    function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 }; }
+
+    async function carregarBanco() {
+        const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
+        if (data) {
+            maquinas = data.conteudo.maquinas || [];
+            historico = data.conteudo.historico || [];
+            coresGlobais = data.conteudo.cores || coresGlobais;
+
+            // ===== Proteção: garante que resumoTurno e dadosTurno nunca fiquem undefined =====
+            maquinas.forEach(m => {
+                if (!m.dadosTurno) m.dadosTurno = {1:createZero(),2:createZero(),3:createZero()};
+                if (!m.resumoTurno) m.resumoTurno = {1:createZero(),2:createZero(),3:createZero()};
+
+                for(let i=1;i<=3;i++){
+                    if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
+                    if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
+                }
+            });
+
+            // === Preenche o seletor de gráfico com todas as máquinas + opção geral ===
+            const sel = document.getElementById('filtro-grafico-status');
+            sel.innerHTML = `<option value="todas">🏭 Todas as Máquinas</option>` +
+                maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+
+            render(); renderListaOPs(); renderHistorico();
+            renderCoresConfig(); renderApontamento(); iniciarGraficos(); iniciarRelogio();
+        }
     }
-  });
-}
 
-function preencherFiltroGrafico(maquinas){
-  const sel=document.getElementById('filtro-grafico-status');
-  if(!sel) return;
+    function alterarFiltroGrafico(valor) {
+        filtroGraficoId = valor;
+        atualizarResumoGlobalNumeros();
+        iniciarGraficos();
+    }
 
-  sel.innerHTML=`<option value="todas">🏭 Todas as Máquinas</option>`+
-    maquinas.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('');
-}
+    function iniciarGraficos() {
+        const t = document.getElementById('filtro-turno').value;
 
-function calcularDadosResumo(m,turno){
-  const d=m.resumoTurno?.[turno]||createZero();
-  return {
-    boas:d.boas||0,
-    refugo:d.refugo||0,
-    paradas:d.paradas||0,
-    tempoProducao:d.tempoProducao||0,
-    tempoBaixa:d.tempoBaixa||0
-  };
-}
+        if (charts.oee) charts.oee.destroy();
+        if (charts.paradas) charts.paradas.destroy();
+        if (charts.refugos) charts.refugos.destroy();
 
-function iniciarGraficosSeguro(maquinas,turno,filtroId){
-  const filtradas = filtroId==='todas'
-    ? maquinas
-    : maquinas.filter(m=>String(m.id)===String(filtroId));
+        let s = { p:0, b:0, s:0 };
+        máquinasFiltradas = maquinas.filter(m => filtroGraficoId === 'todas' ? true : String(m.id) === String(filtroGraficoId));
 
-  const labels = filtradas.map(m=>m.nome);
-  const dataParadas = filtradas.map(m=>calcularDadosResumo(m,turno).paradas/60);
-  const dataRefugos = filtradas.map(m=>calcularDadosResumo(m,turno).refugo);
+        maquinasFiltradas.forEach(m => {
+            if(m.status === "04-PRODUÇÃO") s.p++;
+            else if(m.status === "21-BAIXA EFICIÊNCIA") s.b++;
+            else s.s++;
+        });
 
-  console.log('Gráficos OK', {labels,dataParadas,dataRefugos});
-}
+        const labels = maquinasFiltradas.map(m => m.nome);
+        const dataParadas = maquinasFiltradas.map(m => (m.resumoTurno[t]?.paradas || 0) / 60);
+        const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t]?.refugo || 0);
 
-// EXPORTA FUNÇÕES GLOBAIS PARA NÃO QUEBRAR SEU CÓDIGO
-window.TRIPLAST_FIX={
-  garantirResumoSeguro,
-  preencherFiltroGrafico,
-  iniciarGraficosSeguro
-};
+        charts.oee = new Chart(document.getElementById('chartOEE'), {
+            type:'doughnut',
+            data: { labels: ['PRODUZINDO','BAIXA EFICIÊNCIA','PARADA'], datasets:[{data:[s.p,s.b,s.s],backgroundColor:['#22c55e','#f97316','#ef4444'],borderWidth:0}] },
+            options: { cutout:'60%',plugins:{legend:{display:false}},animation:false }
+        });
+
+        charts.paradas = new Chart(document.getElementById('chartParadas'), {
+            type:'bar',
+            data: { labels:labels, datasets:[{label:'Minutos',data:dataParadas,backgroundColor:'#cbd5e1',borderRadius:4}] },
+            options: { responsive:true, scales:{y:{beginAtZero:true}} }
+        });
+
+        charts.refugos = new Chart(document.getElementById('chartRefugos'), {
+            type:'bar',
+            data:{labels:labels,datasets:[{label:'Qtd',data:dataRefugos,backgroundColor:'#ef4444',borderRadius:4}]},
+            options:{responsive:true,scales:{y:{beginAtZero:true}}}
+        });
+    }
+
+    function renderApontamento() {
+        const filtro = document.getElementById('filtro-resumo').value;
+        const tbody = document.getElementById('tabela-apontamento');
+        let html = '';
+
+        maquinas.forEach(m => {
+            let d = createZero();
+
+            if (filtro === 'todas') {
+                for(let i=1;i<=3;i++){
+                    d.boas += m.resumoTurno[i]?.boas || 0;
+                    d.refugo += m.resumoTurno[i]?.refugo || 0;
+                    d.paradas += m.resumoTurno[i]?.paradas || 0;
+                    d.tempoProducao += m.resumoTurno[i]?.tempoProducao || 0;
+                    d.tempoBaixa += m.resumoTurno[i]?.tempoBaixa || 0;
+                }
+            } else {
+                const turno = m.resumoTurno[filtro] || createZero();
+                d = turno;
+            }
+
+            const total = (d.boas + d.refugo) || 0;
+            const percPerda = total > 0 ? ((d.refugo / total) * 100).toFixed(1) : "0";
+
+            html += `<tr class="border-b hover:bg-slate-50">
+                <td class="p-4 font-black">${m.nome}</td>
+                <td class="p-4">${m.fila[0]?.op || '---'}</td>
+                <td class="p-4 text-green-600 text-lg">${d.boas}</td>
+                <td class="p-4 text-red-600 text-lg">${d.refugo}</td>
+                <td class="p-4 text-red-500 font-bold">${percPerda}%</td>
+                <td class="p-4 font-mono text-green-700 bg-green-50">${fmtTempo(d.tempoProducao)}</td>
+                <td class="p-4 font-mono text-orange-600 bg-orange-50">${fmtTempo(d.tempoBaixa)}</td>
+                <td class="p-4 font-mono text-red-600 bg-red-50">${fmtTempo(d.paradas)}</td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    carregarBanco();
 </script>
-
 </body>
 </html>
