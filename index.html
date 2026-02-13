@@ -21,6 +21,7 @@
         }
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
         .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
+        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; } /* NOVA COR PARA SEM PROGRAMAÇÃO */
 
         .info-badge {
             background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
@@ -143,7 +144,8 @@
                                 <th class="p-3">Operador</th>
                                 <th class="p-3">Produto</th>
                                 <th class="p-3">Qtd Feita</th>
-                                <th class="p-3 text-right">Ações</th> </tr>
+                                <th class="p-3 text-right">Ações</th>
+                            </tr>
                         </thead>
                         <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
                     </table>
@@ -167,7 +169,6 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
                     <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
                     <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
-                        <option value="todas">🏭 Todas as Máquinas</option>
                     </select>
                 </div>
                 <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
@@ -251,20 +252,20 @@
         let charts = { oee: null, paradas: null, refugos: null };
         let relogioInterval = null; 
         
-        // VARIÁVEL PARA PAUSA MANUAL
         let sistemaPausado = false;
 
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
 
+        // NOVO STATUS ADICIONADO: "22-SEM PROGRAMAÇÃO"
         const paradasCodigos = [
             "04-PRODUÇÃO", "21-BAIXA EFICIÊNCIA", "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", 
             "03-MATERIA-PRIMA/ AJUSTE", "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", 
             "08-LANCHE", "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INICIO DE PROCESSO", 
             "12-FALTA DE ENERGIA ELÉTRICA", "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", 
             "15-PROBLEMA AR", "16-PROBLEMA CAMARÃ QUENTE", "17-TROCA DE BICO DE INJEÇÃO", 
-            "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS"
+            "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS", "22-SEM PROGRAMAÇÃO"
         ];
         const codigosRefugo = ["Falha de injeção", "Arranhão/batido", "Fora de cor", "Peça presa no molde", "Bolha", "Mancha", "Trinca", "Espirro", "Material contaminado", "Outros"];
 
@@ -297,7 +298,6 @@
                 });
                 
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-                // CORREÇÃO DO FILTRO DE MÁQUINAS NOS GRÁFICOS
                 document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 Todas as Máquinas</option>' + maquinas.map(m => `<option value="${m.id}">🏭 ${m.nome}</option>`).join('');
                 
                 processarTurnoAuto();
@@ -318,16 +318,18 @@
 
         function compensarTempoOffline(segundos) {
             const agora = getBrasiliaDate();
-            // Não compensa tempo offline se for fim de semana ou se o sistema foi pausado antes
             if (agora.getDay() === 0 || agora.getDay() === 6 || sistemaPausado) return; 
 
             const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
+                // TRAVA DE TEMPO PARA SEM PROGRAMAÇÃO
+                if (m.status === "22-SEM PROGRAMAÇÃO") return;
+
                 if(m.status === "04-PRODUÇÃO") {
                     m.dadosTurno[t].tempoProducao += segundos;
                     m.resumoTurno[t].tempoProducao += segundos;
                 }
-                else if (m.status === "21-BAIXA EFICIÊNCIA") {
+                else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
                     m.dadosTurno[t].tempoBaixa += segundos;
                     m.resumoTurno[t].tempoBaixa += segundos;
                 }
@@ -338,7 +340,6 @@
             });
         }
 
-        // FUNÇÃO DO BOTÃO DE PAUSA
         function togglePause() {
             sistemaPausado = !sistemaPausado;
             const btn = document.getElementById('btn-pause');
@@ -351,7 +352,7 @@
                 btn.classList.replace('bg-green-500', 'bg-yellow-500');
                 btn.classList.replace('hover:bg-green-400', 'hover:bg-yellow-400');
             }
-            salvarAutomatico(); // Para registrar no log que mexeu
+            salvarAutomatico();
         }
 
         function iniciarRelogio() {
@@ -365,15 +366,14 @@
                 
                 const badgeAuto = document.getElementById('badge-auto');
 
-                // LÓGICA DE PAUSA MELHORADA
                 if (fimDeSemana) {
                     badgeAuto.innerText = "PAUSA FDS";
                     badgeAuto.className = "bg-yellow-500 text-[10px] px-3 py-1 rounded-full font-black text-white";
-                    return; // Interrompe a contagem
+                    return; 
                 } else if (sistemaPausado) {
                     badgeAuto.innerText = "PAUSADO";
                     badgeAuto.className = "bg-orange-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse text-white";
-                    return; // Interrompe a contagem se o usuário pausou
+                    return; 
                 } else {
                     if (!manualOverride) {
                         badgeAuto.innerText = "AUTO";
@@ -388,11 +388,14 @@
                 const t = document.getElementById('filtro-turno').value;
                 
                 maquinas.forEach(m => {
+                    // TRAVA DE TEMPO PARA SEM PROGRAMAÇÃO NO RELÓGIO
+                    if (m.status === "22-SEM PROGRAMAÇÃO") return;
+
                     if(m.status === "04-PRODUÇÃO") {
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
                     }
-                    else if (m.status === "21-BAIXA EFICIÊNCIA") {
+                    else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
                         m.dadosTurno[t].tempoBaixa++;
                         m.resumoTurno[t].tempoBaixa++;
                     }
@@ -474,13 +477,13 @@
                 const d = m.dadosTurno[t]; 
                 const percPerda = (d.refugo > 0 && (d.boas + d.refugo) > 0) ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
                 
-                // Cálculo da barra de progresso
                 const meta = op.qtd || 0;
                 const progresso = meta > 0 ? Math.min((d.boas / meta) * 100, 100) : 0;
 
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
+                else if (m.status === "22-SEM PROGRAMAÇÃO") sClass = "status-sem-prog"; // APLICA A NOVA COR
 
                 return `
                 <div class="card-producao ${sClass} p-4" id="card-${m.id}">
@@ -550,7 +553,8 @@
                     </div>
                     <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500 mb-2">
                         ${paradasCodigos.map(p => {
-                            let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : "text-red-600");
+                            // COLOCA A COR CINZA NA OPÇÃO DO DROPDOWN
+                            let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : (p.includes("SEM PROGRAMAÇÃO") ? "text-slate-400" : "text-red-600"));
                             return `<option value="${p}" class="${color}" ${m.status === p ? 'selected' : ''}>${p}</option>`
                         }).join('')}
                     </select>
@@ -568,7 +572,8 @@
                 if(el) {
                     const d = m.dadosTurno[t];
                     if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
-                    else if (m.status === "21-BAIXA EFICIÊNCIA") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
+                    else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
+                    else if (m.status === "22-SEM PROGRAMAÇÃO") el.innerHTML = `<span class="text-slate-400 font-black"><i class="fa-solid fa-power-off"></i> SEM PROGRAMAÇÃO</span>`; // TEXTO DE SEM PROGRAMAÇÃO
                     else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
                 }
             });
@@ -643,10 +648,15 @@
                         }
                     }
                 } else {
-                    if(m.resumoTurno[filtro]) d = m.resumoTurno[filtro];
+                    if(m.resumoTurno[filtro]) {
+                        d.boas = m.resumoTurno[filtro].boas || 0;
+                        d.refugo = m.resumoTurno[filtro].refugo || 0;
+                        d.paradas = m.resumoTurno[filtro].paradas || 0;
+                        d.tempoProducao = m.resumoTurno[filtro].tempoProducao || 0;
+                        d.tempoBaixa = m.resumoTurno[filtro].tempoBaixa || 0;
+                    }
                 }
 
-                // CORREÇÃO DOS UNDEFINED APLICANDO || 0 NAS VARIÁVEIS
                 const pecasBoas = d.boas || 0;
                 const pecasRefugo = d.refugo || 0;
                 const percPerda = pecasBoas > 0 ? ((pecasRefugo / (pecasBoas + pecasRefugo)) * 100).toFixed(1) : 0;
@@ -675,11 +685,12 @@
             const ctxParadas = document.getElementById('chartParadas');
             const ctxRefugos = document.getElementById('chartRefugos');
 
-            let s = { p: 0, b: 0, s: 0 };
+            let s = { p: 0, b: 0, s: 0, sp: 0 };
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
                 if(m.status === "04-PRODUÇÃO") s.p++; 
-                else if(m.status === "21-BAIXA EFICIÊNCIA") s.b++;
+                else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") s.b++;
+                else if(m.status === "22-SEM PROGRAMAÇÃO") s.sp++;
                 else s.s++;
             });
 
@@ -692,7 +703,7 @@
 
             charts.oee = new Chart(ctxOEE, {
                 type: 'doughnut',
-                data: { labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] },
+                data: { labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA', 'SEM PROGRAMAÇÃO'], datasets: [{ data: [s.p, s.b, s.s, s.sp], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#cbd5e1'], borderWidth: 0 }] },
                 options: { cutout: '60%', plugins: { legend: { display: false } }, animation: false }
             });
 
@@ -764,7 +775,6 @@
             let html = '';
             const histOrdenado = [...historico].reverse();
             histOrdenado.forEach((h, index) => {
-                // Necessário calcular o index real para deletar o correto no array que não está invertido
                 const indexReal = historico.length - 1 - index; 
                 const dataFmt = new Date(h.data).toLocaleString('pt-BR');
                 html += `<tr class="border-b hover:bg-blue-50">
@@ -782,7 +792,6 @@
             tbody.innerHTML = html || '<tr><td colspan="7" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
         }
 
-        // FUNÇÃO PARA DELETAR HISTÓRICO
         function deletarHistorico(index) {
             if(confirm("Tem certeza que deseja apagar este registro do histórico?")) {
                 historico.splice(index, 1);
