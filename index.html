@@ -60,7 +60,11 @@
                 <div id="relogio" class="font-mono text-blue-300 bg-slate-900 px-4 py-2 rounded-lg text-lg border border-slate-700">00:00:00</div>
             </div>
 
-            <div class="flex items-center gap-4 bg-slate-700 p-2 rounded-xl">
+            <div class="flex items-center gap-4 bg-slate-700 p-2 rounded-xl flex-wrap justify-center">
+                <button id="btn-pause" onclick="togglePause()" class="bg-yellow-500 hover:bg-yellow-400 text-white text-[10px] font-black px-3 py-2 rounded-lg transition-all shadow-md uppercase">
+                    <i class="fa-solid fa-pause"></i> Pausar
+                </button>
+
                 <span class="text-xs font-bold text-slate-400 ml-2">TURNO ATUAL (BSB):</span>
                 <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-800 text-white font-bold p-2 rounded-lg outline-none border-none">
                     <option value="1">🌅 Manhã (05:00 - 14:18)</option>
@@ -128,10 +132,10 @@
             </div>
 
             <div class="bg-white p-8 rounded-3xl shadow-2xl">
-                <h2 class="text-2xl font-black mb-4 border-b pb-4 text-green-700">✅ HISTÓRICO</h2>
+                <h2 class="text-2xl font-black mb-4 border-b pb-4 text-slate-800"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> REGISTRO HISTÓRICO DE PRODUÇÃO</h2>
                 <div class="overflow-x-auto max-h-96 overflow-y-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-green-50 text-green-800 text-xs uppercase sticky top-0">
+                        <thead class="bg-blue-50 text-blue-800 text-xs uppercase sticky top-0">
                             <tr>
                                 <th class="p-3">Data/Hora</th>
                                 <th class="p-3">Máquina</th>
@@ -139,7 +143,7 @@
                                 <th class="p-3">Operador</th>
                                 <th class="p-3">Produto</th>
                                 <th class="p-3">Qtd Feita</th>
-                            </tr>
+                                <th class="p-3 text-right">Ações</th> </tr>
                         </thead>
                         <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
                     </table>
@@ -163,7 +167,8 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
                     <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
                     <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
-                        </select>
+                        <option value="todas">🏭 Todas as Máquinas</option>
+                    </select>
                 </div>
                 <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
                 <div class="w-full mt-6 grid grid-cols-3 gap-4 text-center">
@@ -245,6 +250,9 @@
         let filtroGraficoId = 'todas';
         let charts = { oee: null, paradas: null, refugos: null };
         let relogioInterval = null; 
+        
+        // VARIÁVEL PARA PAUSA MANUAL
+        let sistemaPausado = false;
 
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
@@ -289,12 +297,9 @@
                 });
                 
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+                // CORREÇÃO DO FILTRO DE MÁQUINAS NOS GRÁFICOS
+                document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 Todas as Máquinas</option>' + maquinas.map(m => `<option value="${m.id}">🏭 ${m.nome}</option>`).join('');
                 
-                // --- CÓDIGO NOVO: Preenchendo dinamicamente o seletor do gráfico de status ---
-                document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 Todas as Máquinas</option>' + 
-                    maquinas.map(m => `<option value="${m.id}">🖥️ ${m.nome}</option>`).join('');
-                // -----------------------------------------------------------------------------
-
                 processarTurnoAuto();
                 
                 const now = Date.now();
@@ -312,6 +317,10 @@
         }
 
         function compensarTempoOffline(segundos) {
+            const agora = getBrasiliaDate();
+            // Não compensa tempo offline se for fim de semana ou se o sistema foi pausado antes
+            if (agora.getDay() === 0 || agora.getDay() === 6 || sistemaPausado) return; 
+
             const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
                 if(m.status === "04-PRODUÇÃO") {
@@ -329,13 +338,51 @@
             });
         }
 
+        // FUNÇÃO DO BOTÃO DE PAUSA
+        function togglePause() {
+            sistemaPausado = !sistemaPausado;
+            const btn = document.getElementById('btn-pause');
+            if(sistemaPausado) {
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Retomar';
+                btn.classList.replace('bg-yellow-500', 'bg-green-500');
+                btn.classList.replace('hover:bg-yellow-400', 'hover:bg-green-400');
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar';
+                btn.classList.replace('bg-green-500', 'bg-yellow-500');
+                btn.classList.replace('hover:bg-green-400', 'hover:bg-yellow-400');
+            }
+            salvarAutomatico(); // Para registrar no log que mexeu
+        }
+
         function iniciarRelogio() {
             if (relogioInterval) clearInterval(relogioInterval);
             relogioInterval = setInterval(() => {
                 const agora = getBrasiliaDate();
                 document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+                
                 const diaSemana = agora.getDay();
-                if (diaSemana === 0 || diaSemana === 6) return; 
+                const fimDeSemana = (diaSemana === 0 || diaSemana === 6);
+                
+                const badgeAuto = document.getElementById('badge-auto');
+
+                // LÓGICA DE PAUSA MELHORADA
+                if (fimDeSemana) {
+                    badgeAuto.innerText = "PAUSA FDS";
+                    badgeAuto.className = "bg-yellow-500 text-[10px] px-3 py-1 rounded-full font-black text-white";
+                    return; // Interrompe a contagem
+                } else if (sistemaPausado) {
+                    badgeAuto.innerText = "PAUSADO";
+                    badgeAuto.className = "bg-orange-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse text-white";
+                    return; // Interrompe a contagem se o usuário pausou
+                } else {
+                    if (!manualOverride) {
+                        badgeAuto.innerText = "AUTO";
+                        badgeAuto.className = "bg-green-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse text-white";
+                    } else {
+                        badgeAuto.innerText = "MANUAL";
+                        badgeAuto.className = "bg-blue-500 text-[10px] px-3 py-1 rounded-full font-black text-white";
+                    }
+                }
 
                 processarTurnoAuto();
                 const t = document.getElementById('filtro-turno').value;
@@ -596,24 +643,19 @@
                         }
                     }
                 } else {
-                    // --- CORREÇÃO DO ERRO VISUAL "UNDEFINED" ---
-                    if(m.resumoTurno[filtro]) {
-                        d.boas = m.resumoTurno[filtro].boas || 0;
-                        d.refugo = m.resumoTurno[filtro].refugo || 0;
-                        d.paradas = m.resumoTurno[filtro].paradas || 0;
-                        d.tempoProducao = m.resumoTurno[filtro].tempoProducao || 0;
-                        d.tempoBaixa = m.resumoTurno[filtro].tempoBaixa || 0;
-                    }
-                    // -------------------------------------------
+                    if(m.resumoTurno[filtro]) d = m.resumoTurno[filtro];
                 }
 
-                const percPerda = d.boas > 0 ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : 0;
+                // CORREÇÃO DOS UNDEFINED APLICANDO || 0 NAS VARIÁVEIS
+                const pecasBoas = d.boas || 0;
+                const pecasRefugo = d.refugo || 0;
+                const percPerda = pecasBoas > 0 ? ((pecasRefugo / (pecasBoas + pecasRefugo)) * 100).toFixed(1) : 0;
                 
                 return `<tr class="border-b hover:bg-slate-50">
                     <td class="p-4 font-black">${m.nome}</td>
                     <td class="p-4">${m.fila[0]?.op || '---'}</td>
-                    <td class="p-4 text-green-600 text-lg">${d.boas}</td>
-                    <td class="p-4 text-red-600 text-lg">${d.refugo}</td>
+                    <td class="p-4 text-green-600 text-lg">${pecasBoas}</td>
+                    <td class="p-4 text-red-600 text-lg">${pecasRefugo}</td>
                     <td class="p-4 text-red-500 font-bold">${percPerda}%</td>
                     <td class="p-4 font-mono text-green-700 bg-green-50">${fmtTempo(d.tempoProducao)}</td>
                     <td class="p-4 font-mono text-orange-600 bg-orange-50">${fmtTempo(d.tempoBaixa)}</td>
@@ -716,23 +758,39 @@
             });
             tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
         }
+
         function renderHistorico() {
             const tbody = document.getElementById('lista-historico');
             let html = '';
             const histOrdenado = [...historico].reverse();
-            histOrdenado.forEach(h => {
+            histOrdenado.forEach((h, index) => {
+                // Necessário calcular o index real para deletar o correto no array que não está invertido
+                const indexReal = historico.length - 1 - index; 
                 const dataFmt = new Date(h.data).toLocaleString('pt-BR');
-                html += `<tr class="border-b hover:bg-green-50">
+                html += `<tr class="border-b hover:bg-blue-50">
                     <td class="p-3 text-xs text-slate-500">${dataFmt}</td>
                     <td class="p-3 font-bold text-blue-600">${h.maquina}</td>
                     <td class="p-3">${h.op}</td>
                     <td class="p-3 text-xs">${h.operador || '-'}</td>
                     <td class="p-3 text-xs uppercase">${h.produto}</td>
-                    <td class="p-3 font-bold">${h.qtdFeita || h.qtd}</td>
+                    <td class="p-3 font-bold">${h.qtdFeita || h.qtd || 0}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="deletarHistorico(${indexReal})" class="text-red-500 hover:text-red-700 p-1 bg-white rounded shadow-sm border"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 </tr>`;
             });
-            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="7" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
         }
+
+        // FUNÇÃO PARA DELETAR HISTÓRICO
+        function deletarHistorico(index) {
+            if(confirm("Tem certeza que deseja apagar este registro do histórico?")) {
+                historico.splice(index, 1);
+                renderHistorico();
+                salvarAutomatico();
+            }
+        }
+
         function deletarOP(maqId, index) { if(confirm("Apagar?")) { maquinas.find(x => x.id === maqId).fila.splice(index, 1); renderListaOPs(); render(); salvarAutomatico(); } }
         function adicionarFila() {
             const id = parseInt(document.getElementById('f-maquina').value);
