@@ -55,9 +55,21 @@
 <body>
 
     <div id="tela-loading" class="fixed inset-0 bg-slate-900 z-[200] flex flex-col items-center justify-center transition-opacity duration-500">
-        <h1 class="text-6xl font-black italic tracking-tighter mb-8 text-white animate-pulse">TRI<span class="text-blue-500">PLAST</span></h1>
-        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-slate-400 mt-6 font-bold text-sm tracking-widest uppercase">Conectando ao banco de dados...</p>
+        <h1 class="text-6xl md:text-8xl font-black italic tracking-tighter mb-12 text-white animate-pulse">TRI<span class="text-blue-500">PLAST</span></h1>
+        
+        <div id="loading-spinner" class="flex flex-col items-center">
+            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <p class="text-slate-400 font-bold text-sm tracking-widest uppercase animate-pulse">Conectando ao banco de dados...</p>
+        </div>
+
+        <div id="loading-action" class="hidden flex-col items-center">
+            <p class="text-green-400 mb-8 font-bold text-sm tracking-widest uppercase flex items-center gap-2">
+                <i class="fa-solid fa-check-circle text-lg"></i> Conexão Estabelecida
+            </p>
+            <button onclick="entrarLogin()" class="bg-blue-600 text-white font-black py-4 px-12 rounded-full shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_40px_rgba(37,99,235,0.8)] hover:bg-blue-500 transition-all duration-300 hover:scale-105 active:scale-95 text-xl tracking-widest uppercase border border-blue-400">
+                Acessar Sistema
+            </button>
+        </div>
     </div>
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center" style="display: none;">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-96 max-w-[90%] text-center">
@@ -345,14 +357,21 @@
 
                 iniciarRelogio();
 
-                setTimeout(() => {
-                    document.getElementById('tela-loading').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('tela-loading').style.display = 'none';
-                        document.getElementById('tela-login').style.display = 'flex';
-                    }, 500); 
-                }, 500); 
+                // LÓGICA NOVA DA TELA DE CARREGAMENTO
+                document.getElementById('loading-spinner').style.display = 'none';
+                const actionDiv = document.getElementById('loading-action');
+                actionDiv.classList.remove('hidden');
+                actionDiv.classList.add('flex');
             }
+        }
+
+        // FUNÇÃO NOVA PARA CLICAR E ENTRAR NO LOGIN
+        function entrarLogin() {
+            document.getElementById('tela-loading').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('tela-loading').style.display = 'none';
+                document.getElementById('tela-login').style.display = 'flex';
+            }, 500); 
         }
 
         function fazerLogin() {
@@ -580,13 +599,10 @@
 
             let maquinasRender = maquinas;
             
-            // LÓGICA DE CENTRALIZAÇÃO DO CARD DO TABLET
             if (usuarioLogado !== 'admin' && usuarioLogado !== null) {
                 maquinasRender = maquinas.filter(m => m.id === usuarioLogado);
-                // Define a classe para centralizar perfeitamente o único card na tela
                 grid.className = "max-w-lg mx-auto w-full mt-4"; 
             } else {
-                // Grade original para o administrador ver tudo
                 grid.className = "max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8";
             }
 
