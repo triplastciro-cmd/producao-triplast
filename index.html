@@ -343,7 +343,6 @@
 
         function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0, tempoSemProg: 0 }; }
 
-        // Inicializa a Logo na tela se houver link válido
         if(LINK_LOGO && LINK_LOGO.trim() !== "") {
             document.querySelectorAll('.img-logo').forEach(img => {
                 img.src = LINK_LOGO;
@@ -481,13 +480,16 @@
             
             render(); 
             
+            // GARANTINDO QUE TODOS OS ELEMENTOS DA ABA DO ADMIN SEJAM DESENHADOS AO LOGAR
             if(usuarioLogado === 'admin') {
                 iniciarGraficos();
                 atualizarResumoGlobalNumeros();
                 renderListaOPs();
                 renderHistorico();
                 renderApontamento();
-                renderOperadoresConfig();
+                renderOperadoresConfig(); 
+                renderCoresConfig();
+                atualizarDropdownOperadores();
             }
         }
 
@@ -608,7 +610,12 @@
             
             if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
             if(id === 'apontamento') { renderApontamento(); }
-            if(id === 'lista') { renderListaOPs(); renderHistorico(); renderOperadoresConfig(); }
+            if(id === 'lista') { 
+                renderListaOPs(); 
+                renderHistorico(); 
+                renderOperadoresConfig();
+                renderCoresConfig();
+            }
         }
 
         function processarTurnoAuto() {
