@@ -203,7 +203,7 @@
         <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl overflow-x-auto">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-black text-slate-700">RESUMO DE PRODUÇÃO</h2>
+                    <h2 class="text-2xl font-black text-slate-700">RESUMO DE PRODUÇÃO (TURNO)</h2>
                     <select id="filtro-resumo" onchange="renderApontamento()" class="bg-blue-100 text-blue-800 font-bold p-2 rounded-lg border border-blue-300">
                         <option value="todas">📊 TODOS OS TURNOS (GERAL)</option>
                         <option value="1">🌅 Manhã</option>
@@ -217,9 +217,9 @@
                 <thead class="bg-slate-800 text-white uppercase text-[10px]">
                     <tr>
                         <th class="p-4">Máquina</th>
-                        <th class="p-4">O.P</th>
-                        <th class="p-4">Boas</th>
-                        <th class="p-4">Refugo</th>
+                        <th class="p-4">O.P Atual</th>
+                        <th class="p-4">Boas (Total)</th>
+                        <th class="p-4">Refugo (Total)</th>
                         <th class="p-4">% Perda</th>
                         <th class="p-4 bg-green-900">T. Prod</th>
                         <th class="p-4 bg-orange-900">T. Baixa</th>
@@ -269,9 +269,19 @@
                 
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
+                    
+                    // Inicializa dados do turno ATUAL (Card)
                     if(!m.dadosTurno) m.dadosTurno = { 1:{}, 2:{}, 3:{} };
+                    // Inicializa dados ACUMULADOS do turno (Gráficos/Resumo)
+                    if(!m.resumoTurno) m.resumoTurno = { 1:{}, 2:{}, 3:{} };
+
                     for(let i=1; i<=3; i++) {
+                        // Garante estrutura
                         if(!m.dadosTurno[i]) m.dadosTurno[i] = { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 };
+                        if(!m.resumoTurno[i]) {
+                             // Se não existir acumulado, cria igual ao atual para não zerar do nada
+                             m.resumoTurno[i] = { ...m.dadosTurno[i] }; 
+                        }
                     }
                 });
                 
@@ -303,9 +313,18 @@
         function compensarTempoOffline(segundos) {
             const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
-                if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao += segundos;
-                else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa += segundos;
-                else m.dadosTurno[t].paradas += segundos;
+                if(m.status === "04-PRODUÇÃO") {
+                    m.dadosTurno[t].tempoProducao += segundos;
+                    m.resumoTurno[t].tempoProducao += segundos;
+                }
+                else if (m.status === "21-BAIXA EFICIÊNCIA") {
+                    m.dadosTurno[t].tempoBaixa += segundos;
+                    m.resumoTurno[t].tempoBaixa += segundos;
+                }
+                else {
+                    m.dadosTurno[t].paradas += segundos;
+                    m.resumoTurno[t].paradas += segundos;
+                }
             });
         }
 
@@ -323,9 +342,19 @@
                 const t = document.getElementById('filtro-turno').value;
                 
                 maquinas.forEach(m => {
-                    if(m.status === "04-PRODUÇÃO") m.dadosTurno[t].tempoProducao++;
-                    else if (m.status === "21-BAIXA EFICIÊNCIA") m.dadosTurno[t].tempoBaixa++;
-                    else m.dadosTurno[t].paradas++;
+                    // Soma nos dois lugares: Card (Atual) e Resumo (Acumulado)
+                    if(m.status === "04-PRODUÇÃO") {
+                        m.dadosTurno[t].tempoProducao++;
+                        m.resumoTurno[t].tempoProducao++;
+                    }
+                    else if (m.status === "21-BAIXA EFICIÊNCIA") {
+                        m.dadosTurno[t].tempoBaixa++;
+                        m.resumoTurno[t].tempoBaixa++;
+                    }
+                    else {
+                        m.dadosTurno[t].paradas++;
+                        m.resumoTurno[t].paradas++;
+                    }
                 });
 
                 updateTimersVisualOnly(); 
@@ -346,7 +375,7 @@
             // Força atualização ao entrar na aba
             if(id === 'graficos') {
                 atualizarResumoGlobalNumeros();
-                iniciarGraficos(); // Recria os gráficos para garantir dados frescos
+                iniciarGraficos(); 
             }
             if(id === 'apontamento') {
                 renderApontamento();
@@ -381,10 +410,12 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
+        // Reseta AMBOS (Card e Acumulado) pois é uma correção manual
         function resetarValor(id, campo) {
-            if(confirm("Tem certeza que deseja zerar este valor?")) {
+            if(confirm("Tem certeza que deseja zerar este valor? Isso afetará o CARD e o GRÁFICO.")) {
                 const t = document.getElementById('filtro-turno').value;
                 maquinas.find(x => x.id === id).dadosTurno[t][campo] = 0;
+                maquinas.find(x => x.id === id).resumoTurno[t][campo] = 0;
                 document.getElementById(`modal-reset-${id}`).style.display = 'none';
                 render();
                 renderApontamento();
@@ -393,9 +424,12 @@
         }
 
         function resetarTurnoCompleto() {
-            if(confirm("ZERAR TUDO DO TURNO ATUAL?")) {
+            if(confirm("ZERAR TUDO DO TURNO ATUAL? Isso apaga todos os gráficos e resumos de hoje.")) {
                 const t = document.getElementById('filtro-turno').value;
-                maquinas.forEach(m => { m.dadosTurno[t] = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 }; });
+                maquinas.forEach(m => { 
+                    m.dadosTurno[t] = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 }; 
+                    m.resumoTurno[t] = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 }; 
+                });
                 render(); renderApontamento(); salvarAutomatico();
             }
         }
@@ -407,7 +441,7 @@
 
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: '---' };
-                const d = m.dadosTurno[t];
+                const d = m.dadosTurno[t]; // Usa dados do MOMENTO
                 const percPerda = (d.refugo * 2).toFixed(0); 
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
@@ -497,9 +531,13 @@
 
         function addProd(id, v) { 
             const t = document.getElementById('filtro-turno').value; 
-            maquinas.find(x => x.id === id).dadosTurno[t].boas += v; 
+            const maq = maquinas.find(x => x.id === id);
+            // SOMA NO ATUAL
+            maq.dadosTurno[t].boas += v;
+            // SOMA NO ACUMULADO
+            maq.resumoTurno[t].boas += v;
+            
             render(); 
-            // Atualiza resumo imediatamente
             renderApontamento(); 
             salvarAutomatico();
         }
@@ -509,11 +547,15 @@
             const qtdInput = document.getElementById(`qtd-refugo-${id}`);
             const qtd = parseInt(qtdInput.value) || 1;
             
-            maquinas.find(x => x.id === id).dadosTurno[t].refugo += qtd; 
+            const maq = maquinas.find(x => x.id === id);
+            // SOMA NO ATUAL
+            maq.dadosTurno[t].refugo += qtd;
+            // SOMA NO ACUMULADO
+            maq.resumoTurno[t].refugo += qtd;
+             
             qtdInput.value = 1;
             
             render(); 
-            // Atualiza resumo imediatamente
             renderApontamento();
             salvarAutomatico();
         }
@@ -604,7 +646,7 @@
         }
 
         function finalizarOP(id) {
-            if(confirm("Finalizar O.P? Isso salvará no histórico e ZERARÁ os contadores desta máquina.")) { 
+            if(confirm("Finalizar O.P? Isso salvará no histórico e ZERARÁ O CARD (mas manterá o gráfico do turno).")) { 
                 const m = maquinas.find(x => x.id === id);
                 const opConcluida = m.fila.shift(); 
                 
@@ -617,7 +659,11 @@
                 }
 
                 const t = document.getElementById('filtro-turno').value;
+                
+                // AQUI ESTÁ A CORREÇÃO PRINCIPAL:
+                // Zera APENAS o card (dadosTurno)
                 m.dadosTurno[t] = { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 };
+                // NÃO ZERA m.resumoTurno (mantém para gráfico e resumo)
 
                 render(); 
                 renderListaOPs(); 
@@ -630,22 +676,22 @@
         function renderApontamento() {
             const filtro = document.getElementById('filtro-resumo').value; 
             
+            // AGORA USA O "resumoTurno" (Acumulado) em vez de "dadosTurno"
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
 
                 if (filtro === 'todas') {
-                    // Soma Segura
                     for(let i=1; i<=3; i++) {
-                        if(m.dadosTurno[i]) {
-                            d.boas += (m.dadosTurno[i].boas || 0);
-                            d.refugo += (m.dadosTurno[i].refugo || 0);
-                            d.paradas += (m.dadosTurno[i].paradas || 0);
-                            d.tempoProducao += (m.dadosTurno[i].tempoProducao || 0);
-                            d.tempoBaixa += (m.dadosTurno[i].tempoBaixa || 0);
+                        if(m.resumoTurno[i]) {
+                            d.boas += (m.resumoTurno[i].boas || 0);
+                            d.refugo += (m.resumoTurno[i].refugo || 0);
+                            d.paradas += (m.resumoTurno[i].paradas || 0);
+                            d.tempoProducao += (m.resumoTurno[i].tempoProducao || 0);
+                            d.tempoBaixa += (m.resumoTurno[i].tempoBaixa || 0);
                         }
                     }
                 } else {
-                    if(m.dadosTurno[filtro]) d = m.dadosTurno[filtro];
+                    if(m.resumoTurno[filtro]) d = m.resumoTurno[filtro];
                 }
 
                 const percPerda = (d.refugo * 2).toFixed(0);
@@ -666,13 +712,12 @@
         function alterarFiltroGrafico(valor) {
             filtroGraficoId = valor;
             atualizarResumoGlobalNumeros();
-            iniciarGraficos(); // Força redesenho completo
+            iniciarGraficos(); 
         }
 
         function iniciarGraficos() {
             const t = document.getElementById('filtro-turno').value;
             
-            // Destroi instancias antigas se existirem
             if (charts.oee) { charts.oee.destroy(); charts.oee = null; }
             if (charts.paradas) { charts.paradas.destroy(); charts.paradas = null; }
             if (charts.refugos) { charts.refugos.destroy(); charts.refugos = null; }
@@ -681,7 +726,7 @@
             const ctxParadas = document.getElementById('chartParadas');
             const ctxRefugos = document.getElementById('chartRefugos');
 
-            // Prepara Dados OEE
+            // Prepara Dados OEE (Status é tempo real, mantem lógica)
             let s = { p: 0, b: 0, s: 0 };
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
@@ -690,15 +735,14 @@
                 else s.s++;
             });
 
-            // Prepara Dados Barras (Filtrando se necessário)
+            // Prepara Dados Barras (USA O ACUMULADO "resumoTurno")
             let maquinasFiltradas = maquinas;
             if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
 
             const labels = maquinasFiltradas.map(m => m.nome);
-            const dataParadas = maquinasFiltradas.map(m => (m.dadosTurno[t].paradas / 60).toFixed(1)); 
-            const dataRefugos = maquinasFiltradas.map(m => m.dadosTurno[t].refugo);
+            const dataParadas = maquinasFiltradas.map(m => (m.resumoTurno[t].paradas / 60).toFixed(1)); 
+            const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t].refugo);
 
-            // Cria Gráficos
             charts.oee = new Chart(ctxOEE, {
                 type: 'doughnut',
                 data: { labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] },
@@ -717,7 +761,6 @@
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
             });
             
-            // Popula o select se estiver vazio
             const selectFiltro = document.getElementById('filtro-grafico-status');
             if(selectFiltro.options.length === 1 && maquinas.length > 0) {
                 maquinas.forEach(m => {
@@ -737,9 +780,10 @@
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
                 countMaquinas++;
-                totalProd += m.dadosTurno[t].tempoProducao;
-                totalBaixa += m.dadosTurno[t].tempoBaixa;
-                totalParado += m.dadosTurno[t].paradas;
+                // USA ACUMULADO
+                totalProd += m.resumoTurno[t].tempoProducao;
+                totalBaixa += m.resumoTurno[t].tempoBaixa;
+                totalParado += m.resumoTurno[t].paradas;
             });
 
             let divisor = 1;
