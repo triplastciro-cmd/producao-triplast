@@ -139,7 +139,6 @@
                                 <th class="p-3">Operador</th>
                                 <th class="p-3">Produto</th>
                                 <th class="p-3">Qtd Feita</th>
-                                <th class="p-3 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
@@ -164,8 +163,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
                     <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
                     <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
-                        <option value="todas">🏭 Todas as Máquinas</option>
-                    </select>
+                        </select>
                 </div>
                 <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
                 <div class="w-full mt-6 grid grid-cols-3 gap-4 text-center">
@@ -281,16 +279,22 @@
                         if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
                         if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
 
-                        if (m.dadosTurno[i].boas > (m.resumoTurno[i].boas || 0)) m.resumoTurno[i].boas = m.dadosTurno[i].boas;
-                        if (m.dadosTurno[i].refugo > (m.resumoTurno[i].refugo || 0)) m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
+                        if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) m.resumoTurno[i].boas = m.dadosTurno[i].boas;
+                        if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
                         
-                        if (m.dadosTurno[i].tempoProducao > (m.resumoTurno[i].tempoProducao || 0)) m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
-                        if (m.dadosTurno[i].tempoBaixa > (m.resumoTurno[i].tempoBaixa || 0)) m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
-                        if (m.dadosTurno[i].paradas > (m.resumoTurno[i].paradas || 0)) m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
+                        if (m.dadosTurno[i].tempoProducao > m.resumoTurno[i].tempoProducao) m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
+                        if (m.dadosTurno[i].tempoBaixa > m.resumoTurno[i].tempoBaixa) m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
+                        if (m.dadosTurno[i].paradas > m.resumoTurno[i].paradas) m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
                     }
                 });
                 
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+                
+                // --- CÓDIGO NOVO: Preenchendo dinamicamente o seletor do gráfico de status ---
+                document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 Todas as Máquinas</option>' + 
+                    maquinas.map(m => `<option value="${m.id}">🖥️ ${m.nome}</option>`).join('');
+                // -----------------------------------------------------------------------------
+
                 processarTurnoAuto();
                 
                 const now = Date.now();
@@ -300,6 +304,7 @@
                 render(); 
                 renderListaOPs();
                 renderHistorico();
+                renderCoresConfig();
                 renderApontamento();
                 iniciarGraficos();
                 iniciarRelogio();
@@ -313,7 +318,7 @@
                     m.dadosTurno[t].tempoProducao += segundos;
                     m.resumoTurno[t].tempoProducao += segundos;
                 }
-                else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
+                else if (m.status === "21-BAIXA EFICIÊNCIA") {
                     m.dadosTurno[t].tempoBaixa += segundos;
                     m.resumoTurno[t].tempoBaixa += segundos;
                 }
@@ -340,7 +345,7 @@
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
                     }
-                    else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
+                    else if (m.status === "21-BAIXA EFICIÊNCIA") {
                         m.dadosTurno[t].tempoBaixa++;
                         m.resumoTurno[t].tempoBaixa++;
                     }
@@ -422,6 +427,7 @@
                 const d = m.dadosTurno[t]; 
                 const percPerda = (d.refugo > 0 && (d.boas + d.refugo) > 0) ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
                 
+                // Cálculo da barra de progresso
                 const meta = op.qtd || 0;
                 const progresso = meta > 0 ? Math.min((d.boas / meta) * 100, 100) : 0;
 
@@ -515,7 +521,7 @@
                 if(el) {
                     const d = m.dadosTurno[t];
                     if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
-                    else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
+                    else if (m.status === "21-BAIXA EFICIÊNCIA") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
                     else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
                 }
             });
@@ -577,39 +583,41 @@
             const filtro = document.getElementById('filtro-resumo').value; 
             
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
-                let dBoas = 0, dRef = 0, dParadas = 0, dProd = 0, dBaixa = 0;
+                let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
 
                 if (filtro === 'todas') {
                     for(let i=1; i<=3; i++) {
                         if(m.resumoTurno[i]) {
-                            dBoas += (m.resumoTurno[i].boas || 0);
-                            dRef += (m.resumoTurno[i].refugo || 0);
-                            dParadas += (m.resumoTurno[i].paradas || 0);
-                            dProd += (m.resumoTurno[i].tempoProducao || 0);
-                            dBaixa += (m.resumoTurno[i].tempoBaixa || 0);
+                            d.boas += (m.resumoTurno[i].boas || 0);
+                            d.refugo += (m.resumoTurno[i].refugo || 0);
+                            d.paradas += (m.resumoTurno[i].paradas || 0);
+                            d.tempoProducao += (m.resumoTurno[i].tempoProducao || 0);
+                            d.tempoBaixa += (m.resumoTurno[i].tempoBaixa || 0);
                         }
                     }
                 } else {
+                    // --- CORREÇÃO DO ERRO VISUAL "UNDEFINED" ---
                     if(m.resumoTurno[filtro]) {
-                        dBoas = m.resumoTurno[filtro].boas || 0;
-                        dRef = m.resumoTurno[filtro].refugo || 0;
-                        dParadas = m.resumoTurno[filtro].paradas || 0;
-                        dProd = m.resumoTurno[filtro].tempoProducao || 0;
-                        dBaixa = m.resumoTurno[filtro].tempoBaixa || 0;
+                        d.boas = m.resumoTurno[filtro].boas || 0;
+                        d.refugo = m.resumoTurno[filtro].refugo || 0;
+                        d.paradas = m.resumoTurno[filtro].paradas || 0;
+                        d.tempoProducao = m.resumoTurno[filtro].tempoProducao || 0;
+                        d.tempoBaixa = m.resumoTurno[filtro].tempoBaixa || 0;
                     }
+                    // -------------------------------------------
                 }
 
-                const percPerda = dBoas > 0 ? ((dRef / (dBoas + dRef)) * 100).toFixed(1) : 0;
+                const percPerda = d.boas > 0 ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : 0;
                 
                 return `<tr class="border-b hover:bg-slate-50">
                     <td class="p-4 font-black">${m.nome}</td>
                     <td class="p-4">${m.fila[0]?.op || '---'}</td>
-                    <td class="p-4 text-green-600 text-lg">${dBoas}</td>
-                    <td class="p-4 text-red-600 text-lg">${dRef}</td>
+                    <td class="p-4 text-green-600 text-lg">${d.boas}</td>
+                    <td class="p-4 text-red-600 text-lg">${d.refugo}</td>
                     <td class="p-4 text-red-500 font-bold">${percPerda}%</td>
-                    <td class="p-4 font-mono text-green-700 bg-green-50">${fmtTempo(dProd)}</td>
-                    <td class="p-4 font-mono text-orange-600 bg-orange-50">${fmtTempo(dBaixa)}</td>
-                    <td class="p-4 font-mono text-red-600 bg-red-50">${fmtTempo(dParadas)}</td>
+                    <td class="p-4 font-mono text-green-700 bg-green-50">${fmtTempo(d.tempoProducao)}</td>
+                    <td class="p-4 font-mono text-orange-600 bg-orange-50">${fmtTempo(d.tempoBaixa)}</td>
+                    <td class="p-4 font-mono text-red-600 bg-red-50">${fmtTempo(d.paradas)}</td>
                 </tr>`;
             }).join('');
         }
@@ -629,7 +637,7 @@
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
                 if(m.status === "04-PRODUÇÃO") s.p++; 
-                else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") s.b++;
+                else if(m.status === "21-BAIXA EFICIÊNCIA") s.b++;
                 else s.s++;
             });
 
@@ -637,8 +645,8 @@
             if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
 
             const labels = maquinasFiltradas.map(m => m.nome);
-            const dataParadas = maquinasFiltradas.map(m => ((m.resumoTurno[t].paradas || 0) / 60).toFixed(1)); 
-            const dataRefugos = maquinasFiltradas.map(m => (m.resumoTurno[t].refugo || 0));
+            const dataParadas = maquinasFiltradas.map(m => (m.resumoTurno[t].paradas / 60).toFixed(1)); 
+            const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t].refugo);
 
             charts.oee = new Chart(ctxOEE, {
                 type: 'doughnut',
@@ -664,34 +672,31 @@
 
             const t = document.getElementById('filtro-turno').value;
             let totalProd = 0, totalBaixa = 0, totalParado = 0;
+            let countMaquinas = 0;
 
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
-                totalProd += m.resumoTurno[t].tempoProducao || 0;
-                totalBaixa += m.resumoTurno[t].tempoBaixa || 0;
-                totalParado += m.resumoTurno[t].paradas || 0;
+                countMaquinas++;
+                totalProd += m.resumoTurno[t].tempoProducao;
+                totalBaixa += m.resumoTurno[t].tempoBaixa;
+                totalParado += m.resumoTurno[t].paradas;
             });
 
-            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd);
-            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
-            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
+            let divisor = 1;
+            if(filtroGraficoId === 'todas' && countMaquinas > 0) divisor = countMaquinas;
+
+            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
+            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa / divisor);
+            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
         }
 
-        function atualizarStatus(id, st) { 
-            maquinas.find(x => x.id === id).status = st; 
-            render(); 
-            iniciarGraficos();
-            salvarAutomatico(); 
-        }
-
+        function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
         function vincularCor(id, cor) { maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico(); }
-        
         function calcEficienciaGlobal() {
             let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => { prod += (m.dadosTurno[t].boas || 0); meta += m.fila[0]?.qtd || 0; });
+            maquinas.forEach(m => { prod += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
             document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
         }
-
         function renderListaOPs() {
             const tbody = document.getElementById('lista-ops-geral');
             let html = '';
@@ -711,13 +716,10 @@
             });
             tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
         }
-
         function renderHistorico() {
             const tbody = document.getElementById('lista-historico');
             let html = '';
-            
-            const histOrdenado = historico.map((h, i) => ({ ...h, originalIndex: i })).reverse();
-            
+            const histOrdenado = [...historico].reverse();
             histOrdenado.forEach(h => {
                 const dataFmt = new Date(h.data).toLocaleString('pt-BR');
                 html += `<tr class="border-b hover:bg-green-50">
@@ -727,26 +729,11 @@
                     <td class="p-3 text-xs">${h.operador || '-'}</td>
                     <td class="p-3 text-xs uppercase">${h.produto}</td>
                     <td class="p-3 font-bold">${h.qtdFeita || h.qtd}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="deletarHistorico(${h.originalIndex})" class="text-red-500 hover:text-red-700">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
                 </tr>`;
             });
-            tbody.innerHTML = html || '<tr><td colspan="7" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
         }
-
-        function deletarHistorico(indexOriginal) {
-            if(confirm("Deseja realmente excluir este registro do histórico?")) {
-                historico.splice(indexOriginal, 1);
-                renderHistorico();
-                salvarAutomatico();
-            }
-        }
-
         function deletarOP(maqId, index) { if(confirm("Apagar?")) { maquinas.find(x => x.id === maqId).fila.splice(index, 1); renderListaOPs(); render(); salvarAutomatico(); } }
-        
         function adicionarFila() {
             const id = parseInt(document.getElementById('f-maquina').value);
             const m = maquinas.find(x => x.id === id);
@@ -760,30 +747,25 @@
             alert("O.P Agendada!"); 
             renderListaOPs(); render(); salvarAutomatico();
         }
-
         function gerenciarCor(acao) {
             if(acao === 'add') { const v = document.getElementById('nova-cor').value; if(v) coresGlobais.push(v); document.getElementById('nova-cor').value = ""; }
             renderCoresConfig(); render(); salvarAutomatico();
         }
-
         function renderCoresConfig() {
             document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
                 <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig(); salvarAutomatico();" class="text-red-500">×</button></div>
             `).join('');
         }
-
         async function salvarAutomatico() {
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000);
         }
-
         async function salvarGeral() {
             const timestamp = Date.now();
             const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico, lastUpdateTimestamp: timestamp } }).eq('id', 1);
             if(error) console.error("Erro ao salvar:", error);
         }
-
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
         
         window.addEventListener('beforeunload', () => { salvarGeral(); });
