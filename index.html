@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #add8e6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -707,21 +707,21 @@
                         <span class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-lg w-fit shadow-md mb-1">${m.nome}</span>
                         <span id="timer-display-${m.id}" class="text-[10px] font-bold block min-h-[15px]">--:--:--</span>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-2xl border mb-3">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="font-black text-slate-800 text-sm">O.P ${op.op}</span>
-                            
-                            <div class="flex gap-1 items-center">
-                                <select onchange="vincularCor(${m.id}, this.value)" class="text-xs font-bold px-2 py-1 border-2 border-slate-200 rounded-lg bg-white outline-none focus:border-blue-400 text-slate-700 w-24">
-                                    <option value="">-- COR --</option>
-                                    ${coresGlobais.map(c => `<option value="${c}" ${m.corAtual === c ? 'selected' : ''}>${c}</option>`).join('')}
-                                </select>
-                                <button onclick="abrirModalCores()" class="bg-slate-200 hover:bg-slate-300 text-slate-600 px-2 py-1 rounded-lg transition-colors" title="Gerenciar Cores"><i class="fa-solid fa-palette"></i></button>
-                            </div>
-                        </div>
+                    
+                    <div class="bg-slate-50 p-3 rounded-2xl border mb-3 relative overflow-hidden">
+                        
+                        <div class="absolute top-3 right-3 bg-gradient-to-br from-blue-600 to-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-md flex items-center gap-2 z-10">
+                             <i class="fa-solid fa-user-tie text-sm"></i>
+                             <div class="flex flex-col leading-none">
+                                <span class="text-[7px] font-bold uppercase opacity-70 mb-0.5">OPERADOR(A)</span>
+                                <span class="font-black text-xs uppercase tracking-wide">${op.operador || '---'}</span>
+                             </div>
+                         </div>
 
-                        <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-1">${op.produto}</div>
-                        <div class="text-[9px] font-bold text-blue-500 uppercase truncate mb-2">👤 ${op.operador || '---'}</div>
+                        <div class="pr-28">
+                             <span class="font-black text-slate-800 text-lg block leading-tight">O.P ${op.op}</span>
+                             <div class="text-xs font-bold text-slate-500 uppercase truncate mb-4">${op.produto}</div>
+                        </div>
                         
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <div class="info-badge border-blue-200 bg-blue-50">
