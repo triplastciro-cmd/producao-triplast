@@ -119,7 +119,7 @@
         </nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
-            <div id="grid-maquinas" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="grid-maquinas"></div>
         </div>
 
         <div id="aba-lista" class="aba-conteudo px-4">
@@ -345,18 +345,16 @@
 
                 iniciarRelogio();
 
-                // ESCONDE A TELA DE LOADING E MOSTRA O LOGIN DEPOIS QUE TUDO CARREGOU
                 setTimeout(() => {
                     document.getElementById('tela-loading').style.opacity = '0';
                     setTimeout(() => {
                         document.getElementById('tela-loading').style.display = 'none';
                         document.getElementById('tela-login').style.display = 'flex';
-                    }, 500); // tempo do fade out
-                }, 500); // pequeno delay para visualização suave
+                    }, 500); 
+                }, 500); 
             }
         }
 
-        // ================= FUNÇÕES DE LOGIN =================
         function fazerLogin() {
             const tipo = document.getElementById('login-tipo').value;
             const senha = document.getElementById('login-senha').value.trim().toUpperCase();
@@ -369,7 +367,6 @@
                     alert('Senha incorreta!');
                 }
             } else {
-                // DESCOBRE A POSIÇÃO DA MÁQUINA NA LISTA PARA DEFINIR A SENHA (M1, M2, M3...)
                 const indexDaMaquina = maquinas.findIndex(m => m.id == tipo) + 1;
                 const senhaCorretaMaquina = 'M' + indexDaMaquina;
 
@@ -414,7 +411,6 @@
                 renderApontamento();
             }
         }
-        // =====================================================
 
         function compensarTempoOffline(segundos) {
             const agora = getBrasiliaDate();
@@ -583,8 +579,15 @@
             if(!grid) return;
 
             let maquinasRender = maquinas;
+            
+            // LÓGICA DE CENTRALIZAÇÃO DO CARD DO TABLET
             if (usuarioLogado !== 'admin' && usuarioLogado !== null) {
                 maquinasRender = maquinas.filter(m => m.id === usuarioLogado);
+                // Define a classe para centralizar perfeitamente o único card na tela
+                grid.className = "max-w-lg mx-auto w-full mt-4"; 
+            } else {
+                // Grade original para o administrador ver tudo
+                grid.className = "max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8";
             }
 
             grid.innerHTML = maquinasRender.map(m => {
