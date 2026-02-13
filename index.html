@@ -21,7 +21,7 @@
         }
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
         .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
-        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; } /* NOVA COR PARA SEM PROGRAMAÇÃO */
+        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; }
 
         .info-badge {
             background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
@@ -172,18 +172,22 @@
                     </select>
                 </div>
                 <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
-                <div class="w-full mt-6 grid grid-cols-3 gap-4 text-center">
+                <div class="w-full mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div class="bg-green-50 p-4 rounded-xl border border-green-200">
-                        <div class="text-green-600 text-xs font-bold uppercase mb-1">PRODUZINDO</div>
-                        <div id="global-timer-prod" class="text-xl sm:text-3xl font-black text-green-700">00:00:00</div>
+                        <div class="text-green-600 text-[10px] md:text-xs font-bold uppercase mb-1">PRODUZINDO</div>
+                        <div id="global-timer-prod" class="text-lg md:text-2xl font-black text-green-700">00:00:00</div>
                     </div>
                     <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
-                        <div class="text-orange-500 text-xs font-bold uppercase mb-1">BAIXA EFIC.</div>
-                        <div id="global-timer-baixa" class="text-xl sm:text-3xl font-black text-orange-600">00:00:00</div>
+                        <div class="text-orange-500 text-[10px] md:text-xs font-bold uppercase mb-1">BAIXA EFIC.</div>
+                        <div id="global-timer-baixa" class="text-lg md:text-2xl font-black text-orange-600">00:00:00</div>
                     </div>
                     <div class="bg-red-50 p-4 rounded-xl border border-red-200">
-                        <div class="text-red-600 text-xs font-bold uppercase mb-1">PARADO</div>
-                        <div id="global-timer-parado" class="text-xl sm:text-3xl font-black text-red-700">00:00:00</div>
+                        <div class="text-red-600 text-[10px] md:text-xs font-bold uppercase mb-1">PARADO</div>
+                        <div id="global-timer-parado" class="text-lg md:text-2xl font-black text-red-700">00:00:00</div>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-200">
+                        <div class="text-slate-500 text-[10px] md:text-xs font-bold uppercase mb-1">SEM PROG.</div>
+                        <div id="global-timer-semprog" class="text-lg md:text-2xl font-black text-slate-600">00:00:00</div>
                     </div>
                 </div>
             </div>
@@ -220,7 +224,7 @@
                 </div>
                 <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR TURNO (PERIGO)</button>
             </div>
-            <table class="w-full text-left min-w-[800px]">
+            <table class="w-full text-left min-w-[900px]">
                 <thead class="bg-slate-800 text-white uppercase text-[10px]">
                     <tr>
                         <th class="p-4">Máquina</th>
@@ -231,6 +235,7 @@
                         <th class="p-4 bg-green-900">T. Prod</th>
                         <th class="p-4 bg-orange-900">T. Baixa</th>
                         <th class="p-4 bg-red-900">T. Parado</th>
+                        <th class="p-4 bg-slate-600">T. Sem Prog</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-apontamento" class="font-bold text-slate-700 text-xs"></tbody>
@@ -258,7 +263,6 @@
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
 
-        // NOVO STATUS ADICIONADO: "22-SEM PROGRAMAÇÃO"
         const paradasCodigos = [
             "04-PRODUÇÃO", "21-BAIXA EFICIÊNCIA", "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", 
             "03-MATERIA-PRIMA/ AJUSTE", "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", 
@@ -269,7 +273,8 @@
         ];
         const codigosRefugo = ["Falha de injeção", "Arranhão/batido", "Fora de cor", "Peça presa no molde", "Bolha", "Mancha", "Trinca", "Espirro", "Material contaminado", "Outros"];
 
-        function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 }; }
+        // ADICIONADO tempoSemProg PARA A FUNÇÃO QUE CRIA DADOS ZERADOS
+        function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0, tempoSemProg: 0 }; }
 
         async function carregarBanco() {
             const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
@@ -294,6 +299,7 @@
                         if (m.dadosTurno[i].tempoProducao > m.resumoTurno[i].tempoProducao) m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
                         if (m.dadosTurno[i].tempoBaixa > m.resumoTurno[i].tempoBaixa) m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
                         if (m.dadosTurno[i].paradas > m.resumoTurno[i].paradas) m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
+                        if ((m.dadosTurno[i].tempoSemProg || 0) > (m.resumoTurno[i].tempoSemProg || 0)) m.resumoTurno[i].tempoSemProg = m.dadosTurno[i].tempoSemProg;
                     }
                 });
                 
@@ -322,9 +328,6 @@
 
             const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
-                // TRAVA DE TEMPO PARA SEM PROGRAMAÇÃO
-                if (m.status === "22-SEM PROGRAMAÇÃO") return;
-
                 if(m.status === "04-PRODUÇÃO") {
                     m.dadosTurno[t].tempoProducao += segundos;
                     m.resumoTurno[t].tempoProducao += segundos;
@@ -332,6 +335,10 @@
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
                     m.dadosTurno[t].tempoBaixa += segundos;
                     m.resumoTurno[t].tempoBaixa += segundos;
+                }
+                else if (m.status === "22-SEM PROGRAMAÇÃO") {
+                    m.dadosTurno[t].tempoSemProg = (m.dadosTurno[t].tempoSemProg || 0) + segundos;
+                    m.resumoTurno[t].tempoSemProg = (m.resumoTurno[t].tempoSemProg || 0) + segundos;
                 }
                 else {
                     m.dadosTurno[t].paradas += segundos;
@@ -388,9 +395,6 @@
                 const t = document.getElementById('filtro-turno').value;
                 
                 maquinas.forEach(m => {
-                    // TRAVA DE TEMPO PARA SEM PROGRAMAÇÃO NO RELÓGIO
-                    if (m.status === "22-SEM PROGRAMAÇÃO") return;
-
                     if(m.status === "04-PRODUÇÃO") {
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
@@ -398,6 +402,10 @@
                     else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
                         m.dadosTurno[t].tempoBaixa++;
                         m.resumoTurno[t].tempoBaixa++;
+                    }
+                    else if (m.status === "22-SEM PROGRAMAÇÃO") {
+                        m.dadosTurno[t].tempoSemProg = (m.dadosTurno[t].tempoSemProg || 0) + 1;
+                        m.resumoTurno[t].tempoSemProg = (m.resumoTurno[t].tempoSemProg || 0) + 1;
                     }
                     else {
                         m.dadosTurno[t].paradas++;
@@ -483,7 +491,7 @@
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
-                else if (m.status === "22-SEM PROGRAMAÇÃO") sClass = "status-sem-prog"; // APLICA A NOVA COR
+                else if (m.status === "22-SEM PROGRAMAÇÃO") sClass = "status-sem-prog";
 
                 return `
                 <div class="card-producao ${sClass} p-4" id="card-${m.id}">
@@ -553,7 +561,6 @@
                     </div>
                     <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500 mb-2">
                         ${paradasCodigos.map(p => {
-                            // COLOCA A COR CINZA NA OPÇÃO DO DROPDOWN
                             let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : (p.includes("SEM PROGRAMAÇÃO") ? "text-slate-400" : "text-red-600"));
                             return `<option value="${p}" class="${color}" ${m.status === p ? 'selected' : ''}>${p}</option>`
                         }).join('')}
@@ -573,7 +580,7 @@
                     const d = m.dadosTurno[t];
                     if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
                     else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
-                    else if (m.status === "22-SEM PROGRAMAÇÃO") el.innerHTML = `<span class="text-slate-400 font-black"><i class="fa-solid fa-power-off"></i> SEM PROGRAMAÇÃO</span>`; // TEXTO DE SEM PROGRAMAÇÃO
+                    else if (m.status === "22-SEM PROGRAMAÇÃO") el.innerHTML = `<span class="text-slate-500 font-black"><i class="fa-solid fa-power-off"></i> SEM PROG: ${fmtTempo(d.tempoSemProg || 0)}</span>`;
                     else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
                 }
             });
@@ -635,7 +642,7 @@
             const filtro = document.getElementById('filtro-resumo').value; 
             
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
-                let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
+                let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0, tempoSemProg:0 };
 
                 if (filtro === 'todas') {
                     for(let i=1; i<=3; i++) {
@@ -645,6 +652,7 @@
                             d.paradas += (m.resumoTurno[i].paradas || 0);
                             d.tempoProducao += (m.resumoTurno[i].tempoProducao || 0);
                             d.tempoBaixa += (m.resumoTurno[i].tempoBaixa || 0);
+                            d.tempoSemProg += (m.resumoTurno[i].tempoSemProg || 0);
                         }
                     }
                 } else {
@@ -654,6 +662,7 @@
                         d.paradas = m.resumoTurno[filtro].paradas || 0;
                         d.tempoProducao = m.resumoTurno[filtro].tempoProducao || 0;
                         d.tempoBaixa = m.resumoTurno[filtro].tempoBaixa || 0;
+                        d.tempoSemProg = m.resumoTurno[filtro].tempoSemProg || 0;
                     }
                 }
 
@@ -670,6 +679,7 @@
                     <td class="p-4 font-mono text-green-700 bg-green-50">${fmtTempo(d.tempoProducao)}</td>
                     <td class="p-4 font-mono text-orange-600 bg-orange-50">${fmtTempo(d.tempoBaixa)}</td>
                     <td class="p-4 font-mono text-red-600 bg-red-50">${fmtTempo(d.paradas)}</td>
+                    <td class="p-4 font-mono text-slate-500 bg-slate-100">${fmtTempo(d.tempoSemProg)}</td>
                 </tr>`;
             }).join('');
         }
@@ -698,7 +708,11 @@
             if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
 
             const labels = maquinasFiltradas.map(m => m.nome);
+            
+            // AGORA SEPARA OS DADOS NO GRÁFICO
             const dataParadas = maquinasFiltradas.map(m => (m.resumoTurno[t].paradas / 60).toFixed(1)); 
+            const dataSemProg = maquinasFiltradas.map(m => ((m.resumoTurno[t].tempoSemProg || 0) / 60).toFixed(1)); 
+            
             const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t].refugo);
 
             charts.oee = new Chart(ctxOEE, {
@@ -707,10 +721,25 @@
                 options: { cutout: '60%', plugins: { legend: { display: false } }, animation: false }
             });
 
+            // GRÁFICO DE PARADAS AGORA COM DUAS BARRAS (VERMELHO E CINZA)
             charts.paradas = new Chart(ctxParadas, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Minutos', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
+                data: { 
+                    labels: labels, 
+                    datasets: [
+                        { label: 'Parada de Máquina', data: dataParadas, backgroundColor: '#ef4444', borderRadius: 4 },
+                        { label: 'Sem Programação', data: dataSemProg, backgroundColor: '#cbd5e1', borderRadius: 4 }
+                    ] 
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { legend: { display: true } }, 
+                    scales: { 
+                        y: { stacked: true, beginAtZero: true, grid: { display: false } }, 
+                        x: { stacked: true, grid: { display: false } } 
+                    }, 
+                    animation: false 
+                }
             });
 
             charts.refugos = new Chart(ctxRefugos, {
@@ -724,7 +753,7 @@
             if(!document.getElementById('global-timer-prod')) return;
 
             const t = document.getElementById('filtro-turno').value;
-            let totalProd = 0, totalBaixa = 0, totalParado = 0;
+            let totalProd = 0, totalBaixa = 0, totalParado = 0, totalSemProg = 0;
             let countMaquinas = 0;
 
             maquinas.forEach(m => {
@@ -733,6 +762,7 @@
                 totalProd += m.resumoTurno[t].tempoProducao;
                 totalBaixa += m.resumoTurno[t].tempoBaixa;
                 totalParado += m.resumoTurno[t].paradas;
+                totalSemProg += (m.resumoTurno[t].tempoSemProg || 0);
             });
 
             let divisor = 1;
@@ -741,6 +771,7 @@
             document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
             document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa / divisor);
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
+            document.getElementById('global-timer-semprog').innerText = fmtTempo(totalSemProg / divisor);
         }
 
         function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
