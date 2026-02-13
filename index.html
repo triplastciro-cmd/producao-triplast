@@ -37,13 +37,6 @@
         }
         .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; }
 
-        .btn-prod {
-            background: #3b82f6; color: white; border-radius: 8px; font-weight: 900;
-            font-size: 0.75rem; padding: 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: 0.1s;
-        }
-        .btn-prod:active { transform: scale(0.95); background: #2563eb; }
-
         header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; }
         
         .modal-reset {
@@ -306,9 +299,8 @@
         </div>
     </div> <script>
         // =========================================================
-        // COLE O LINK DA FOTO DA EMPRESA AQUI ABAIXO:
-        // Exemplo: "https://i.imgur.com/sua_foto.png"
-        const LINK_LOGO = ""; 
+        // LINK DA FOTO DA EMPRESA ATUALIZADO
+        const LINK_LOGO = "https://triplast.com.br/wp-content/uploads/2024/06/Triplast-179x90.png"; 
         // =========================================================
 
         const S_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
@@ -318,7 +310,7 @@
         let maquinas = [];
         let historico = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
-        let operadoresGlobais = ["João", "Maria", "José"]; // Nova lista
+        let operadoresGlobais = ["João", "Maria", "José"]; 
         
         let resumoGlobal = {
             1: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 },
@@ -364,7 +356,7 @@
             if (data) {
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
-                operadoresGlobais = data.conteudo.operadores || operadoresGlobais; // Puxa operadores
+                operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
                 historico = data.conteudo.historico || []; 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
@@ -749,24 +741,24 @@
                         <div class="text-[9px] text-right font-bold text-slate-400">${progresso.toFixed(0)}%</div>
 
                     </div>
+                    
                     <div class="mb-3 bg-red-50 p-2 rounded-xl border border-red-100">
                          <div class="flex gap-2">
-                            <input type="number" id="qtd-refugo-${m.id}" value="1" min="1" class="w-12 text-center text-xs font-bold border rounded p-1">
-                            <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1 w-full">
+                            <input type="number" id="qtd-refugo-${m.id}" value="1" min="1" class="w-12 text-center text-xs font-bold border rounded p-1 outline-none">
+                            <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1 w-full outline-none">
                                 ${codigosRefugo.map(r => `<option value="${r}">${r}</option>`).join('')}
                             </select>
                             <button onclick="addRefugo(${m.id})" class="bg-red-500 text-white px-3 rounded font-black text-xs hover:bg-red-600">OK</button>
                          </div>
                     </div>
+                    
                     <label class="text-[10px] font-bold text-blue-400 block mb-1">APONTAR PEÇAS</label>
-                    <div class="grid grid-cols-3 gap-2 mb-4">
-                        <button onclick="addProd(${m.id}, 10)" class="btn-prod">+10</button>
-                        <button onclick="addProd(${m.id}, 20)" class="btn-prod">+20</button>
-                        <button onclick="addProd(${m.id}, 25)" class="btn-prod">+25</button>
-                        <button onclick="addProd(${m.id}, 50)" class="btn-prod">+50</button>
-                        <button onclick="addProd(${m.id}, 100)" class="btn-prod">+100</button>
-                        <button onclick="addProd(${m.id}, 1000)" class="btn-prod text-yellow-300">+1000</button>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <input type="number" id="qtd-prod-${m.id}" placeholder="Quantidade..." class="flex-1 p-2 font-bold text-sm border-2 rounded-xl bg-white outline-none focus:border-blue-500 text-center">
+                        <button onclick="apontarManual(${m.id})" class="bg-blue-600 text-white px-4 rounded-xl font-black text-sm hover:bg-blue-500 transition-colors shadow-md">ADICIONAR</button>
                     </div>
+
                     <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500 mb-2">
                         ${paradasCodigos.map(p => {
                             let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : (p.includes("SEM PROGRAMAÇÃO") ? "text-slate-400" : "text-red-600"));
@@ -876,6 +868,18 @@
             s = Math.floor(s); 
             const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
+        }
+
+        function apontarManual(id) {
+            const input = document.getElementById(`qtd-prod-${id}`);
+            const qtd = parseInt(input.value);
+            
+            if (!isNaN(qtd) && qtd > 0) {
+                addProd(id, qtd);
+                input.value = ''; 
+            } else {
+                alert("Por favor, digite uma quantidade válida maior que zero.");
+            }
         }
 
         function addProd(id, v) { 
@@ -1138,7 +1142,7 @@
                 cliente: document.getElementById('f-cliente').value,
                 produto: document.getElementById('f-produto').value, 
                 qtd: parseInt(document.getElementById('f-qtd').value) || 0,
-                operador: document.getElementById('f-operador').value // Agora pega do seletor
+                operador: document.getElementById('f-operador').value
             });
             alert("O.P Agendada!"); 
             renderListaOPs(); render(); salvarAutomatico();
@@ -1151,7 +1155,6 @@
         }
         async function salvarGeral() {
             const timestamp = Date.now();
-            // Salva as novas listas no Supabase
             const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, operadores: operadoresGlobais, historico: historico, resumoGlobal: resumoGlobal, lastUpdateTimestamp: timestamp } }).eq('id', 1);
             if(error) console.error("Erro ao salvar:", error);
         }
