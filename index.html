@@ -357,7 +357,6 @@
 
                 iniciarRelogio();
 
-                // LÓGICA NOVA DA TELA DE CARREGAMENTO
                 document.getElementById('loading-spinner').style.display = 'none';
                 const actionDiv = document.getElementById('loading-action');
                 actionDiv.classList.remove('hidden');
@@ -365,12 +364,23 @@
             }
         }
 
-        // FUNÇÃO NOVA PARA CLICAR E ENTRAR NO LOGIN
+        // FUNÇÃO NOVA PARA CLICAR E ENTRAR NO LOGIN (COM AUTO-LOGIN)
         function entrarLogin() {
             document.getElementById('tela-loading').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('tela-loading').style.display = 'none';
-                document.getElementById('tela-login').style.display = 'flex';
+                
+                // Verifica se tem login salvo no dispositivo
+                const userSalvo = localStorage.getItem('triplast_user');
+                
+                if (userSalvo) {
+                    // Se tiver salvo, entra direto no sistema
+                    usuarioLogado = userSalvo === 'admin' ? 'admin' : parseInt(userSalvo);
+                    iniciarSistema();
+                } else {
+                    // Se não tiver, mostra a tela de colocar senha
+                    document.getElementById('tela-login').style.display = 'flex';
+                }
             }, 500); 
         }
 
@@ -381,6 +391,7 @@
             if (tipo === 'admin') {
                 if (senha === '2026') { 
                     usuarioLogado = 'admin';
+                    localStorage.setItem('triplast_user', 'admin'); // SALVA O LOGIN
                     iniciarSistema();
                 } else {
                     alert('Senha incorreta!');
@@ -391,6 +402,7 @@
 
                 if (senha === senhaCorretaMaquina) { 
                     usuarioLogado = parseInt(tipo);
+                    localStorage.setItem('triplast_user', tipo); // SALVA O LOGIN
                     iniciarSistema();
                 } else {
                     alert('Senha incorreta!');
@@ -400,6 +412,8 @@
 
         function fazerLogout() {
             usuarioLogado = null;
+            localStorage.removeItem('triplast_user'); // LIMPA O LOGIN SALVO
+            
             document.getElementById('app-content').style.display = 'none';
             document.getElementById('tela-login').style.display = 'flex';
             document.getElementById('login-senha').value = '';
