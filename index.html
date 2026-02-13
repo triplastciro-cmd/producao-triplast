@@ -54,15 +54,20 @@
 </head>
 <body>
 
-    <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center">
+    <div id="tela-loading" class="fixed inset-0 bg-slate-900 z-[200] flex flex-col items-center justify-center transition-opacity duration-500">
+        <h1 class="text-6xl font-black italic tracking-tighter mb-8 text-white animate-pulse">TRI<span class="text-blue-500">PLAST</span></h1>
+        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-slate-400 mt-6 font-bold text-sm tracking-widest uppercase">Conectando ao banco de dados...</p>
+    </div>
+    <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center" style="display: none;">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-96 max-w-[90%] text-center">
             <h1 class="text-4xl font-black italic tracking-tighter mb-2 text-slate-800">TRI<span class="text-blue-500">PLAST</span></h1>
             <p class="text-xs font-bold text-slate-400 mb-8 uppercase">Acesso ao Sistema</p>
             
             <div class="mb-4 text-left">
-                <label class="text-[10px] font-black text-slate-400 block mb-1">TIPO DE ACESSO</label>
+                <label class="text-[10px] font-black text-slate-400 block mb-1">TIPO DE ACESSO / USUÁRIO</label>
                 <select id="login-tipo" class="w-full p-4 bg-slate-50 border rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-colors">
-                    <option value="admin">👨‍💻 ADMINISTRADOR GERAL</option>
+                    <option value="admin">👨‍💻 Triplast (Administrador)</option>
                     </select>
             </div>
             
@@ -72,7 +77,6 @@
             </div>
             
             <button onclick="fazerLogin()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-blue-500 transition-transform active:scale-95 text-lg">ENTRAR</button>
-            <p class="text-[9px] text-slate-400 mt-4 font-bold">Admin: admin | Máquinas: 1234</p>
         </div>
     </div>
     <div id="app-content" style="display: none;">
@@ -281,8 +285,6 @@
         let relogioInterval = null; 
         
         let sistemaPausado = false;
-        
-        // VARIÁVEL DE CONTROLE DE LOGIN
         let usuarioLogado = null; 
 
         function getBrasiliaDate() {
@@ -328,9 +330,8 @@
                     }
                 });
                 
-                // INSERE MÁQUINAS NA LISTA DE LOGIN E EM OUTROS SELECTS
                 const selectLogin = document.getElementById('login-tipo');
-                selectLogin.innerHTML = '<option value="admin">👨‍💻 ADMINISTRADOR GERAL</option>' + 
+                selectLogin.innerHTML = '<option value="admin">👨‍💻 Triplast (Administrador)</option>' + 
                                         maquinas.map(m => `<option value="${m.id}">🏭 TELA DA MÁQUINA: ${m.nome}</option>`).join('');
 
                 document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
@@ -342,28 +343,41 @@
                 const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
                 if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
 
-                iniciarRelogio(); // Inicia as engrenagens em background, mesmo na tela de login
+                iniciarRelogio();
+
+                // ESCONDE A TELA DE LOADING E MOSTRA O LOGIN DEPOIS QUE TUDO CARREGOU
+                setTimeout(() => {
+                    document.getElementById('tela-loading').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('tela-loading').style.display = 'none';
+                        document.getElementById('tela-login').style.display = 'flex';
+                    }, 500); // tempo do fade out
+                }, 500); // pequeno delay para visualização suave
             }
         }
 
         // ================= FUNÇÕES DE LOGIN =================
         function fazerLogin() {
             const tipo = document.getElementById('login-tipo').value;
-            const senha = document.getElementById('login-senha').value;
+            const senha = document.getElementById('login-senha').value.trim().toUpperCase();
 
             if (tipo === 'admin') {
-                if (senha === 'admin') { 
+                if (senha === '2026') { 
                     usuarioLogado = 'admin';
                     iniciarSistema();
                 } else {
-                    alert('Senha incorreta para Administrador! (A senha é: admin)');
+                    alert('Senha incorreta!');
                 }
             } else {
-                if (senha === '1234') { 
+                // DESCOBRE A POSIÇÃO DA MÁQUINA NA LISTA PARA DEFINIR A SENHA (M1, M2, M3...)
+                const indexDaMaquina = maquinas.findIndex(m => m.id == tipo) + 1;
+                const senhaCorretaMaquina = 'M' + indexDaMaquina;
+
+                if (senha === senhaCorretaMaquina) { 
                     usuarioLogado = parseInt(tipo);
                     iniciarSistema();
                 } else {
-                    alert('Senha incorreta para esta máquina! (A senha é: 1234)');
+                    alert('Senha incorreta!');
                 }
             }
         }
@@ -380,19 +394,16 @@
             document.getElementById('app-content').style.display = 'block';
 
             if (usuarioLogado !== 'admin') {
-                // É O TABLET DE UMA MÁQUINA ESPECÍFICA (ESCONDER RECURSOS DE ADMIN)
                 document.getElementById('nav-principal').style.display = 'none'; 
                 document.getElementById('header-eficiencia').style.display = 'none'; 
                 document.getElementById('btn-pause').style.display = 'none'; 
-                trocarAba('painel'); // Trava na aba painel
+                trocarAba('painel'); 
             } else {
-                // É O ADMINISTRADOR (MOSTRAR TUDO)
                 document.getElementById('nav-principal').style.display = 'flex';
                 document.getElementById('header-eficiencia').style.display = 'block';
                 document.getElementById('btn-pause').style.display = 'inline-block';
             }
             
-            // Renderiza apenas o que o usuario logado tem direito de ver
             render(); 
             
             if(usuarioLogado === 'admin') {
@@ -571,9 +582,6 @@
             const grid = document.getElementById('grid-maquinas');
             if(!grid) return;
 
-            // ==============================================================
-            // FILTRA AS MÁQUINAS COM BASE NO USUÁRIO LOGADO ANTES DE MOSTRAR
-            // ==============================================================
             let maquinasRender = maquinas;
             if (usuarioLogado !== 'admin' && usuarioLogado !== null) {
                 maquinasRender = maquinas.filter(m => m.id === usuarioLogado);
@@ -725,7 +733,6 @@
             if(confirm("Finalizar O.P? Isso salva a atual no histórico e puxa a próxima da fila automaticamente.")) { 
                 const m = maquinas.find(x => x.id === id);
                 
-                // MÁGICA DA FILA: a função m.fila.shift() já tira o primeiro da fila, fazendo o segundo assumir a vaga!
                 const opConcluida = m.fila.shift(); 
                 
                 if(opConcluida) {
