@@ -80,7 +80,7 @@
                 <label class="text-[10px] font-black text-slate-400 block mb-1">TIPO DE ACESSO / USUÁRIO</label>
                 <select id="login-tipo" class="w-full p-4 bg-slate-50 border rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-colors">
                     <option value="admin">👨‍💻 Triplast (Administrador)</option>
-                    </select>
+                </select>
             </div>
             
             <div class="mb-8 text-left">
@@ -290,6 +290,14 @@
         let maquinas = [];
         let historico = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
+        
+        // NOVO: Memória independente para o "Dashboard Global" contar de 1 em 1
+        let resumoGlobal = {
+            1: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 },
+            2: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 },
+            3: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 }
+        };
+
         let manualOverride = false;
         let saveTimeout = null;
         let filtroGraficoId = 'todas';
@@ -323,6 +331,18 @@
                 historico = data.conteudo.historico || []; 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
+                // NOVO: Puxa o contador global do banco. Se não existir, ele não zera tudo: pega o maior tempo pra continuar
+                if (data.conteudo.resumoGlobal) {
+                    resumoGlobal = data.conteudo.resumoGlobal;
+                } else {
+                    for(let i=1; i<=3; i++) {
+                        resumoGlobal[i].tempoProducao = Math.max(...maquinas.map(m => m.resumoTurno[i]?.tempoProducao || 0), 0);
+                        resumoGlobal[i].tempoBaixa = Math.max(...maquinas.map(m => m.resumoTurno[i]?.tempoBaixa || 0), 0);
+                        resumoGlobal[i].paradas = Math.max(...maquinas.map(m => m.resumoTurno[i]?.paradas || 0), 0);
+                        resumoGlobal[i].tempoSemProg = Math.max(...maquinas.map(m => m.resumoTurno[i]?.tempoSemProg || 0), 0);
+                    }
+                }
+
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
                     if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
@@ -364,21 +384,17 @@
             }
         }
 
-        // FUNÇÃO NOVA PARA CLICAR E ENTRAR NO LOGIN (COM AUTO-LOGIN)
         function entrarLogin() {
             document.getElementById('tela-loading').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('tela-loading').style.display = 'none';
                 
-                // Verifica se tem login salvo no dispositivo
                 const userSalvo = localStorage.getItem('triplast_user');
                 
                 if (userSalvo) {
-                    // Se tiver salvo, entra direto no sistema
                     usuarioLogado = userSalvo === 'admin' ? 'admin' : parseInt(userSalvo);
                     iniciarSistema();
                 } else {
-                    // Se não tiver, mostra a tela de colocar senha
                     document.getElementById('tela-login').style.display = 'flex';
                 }
             }, 500); 
@@ -391,7 +407,7 @@
             if (tipo === 'admin') {
                 if (senha === '2026') { 
                     usuarioLogado = 'admin';
-                    localStorage.setItem('triplast_user', 'admin'); // SALVA O LOGIN
+                    localStorage.setItem('triplast_user', 'admin'); 
                     iniciarSistema();
                 } else {
                     alert('Senha incorreta!');
@@ -402,7 +418,7 @@
 
                 if (senha === senhaCorretaMaquina) { 
                     usuarioLogado = parseInt(tipo);
-                    localStorage.setItem('triplast_user', tipo); // SALVA O LOGIN
+                    localStorage.setItem('triplast_user', tipo);
                     iniciarSistema();
                 } else {
                     alert('Senha incorreta!');
@@ -412,7 +428,7 @@
 
         function fazerLogout() {
             usuarioLogado = null;
-            localStorage.removeItem('triplast_user'); // LIMPA O LOGIN SALVO
+            localStorage.removeItem('triplast_user'); 
             
             document.getElementById('app-content').style.display = 'none';
             document.getElementById('tela-login').style.display = 'flex';
@@ -450,22 +466,35 @@
             if (agora.getDay() === 0 || agora.getDay() === 6 || sistemaPausado) return; 
 
             const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => {
-                if (m.status === "22-SEM PROGRAMAÇÃO") return;
+            let hasProd = false, hasBaixa = false, hasParada = false, hasSemProg = false;
 
+            maquinas.forEach(m => {
+                if (m.status === "22-SEM PROGRAMAÇÃO") {
+                    hasSemProg = true;
+                    return;
+                }
                 if(m.status === "04-PRODUÇÃO") {
+                    hasProd = true;
                     m.dadosTurno[t].tempoProducao += segundos;
                     m.resumoTurno[t].tempoProducao += segundos;
                 }
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
+                    hasBaixa = true;
                     m.dadosTurno[t].tempoBaixa += segundos;
                     m.resumoTurno[t].tempoBaixa += segundos;
                 }
                 else {
+                    hasParada = true;
                     m.dadosTurno[t].paradas += segundos;
                     m.resumoTurno[t].paradas += segundos;
                 }
             });
+
+            // NOVO: Compensa o tempo offline direto na memória global também
+            if (hasProd) resumoGlobal[t].tempoProducao += segundos;
+            if (hasBaixa) resumoGlobal[t].tempoBaixa += segundos;
+            if (hasParada) resumoGlobal[t].paradas += segundos;
+            if (hasSemProg) resumoGlobal[t].tempoSemProg += segundos;
         }
 
         function togglePause() {
@@ -514,27 +543,38 @@
 
                 processarTurnoAuto();
                 const t = document.getElementById('filtro-turno').value;
+                let hasProd = false, hasBaixa = false, hasParada = false, hasSemProg = false;
                 
                 maquinas.forEach(m => {
                     if (m.status === "22-SEM PROGRAMAÇÃO") {
+                        hasSemProg = true;
                         m.dadosTurno[t].tempoSemProg = (m.dadosTurno[t].tempoSemProg || 0) + 1;
                         m.resumoTurno[t].tempoSemProg = (m.resumoTurno[t].tempoSemProg || 0) + 1;
                         return;
                     }
 
                     if(m.status === "04-PRODUÇÃO") {
+                        hasProd = true;
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
                     }
                     else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") {
+                        hasBaixa = true;
                         m.dadosTurno[t].tempoBaixa++;
                         m.resumoTurno[t].tempoBaixa++;
                     }
                     else {
+                        hasParada = true;
                         m.dadosTurno[t].paradas++;
                         m.resumoTurno[t].paradas++;
                     }
                 });
+
+                // NOVO: Se tiver pelo menos uma máquina no status, sobe 1 segundo global. Conta exato de 1 em 1!
+                if (hasProd) resumoGlobal[t].tempoProducao++;
+                if (hasBaixa) resumoGlobal[t].tempoBaixa++;
+                if (hasParada) resumoGlobal[t].paradas++;
+                if (hasSemProg) resumoGlobal[t].tempoSemProg++;
 
                 if(usuarioLogado !== null) {
                     updateTimersVisualOnly(); 
@@ -600,6 +640,9 @@
                     m.dadosTurno[t] = createZero(); 
                     m.resumoTurno[t] = createZero(); 
                 });
+                // NOVO: Limpa o resumo global também!
+                resumoGlobal[t] = { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 };
+                
                 render(); 
                 if(usuarioLogado === 'admin') { renderApontamento(); iniciarGraficos(); }
                 salvarAutomatico();
@@ -909,13 +952,21 @@
             const t = document.getElementById('filtro-turno').value;
             let totalProd = 0, totalBaixa = 0, totalParado = 0, totalSemProg = 0;
 
-            maquinas.forEach(m => {
-                if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
-                totalProd += (m.resumoTurno[t].tempoProducao || 0);
-                totalBaixa += (m.resumoTurno[t].tempoBaixa || 0);
-                totalParado += (m.resumoTurno[t].paradas || 0);
-                totalSemProg += (m.resumoTurno[t].tempoSemProg || 0);
-            });
+            // NOVO: Lê diretamente da memória global ou da máquina filtrada
+            if (filtroGraficoId === 'todas') {
+                totalProd = resumoGlobal[t].tempoProducao || 0;
+                totalBaixa = resumoGlobal[t].tempoBaixa || 0;
+                totalParado = resumoGlobal[t].paradas || 0;
+                totalSemProg = resumoGlobal[t].tempoSemProg || 0;
+            } else {
+                const m = maquinas.find(x => x.id == filtroGraficoId);
+                if (m) {
+                    totalProd = m.resumoTurno[t].tempoProducao || 0;
+                    totalBaixa = m.resumoTurno[t].tempoBaixa || 0;
+                    totalParado = m.resumoTurno[t].paradas || 0;
+                    totalSemProg = m.resumoTurno[t].tempoSemProg || 0;
+                }
+            }
 
             document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd);
             document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
@@ -1010,11 +1061,12 @@
         async function salvarAutomatico() {
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
+            // NOVO: Adicionei o salvamento do "resumoGlobal" aqui para ele não ser perdido ao atualizar a página
             saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000);
         }
         async function salvarGeral() {
             const timestamp = Date.now();
-            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico, lastUpdateTimestamp: timestamp } }).eq('id', 1);
+            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico, resumoGlobal: resumoGlobal, lastUpdateTimestamp: timestamp } }).eq('id', 1);
             if(error) console.error("Erro ao salvar:", error);
         }
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
