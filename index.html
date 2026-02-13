@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Monitoramento 24h</title>
+    <title>Triplast - Monitoramento 24h (Correção Acumulativa)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -136,7 +136,7 @@
                                 <th class="p-3">O.P</th>
                                 <th class="p-3">Operador</th>
                                 <th class="p-3">Produto</th>
-                                <th class="p-3">Meta</th>
+                                <th class="p-3">Peças Feitas</th>
                             </tr>
                         </thead>
                         <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
@@ -203,7 +203,7 @@
         <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl overflow-x-auto">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-black text-slate-700">RESUMO DE PRODUÇÃO (TURNO)</h2>
+                    <h2 class="text-2xl font-black text-slate-700">RESUMO DE PRODUÇÃO (ACUMULADO)</h2>
                     <select id="filtro-resumo" onchange="renderApontamento()" class="bg-blue-100 text-blue-800 font-bold p-2 rounded-lg border border-blue-300">
                         <option value="todas">📊 TODOS OS TURNOS (GERAL)</option>
                         <option value="1">🌅 Manhã</option>
@@ -211,7 +211,7 @@
                         <option value="3">🌙 Noite</option>
                     </select>
                 </div>
-                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR TURNO ATUAL</button>
+                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR TURNO (PERIGO)</button>
             </div>
             <table class="w-full text-left min-w-[800px]">
                 <thead class="bg-slate-800 text-white uppercase text-[10px]">
@@ -269,35 +269,28 @@
                 historico = data.conteudo.historico || []; 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
-                // --- AUTO-REPARO DE INICIALIZAÇÃO ---
+                // --- INICIALIZAÇÃO SEGURA ---
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
                     
-                    // Garante existência dos objetos
+                    // Garante estrutura
                     if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
                     if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
 
-                    // SINCRONIZAÇÃO FORÇADA: Se o card tem dados mas o resumo está zerado, copia!
+                    // SINCRONIZAÇÃO ADITIVA (Só adiciona se o resumo estiver zerado e o card tiver dados)
+                    // Isso evita zerar o resumo se o card estiver limpo (pós finalização)
                     for(let i=1; i<=3; i++) {
-                        // Garante que sub-objetos existem
                         if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
                         if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
 
-                        // Se o card (dadosTurno) tem peças, mas o resumo (resumoTurno) tem MENOS,
-                        // significa que o resumo foi inicializado errado. Atualiza o resumo.
-                        if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) {
-                            m.resumoTurno[i].boas = m.dadosTurno[i].boas;
-                        }
-                        if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) {
-                            m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
-                        }
+                        // Se o resumo tem MENOS que o card, algo está errado, então atualiza o resumo para bater com o card no mínimo
+                        if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) m.resumoTurno[i].boas = m.dadosTurno[i].boas;
+                        if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
                         
-                        // Sincroniza timers se o resumo estiver "virgem"
-                        if (m.resumoTurno[i].tempoProducao === 0 && m.dadosTurno[i].tempoProducao > 0) {
-                            m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
-                            m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
-                            m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
-                        }
+                        // Timers: Resumo deve ser sempre Maior ou Igual ao Card
+                        if (m.dadosTurno[i].tempoProducao > m.resumoTurno[i].tempoProducao) m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
+                        if (m.dadosTurno[i].tempoBaixa > m.resumoTurno[i].tempoBaixa) m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
+                        if (m.dadosTurno[i].paradas > m.resumoTurno[i].paradas) m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
                     }
                 });
                 
@@ -307,8 +300,7 @@
                 const now = Date.now();
                 const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
                 
-                if (secondsPassed > 0) {
-                    console.log(`Compensando ${secondsPassed}s offline...`);
+                if (secondsPassed > 0 && secondsPassed < 86400) { // Menos de 24h
                     compensarTempoOffline(secondsPassed);
                 }
 
@@ -316,12 +308,9 @@
                 renderListaOPs();
                 renderHistorico();
                 renderCoresConfig();
-                
                 renderApontamento();
                 iniciarGraficos();
-                
                 iniciarRelogio();
-                salvarGeral(); 
             }
         }
 
@@ -345,12 +334,10 @@
 
         function iniciarRelogio() {
             if (relogioInterval) clearInterval(relogioInterval);
-
             relogioInterval = setInterval(() => {
                 const agora = getBrasiliaDate();
                 document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
                 const diaSemana = agora.getDay();
-                
                 if (diaSemana === 0 || diaSemana === 6) return; 
 
                 processarTurnoAuto();
@@ -359,7 +346,7 @@
                 maquinas.forEach(m => {
                     if(m.status === "04-PRODUÇÃO") {
                         m.dadosTurno[t].tempoProducao++;
-                        m.resumoTurno[t].tempoProducao++;
+                        m.resumoTurno[t].tempoProducao++; // Soma nos dois
                     }
                     else if (m.status === "21-BAIXA EFICIÊNCIA") {
                         m.dadosTurno[t].tempoBaixa++;
@@ -372,7 +359,6 @@
                 });
 
                 updateTimersVisualOnly(); 
-                
                 if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) atualizarResumoGlobalNumeros();
                 if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
 
@@ -385,17 +371,9 @@
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
             
-            if(id === 'graficos') {
-                atualizarResumoGlobalNumeros();
-                iniciarGraficos(); 
-            }
-            if(id === 'apontamento') {
-                renderApontamento();
-            }
-            if(id === 'lista') { 
-                renderListaOPs(); 
-                renderHistorico(); 
-            }
+            if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+            if(id === 'apontamento') { renderApontamento(); }
+            if(id === 'lista') { renderListaOPs(); renderHistorico(); }
         }
 
         function processarTurnoAuto() {
@@ -412,8 +390,7 @@
         function mudarTurnoManual(v) {
             manualOverride = true;
             document.getElementById('badge-auto').style.display = 'none';
-            render();
-            salvarAutomatico();
+            render(); salvarAutomatico();
         }
 
         function toggleReset(id) {
@@ -422,26 +399,26 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
+        // Zera APENAS o card, não o resumo global
         function resetarValor(id, campo) {
-            if(confirm("Tem certeza que deseja zerar este valor? Isso afetará o CARD e o GRÁFICO.")) {
+            if(confirm("Deseja zerar este valor DO CARD ATUAL? (O resumo do turno continuará contando)")) {
                 const t = document.getElementById('filtro-turno').value;
                 maquinas.find(x => x.id === id).dadosTurno[t][campo] = 0;
-                maquinas.find(x => x.id === id).resumoTurno[t][campo] = 0;
+                // NÃO ZERA O RESUMO TURNO AQUI
                 document.getElementById(`modal-reset-${id}`).style.display = 'none';
-                render();
-                renderApontamento();
-                salvarAutomatico();
+                render(); renderApontamento(); salvarAutomatico();
             }
         }
 
         function resetarTurnoCompleto() {
-            if(confirm("ZERAR TUDO DO TURNO ATUAL? Isso apaga todos os gráficos e resumos de hoje.")) {
+            if(confirm("⚠️ PERIGO: ISSO VAI ZERAR TUDO DO TURNO (Gráficos e Cards). Tem certeza?")) {
                 const t = document.getElementById('filtro-turno').value;
                 maquinas.forEach(m => { 
                     m.dadosTurno[t] = createZero(); 
                     m.resumoTurno[t] = createZero(); 
                 });
                 render(); renderApontamento(); salvarAutomatico();
+                iniciarGraficos();
             }
         }
 
@@ -462,12 +439,9 @@
                 <div class="card-producao ${sClass} p-4" id="card-${m.id}">
                     <button onclick="toggleReset(${m.id})" class="absolute top-2 right-2 text-gray-300 hover:text-gray-600 text-xl z-10 p-2"><i class="fa-solid fa-gear"></i></button>
                     <div id="modal-reset-${m.id}" class="modal-reset">
-                        <div class="text-xs font-bold text-slate-500 mb-2 border-b pb-1">ZERAR CONTADORES</div>
+                        <div class="text-xs font-bold text-slate-500 mb-2 border-b pb-1">ZERAR CARD</div>
                         <button onclick="resetarValor(${m.id}, 'boas')" class="w-full text-left p-2 hover:bg-slate-100 text-xs text-blue-600 font-bold">Zerar Peças</button>
                         <button onclick="resetarValor(${m.id}, 'refugo')" class="w-full text-left p-2 hover:bg-slate-100 text-xs text-red-600 font-bold">Zerar Refugo</button>
-                        <button onclick="resetarValor(${m.id}, 'paradas')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Zerar Parada</button>
-                        <button onclick="resetarValor(${m.id}, 'tempoProducao')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Zerar T. Prod</button>
-                        <button onclick="resetarValor(${m.id}, 'tempoBaixa')" class="w-full text-left p-2 hover:bg-slate-100 text-xs">Zerar T. Baixa</button>
                     </div>
                     <div class="flex flex-col mb-2">
                         <span class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-lg w-fit shadow-md mb-1">${m.nome}</span>
@@ -490,7 +464,6 @@
                         </div>
                     </div>
                     <div class="mb-3 bg-red-50 p-2 rounded-xl border border-red-100">
-                         <label class="text-[10px] font-bold text-red-400 block mb-1">LANÇAR REFUGO (Qtd / Tipo)</label>
                          <div class="flex gap-2">
                             <input type="number" id="qtd-refugo-${m.id}" value="1" min="1" class="w-12 text-center text-xs font-bold border rounded p-1">
                             <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1 w-full">
@@ -535,6 +508,7 @@
         }
 
         function fmtTempo(s) { 
+            if (isNaN(s) || s === undefined || s === null) return "00:00:00"; // PROTEÇÃO CONTRA NaN
             s = Math.floor(s); 
             const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
@@ -543,11 +517,12 @@
         function addProd(id, v) { 
             const t = document.getElementById('filtro-turno').value; 
             const maq = maquinas.find(x => x.id === id);
+            
+            // SOMA NOS DOIS LUGARES
             maq.dadosTurno[t].boas += v;
             maq.resumoTurno[t].boas += v;
-            render(); 
-            renderApontamento(); 
-            salvarAutomatico();
+            
+            render(); renderApontamento(); salvarAutomatico();
         }
 
         function addRefugo(id) { 
@@ -555,114 +530,34 @@
             const qtdInput = document.getElementById(`qtd-refugo-${id}`);
             const qtd = parseInt(qtdInput.value) || 1;
             const maq = maquinas.find(x => x.id === id);
+            
+            // SOMA NOS DOIS LUGARES
             maq.dadosTurno[t].refugo += qtd;
             maq.resumoTurno[t].refugo += qtd;
+            
             qtdInput.value = 1;
-            render(); 
-            renderApontamento();
-            salvarAutomatico();
-        }
-
-        function atualizarStatus(id, st) { 
-            maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico();
-        }
-
-        function vincularCor(id, cor) { 
-            maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico();
-        }
-
-        function calcEficienciaGlobal() {
-            let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => { prod += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
-            document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
-        }
-
-        function renderListaOPs() {
-            const tbody = document.getElementById('lista-ops-geral');
-            let html = '';
-            maquinas.forEach(m => {
-                m.fila.forEach((op, index) => {
-                    html += `<tr class="border-b hover:bg-slate-50">
-                        <td class="p-3 font-bold text-blue-600">${m.nome}</td>
-                        <td class="p-3">${op.op}</td>
-                        <td class="p-3 text-xs text-slate-500">${op.operador || '-'}</td>
-                        <td class="p-3">${op.produto}</td>
-                        <td class="p-3">${op.qtd}</td>
-                        <td class="p-3 text-right">
-                            <button onclick="editarOP(${m.id}, ${index})" class="text-blue-500 hover:text-blue-700 mr-2"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-                });
-            });
-            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
-        }
-
-        function renderHistorico() {
-            const tbody = document.getElementById('lista-historico');
-            let html = '';
-            const histOrdenado = [...historico].reverse();
-            
-            histOrdenado.forEach(h => {
-                const dataFmt = new Date(h.data).toLocaleString('pt-BR');
-                html += `<tr class="border-b hover:bg-green-50">
-                    <td class="p-3 text-xs text-slate-500">${dataFmt}</td>
-                    <td class="p-3 font-bold text-blue-600">${h.maquina}</td>
-                    <td class="p-3">${h.op}</td>
-                    <td class="p-3 text-xs">${h.operador || '-'}</td>
-                    <td class="p-3 text-xs uppercase">${h.produto}</td>
-                    <td class="p-3 font-bold">${h.qtd}</td>
-                </tr>`;
-            });
-            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
-        }
-
-        function deletarOP(maqId, index) {
-            if(confirm("Apagar?")) { maquinas.find(x => x.id === maqId).fila.splice(index, 1); renderListaOPs(); render(); salvarAutomatico(); }
-        }
-        
-        function editarOP(maqId, index) {
-            const m = maquinas.find(x => x.id === maqId); const op = m.fila[index]; const n = prompt("Nova Qtd:", op.qtd);
-            if(n !== null) { op.qtd = parseInt(n); renderListaOPs(); render(); salvarAutomatico(); }
-        }
-
-        function adicionarFila() {
-            const id = parseInt(document.getElementById('f-maquina').value);
-            const m = maquinas.find(x => x.id === id);
-            m.fila.push({
-                op: document.getElementById('f-op').value, 
-                cliente: document.getElementById('f-cliente').value,
-                produto: document.getElementById('f-produto').value, 
-                qtd: parseInt(document.getElementById('f-qtd').value) || 0,
-                operador: document.getElementById('f-operador').value
-            });
-            alert("O.P Agendada!"); 
-            
-            document.getElementById('f-op').value = '';
-            document.getElementById('f-cliente').value = '';
-            document.getElementById('f-operador').value = '';
-            document.getElementById('f-produto').value = '';
-            document.getElementById('f-qtd').value = '';
-            document.getElementById('f-padrao').value = '';
-            
-            renderListaOPs(); render(); salvarAutomatico();
+            render(); renderApontamento(); salvarAutomatico();
         }
 
         function finalizarOP(id) {
-            if(confirm("Finalizar O.P? Isso salvará no histórico e ZERARÁ O CARD (mas manterá o gráfico do turno).")) { 
+            if(confirm("Finalizar O.P? Isso limpa o card MAS MANTÉM o histórico no gráfico e resumo do turno.")) { 
                 const m = maquinas.find(x => x.id === id);
                 const opConcluida = m.fila.shift(); 
                 
                 if(opConcluida) {
+                    const t = document.getElementById('filtro-turno').value;
                     historico.push({
                         ...opConcluida,
                         data: new Date().toISOString(),
-                        maquina: m.nome
+                        maquina: m.nome,
+                        qtdFeita: m.dadosTurno[t].boas // Salva quanto foi feito nessa OP
                     });
                 }
 
                 const t = document.getElementById('filtro-turno').value;
-                m.dadosTurno[t] = createZero(); // Zera só o card
+                // ZERA APENAS O CARD, NÃO O RESUMO
+                m.dadosTurno[t] = createZero(); 
+                
                 render(); 
                 renderListaOPs(); 
                 renderHistorico();
@@ -691,7 +586,7 @@
                     if(m.resumoTurno[filtro]) d = m.resumoTurno[filtro];
                 }
 
-                const percPerda = (d.refugo * 2).toFixed(0);
+                const percPerda = d.boas > 0 ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : 0;
                 
                 return `<tr class="border-b hover:bg-slate-50">
                     <td class="p-4 font-black">${m.nome}</td>
@@ -704,12 +599,6 @@
                     <td class="p-4 font-mono text-red-600 bg-red-50">${fmtTempo(d.paradas)}</td>
                 </tr>`;
             }).join('');
-        }
-
-        function alterarFiltroGrafico(valor) {
-            filtroGraficoId = valor;
-            atualizarResumoGlobalNumeros();
-            iniciarGraficos(); 
         }
 
         function iniciarGraficos() {
@@ -735,6 +624,7 @@
             if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
 
             const labels = maquinasFiltradas.map(m => m.nome);
+            // USA RESUMO TURNO PARA OS GRÁFICOS
             const dataParadas = maquinasFiltradas.map(m => (m.resumoTurno[t].paradas / 60).toFixed(1)); 
             const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t].refugo);
 
@@ -755,14 +645,6 @@
                 data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
             });
-            
-            const selectFiltro = document.getElementById('filtro-grafico-status');
-            if(selectFiltro.options.length === 1 && maquinas.length > 0) {
-                maquinas.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m.id; opt.text = m.nome; selectFiltro.appendChild(opt);
-                });
-            }
         }
 
         function atualizarResumoGlobalNumeros() {
@@ -775,6 +657,7 @@
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
                 countMaquinas++;
+                // SOMA DO RESUMO ACUMULADO
                 totalProd += m.resumoTurno[t].tempoProducao;
                 totalBaixa += m.resumoTurno[t].tempoBaixa;
                 totalParado += m.resumoTurno[t].paradas;
@@ -788,40 +671,86 @@
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
         }
 
+        // Funções auxiliares (Status, Cor, Salvar) mantidas iguais
+        function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
+        function vincularCor(id, cor) { maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico(); }
+        function calcEficienciaGlobal() {
+            let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
+            maquinas.forEach(m => { prod += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
+            document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
+        }
+        function renderListaOPs() {
+            const tbody = document.getElementById('lista-ops-geral');
+            let html = '';
+            maquinas.forEach(m => {
+                m.fila.forEach((op, index) => {
+                    html += `<tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-bold text-blue-600">${m.nome}</td>
+                        <td class="p-3">${op.op}</td>
+                        <td class="p-3 text-xs text-slate-500">${op.operador || '-'}</td>
+                        <td class="p-3">${op.produto}</td>
+                        <td class="p-3">${op.qtd}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700 mr-2"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
+        }
+        function renderHistorico() {
+            const tbody = document.getElementById('lista-historico');
+            let html = '';
+            const histOrdenado = [...historico].reverse();
+            histOrdenado.forEach(h => {
+                const dataFmt = new Date(h.data).toLocaleString('pt-BR');
+                html += `<tr class="border-b hover:bg-green-50">
+                    <td class="p-3 text-xs text-slate-500">${dataFmt}</td>
+                    <td class="p-3 font-bold text-blue-600">${h.maquina}</td>
+                    <td class="p-3">${h.op}</td>
+                    <td class="p-3 text-xs">${h.operador || '-'}</td>
+                    <td class="p-3 text-xs uppercase">${h.produto}</td>
+                    <td class="p-3 font-bold">${h.qtdFeita || h.qtd}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
+        }
+        function deletarOP(maqId, index) { if(confirm("Apagar?")) { maquinas.find(x => x.id === maqId).fila.splice(index, 1); renderListaOPs(); render(); salvarAutomatico(); } }
+        function adicionarFila() {
+            const id = parseInt(document.getElementById('f-maquina').value);
+            const m = maquinas.find(x => x.id === id);
+            m.fila.push({
+                op: document.getElementById('f-op').value, 
+                cliente: document.getElementById('f-cliente').value,
+                produto: document.getElementById('f-produto').value, 
+                qtd: parseInt(document.getElementById('f-qtd').value) || 0,
+                operador: document.getElementById('f-operador').value
+            });
+            alert("O.P Agendada!"); 
+            renderListaOPs(); render(); salvarAutomatico();
+        }
         function gerenciarCor(acao) {
-            if(acao === 'add') {
-                const v = document.getElementById('nova-cor').value; if(v) coresGlobais.push(v); document.getElementById('nova-cor').value = "";
-            }
+            if(acao === 'add') { const v = document.getElementById('nova-cor').value; if(v) coresGlobais.push(v); document.getElementById('nova-cor').value = ""; }
             renderCoresConfig(); render(); salvarAutomatico();
         }
-
         function renderCoresConfig() {
             document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
                 <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig(); salvarAutomatico();" class="text-red-500">×</button></div>
             `).join('');
         }
-
         async function salvarAutomatico() {
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000);
         }
-
         async function salvarGeral() {
             const timestamp = Date.now();
-            const { error } = await sb.from('sistema').update({ 
-                conteudo: { 
-                    maquinas, 
-                    cores: coresGlobais, 
-                    historico: historico,
-                    lastUpdateTimestamp: timestamp 
-                } 
-            }).eq('id', 1);
+            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico, lastUpdateTimestamp: timestamp } }).eq('id', 1);
             if(error) console.error("Erro ao salvar:", error);
         }
-
+        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+        
         window.addEventListener('beforeunload', () => { salvarGeral(); });
-
         setInterval(() => { salvarGeral(); }, 60000);
         carregarBanco();
     </script>
