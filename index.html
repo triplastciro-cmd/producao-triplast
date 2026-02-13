@@ -299,8 +299,8 @@
         </div>
     </div> <script>
         // =========================================================
-        // LINK DA FOTO DA EMPRESA ATUALIZADO
-        const LINK_LOGO = "https://triplast.com.br/wp-content/uploads/2024/06/Triplast-179x90.png"; 
+        // LINK DA FOTO DA EMPRESA (Deixado em branco conforme pedido)
+        const LINK_LOGO = ""; 
         // =========================================================
 
         const S_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
@@ -343,7 +343,7 @@
 
         function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0, tempoSemProg: 0 }; }
 
-        // Inicializa a Logo na tela
+        // Inicializa a Logo na tela se houver link válido
         if(LINK_LOGO && LINK_LOGO.trim() !== "") {
             document.querySelectorAll('.img-logo').forEach(img => {
                 img.src = LINK_LOGO;
