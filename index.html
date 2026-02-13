@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast - Monitoramento 24h (Correção Acumulativa)</title>
+    <title>Triplast - Monitoramento Completo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,8 +24,10 @@
 
         .info-badge {
             background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
-            display: flex; flex-direction: column; align-items: center; font-weight: 800; font-size: 0.7rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        .info-badge span:first-child { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
+        .info-badge span:last-child { font-weight: 900; line-height: 1; }
 
         .tab-btn {
             background: white; padding: 10px 20px; border-radius: 20px;
@@ -36,7 +38,7 @@
 
         .btn-prod {
             background: #3b82f6; color: white; border-radius: 8px; font-weight: 900;
-            font-size: 0.75rem; padding: 8px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 0.75rem; padding: 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: 0.1s;
         }
         .btn-prod:active { transform: scale(0.95); background: #2563eb; }
@@ -116,7 +118,7 @@
                                 <th class="p-3">O.P</th>
                                 <th class="p-3">Operador</th>
                                 <th class="p-3">Produto</th>
-                                <th class="p-3">Qtd</th>
+                                <th class="p-3">Meta</th>
                                 <th class="p-3 text-right">Ações</th>
                             </tr>
                         </thead>
@@ -136,7 +138,7 @@
                                 <th class="p-3">O.P</th>
                                 <th class="p-3">Operador</th>
                                 <th class="p-3">Produto</th>
-                                <th class="p-3">Peças Feitas</th>
+                                <th class="p-3">Qtd Feita</th>
                             </tr>
                         </thead>
                         <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
@@ -269,25 +271,18 @@
                 historico = data.conteudo.historico || []; 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
-                // --- INICIALIZAÇÃO SEGURA ---
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
-                    
-                    // Garante estrutura
                     if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
                     if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
 
-                    // SINCRONIZAÇÃO ADITIVA (Só adiciona se o resumo estiver zerado e o card tiver dados)
-                    // Isso evita zerar o resumo se o card estiver limpo (pós finalização)
                     for(let i=1; i<=3; i++) {
                         if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
                         if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
 
-                        // Se o resumo tem MENOS que o card, algo está errado, então atualiza o resumo para bater com o card no mínimo
                         if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) m.resumoTurno[i].boas = m.dadosTurno[i].boas;
                         if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
                         
-                        // Timers: Resumo deve ser sempre Maior ou Igual ao Card
                         if (m.dadosTurno[i].tempoProducao > m.resumoTurno[i].tempoProducao) m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
                         if (m.dadosTurno[i].tempoBaixa > m.resumoTurno[i].tempoBaixa) m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
                         if (m.dadosTurno[i].paradas > m.resumoTurno[i].paradas) m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
@@ -299,10 +294,7 @@
                 
                 const now = Date.now();
                 const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
-                
-                if (secondsPassed > 0 && secondsPassed < 86400) { // Menos de 24h
-                    compensarTempoOffline(secondsPassed);
-                }
+                if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
 
                 render(); 
                 renderListaOPs();
@@ -346,7 +338,7 @@
                 maquinas.forEach(m => {
                     if(m.status === "04-PRODUÇÃO") {
                         m.dadosTurno[t].tempoProducao++;
-                        m.resumoTurno[t].tempoProducao++; // Soma nos dois
+                        m.resumoTurno[t].tempoProducao++;
                     }
                     else if (m.status === "21-BAIXA EFICIÊNCIA") {
                         m.dadosTurno[t].tempoBaixa++;
@@ -399,12 +391,10 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Zera APENAS o card, não o resumo global
         function resetarValor(id, campo) {
             if(confirm("Deseja zerar este valor DO CARD ATUAL? (O resumo do turno continuará contando)")) {
                 const t = document.getElementById('filtro-turno').value;
                 maquinas.find(x => x.id === id).dadosTurno[t][campo] = 0;
-                // NÃO ZERA O RESUMO TURNO AQUI
                 document.getElementById(`modal-reset-${id}`).style.display = 'none';
                 render(); renderApontamento(); salvarAutomatico();
             }
@@ -430,7 +420,12 @@
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: '---' };
                 const d = m.dadosTurno[t]; 
-                const percPerda = (d.refugo * 2).toFixed(0); 
+                const percPerda = (d.refugo > 0 && (d.boas + d.refugo) > 0) ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
+                
+                // Cálculo da barra de progresso
+                const meta = op.qtd || 0;
+                const progresso = meta > 0 ? Math.min((d.boas / meta) * 100, 100) : 0;
+
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
@@ -457,11 +452,31 @@
                         </div>
                         <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-1">${op.produto}</div>
                         <div class="text-[9px] font-bold text-blue-500 uppercase truncate mb-2">👤 ${op.operador || '---'}</div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <div class="info-badge"><span>BOAS</span><span class="text-green-600 text-lg">${d.boas}</span></div>
-                            <div class="info-badge"><span>REFUGO</span><span class="text-red-600 text-lg">${d.refugo}</span></div>
-                            <div class="info-badge"><span>PERDA</span><span class="text-red-500 text-lg">${percPerda}%</span></div>
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <div class="info-badge border-blue-200 bg-blue-50">
+                                <span class="text-blue-400">META</span>
+                                <span class="text-blue-700 text-xl">${meta}</span>
+                            </div>
+                            <div class="info-badge border-green-200 bg-green-50">
+                                <span class="text-green-400">FEITO</span>
+                                <span class="text-green-700 text-xl">${d.boas}</span>
+                            </div>
+                            <div class="info-badge">
+                                <span class="text-red-400">REFUGO</span>
+                                <span class="text-red-600 text-lg">${d.refugo}</span>
+                            </div>
+                            <div class="info-badge">
+                                <span class="text-red-400">PERDA</span>
+                                <span class="text-red-500 text-lg">${percPerda}%</span>
+                            </div>
                         </div>
+                        
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
+                          <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: ${progresso}%"></div>
+                        </div>
+                        <div class="text-[9px] text-right font-bold text-slate-400">${progresso.toFixed(0)}%</div>
+
                     </div>
                     <div class="mb-3 bg-red-50 p-2 rounded-xl border border-red-100">
                          <div class="flex gap-2">
@@ -508,7 +523,7 @@
         }
 
         function fmtTempo(s) { 
-            if (isNaN(s) || s === undefined || s === null) return "00:00:00"; // PROTEÇÃO CONTRA NaN
+            if (isNaN(s) || s === undefined || s === null) return "00:00:00"; 
             s = Math.floor(s); 
             const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
@@ -517,11 +532,8 @@
         function addProd(id, v) { 
             const t = document.getElementById('filtro-turno').value; 
             const maq = maquinas.find(x => x.id === id);
-            
-            // SOMA NOS DOIS LUGARES
             maq.dadosTurno[t].boas += v;
             maq.resumoTurno[t].boas += v;
-            
             render(); renderApontamento(); salvarAutomatico();
         }
 
@@ -530,11 +542,8 @@
             const qtdInput = document.getElementById(`qtd-refugo-${id}`);
             const qtd = parseInt(qtdInput.value) || 1;
             const maq = maquinas.find(x => x.id === id);
-            
-            // SOMA NOS DOIS LUGARES
             maq.dadosTurno[t].refugo += qtd;
             maq.resumoTurno[t].refugo += qtd;
-            
             qtdInput.value = 1;
             render(); renderApontamento(); salvarAutomatico();
         }
@@ -550,12 +559,11 @@
                         ...opConcluida,
                         data: new Date().toISOString(),
                         maquina: m.nome,
-                        qtdFeita: m.dadosTurno[t].boas // Salva quanto foi feito nessa OP
+                        qtdFeita: m.dadosTurno[t].boas
                     });
                 }
 
                 const t = document.getElementById('filtro-turno').value;
-                // ZERA APENAS O CARD, NÃO O RESUMO
                 m.dadosTurno[t] = createZero(); 
                 
                 render(); 
@@ -624,7 +632,6 @@
             if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
 
             const labels = maquinasFiltradas.map(m => m.nome);
-            // USA RESUMO TURNO PARA OS GRÁFICOS
             const dataParadas = maquinasFiltradas.map(m => (m.resumoTurno[t].paradas / 60).toFixed(1)); 
             const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t].refugo);
 
@@ -657,7 +664,6 @@
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
                 countMaquinas++;
-                // SOMA DO RESUMO ACUMULADO
                 totalProd += m.resumoTurno[t].tempoProducao;
                 totalBaixa += m.resumoTurno[t].tempoBaixa;
                 totalParado += m.resumoTurno[t].paradas;
@@ -671,7 +677,6 @@
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
         }
 
-        // Funções auxiliares (Status, Cor, Salvar) mantidas iguais
         function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
         function vincularCor(id, cor) { maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico(); }
         function calcEficienciaGlobal() {
@@ -689,7 +694,7 @@
                         <td class="p-3">${op.op}</td>
                         <td class="p-3 text-xs text-slate-500">${op.operador || '-'}</td>
                         <td class="p-3">${op.produto}</td>
-                        <td class="p-3">${op.qtd}</td>
+                        <td class="p-3 font-bold text-blue-800">${op.qtd}</td>
                         <td class="p-3 text-right">
                             <button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700 mr-2"><i class="fa-solid fa-trash"></i></button>
                         </td>
