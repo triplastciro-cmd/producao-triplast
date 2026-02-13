@@ -127,6 +127,25 @@
                 </div>
             </div>
 
+            <div class="bg-white p-8 rounded-3xl shadow-2xl">
+                <h2 class="text-2xl font-black mb-4 border-b pb-4 text-green-700">✅ HISTÓRICO</h2>
+                <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-green-50 text-green-800 text-xs uppercase sticky top-0">
+                            <tr>
+                                <th class="p-3">Data/Hora</th>
+                                <th class="p-3">Máquina</th>
+                                <th class="p-3">O.P</th>
+                                <th class="p-3">Operador</th>
+                                <th class="p-3">Produto</th>
+                                <th class="p-3">Qtd Feita</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
                 <h2 class="text-2xl font-black mb-8 border-b pb-4">🎨 CORES</h2>
                 <div class="flex gap-4 mb-8">
@@ -162,6 +181,22 @@
                         <div id="global-timer-parado" class="text-xl sm:text-3xl font-black text-red-700">00:00:00</div>
                     </div>
                 </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <div class="flex items-center gap-3 mb-4 border-b pb-2">
+                    <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-clock"></i></div>
+                    <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Paradas (Minutos)</h3>
+                </div>
+                <canvas id="chartParadas"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <div class="flex items-center gap-3 mb-4 border-b pb-2">
+                    <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-trash"></i></div>
+                    <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Refugo (Peças)</h3>
+                </div>
+                <canvas id="chartRefugos"></canvas>
             </div>
         </div>
     </div>
@@ -242,9 +277,14 @@
                     if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
 
                     for(let i=1; i<=3; i++) {
-                        // GARANTIA DE QUE OS TURNOS EXISTEM (Correção do Erro Undefined)
                         if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
                         if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
+
+                        // ESSE É O CORAÇÃO DA CORREÇÃO: Limpando os "undefined" e substituindo por 0
+                        ['boas', 'refugo', 'paradas', 'tempoProducao', 'tempoBaixa'].forEach(key => {
+                            if (m.dadosTurno[i][key] === undefined || isNaN(m.dadosTurno[i][key])) m.dadosTurno[i][key] = 0;
+                            if (m.resumoTurno[i][key] === undefined || isNaN(m.resumoTurno[i][key])) m.resumoTurno[i][key] = 0;
+                        });
 
                         if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) m.resumoTurno[i].boas = m.dadosTurno[i].boas;
                         if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
@@ -264,6 +304,7 @@
 
                 render(); 
                 renderListaOPs();
+                renderHistorico();
                 renderCoresConfig();
                 renderApontamento();
                 iniciarGraficos();
@@ -274,9 +315,10 @@
         function compensarTempoOffline(segundos) {
             const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => {
+                // Proteção contra turno não inicializado
                 if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
                 if(!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
-                
+
                 if(m.status === "04-PRODUÇÃO") {
                     m.dadosTurno[t].tempoProducao += segundos;
                     m.resumoTurno[t].tempoProducao += segundos;
@@ -304,6 +346,7 @@
                 const t = document.getElementById('filtro-turno').value;
                 
                 maquinas.forEach(m => {
+                    // Proteção extra antes do relógio tentar contar
                     if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
                     if(!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
 
@@ -336,7 +379,7 @@
             
             if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
             if(id === 'apontamento') { renderApontamento(); }
-            if(id === 'lista') { renderListaOPs(); }
+            if(id === 'lista') { renderListaOPs(); renderHistorico(); }
         }
 
         function processarTurnoAuto() {
@@ -390,12 +433,11 @@
 
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: '---' };
-                
-                // GARANTIA EXTRA NO RENDER
-                if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
+                if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero(); // Proteção
                 const d = m.dadosTurno[t]; 
-
                 const percPerda = (d.refugo > 0 && (d.boas + d.refugo) > 0) ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
+                
+                // Cálculo da barra de progresso
                 const meta = op.qtd || 0;
                 const progresso = meta > 0 ? Math.min((d.boas / meta) * 100, 100) : 0;
 
@@ -487,7 +529,7 @@
             maquinas.forEach(m => {
                 const el = document.getElementById(`timer-display-${m.id}`);
                 if(el) {
-                    if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
+                    if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero(); // Proteção
                     const d = m.dadosTurno[t];
                     if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
                     else if (m.status === "21-BAIXA EFICIÊNCIA") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
@@ -508,6 +550,7 @@
             const maq = maquinas.find(x => x.id === id);
             if(!maq.dadosTurno[t]) maq.dadosTurno[t] = createZero();
             if(!maq.resumoTurno[t]) maq.resumoTurno[t] = createZero();
+            
             maq.dadosTurno[t].boas += v;
             maq.resumoTurno[t].boas += v;
             render(); renderApontamento(); salvarAutomatico();
@@ -520,6 +563,7 @@
             const maq = maquinas.find(x => x.id === id);
             if(!maq.dadosTurno[t]) maq.dadosTurno[t] = createZero();
             if(!maq.resumoTurno[t]) maq.resumoTurno[t] = createZero();
+
             maq.dadosTurno[t].refugo += qtd;
             maq.resumoTurno[t].refugo += qtd;
             qtdInput.value = 1;
@@ -529,10 +573,10 @@
         function finalizarOP(id) {
             if(confirm("Finalizar O.P? Isso limpa o card MAS MANTÉM o histórico no gráfico e resumo do turno.")) { 
                 const m = maquinas.find(x => x.id === id);
-                const t = document.getElementById('filtro-turno').value;
                 const opConcluida = m.fila.shift(); 
                 
                 if(opConcluida) {
+                    const t = document.getElementById('filtro-turno').value;
                     historico.push({
                         ...opConcluida,
                         data: new Date().toISOString(),
@@ -541,8 +585,14 @@
                     });
                 }
 
+                const t = document.getElementById('filtro-turno').value;
                 m.dadosTurno[t] = createZero(); 
-                render(); renderListaOPs(); renderApontamento(); salvarAutomatico(); 
+                
+                render(); 
+                renderListaOPs(); 
+                renderHistorico();
+                renderApontamento();
+                salvarAutomatico(); 
             }
         }
 
@@ -554,7 +604,7 @@
 
                 if (filtro === 'todas') {
                     for(let i=1; i<=3; i++) {
-                        if(m.resumoTurno && m.resumoTurno[i]) {
+                        if(m.resumoTurno[i]) {
                             d.boas += (m.resumoTurno[i].boas || 0);
                             d.refugo += (m.resumoTurno[i].refugo || 0);
                             d.paradas += (m.resumoTurno[i].paradas || 0);
@@ -563,10 +613,18 @@
                         }
                     }
                 } else {
-                    if(m.resumoTurno && m.resumoTurno[filtro]) d = m.resumoTurno[filtro];
+                    if(m.resumoTurno[filtro]) {
+                        // Garantindo com fallback para evitar que continue mostrando undefined visualmente
+                        d.boas = m.resumoTurno[filtro].boas || 0;
+                        d.refugo = m.resumoTurno[filtro].refugo || 0;
+                        d.paradas = m.resumoTurno[filtro].paradas || 0;
+                        d.tempoProducao = m.resumoTurno[filtro].tempoProducao || 0;
+                        d.tempoBaixa = m.resumoTurno[filtro].tempoBaixa || 0;
+                    }
                 }
 
-                const percPerda = (d.boas + d.refugo) > 0 ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : 0;
+                // Mais uma proteção aqui, para garantir que o cálculo de perda nunca resulte em NaN
+                const percPerda = (d.boas + d.refugo) > 0 ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
                 
                 return `<tr class="border-b hover:bg-slate-50">
                     <td class="p-4 font-black">${m.nome}</td>
@@ -583,11 +641,15 @@
 
         function iniciarGraficos() {
             const t = document.getElementById('filtro-turno').value;
+            
             if (charts.oee) { charts.oee.destroy(); charts.oee = null; }
             if (charts.paradas) { charts.paradas.destroy(); charts.paradas = null; }
             if (charts.refugos) { charts.refugos.destroy(); charts.refugos = null; }
 
             const ctxOEE = document.getElementById('chartOEE');
+            const ctxParadas = document.getElementById('chartParadas');
+            const ctxRefugos = document.getElementById('chartRefugos');
+
             let s = { p: 0, b: 0, s: 0 };
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
@@ -596,29 +658,56 @@
                 else s.s++;
             });
 
+            let maquinasFiltradas = maquinas;
+            if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
+
+            const labels = maquinasFiltradas.map(m => m.nome);
+            
+            // Correção dos gráficos para nunca tentar ler undefined
+            const dataParadas = maquinasFiltradas.map(m => {
+                const p = m.resumoTurno[t]?.paradas || 0;
+                return (p / 60).toFixed(1);
+            }); 
+            const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t]?.refugo || 0);
+
             charts.oee = new Chart(ctxOEE, {
                 type: 'doughnut',
                 data: { labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] },
                 options: { cutout: '60%', plugins: { legend: { display: false } }, animation: false }
             });
+
+            charts.paradas = new Chart(ctxParadas, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Minutos', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
+            });
+
+            charts.refugos = new Chart(ctxRefugos, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
+            });
         }
 
         function atualizarResumoGlobalNumeros() {
             if(!document.getElementById('global-timer-prod')) return;
+
             const t = document.getElementById('filtro-turno').value;
             let totalProd = 0, totalBaixa = 0, totalParado = 0;
             let countMaquinas = 0;
 
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
-                if(!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
                 countMaquinas++;
-                totalProd += m.resumoTurno[t].tempoProducao;
-                totalBaixa += m.resumoTurno[t].tempoBaixa;
-                totalParado += m.resumoTurno[t].paradas;
+                // Correção extra no painel de resumo de tempo
+                totalProd += m.resumoTurno[t]?.tempoProducao || 0;
+                totalBaixa += m.resumoTurno[t]?.tempoBaixa || 0;
+                totalParado += m.resumoTurno[t]?.paradas || 0;
             });
 
-            let divisor = (filtroGraficoId === 'todas' && countMaquinas > 0) ? countMaquinas : 1;
+            let divisor = 1;
+            if(filtroGraficoId === 'todas' && countMaquinas > 0) divisor = countMaquinas;
+
             document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
             document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa / divisor);
             document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
@@ -626,17 +715,14 @@
 
         function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
         function vincularCor(id, cor) { maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico(); }
-        
         function calcEficienciaGlobal() {
             let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
             maquinas.forEach(m => { 
-                if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
-                prod += m.dadosTurno[t].boas; 
+                prod += m.dadosTurno[t]?.boas || 0; 
                 meta += m.fila[0]?.qtd || 0; 
             });
             document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
         }
-
         function renderListaOPs() {
             const tbody = document.getElementById('lista-ops-geral');
             let html = '';
@@ -656,9 +742,24 @@
             });
             tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
         }
-
+        function renderHistorico() {
+            const tbody = document.getElementById('lista-historico');
+            let html = '';
+            const histOrdenado = [...historico].reverse();
+            histOrdenado.forEach(h => {
+                const dataFmt = new Date(h.data).toLocaleString('pt-BR');
+                html += `<tr class="border-b hover:bg-green-50">
+                    <td class="p-3 text-xs text-slate-500">${dataFmt}</td>
+                    <td class="p-3 font-bold text-blue-600">${h.maquina}</td>
+                    <td class="p-3">${h.op}</td>
+                    <td class="p-3 text-xs">${h.operador || '-'}</td>
+                    <td class="p-3 text-xs uppercase">${h.produto}</td>
+                    <td class="p-3 font-bold">${h.qtdFeita || h.qtd}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
+        }
         function deletarOP(maqId, index) { if(confirm("Apagar?")) { maquinas.find(x => x.id === maqId).fila.splice(index, 1); renderListaOPs(); render(); salvarAutomatico(); } }
-        
         function adicionarFila() {
             const id = parseInt(document.getElementById('f-maquina').value);
             const m = maquinas.find(x => x.id === id);
@@ -672,30 +773,25 @@
             alert("O.P Agendada!"); 
             renderListaOPs(); render(); salvarAutomatico();
         }
-
         function gerenciarCor(acao) {
             if(acao === 'add') { const v = document.getElementById('nova-cor').value; if(v) coresGlobais.push(v); document.getElementById('nova-cor').value = ""; }
             renderCoresConfig(); render(); salvarAutomatico();
         }
-
         function renderCoresConfig() {
             document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
                 <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig(); salvarAutomatico();" class="text-red-500">×</button></div>
             `).join('');
         }
-
         async function salvarAutomatico() {
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000);
         }
-
         async function salvarGeral() {
             const timestamp = Date.now();
             const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico, lastUpdateTimestamp: timestamp } }).eq('id', 1);
             if(error) console.error("Erro ao salvar:", error);
         }
-
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
         
         window.addEventListener('beforeunload', () => { salvarGeral(); });
