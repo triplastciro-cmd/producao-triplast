@@ -259,6 +259,8 @@
         ];
         const codigosRefugo = ["Falha de injeção", "Arranhão/batido", "Fora de cor", "Peça presa no molde", "Bolha", "Mancha", "Trinca", "Espirro", "Material contaminado", "Outros"];
 
+        function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 }; }
+
         async function carregarBanco() {
             const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data) {
@@ -267,20 +269,34 @@
                 historico = data.conteudo.historico || []; 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
+                // --- AUTO-REPARO DE INICIALIZAÇÃO ---
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
                     
-                    // Inicializa dados do turno ATUAL (Card)
-                    if(!m.dadosTurno) m.dadosTurno = { 1:{}, 2:{}, 3:{} };
-                    // Inicializa dados ACUMULADOS do turno (Gráficos/Resumo)
-                    if(!m.resumoTurno) m.resumoTurno = { 1:{}, 2:{}, 3:{} };
+                    // Garante existência dos objetos
+                    if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
+                    if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
 
+                    // SINCRONIZAÇÃO FORÇADA: Se o card tem dados mas o resumo está zerado, copia!
                     for(let i=1; i<=3; i++) {
-                        // Garante estrutura
-                        if(!m.dadosTurno[i]) m.dadosTurno[i] = { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 };
-                        if(!m.resumoTurno[i]) {
-                             // Se não existir acumulado, cria igual ao atual para não zerar do nada
-                             m.resumoTurno[i] = { ...m.dadosTurno[i] }; 
+                        // Garante que sub-objetos existem
+                        if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
+                        if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
+
+                        // Se o card (dadosTurno) tem peças, mas o resumo (resumoTurno) tem MENOS,
+                        // significa que o resumo foi inicializado errado. Atualiza o resumo.
+                        if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) {
+                            m.resumoTurno[i].boas = m.dadosTurno[i].boas;
+                        }
+                        if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) {
+                            m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
+                        }
+                        
+                        // Sincroniza timers se o resumo estiver "virgem"
+                        if (m.resumoTurno[i].tempoProducao === 0 && m.dadosTurno[i].tempoProducao > 0) {
+                            m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
+                            m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
+                            m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
                         }
                     }
                 });
@@ -292,7 +308,7 @@
                 const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
                 
                 if (secondsPassed > 0) {
-                    console.log(`Sistema ficou offline por ${secondsPassed} segundos. Compensando contadores...`);
+                    console.log(`Compensando ${secondsPassed}s offline...`);
                     compensarTempoOffline(secondsPassed);
                 }
 
@@ -301,7 +317,6 @@
                 renderHistorico();
                 renderCoresConfig();
                 
-                // Força atualização inicial de todos os elementos
                 renderApontamento();
                 iniciarGraficos();
                 
@@ -342,7 +357,6 @@
                 const t = document.getElementById('filtro-turno').value;
                 
                 maquinas.forEach(m => {
-                    // Soma nos dois lugares: Card (Atual) e Resumo (Acumulado)
                     if(m.status === "04-PRODUÇÃO") {
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
@@ -359,7 +373,6 @@
 
                 updateTimersVisualOnly(); 
                 
-                // ATUALIZAÇÃO CONSTANTE EM TEMPO REAL
                 if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) atualizarResumoGlobalNumeros();
                 if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
 
@@ -372,7 +385,6 @@
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
             
-            // Força atualização ao entrar na aba
             if(id === 'graficos') {
                 atualizarResumoGlobalNumeros();
                 iniciarGraficos(); 
@@ -410,7 +422,6 @@
             el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
-        // Reseta AMBOS (Card e Acumulado) pois é uma correção manual
         function resetarValor(id, campo) {
             if(confirm("Tem certeza que deseja zerar este valor? Isso afetará o CARD e o GRÁFICO.")) {
                 const t = document.getElementById('filtro-turno').value;
@@ -427,8 +438,8 @@
             if(confirm("ZERAR TUDO DO TURNO ATUAL? Isso apaga todos os gráficos e resumos de hoje.")) {
                 const t = document.getElementById('filtro-turno').value;
                 maquinas.forEach(m => { 
-                    m.dadosTurno[t] = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 }; 
-                    m.resumoTurno[t] = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 }; 
+                    m.dadosTurno[t] = createZero(); 
+                    m.resumoTurno[t] = createZero(); 
                 });
                 render(); renderApontamento(); salvarAutomatico();
             }
@@ -441,7 +452,7 @@
 
             grid.innerHTML = maquinas.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: '---' };
-                const d = m.dadosTurno[t]; // Usa dados do MOMENTO
+                const d = m.dadosTurno[t]; 
                 const percPerda = (d.refugo * 2).toFixed(0); 
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
@@ -532,11 +543,8 @@
         function addProd(id, v) { 
             const t = document.getElementById('filtro-turno').value; 
             const maq = maquinas.find(x => x.id === id);
-            // SOMA NO ATUAL
             maq.dadosTurno[t].boas += v;
-            // SOMA NO ACUMULADO
             maq.resumoTurno[t].boas += v;
-            
             render(); 
             renderApontamento(); 
             salvarAutomatico();
@@ -546,15 +554,10 @@
             const t = document.getElementById('filtro-turno').value; 
             const qtdInput = document.getElementById(`qtd-refugo-${id}`);
             const qtd = parseInt(qtdInput.value) || 1;
-            
             const maq = maquinas.find(x => x.id === id);
-            // SOMA NO ATUAL
             maq.dadosTurno[t].refugo += qtd;
-            // SOMA NO ACUMULADO
             maq.resumoTurno[t].refugo += qtd;
-             
             qtdInput.value = 1;
-            
             render(); 
             renderApontamento();
             salvarAutomatico();
@@ -659,12 +662,7 @@
                 }
 
                 const t = document.getElementById('filtro-turno').value;
-                
-                // AQUI ESTÁ A CORREÇÃO PRINCIPAL:
-                // Zera APENAS o card (dadosTurno)
-                m.dadosTurno[t] = { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 };
-                // NÃO ZERA m.resumoTurno (mantém para gráfico e resumo)
-
+                m.dadosTurno[t] = createZero(); // Zera só o card
                 render(); 
                 renderListaOPs(); 
                 renderHistorico();
@@ -676,7 +674,6 @@
         function renderApontamento() {
             const filtro = document.getElementById('filtro-resumo').value; 
             
-            // AGORA USA O "resumoTurno" (Acumulado) em vez de "dadosTurno"
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
 
@@ -726,7 +723,6 @@
             const ctxParadas = document.getElementById('chartParadas');
             const ctxRefugos = document.getElementById('chartRefugos');
 
-            // Prepara Dados OEE (Status é tempo real, mantem lógica)
             let s = { p: 0, b: 0, s: 0 };
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
@@ -735,7 +731,6 @@
                 else s.s++;
             });
 
-            // Prepara Dados Barras (USA O ACUMULADO "resumoTurno")
             let maquinasFiltradas = maquinas;
             if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
 
@@ -780,7 +775,6 @@
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
                 countMaquinas++;
-                // USA ACUMULADO
                 totalProd += m.resumoTurno[t].tempoProducao;
                 totalBaixa += m.resumoTurno[t].tempoBaixa;
                 totalParado += m.resumoTurno[t].paradas;
