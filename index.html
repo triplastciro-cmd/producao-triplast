@@ -12,11 +12,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #add8e6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        /* ABAS */
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; }
 
-        /* CARDS */
         .card-producao {
             background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border-left: 12px solid #ef4444; transition: 0.3s; position: relative;
@@ -24,7 +22,6 @@
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
         .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
 
-        /* BADGES */
         .info-badge {
             background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -32,7 +29,6 @@
         .info-badge span:first-child { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
         .info-badge span:last-child { font-weight: 900; line-height: 1; }
 
-        /* BOTÕES */
         .tab-btn {
             background: white; padding: 10px 20px; border-radius: 20px;
             font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -53,14 +49,6 @@
             display: none; position: absolute; top: 40px; right: 10px; background: white;
             border: 1px solid #ccc; padding: 10px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 50; width: 150px;
         }
-        
-        /* ESTILO DOS GRÁFICOS */
-        .chart-container { position: relative; margin: auto; height: 200px; width: 100%; }
-
-        /* TABELAS */
-        table { border-collapse: separate; border-spacing: 0 8px; }
-        tr { background: white; }
-        th { font-size: 0.65rem !important; }
     </style>
 </head>
 <body>
@@ -159,9 +147,9 @@
             </div>
 
             <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
-                <h2 class="text-2xl font-black mb-8 border-b pb-4">🎨 GERENCIAR CORES</h2>
+                <h2 class="text-2xl font-black mb-8 border-b pb-4">🎨 CORES</h2>
                 <div class="flex gap-4 mb-8">
-                    <input type="text" id="nova-cor" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome da nova cor...">
+                    <input type="text" id="nova-cor" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nova Cor...">
                     <button onclick="gerenciarCor('add')" class="bg-green-600 text-white px-8 rounded-xl font-black text-2xl">+</button>
                 </div>
                 <div id="lista-cores-config" class="flex flex-wrap gap-3"></div>
@@ -170,9 +158,46 @@
     </div>
 
     <div id="aba-graficos" class="aba-conteudo px-4">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-2xl font-black text-slate-800 mb-6">ESTATÍSTICAS POR MÁQUINA</h2>
-            <div id="container-graficos-maquinas" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
+                <div class="flex flex-col sm:flex-row justify-between items-center w-full mb-6 border-b pb-4">
+                    <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
+                    <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl">
+                        <option value="todas">🏭 Todas as Máquinas</option>
+                    </select>
+                </div>
+                <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
+                <div class="w-full mt-6 grid grid-cols-3 gap-4 text-center">
+                    <div class="bg-green-50 p-4 rounded-xl border border-green-200">
+                        <div class="text-green-600 text-xs font-bold uppercase mb-1">PRODUZINDO</div>
+                        <div id="global-timer-prod" class="text-xl sm:text-3xl font-black text-green-700">00:00:00</div>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                        <div class="text-orange-500 text-xs font-bold uppercase mb-1">BAIXA EFIC.</div>
+                        <div id="global-timer-baixa" class="text-xl sm:text-3xl font-black text-orange-600">00:00:00</div>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-xl border border-red-200">
+                        <div class="text-red-600 text-xs font-bold uppercase mb-1">PARADO</div>
+                        <div id="global-timer-parado" class="text-xl sm:text-3xl font-black text-red-700">00:00:00</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <div class="flex items-center gap-3 mb-4 border-b pb-2">
+                    <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-clock"></i></div>
+                    <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Paradas (Minutos)</h3>
+                </div>
+                <canvas id="chartParadas"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-xl">
+                <div class="flex items-center gap-3 mb-4 border-b pb-2">
+                    <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-trash"></i></div>
+                    <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Refugo (Peças)</h3>
+                </div>
+                <canvas id="chartRefugos"></canvas>
+            </div>
         </div>
     </div>
 
@@ -180,15 +205,15 @@
         <div class="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-2xl overflow-x-auto">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-black text-slate-700">RESUMO DE PRODUÇÃO ACUMULADO</h2>
+                    <h2 class="text-2xl font-black text-slate-700">RESUMO DE PRODUÇÃO (ACUMULADO)</h2>
                     <select id="filtro-resumo" onchange="renderApontamento()" class="bg-blue-100 text-blue-800 font-bold p-2 rounded-lg border border-blue-300">
-                        <option value="todas">📊 TODOS OS TURNOS</option>
+                        <option value="todas">📊 TODOS OS TURNOS (GERAL)</option>
                         <option value="1">🌅 Manhã</option>
                         <option value="2">☀️ Tarde</option>
                         <option value="3">🌙 Noite</option>
                     </select>
                 </div>
-                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg">⚠️ ZERAR TURNO ATUAL</button>
+                <button onclick="resetarTurnoCompleto()" class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase shadow-lg hover:bg-red-700">⚠️ ZERAR TURNO (PERIGO)</button>
             </div>
             <table class="w-full text-left min-w-[800px]">
                 <thead class="bg-slate-800 text-white uppercase text-[10px]">
@@ -218,8 +243,13 @@
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let manualOverride = false;
         let saveTimeout = null;
-        let relogioInterval = null;
-        let chartsObj = {}; // Para armazenar as instâncias dos gráficos
+        let filtroGraficoId = 'todas';
+        let charts = { oee: null, paradas: null, refugos: null };
+        let relogioInterval = null; 
+
+        function getBrasiliaDate() {
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        }
 
         const paradasCodigos = [
             "04-PRODUÇÃO", "21-BAIXA EFICIÊNCIA", "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", 
@@ -233,82 +263,98 @@
 
         function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0 }; }
 
-        function verificarEstruturaTurno(m, t) {
-            if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
-            if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
-            if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
-            if(!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
-            
-            ['boas','refugo','paradas','tempoProducao','tempoBaixa'].forEach(key => {
-                if(typeof m.dadosTurno[t][key] !== 'number' || isNaN(m.dadosTurno[t][key])) m.dadosTurno[t][key] = 0;
-                if(typeof m.resumoTurno[t][key] !== 'number' || isNaN(m.resumoTurno[t][key])) m.resumoTurno[t][key] = 0;
-            });
+        async function carregarBanco() {
+            const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
+            if (data) {
+                maquinas = data.conteudo.maquinas;
+                coresGlobais = data.conteudo.cores || coresGlobais;
+                historico = data.conteudo.historico || []; 
+                const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
+                
+                maquinas.forEach(m => {
+                    if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
+                    if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
+                    if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
+
+                    for(let i=1; i<=3; i++) {
+                        if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
+                        if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
+
+                        if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) m.resumoTurno[i].boas = m.dadosTurno[i].boas;
+                        if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
+                        
+                        if (m.dadosTurno[i].tempoProducao > m.resumoTurno[i].tempoProducao) m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
+                        if (m.dadosTurno[i].tempoBaixa > m.resumoTurno[i].tempoBaixa) m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
+                        if (m.dadosTurno[i].paradas > m.resumoTurno[i].paradas) m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
+                    }
+                });
+                
+                document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+                processarTurnoAuto();
+                
+                const now = Date.now();
+                const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
+                if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
+
+                render(); 
+                renderListaOPs();
+                renderHistorico();
+                renderCoresConfig();
+                renderApontamento();
+                iniciarGraficos();
+                iniciarRelogio();
+            }
         }
 
-        async function carregarBanco() {
-            try {
-                const { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
-                if (data) {
-                    maquinas = data.conteudo.maquinas;
-                    coresGlobais = data.conteudo.cores || coresGlobais;
-                    historico = data.conteudo.historico || []; 
-                    
-                    maquinas.forEach(m => {
-                        [1,2,3].forEach(t => verificarEstruturaTurno(m, t));
-                    });
-                    
-                    document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-                    processarTurnoAuto();
-                    render(); 
-                    renderListaOPs();
-                    renderHistorico();
-                    renderCoresConfig();
-                    iniciarRelogio();
+        function compensarTempoOffline(segundos) {
+            const t = document.getElementById('filtro-turno').value;
+            maquinas.forEach(m => {
+                if(m.status === "04-PRODUÇÃO") {
+                    m.dadosTurno[t].tempoProducao += segundos;
+                    m.resumoTurno[t].tempoProducao += segundos;
                 }
-            } catch(e) { console.error("Erro ao carregar:", e); }
+                else if (m.status === "21-BAIXA EFICIÊNCIA") {
+                    m.dadosTurno[t].tempoBaixa += segundos;
+                    m.resumoTurno[t].tempoBaixa += segundos;
+                }
+                else {
+                    m.dadosTurno[t].paradas += segundos;
+                    m.resumoTurno[t].paradas += segundos;
+                }
+            });
         }
 
         function iniciarRelogio() {
             if (relogioInterval) clearInterval(relogioInterval);
             relogioInterval = setInterval(() => {
-                const agora = new Date();
+                const agora = getBrasiliaDate();
                 document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+                const diaSemana = agora.getDay();
+                if (diaSemana === 0 || diaSemana === 6) return; 
+
                 processarTurnoAuto();
-                
                 const t = document.getElementById('filtro-turno').value;
+                
                 maquinas.forEach(m => {
-                    verificarEstruturaTurno(m, t);
                     if(m.status === "04-PRODUÇÃO") {
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
-                    } else if (m.status === "21-BAIXA EFICIÊNCIA") {
+                    }
+                    else if (m.status === "21-BAIXA EFICIÊNCIA") {
                         m.dadosTurno[t].tempoBaixa++;
                         m.resumoTurno[t].tempoBaixa++;
-                    } else {
+                    }
+                    else {
                         m.dadosTurno[t].paradas++;
                         m.resumoTurno[t].paradas++;
                     }
                 });
-                updateTimersVisual();
+
+                updateTimersVisualOnly(); 
+                if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) atualizarResumoGlobalNumeros();
+                if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
+
             }, 1000);
-        }
-
-        function updateTimersVisual() {
-            const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => {
-                const el = document.getElementById(`timer-display-${m.id}`);
-                if(el) {
-                    const d = m.dadosTurno[t];
-                    if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PROD: ${fmtTempo(d.tempoProducao)}</span>`;
-                    else if (m.status === "21-BAIXA EFICIÊNCIA") el.innerHTML = `<span class="text-orange-500">BAIXA: ${fmtTempo(d.tempoBaixa)}</span>`;
-                    else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
-                }
-            });
-        }
-
-        function fmtTempo(s) { 
-            const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
         }
 
         function trocarAba(id) {
@@ -316,13 +362,15 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('aba-' + id).classList.add('aba-ativa');
             document.getElementById('btn-' + id).classList.add('active');
-            if(id === 'apontamento') renderApontamento();
-            if(id === 'graficos') renderGraficosMaquinas();
+            
+            if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+            if(id === 'apontamento') { renderApontamento(); }
+            if(id === 'lista') { renderListaOPs(); renderHistorico(); }
         }
 
         function processarTurnoAuto() {
             if (manualOverride) return;
-            const agora = new Date();
+            const agora = getBrasiliaDate();
             const min = agora.getHours() * 60 + agora.getMinutes();
             let t = 3; 
             if (min >= 300 && min < 858) t = 1; 
@@ -334,31 +382,34 @@
         function mudarTurnoManual(v) {
             manualOverride = true;
             document.getElementById('badge-auto').style.display = 'none';
-            render();
-        }
-
-        function addProd(id, v) { 
-            const t = document.getElementById('filtro-turno').value; 
-            const maq = maquinas.find(x => x.id === id);
-            verificarEstruturaTurno(maq, t);
-            maq.dadosTurno[t].boas += v;
-            maq.resumoTurno[t].boas += v;
             render(); salvarAutomatico();
         }
 
-        function addRefugo(id) { 
-            const t = document.getElementById('filtro-turno').value; 
-            const maq = maquinas.find(x => x.id === id);
-            const qtd = parseInt(document.getElementById(`qtd-refugo-${id}`).value) || 0;
-            verificarEstruturaTurno(maq, t);
-            maq.dadosTurno[t].refugo += qtd;
-            maq.resumoTurno[t].refugo += qtd;
-            render(); salvarAutomatico();
+        function toggleReset(id) {
+            document.querySelectorAll('.modal-reset').forEach(m => { if(m.id !== `modal-reset-${id}`) m.style.display = 'none'; });
+            const el = document.getElementById(`modal-reset-${id}`);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
         }
 
-        function atualizarStatus(id, st) {
-            maquinas.find(x => x.id === id).status = st;
-            render(); salvarAutomatico();
+        function resetarValor(id, campo) {
+            if(confirm("Deseja zerar este valor DO CARD ATUAL? (O resumo do turno continuará contando)")) {
+                const t = document.getElementById('filtro-turno').value;
+                maquinas.find(x => x.id === id).dadosTurno[t][campo] = 0;
+                document.getElementById(`modal-reset-${id}`).style.display = 'none';
+                render(); renderApontamento(); salvarAutomatico();
+            }
+        }
+
+        function resetarTurnoCompleto() {
+            if(confirm("⚠️ PERIGO: ISSO VAI ZERAR TUDO DO TURNO (Gráficos e Cards). Tem certeza?")) {
+                const t = document.getElementById('filtro-turno').value;
+                maquinas.forEach(m => { 
+                    m.dadosTurno[t] = createZero(); 
+                    m.resumoTurno[t] = createZero(); 
+                });
+                render(); renderApontamento(); salvarAutomatico();
+                iniciarGraficos();
+            }
         }
 
         function render() {
@@ -367,23 +418,29 @@
             if(!grid) return;
 
             grid.innerHTML = maquinas.map(m => {
-                verificarEstruturaTurno(m, t);
-                const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', qtd: 0, operador: '---' };
+                const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: '---' };
                 const d = m.dadosTurno[t]; 
-                const percPerda = (d.boas + d.refugo) > 0 ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
-                const progresso = op.qtd > 0 ? Math.min((d.boas / op.qtd) * 100, 100) : 0;
-                let sClass = m.status === "04-PRODUÇÃO" ? "status-produzindo" : (m.status === "21-BAIXA EFICIÊNCIA" ? "status-baixa" : "");
+                const percPerda = (d.refugo > 0 && (d.boas + d.refugo) > 0) ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
+                
+                // Cálculo da barra de progresso
+                const meta = op.qtd || 0;
+                const progresso = meta > 0 ? Math.min((d.boas / meta) * 100, 100) : 0;
+
+                let sClass = "";
+                if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
+                else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
 
                 return `
-                <div class="card-producao ${sClass} p-4">
-                    <button onclick="toggleReset(${m.id})" class="absolute top-2 right-2 text-gray-300 hover:text-gray-600 p-2"><i class="fa-solid fa-gear"></i></button>
+                <div class="card-producao ${sClass} p-4" id="card-${m.id}">
+                    <button onclick="toggleReset(${m.id})" class="absolute top-2 right-2 text-gray-300 hover:text-gray-600 text-xl z-10 p-2"><i class="fa-solid fa-gear"></i></button>
                     <div id="modal-reset-${m.id}" class="modal-reset">
+                        <div class="text-xs font-bold text-slate-500 mb-2 border-b pb-1">ZERAR CARD</div>
                         <button onclick="resetarValor(${m.id}, 'boas')" class="w-full text-left p-2 hover:bg-slate-100 text-xs text-blue-600 font-bold">Zerar Peças</button>
                         <button onclick="resetarValor(${m.id}, 'refugo')" class="w-full text-left p-2 hover:bg-slate-100 text-xs text-red-600 font-bold">Zerar Refugo</button>
                     </div>
                     <div class="flex flex-col mb-2">
                         <span class="bg-blue-600 text-white px-3 py-1 rounded-lg font-black text-lg w-fit shadow-md mb-1">${m.nome}</span>
-                        <span id="timer-display-${m.id}" class="text-[10px] font-bold block">--:--:--</span>
+                        <span id="timer-display-${m.id}" class="text-[10px] font-bold block min-h-[15px]">--:--:--</span>
                     </div>
                     <div class="bg-slate-50 p-3 rounded-2xl border mb-3">
                         <div class="flex justify-between items-center mb-1">
@@ -394,194 +451,312 @@
                             </select>
                         </div>
                         <div class="text-[10px] font-bold text-slate-500 uppercase truncate mb-1">${op.produto}</div>
+                        <div class="text-[9px] font-bold text-blue-500 uppercase truncate mb-2">👤 ${op.operador || '---'}</div>
+                        
                         <div class="grid grid-cols-2 gap-2 mb-2">
-                            <div class="info-badge border-blue-200 bg-blue-50"><span class="text-blue-400">META</span><span class="text-blue-700 text-xl">${op.qtd}</span></div>
-                            <div class="info-badge border-green-200 bg-green-50"><span class="text-green-400">FEITO</span><span class="text-green-700 text-xl">${d.boas}</span></div>
+                            <div class="info-badge border-blue-200 bg-blue-50">
+                                <span class="text-blue-400">META</span>
+                                <span class="text-blue-700 text-xl">${meta}</span>
+                            </div>
+                            <div class="info-badge border-green-200 bg-green-50">
+                                <span class="text-green-400">FEITO</span>
+                                <span class="text-green-700 text-xl">${d.boas}</span>
+                            </div>
+                            <div class="info-badge">
+                                <span class="text-red-400">REFUGO</span>
+                                <span class="text-red-600 text-lg">${d.refugo}</span>
+                            </div>
+                            <div class="info-badge">
+                                <span class="text-red-400">PERDA</span>
+                                <span class="text-red-500 text-lg">${percPerda}%</span>
+                            </div>
                         </div>
+                        
                         <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
-                            <div class="bg-blue-600 h-2.5 transition-all" style="width: ${progresso}%"></div>
+                          <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: ${progresso}%"></div>
                         </div>
+                        <div class="text-[9px] text-right font-bold text-slate-400">${progresso.toFixed(0)}%</div>
+
                     </div>
                     <div class="mb-3 bg-red-50 p-2 rounded-xl border border-red-100">
                          <div class="flex gap-2">
-                            <input type="number" id="qtd-refugo-${m.id}" value="1" class="w-12 text-center text-xs font-bold border rounded p-1">
-                            <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1">
+                            <input type="number" id="qtd-refugo-${m.id}" value="1" min="1" class="w-12 text-center text-xs font-bold border rounded p-1">
+                            <select id="sel-refugo-${m.id}" class="flex-1 text-[10px] font-bold border rounded p-1 w-full">
                                 ${codigosRefugo.map(r => `<option value="${r}">${r}</option>`).join('')}
                             </select>
-                            <button onclick="addRefugo(${m.id})" class="bg-red-500 text-white px-3 rounded font-black text-xs">OK</button>
+                            <button onclick="addRefugo(${m.id})" class="bg-red-500 text-white px-3 rounded font-black text-xs hover:bg-red-600">OK</button>
                          </div>
                     </div>
+                    <label class="text-[10px] font-bold text-blue-400 block mb-1">APONTAR PEÇAS</label>
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <button onclick="addProd(${m.id}, 10)" class="btn-prod">+10</button>
+                        <button onclick="addProd(${m.id}, 20)" class="btn-prod">+20</button>
                         <button onclick="addProd(${m.id}, 25)" class="btn-prod">+25</button>
+                        <button onclick="addProd(${m.id}, 50)" class="btn-prod">+50</button>
                         <button onclick="addProd(${m.id}, 100)" class="btn-prod">+100</button>
+                        <button onclick="addProd(${m.id}, 1000)" class="btn-prod text-yellow-300">+1000</button>
                     </div>
-                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white mb-2">
-                        ${paradasCodigos.map(p => `<option value="${p}" ${m.status === p ? 'selected' : ''}>${p}</option>`).join('')}
+                    <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500 mb-2">
+                        ${paradasCodigos.map(p => {
+                            let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : "text-red-600");
+                            return `<option value="${p}" class="${color}" ${m.status === p ? 'selected' : ''}>${p}</option>`
+                        }).join('')}
                     </select>
                     <button onclick="finalizarOP(${m.id})" class="w-full text-[10px] font-black text-slate-400 uppercase">Finalizar Ordem</button>
                 </div>`;
             }).join('');
             calcEficienciaGlobal();
+            updateTimersVisualOnly();
         }
 
-        function vincularCor(id, cor) { maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico(); }
-        function toggleReset(id) { const el = document.getElementById(`modal-reset-${id}`); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
-        function resetarValor(id, campo) { const t = document.getElementById('filtro-turno').value; const m = maquinas.find(x => x.id === id); m.dadosTurno[t][campo] = 0; render(); salvarAutomatico(); }
-        
-        function adicionarFila() {
-            const idMaq = parseInt(document.getElementById('f-maquina').value);
-            const novaOp = {
-                op: document.getElementById('f-op').value,
-                cliente: document.getElementById('f-cliente').value,
-                operador: document.getElementById('f-operador').value,
-                produto: document.getElementById('f-produto').value,
-                qtd: parseInt(document.getElementById('f-qtd').value) || 0,
-                padrao: parseInt(document.getElementById('f-padrao').value) || 1
-            };
-            if(!novaOp.op) return alert("Nº da O.P obrigatório");
-            maquinas.find(m => m.id === idMaq).fila.push(novaOp);
-            render(); renderListaOPs(); salvarAutomatico();
-        }
-
-        function renderListaOPs() {
-            const body = document.getElementById('lista-ops-geral');
-            body.innerHTML = maquinas.flatMap(m => m.fila.map((o, idx) => `
-                <tr class="border-b">
-                    <td class="p-3">${m.nome}</td><td class="p-3">${o.op}</td><td class="p-3">${o.operador}</td><td class="p-3">${o.produto}</td><td class="p-3">${o.qtd}</td>
-                    <td class="p-3 text-right"><button onclick="removerFila(${m.id}, ${idx})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td>
-                </tr>
-            `)).join('');
-        }
-
-        function removerFila(idMaq, idx) { maquinas.find(m => m.id === idMaq).fila.splice(idx, 1); renderListaOPs(); render(); salvarAutomatico(); }
-
-        function finalizarOP(idMaq) {
-            if(!confirm("Finalizar O.P e mover para o histórico?")) return;
+        function updateTimersVisualOnly() {
             const t = document.getElementById('filtro-turno').value;
-            const m = maquinas.find(x => x.id === idMaq);
-            const opFinalizada = m.fila.shift();
-            if(opFinalizada) {
-                historico.unshift({ data: new Date().toLocaleString(), maquina: m.nome, op: opFinalizada.op, operador: opFinalizada.operador, produto: opFinalizada.produto, qtd: m.dadosTurno[t].boas });
-                m.dadosTurno[t].boas = 0; m.dadosTurno[t].refugo = 0;
-            }
-            render(); renderListaOPs(); renderHistorico(); salvarAutomatico();
-        }
-
-        function renderHistorico() {
-            document.getElementById('lista-historico').innerHTML = historico.map(h => `
-                <tr class="border-b text-[10px]"><td class="p-2">${h.data}</td><td class="p-2">${h.maquina}</td><td class="p-2">${h.op}</td><td class="p-2">${h.operador}</td><td class="p-2">${h.produto}</td><td class="p-2">${h.qtd}</td></tr>
-            `).join('');
-        }
-
-        function renderCoresConfig() {
-            document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
-                <span class="bg-slate-100 px-4 py-2 rounded-lg font-bold flex items-center gap-3">${c} <button onclick="gerenciarCor('del', '${c}')" class="text-red-400">×</button></span>
-            `).join('');
-        }
-
-        function gerenciarCor(acao, valor) {
-            if(acao === 'add') { const n = document.getElementById('nova-cor').value.trim(); if(n) coresGlobais.push(n); document.getElementById('nova-cor').value = ''; }
-            else { coresGlobais = coresGlobais.filter(c => c !== valor); }
-            renderCoresConfig(); render(); salvarAutomatico();
-        }
-
-        function renderApontamento() {
-            const f = document.getElementById('filtro-resumo').value;
-            const body = document.getElementById('tabela-apontamento');
-            body.innerHTML = maquinas.map(m => {
-                let d = { boas:0, refugo:0, tempoProducao:0, tempoBaixa:0, paradas:0 };
-                
-                if(f === 'todas') { 
-                    [1,2,3].forEach(t => { 
-                        verificarEstruturaTurno(m, t);
-                        // Proteção extra contra undefined
-                        const rt = m.resumoTurno[t] || createZero();
-                        d.boas += rt.boas || 0; 
-                        d.refugo += rt.refugo || 0; 
-                        d.tempoProducao += rt.tempoProducao || 0; 
-                        d.tempoBaixa += rt.tempoBaixa || 0; 
-                        d.paradas += rt.paradas || 0; 
-                    }); 
-                }
-                else { 
-                    verificarEstruturaTurno(m, f); 
-                    d = m.resumoTurno[f] || createZero(); 
-                }
-                
-                const perda = (d.boas + d.refugo) > 0 ? ((d.refugo/(d.boas+d.refugo))*100).toFixed(1) : 0;
-                return `<tr class="border-b"><td class="p-4">${m.nome}</td><td class="p-4">${m.fila[0]?.op || '---'}</td><td class="p-4">${d.boas}</td><td class="p-4">${d.refugo}</td><td class="p-4">${perda}%</td><td class="p-4 bg-green-50">${fmtTempo(d.tempoProducao)}</td><td class="p-4 bg-orange-50">${fmtTempo(d.tempoBaixa)}</td><td class="p-4 bg-red-50">${fmtTempo(d.paradas)}</td></tr>`;
-            }).join('');
-        }
-
-        // --- NOVA FUNÇÃO PARA RENDERIZAR GRÁFICOS DAS 4 MÁQUINAS ---
-        function renderGraficosMaquinas() {
-            const container = document.getElementById('container-graficos-maquinas');
-            const t = document.getElementById('filtro-turno').value;
-            
-            container.innerHTML = maquinas.map(m => {
-                verificarEstruturaTurno(m, t);
-                return `
-                <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100">
-                    <h3 class="font-black text-slate-700 mb-4 text-center uppercase">${m.nome} - Status do Turno</h3>
-                    <div class="chart-container"><canvas id="chart-maq-${m.id}"></canvas></div>
-                    <div class="grid grid-cols-3 gap-2 mt-4 text-[10px] text-center font-bold">
-                        <div class="text-green-600">PRODUÇÃO: <br>${fmtTempo(m.dadosTurno[t].tempoProducao)}</div>
-                        <div class="text-orange-500">B. EFIC: <br>${fmtTempo(m.dadosTurno[t].tempoBaixa)}</div>
-                        <div class="text-red-600">PARADO: <br>${fmtTempo(m.dadosTurno[t].paradas)}</div>
-                    </div>
-                </div>`;
-            }).join('');
-
-            // Criar/Atualizar gráficos de cada máquina
             maquinas.forEach(m => {
-                const ctx = document.getElementById(`chart-maq-${m.id}`).getContext('2d');
-                const d = m.dadosTurno[t];
-                
-                if (chartsObj[m.id]) chartsObj[m.id].destroy();
-
-                chartsObj[m.id] = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Prod', 'Baixa', 'Parado'],
-                        datasets: [{
-                            data: [d.tempoProducao, d.tempoBaixa, d.paradas],
-                            backgroundColor: ['#22c55e', '#f97316', '#ef4444'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } }
-                    }
-                });
+                const el = document.getElementById(`timer-display-${m.id}`);
+                if(el) {
+                    const d = m.dadosTurno[t];
+                    if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
+                    else if (m.status === "21-BAIXA EFICIÊNCIA") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
+                    else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
+                }
             });
         }
 
-        function resetarTurnoCompleto() {
-            if(confirm("ZERAR TUDO DO TURNO ATUAL?")) {
+        function fmtTempo(s) { 
+            if (isNaN(s) || s === undefined || s === null) return "00:00:00"; 
+            s = Math.floor(s); 
+            const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const seg = s % 60;
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${seg.toString().padStart(2,'0')}`; 
+        }
+
+        function addProd(id, v) { 
+            const t = document.getElementById('filtro-turno').value; 
+            const maq = maquinas.find(x => x.id === id);
+            maq.dadosTurno[t].boas += v;
+            maq.resumoTurno[t].boas += v;
+            render(); renderApontamento(); salvarAutomatico();
+        }
+
+        function addRefugo(id) { 
+            const t = document.getElementById('filtro-turno').value; 
+            const qtdInput = document.getElementById(`qtd-refugo-${id}`);
+            const qtd = parseInt(qtdInput.value) || 1;
+            const maq = maquinas.find(x => x.id === id);
+            maq.dadosTurno[t].refugo += qtd;
+            maq.resumoTurno[t].refugo += qtd;
+            qtdInput.value = 1;
+            render(); renderApontamento(); salvarAutomatico();
+        }
+
+        function finalizarOP(id) {
+            if(confirm("Finalizar O.P? Isso limpa o card MAS MANTÉM o histórico no gráfico e resumo do turno.")) { 
+                const m = maquinas.find(x => x.id === id);
+                const opConcluida = m.fila.shift(); 
+                
+                if(opConcluida) {
+                    const t = document.getElementById('filtro-turno').value;
+                    historico.push({
+                        ...opConcluida,
+                        data: new Date().toISOString(),
+                        maquina: m.nome,
+                        qtdFeita: m.dadosTurno[t].boas
+                    });
+                }
+
                 const t = document.getElementById('filtro-turno').value;
-                maquinas.forEach(m => { m.dadosTurno[t] = createZero(); m.resumoTurno[t] = createZero(); });
-                render(); renderApontamento(); salvarAutomatico();
+                m.dadosTurno[t] = createZero(); 
+                
+                render(); 
+                renderListaOPs(); 
+                renderHistorico();
+                renderApontamento();
+                salvarAutomatico(); 
             }
         }
 
-        function calcEficienciaGlobal() {
+        function renderApontamento() {
+            const filtro = document.getElementById('filtro-resumo').value; 
+            
+            document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
+                let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0 };
+
+                if (filtro === 'todas') {
+                    for(let i=1; i<=3; i++) {
+                        if(m.resumoTurno[i]) {
+                            d.boas += (m.resumoTurno[i].boas || 0);
+                            d.refugo += (m.resumoTurno[i].refugo || 0);
+                            d.paradas += (m.resumoTurno[i].paradas || 0);
+                            d.tempoProducao += (m.resumoTurno[i].tempoProducao || 0);
+                            d.tempoBaixa += (m.resumoTurno[i].tempoBaixa || 0);
+                        }
+                    }
+                } else {
+                    if(m.resumoTurno[filtro]) d = m.resumoTurno[filtro];
+                }
+
+                const percPerda = d.boas > 0 ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : 0;
+                
+                return `<tr class="border-b hover:bg-slate-50">
+                    <td class="p-4 font-black">${m.nome}</td>
+                    <td class="p-4">${m.fila[0]?.op || '---'}</td>
+                    <td class="p-4 text-green-600 text-lg">${d.boas}</td>
+                    <td class="p-4 text-red-600 text-lg">${d.refugo}</td>
+                    <td class="p-4 text-red-500 font-bold">${percPerda}%</td>
+                    <td class="p-4 font-mono text-green-700 bg-green-50">${fmtTempo(d.tempoProducao)}</td>
+                    <td class="p-4 font-mono text-orange-600 bg-orange-50">${fmtTempo(d.tempoBaixa)}</td>
+                    <td class="p-4 font-mono text-red-600 bg-red-50">${fmtTempo(d.paradas)}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function iniciarGraficos() {
             const t = document.getElementById('filtro-turno').value;
-            let totalReal = 0, totalMeta = 0;
-            maquinas.forEach(m => { verificarEstruturaTurno(m, t); totalReal += m.dadosTurno[t].boas; totalMeta += m.fila[0]?.qtd || 0; });
-            const ef = totalMeta > 0 ? Math.min((totalReal/totalMeta)*100, 100).toFixed(0) : 0;
-            document.getElementById('meta-global').innerText = ef + '%';
+            
+            if (charts.oee) { charts.oee.destroy(); charts.oee = null; }
+            if (charts.paradas) { charts.paradas.destroy(); charts.paradas = null; }
+            if (charts.refugos) { charts.refugos.destroy(); charts.refugos = null; }
+
+            const ctxOEE = document.getElementById('chartOEE');
+            const ctxParadas = document.getElementById('chartParadas');
+            const ctxRefugos = document.getElementById('chartRefugos');
+
+            let s = { p: 0, b: 0, s: 0 };
+            maquinas.forEach(m => {
+                if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
+                if(m.status === "04-PRODUÇÃO") s.p++; 
+                else if(m.status === "21-BAIXA EFICIÊNCIA") s.b++;
+                else s.s++;
+            });
+
+            let maquinasFiltradas = maquinas;
+            if(filtroGraficoId !== 'todas') maquinasFiltradas = maquinas.filter(m => m.id == filtroGraficoId);
+
+            const labels = maquinasFiltradas.map(m => m.nome);
+            const dataParadas = maquinasFiltradas.map(m => (m.resumoTurno[t].paradas / 60).toFixed(1)); 
+            const dataRefugos = maquinasFiltradas.map(m => m.resumoTurno[t].refugo);
+
+            charts.oee = new Chart(ctxOEE, {
+                type: 'doughnut',
+                data: { labels: ['PRODUZINDO', 'BAIXA EFICIÊNCIA', 'PARADA'], datasets: [{ data: [s.p, s.b, s.s], backgroundColor: ['#22c55e', '#f97316', '#ef4444'], borderWidth: 0 }] },
+                options: { cutout: '60%', plugins: { legend: { display: false } }, animation: false }
+            });
+
+            charts.paradas = new Chart(ctxParadas, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Minutos', data: dataParadas, backgroundColor: '#cbd5e1', borderRadius: 4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
+            });
+
+            charts.refugos = new Chart(ctxRefugos, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
+            });
         }
 
+        function atualizarResumoGlobalNumeros() {
+            if(!document.getElementById('global-timer-prod')) return;
+
+            const t = document.getElementById('filtro-turno').value;
+            let totalProd = 0, totalBaixa = 0, totalParado = 0;
+            let countMaquinas = 0;
+
+            maquinas.forEach(m => {
+                if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
+                countMaquinas++;
+                totalProd += m.resumoTurno[t].tempoProducao;
+                totalBaixa += m.resumoTurno[t].tempoBaixa;
+                totalParado += m.resumoTurno[t].paradas;
+            });
+
+            let divisor = 1;
+            if(filtroGraficoId === 'todas' && countMaquinas > 0) divisor = countMaquinas;
+
+            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
+            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa / divisor);
+            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
+        }
+
+        function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
+        function vincularCor(id, cor) { maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico(); }
+        function calcEficienciaGlobal() {
+            let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
+            maquinas.forEach(m => { prod += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
+            document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
+        }
+        function renderListaOPs() {
+            const tbody = document.getElementById('lista-ops-geral');
+            let html = '';
+            maquinas.forEach(m => {
+                m.fila.forEach((op, index) => {
+                    html += `<tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-bold text-blue-600">${m.nome}</td>
+                        <td class="p-3">${op.op}</td>
+                        <td class="p-3 text-xs text-slate-500">${op.operador || '-'}</td>
+                        <td class="p-3">${op.produto}</td>
+                        <td class="p-3 font-bold text-blue-800">${op.qtd}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deletarOP(${m.id}, ${index})" class="text-red-500 hover:text-red-700 mr-2"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
+        }
+        function renderHistorico() {
+            const tbody = document.getElementById('lista-historico');
+            let html = '';
+            const histOrdenado = [...historico].reverse();
+            histOrdenado.forEach(h => {
+                const dataFmt = new Date(h.data).toLocaleString('pt-BR');
+                html += `<tr class="border-b hover:bg-green-50">
+                    <td class="p-3 text-xs text-slate-500">${dataFmt}</td>
+                    <td class="p-3 font-bold text-blue-600">${h.maquina}</td>
+                    <td class="p-3">${h.op}</td>
+                    <td class="p-3 text-xs">${h.operador || '-'}</td>
+                    <td class="p-3 text-xs uppercase">${h.produto}</td>
+                    <td class="p-3 font-bold">${h.qtdFeita || h.qtd}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum pedido concluído.</td></tr>';
+        }
+        function deletarOP(maqId, index) { if(confirm("Apagar?")) { maquinas.find(x => x.id === maqId).fila.splice(index, 1); renderListaOPs(); render(); salvarAutomatico(); } }
+        function adicionarFila() {
+            const id = parseInt(document.getElementById('f-maquina').value);
+            const m = maquinas.find(x => x.id === id);
+            m.fila.push({
+                op: document.getElementById('f-op').value, 
+                cliente: document.getElementById('f-cliente').value,
+                produto: document.getElementById('f-produto').value, 
+                qtd: parseInt(document.getElementById('f-qtd').value) || 0,
+                operador: document.getElementById('f-operador').value
+            });
+            alert("O.P Agendada!"); 
+            renderListaOPs(); render(); salvarAutomatico();
+        }
+        function gerenciarCor(acao) {
+            if(acao === 'add') { const v = document.getElementById('nova-cor').value; if(v) coresGlobais.push(v); document.getElementById('nova-cor').value = ""; }
+            renderCoresConfig(); render(); salvarAutomatico();
+        }
+        function renderCoresConfig() {
+            document.getElementById('lista-cores-config').innerHTML = coresGlobais.map(c => `
+                <div class="bg-slate-100 px-3 py-1 rounded-xl font-bold flex gap-2">${c} <button onclick="coresGlobais = coresGlobais.filter(x=>x!=='${c}'); renderCoresConfig(); salvarAutomatico();" class="text-red-500">×</button></div>
+            `).join('');
+        }
         async function salvarAutomatico() {
+            document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                await sb.from('sistema').update({ conteudo: { maquinas, historico, cores: coresGlobais } }).eq('id', 1);
-            }, 1000);
+            saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000);
         }
-
+        async function salvarGeral() {
+            const timestamp = Date.now();
+            const { error } = await sb.from('sistema').update({ conteudo: { maquinas, cores: coresGlobais, historico: historico, lastUpdateTimestamp: timestamp } }).eq('id', 1);
+            if(error) console.error("Erro ao salvar:", error);
+        }
+        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+        
+        window.addEventListener('beforeunload', () => { salvarGeral(); });
+        setInterval(() => { salvarGeral(); }, 60000);
         carregarBanco();
     </script>
 </body>
