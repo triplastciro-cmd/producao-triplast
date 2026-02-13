@@ -908,24 +908,19 @@
 
             const t = document.getElementById('filtro-turno').value;
             let totalProd = 0, totalBaixa = 0, totalParado = 0, totalSemProg = 0;
-            let countMaquinas = 0;
 
             maquinas.forEach(m => {
                 if(filtroGraficoId !== 'todas' && m.id != filtroGraficoId) return;
-                countMaquinas++;
-                totalProd += m.resumoTurno[t].tempoProducao;
-                totalBaixa += m.resumoTurno[t].tempoBaixa;
-                totalParado += m.resumoTurno[t].paradas;
+                totalProd += (m.resumoTurno[t].tempoProducao || 0);
+                totalBaixa += (m.resumoTurno[t].tempoBaixa || 0);
+                totalParado += (m.resumoTurno[t].paradas || 0);
                 totalSemProg += (m.resumoTurno[t].tempoSemProg || 0);
             });
 
-            let divisor = 1;
-            if(filtroGraficoId === 'todas' && countMaquinas > 0) divisor = countMaquinas;
-
-            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd / divisor);
-            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa / divisor);
-            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado / divisor);
-            document.getElementById('global-timer-semprog').innerText = fmtTempo(totalSemProg / divisor);
+            document.getElementById('global-timer-prod').innerText = fmtTempo(totalProd);
+            document.getElementById('global-timer-baixa').innerText = fmtTempo(totalBaixa);
+            document.getElementById('global-timer-parado').innerText = fmtTempo(totalParado);
+            document.getElementById('global-timer-semprog').innerText = fmtTempo(totalSemProg);
         }
 
         function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
