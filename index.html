@@ -43,9 +43,14 @@
             display: none; position: absolute; top: 40px; right: 10px; background: white;
             border: 1px solid #ccc; padding: 10px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 50; width: 150px;
         }
+        
+        /* Ajuste para barra de rolagem customizada nos menus */
+        .scrollbar-custom::-webkit-scrollbar { width: 6px; }
+        .scrollbar-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .scrollbar-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body>
+<body onclick="fecharMenusGlobais(event)">
 
     <div id="modal-cores" class="fixed inset-0 bg-slate-900/80 z-[150] hidden items-center justify-center">
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-96 max-w-[90%]">
@@ -488,7 +493,6 @@
                 renderHistorico();
                 renderApontamento();
                 renderOperadoresConfig(); 
-                renderCoresConfig();
                 atualizarDropdownOperadores();
             }
         }
@@ -614,7 +618,6 @@
                 renderListaOPs(); 
                 renderHistorico(); 
                 renderOperadoresConfig();
-                renderCoresConfig();
             }
         }
 
@@ -667,6 +670,43 @@
                 salvarAutomatico();
             }
         }
+        
+        // ================= FUNÇÕES DE SELEÇÃO DE OPERADOR NO CARD =================
+        function toggleMenuOperador(event, id) {
+            event.stopPropagation(); // Evita que o clique feche imediatamente
+            const menuAtual = document.getElementById(`menu-op-${id}`);
+            const estavaAberto = !menuAtual.classList.contains('hidden');
+            
+            // Fecha todos
+            document.querySelectorAll('.menu-operador-dropdown').forEach(el => el.classList.add('hidden'));
+            
+            // Se não estava aberto, abre o atual
+            if(!estavaAberto) {
+                menuAtual.classList.remove('hidden');
+            }
+        }
+
+        function definirOperador(id, nome) {
+            const maq = maquinas.find(x => x.id === id);
+            if(!maq.fila || maq.fila.length === 0) {
+                alert("Não há nenhuma O.P ativa nesta máquina para assumir!");
+                return;
+            }
+            maq.fila[0].operador = nome;
+            render(); 
+            if(usuarioLogado === 'admin') renderListaOPs(); 
+            salvarAutomatico();
+        }
+
+        function fecharMenusGlobais(event) {
+            if (!event.target.closest('.dropdown-container')) {
+                document.querySelectorAll('.menu-operador-dropdown').forEach(el => el.classList.add('hidden'));
+            }
+            if (!event.target.closest('.modal-reset') && !event.target.closest('button[onclick^="toggleReset"]')) {
+                document.querySelectorAll('.modal-reset').forEach(el => el.style.display = 'none');
+            }
+        }
+        // =========================================================================
 
         function render() {
             const t = document.getElementById('filtro-turno').value;
@@ -683,7 +723,7 @@
             }
 
             grid.innerHTML = maquinasRender.map(m => {
-                const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: '---' };
+                const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: 'NENHUM' };
                 const d = m.dadosTurno[t]; 
                 const percPerda = (d.refugo > 0 && (d.boas + d.refugo) > 0) ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
                 
@@ -694,6 +734,30 @@
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
                 else if (m.status === "22-SEM PROGRAMAÇÃO") sClass = "status-sem-prog";
+
+                // Botão e Menu do Operador
+                const renderOperador = `
+                    <div class="dropdown-container absolute top-3 right-3 z-20">
+                        <button onclick="toggleMenuOperador(event, ${m.id})" class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-md flex items-center gap-2 hover:shadow-lg transition-all active:scale-95 cursor-pointer border border-blue-400">
+                             <i class="fa-solid fa-user-tie text-sm"></i>
+                             <div class="flex flex-col text-left leading-none">
+                                <span class="text-[7px] font-bold uppercase opacity-80 mb-0.5 flex items-center gap-1">OPERADOR <i class="fa-solid fa-caret-down"></i></span>
+                                <span class="font-black text-xs uppercase tracking-wide truncate max-w-[80px]">${op.operador || 'ASSUMIR'}</span>
+                             </div>
+                        </button>
+                        
+                        <div id="menu-op-${m.id}" class="menu-operador-dropdown hidden absolute top-12 right-0 bg-white rounded-xl shadow-2xl border border-slate-200 w-48 overflow-hidden flex flex-col">
+                            <div class="bg-blue-50 p-2 border-b border-blue-100 text-[10px] font-black text-blue-600 text-center uppercase tracking-wider">Assumir Máquina</div>
+                            <div class="max-h-40 overflow-y-auto p-1 scrollbar-custom">
+                                ${operadoresGlobais.length > 0 ? operadoresGlobais.map(o => `
+                                    <button onclick="definirOperador(${m.id}, '${o}')" class="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 hover:bg-blue-600 hover:text-white rounded-lg transition-colors flex items-center justify-between group">
+                                        ${o} <i class="fa-solid fa-check text-[10px] opacity-0 group-hover:opacity-100"></i>
+                                    </button>
+                                `).join('') : '<div class="p-2 text-xs text-center text-slate-400">Nenhum operador cadastrado</div>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
 
                 return `
                 <div class="card-producao ${sClass} p-4" id="card-${m.id}">
@@ -708,15 +772,9 @@
                         <span id="timer-display-${m.id}" class="text-[10px] font-bold block min-h-[15px]">--:--:--</span>
                     </div>
                     
-                    <div class="bg-slate-50 p-3 rounded-2xl border mb-3 relative overflow-hidden">
+                    <div class="bg-slate-50 p-3 rounded-2xl border mb-3 relative overflow-visible">
                         
-                        <div class="absolute top-3 right-3 bg-gradient-to-br from-blue-600 to-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-md flex items-center gap-2 z-10">
-                             <i class="fa-solid fa-user-tie text-sm"></i>
-                             <div class="flex flex-col leading-none">
-                                <span class="text-[7px] font-bold uppercase opacity-70 mb-0.5">OPERADOR(A)</span>
-                                <span class="font-black text-xs uppercase tracking-wide">${op.operador || '---'}</span>
-                             </div>
-                         </div>
+                        ${renderOperador}
 
                         <div class="pr-28">
                              <span class="font-black text-slate-800 text-lg block leading-tight">O.P ${op.op}</span>
@@ -780,40 +838,6 @@
             updateTimersVisualOnly();
         }
 
-        // ================= FUNÇÕES DE CORES (MODAL) =================
-        function abrirModalCores() {
-            document.getElementById('modal-cores').style.display = 'flex';
-            renderCoresModal();
-        }
-        function fecharModalCores() {
-            document.getElementById('modal-cores').style.display = 'none';
-        }
-        function renderCoresModal() {
-            document.getElementById('lista-cores-modal').innerHTML = coresGlobais.map(c => `
-                <div class="bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl font-bold flex gap-2 items-center text-sm text-slate-700 shadow-sm">${c} 
-                    <button onclick="deletarCor('${c}')" class="text-red-500 hover:text-red-700 ml-1 font-black text-lg leading-none">&times;</button>
-                </div>
-            `).join('');
-        }
-        function addCorModal() {
-            const input = document.getElementById('nova-cor-modal');
-            const v = input.value.trim();
-            if(v && !coresGlobais.includes(v)) {
-                coresGlobais.push(v);
-                input.value = "";
-                renderCoresModal();
-                render(); 
-                salvarAutomatico();
-            }
-        }
-        function deletarCor(cor) {
-            coresGlobais = coresGlobais.filter(x => x !== cor);
-            renderCoresModal();
-            render();
-            salvarAutomatico();
-        }
-        // =============================================================
-
         // ================= FUNÇÕES DE OPERADORES =================
         function atualizarDropdownOperadores() {
             const select = document.getElementById('f-operador');
@@ -832,12 +856,14 @@
             }
             renderOperadoresConfig(); 
             atualizarDropdownOperadores();
+            render(); 
             salvarAutomatico();
         }
         function deletarOperador(nome) {
             operadoresGlobais = operadoresGlobais.filter(x => x !== nome);
             renderOperadoresConfig();
             atualizarDropdownOperadores();
+            render();
             salvarAutomatico();
         }
         function renderOperadoresConfig() {
@@ -1081,7 +1107,6 @@
         }
 
         function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
-        function vincularCor(id, cor) { maquinas.find(x => x.id === id).corAtual = cor; salvarAutomatico(); }
         function calcEficienciaGlobal() {
             if(usuarioLogado !== 'admin') return;
             let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
