@@ -117,7 +117,7 @@
                         <i class="fa-solid fa-pause"></i> Pausar
                     </button>
 
-                    <button id="btn-extra" onclick="toggleHoraExtra()" class="bg-gray-500 hover:bg-gray-400 text-white text-[10px] font-black px-3 py-2 rounded-lg transition-all shadow-md uppercase">
+                    <button id="btn-extra" onclick="toggleHoraExtra()" class="text-white text-[10px] font-black px-3 py-2 rounded-lg transition-all shadow-md uppercase">
                         <i class="fa-solid fa-bolt"></i> Hora Extra
                     </button>
 
@@ -263,6 +263,16 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-xl col-span-1 lg:col-span-2">
+                    <div class="flex items-center gap-3 mb-4 border-b pb-2">
+                        <div class="bg-purple-100 p-2 rounded-lg text-purple-600"><i class="fa-solid fa-business-time"></i></div>
+                        <h3 class="font-black text-slate-700 text-lg uppercase">Horas Normais vs. Horas Extras (Mês)</h3>
+                    </div>
+                    <div class="w-full h-40">
+                         <canvas id="chartHorasExtras"></canvas>
+                    </div>
+                </div>
                 
                 <div class="bg-white p-6 rounded-3xl shadow-xl">
                     <div class="flex items-center gap-3 mb-4 border-b pb-2">
@@ -333,14 +343,14 @@
             3: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 }
         };
         
-        let dadosMensais = { tempoProducaoTotal: 0 }; 
+        let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 }; // ADICIONADO CONTADOR DE EXTRA
         const META_HORAS_MENSAL = 1628 * 3600; 
 
         let manualOverride = false;
-        let modoHoraExtra = false; // NOVA VARIÁVEL PARA O SISTEMA DE HORA EXTRA
+        let modoHoraExtra = false;
         let saveTimeout = null;
         let filtroGraficoId = 'todas';
-        let charts = { oee: null, paradas: null, refugos: null };
+        let charts = { oee: null, paradas: null, refugos: null, horas: null };
         let relogioInterval = null; 
         
         let sistemaPausado = false;
@@ -354,9 +364,9 @@
         function isFimDeSemana(agora) {
             const dia = agora.getDay(); 
             const minDoDia = agora.getHours() * 60 + agora.getMinutes();
-            if (dia === 5 && minDoDia >= 1416) return true;
-            if (dia === 6 || dia === 0) return true;
-            if (dia === 1 && minDoDia < 300) return true;
+            if (dia === 5 && minDoDia >= 1416) return true; // Sexta após 23:36
+            if (dia === 6 || dia === 0) return true; // Sábado e Domingo
+            if (dia === 1 && minDoDia < 300) return true; // Segunda até 05:00
             return false;
         }
 
@@ -388,7 +398,9 @@
                 operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
                 historico = data.conteudo.historico || []; 
                 if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais;
-                if(data.conteudo.modoHoraExtra !== undefined) modoHoraExtra = data.conteudo.modoHoraExtra; // CARREGA ESTADO HORA EXTRA
+                if(!dadosMensais.tempoHoraExtraTotal) dadosMensais.tempoHoraExtraTotal = 0; // GARANTE QUE O CAMPO EXISTE
+
+                if(data.conteudo.modoHoraExtra !== undefined) modoHoraExtra = data.conteudo.modoHoraExtra; 
 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
@@ -438,7 +450,7 @@
                 if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
 
                 iniciarRelogio();
-                renderBotaoExtra(); // ATUALIZA O VISUAL DO BOTÃO
+                renderBotaoExtra(); 
                 atualizarDropdownOperadores();
                 
                 calcEficienciaGlobal();
@@ -507,13 +519,13 @@
                 document.getElementById('nav-principal').style.display = 'none'; 
                 document.getElementById('header-eficiencia').style.display = 'none'; 
                 document.getElementById('btn-pause').style.display = 'none'; 
-                document.getElementById('btn-extra').style.display = 'none'; // ESCONDE BOTAO EXTRA P/ MAQUINAS
+                document.getElementById('btn-extra').style.display = 'none'; 
                 trocarAba('painel'); 
             } else {
                 document.getElementById('nav-principal').style.display = 'flex';
                 document.getElementById('header-eficiencia').style.display = 'block';
                 document.getElementById('btn-pause').style.display = 'inline-block';
-                document.getElementById('btn-extra').style.display = 'inline-block'; // MOSTRA P/ ADMIN
+                document.getElementById('btn-extra').style.display = 'inline-block'; 
             }
             
             render(); 
@@ -532,7 +544,6 @@
 
         function compensarTempoOffline(segundos) {
             const agora = getBrasiliaDate();
-            // SE FOR FIM DE SEMANA E NÃO TIVER HORA EXTRA LIGADA, NÃO COMPENSA
             if ((isFimDeSemana(agora) && !modoHoraExtra) || sistemaPausado) return; 
 
             const t = document.getElementById('filtro-turno').value;
@@ -542,8 +553,13 @@
                 if (m.status === "23-EMPRESA FECHADA") return; 
                 if (m.status === "22-SEM PROGRAMAÇÃO") { hasSemProg = true; return; }
                 
+                // LÓGICA DE CONTAGEM MENSAL (SEPARANDO EXTRA E NORMAL)
                 if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
-                     dadosMensais.tempoProducaoTotal += secondsPassed;
+                     if (isFimDeSemana(agora) && modoHoraExtra) {
+                         dadosMensais.tempoHoraExtraTotal += secondsPassed;
+                     } else {
+                         dadosMensais.tempoProducaoTotal += secondsPassed;
+                     }
                 }
 
                 if(m.status === "04-PRODUÇÃO") { 
@@ -586,6 +602,13 @@
 
         // ================= FUNÇÃO HORA EXTRA ================= //
         function toggleHoraExtra() {
+            const agora = getBrasiliaDate();
+            // Só deixa ligar se for Fim de Semana
+            if (!isFimDeSemana(agora)) {
+                alert("O modo Hora Extra só pode ser ativado quando o sistema entra no horário de Fim de Semana (Sexta 23:36).");
+                return;
+            }
+
             modoHoraExtra = !modoHoraExtra;
             renderBotaoExtra();
             salvarAutomatico();
@@ -593,16 +616,30 @@
 
         function renderBotaoExtra() {
             const btn = document.getElementById('btn-extra');
-            if (modoHoraExtra) {
-                btn.classList.replace('bg-gray-500', 'bg-purple-600');
-                btn.classList.replace('hover:bg-gray-400', 'hover:bg-purple-500');
-                btn.innerHTML = '<i class="fa-solid fa-bolt"></i> H. Extra ATIVA';
-                btn.classList.add('animate-pulse');
+            const agora = getBrasiliaDate();
+            const fds = isFimDeSemana(agora);
+
+            if (!fds) {
+                // SE NÃO FOR FIM DE SEMANA, BLOQUEIA O BOTÃO
+                btn.classList.remove('bg-purple-600', 'hover:bg-purple-500', 'animate-pulse');
+                btn.classList.add('bg-slate-400', 'cursor-not-allowed', 'opacity-50');
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> H. Extra (Bloq)';
+                btn.onclick = null; // Remove o click
+                modoHoraExtra = false; // Garante que está desligado
             } else {
-                btn.classList.replace('bg-purple-600', 'bg-gray-500');
-                btn.classList.replace('hover:bg-purple-500', 'hover:bg-gray-400');
-                btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Hora Extra';
-                btn.classList.remove('animate-pulse');
+                // SE FOR FIM DE SEMANA, LIBERA
+                btn.classList.remove('bg-slate-400', 'cursor-not-allowed', 'opacity-50');
+                btn.onclick = toggleHoraExtra; // Restaura o click
+
+                if (modoHoraExtra) {
+                    btn.classList.remove('bg-gray-500', 'hover:bg-gray-400');
+                    btn.classList.add('bg-purple-600', 'hover:bg-purple-500', 'animate-pulse');
+                    btn.innerHTML = '<i class="fa-solid fa-bolt"></i> H. Extra ATIVA';
+                } else {
+                    btn.classList.remove('bg-purple-600', 'hover:bg-purple-500', 'animate-pulse');
+                    btn.classList.add('bg-gray-500', 'hover:bg-gray-400');
+                    btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Hora Extra';
+                }
             }
         }
         // ===================================================== //
@@ -613,6 +650,8 @@
                 const agora = getBrasiliaDate();
                 document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
                 
+                renderBotaoExtra(); // Verifica o estado do botão a cada segundo
+
                 const badgeAuto = document.getElementById('badge-auto');
 
                 // LÓGICA DO FIM DE SEMANA COM OVERRIDE
@@ -652,7 +691,12 @@
                     }
                     
                     if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
-                        dadosMensais.tempoProducaoTotal++;
+                        // SOMA NO ACUMULADO MENSAL (SEPARANDO EXTRA DE NORMAL)
+                        if (isFimDeSemana(agora) && modoHoraExtra) {
+                            dadosMensais.tempoHoraExtraTotal++;
+                        } else {
+                            dadosMensais.tempoProducaoTotal++;
+                        }
                     }
 
                     if(m.status === "04-PRODUÇÃO") {
@@ -753,6 +797,7 @@
         function resetarMes() {
             if(confirm("⚠️ ATENÇÃO: Deseja zerar as HORAS MENSAIS ACUMULADAS? Faça isso apenas no início de um novo mês.")) {
                 dadosMensais.tempoProducaoTotal = 0;
+                dadosMensais.tempoHoraExtraTotal = 0;
                 calcEficienciaGlobal();
                 salvarAutomatico();
             }
@@ -1152,10 +1197,12 @@
             if (charts.oee) { charts.oee.destroy(); charts.oee = null; }
             if (charts.paradas) { charts.paradas.destroy(); charts.paradas = null; }
             if (charts.refugos) { charts.refugos.destroy(); charts.refugos = null; }
+            if (charts.horas) { charts.horas.destroy(); charts.horas = null; }
 
             const ctxOEE = document.getElementById('chartOEE');
             const ctxParadas = document.getElementById('chartParadas');
             const ctxRefugos = document.getElementById('chartRefugos');
+            const ctxHoras = document.getElementById('chartHorasExtras');
 
             let s = { p: 0, b: 0, s: 0, sp: 0 };
             maquinas.forEach(m => {
@@ -1209,6 +1256,32 @@
                 data: { labels: labels, datasets: [{ label: 'Qtd', data: dataRefugos, backgroundColor: '#ef4444', borderRadius: 4 }] },
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }, animation: false }
             });
+
+            // NOVO GRÁFICO DE HORAS EXTRAS
+            const hNormal = (dadosMensais.tempoProducaoTotal / 3600).toFixed(1);
+            const hExtra = (dadosMensais.tempoHoraExtraTotal / 3600).toFixed(1);
+
+            charts.horas = new Chart(ctxHoras, {
+                type: 'bar',
+                data: { 
+                    labels: ['Horas Trabalhadas'], 
+                    datasets: [
+                        { label: 'Horas Normais', data: [hNormal], backgroundColor: '#3b82f6', borderRadius: 8 },
+                        { label: 'Horas Extras (FDS)', data: [hExtra], backgroundColor: '#9333ea', borderRadius: 8 }
+                    ] 
+                },
+                options: { 
+                    indexAxis: 'y',
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } }, 
+                    scales: { 
+                        x: { stacked: true, beginAtZero: true, grid: { display: false } }, 
+                        y: { stacked: true, grid: { display: false } } 
+                    }, 
+                    animation: false 
+                }
+            });
         }
 
         function atualizarResumoGlobalNumeros() {
@@ -1250,7 +1323,8 @@
         function calcEficienciaGlobal() {
             if(usuarioLogado !== 'admin') return;
             
-            const horasTrabalhadas = dadosMensais.tempoProducaoTotal / 3600;
+            // SOMA AS DUAS VARIÁVEIS PARA O TOTAL
+            const horasTrabalhadas = (dadosMensais.tempoProducaoTotal + dadosMensais.tempoHoraExtraTotal) / 3600;
             const metaHoras = 1628;
             
             document.getElementById('horas-trabalhadas-mes').innerText = horasTrabalhadas.toFixed(1) + "h";
@@ -1426,6 +1500,7 @@
                     historico: historico, 
                     resumoGlobal: resumoGlobal, 
                     dadosMensais: dadosMensais, 
+                    modoHoraExtra: modoHoraExtra, // SALVA O ESTADO DA HORA EXTRA
                     lastUpdateTimestamp: timestamp 
                 } 
             }).eq('id', 1);
