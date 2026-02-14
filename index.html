@@ -124,9 +124,19 @@
                     <div id="badge-auto" class="bg-green-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse">AUTO</div>
                     <div id="status-nuvem" class="text-[10px] text-gray-400 font-mono">☁️</div>
                 </div>
-                <div id="header-eficiencia" class="text-right">
-                    <span class="text-[10px] text-slate-400 font-bold block">EFICIÊNCIA GLOBAL</span>
-                    <span id="meta-global" class="text-3xl font-black text-green-400">0%</span>
+                
+                <div id="header-eficiencia" class="text-right bg-slate-800 p-3 rounded-xl border border-slate-600">
+                    <div class="flex justify-between items-center gap-4 mb-1">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">Meta Mensal (1.628h)</span>
+                        <button onclick="resetarMes()" class="text-[8px] bg-slate-700 hover:bg-red-600 text-white px-2 py-1 rounded uppercase">Zerar Mês</button>
+                    </div>
+                    <div class="flex items-end justify-end gap-2">
+                        <div class="text-right">
+                            <span class="text-[10px] text-blue-400 font-bold block">HORAS TRABALHADAS</span>
+                            <span id="horas-trabalhadas-mes" class="text-lg font-mono font-black text-white">0h</span>
+                        </div>
+                        <span id="meta-global" class="text-3xl font-black text-green-400">0%</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -316,6 +326,10 @@
             2: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 },
             3: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 }
         };
+        
+        // VARIÁVEL PARA A META MENSAL
+        let dadosMensais = { tempoProducaoTotal: 0 }; 
+        const META_HORAS_MENSAL = 1628 * 3600; // 1628 horas em segundos
 
         let manualOverride = false;
         let saveTimeout = null;
@@ -334,14 +348,9 @@
         function isFimDeSemana(agora) {
             const dia = agora.getDay(); // 0 = Dom, 1 = Seg, 5 = Sex, 6 = Sáb
             const minDoDia = agora.getHours() * 60 + agora.getMinutes();
-            
-            // Sexta (5) a partir das 23:36 (1416 minutos)
             if (dia === 5 && minDoDia >= 1416) return true;
-            // Sábado (6) e Domingo (0) o dia inteiro
             if (dia === 6 || dia === 0) return true;
-            // Segunda (1) antes das 05:00 (300 minutos)
             if (dia === 1 && minDoDia < 300) return true;
-            
             return false;
         }
 
@@ -372,6 +381,8 @@
                 coresGlobais = data.conteudo.cores || coresGlobais;
                 operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
                 historico = data.conteudo.historico || []; 
+                if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais; // CARREGA O ACUMULADO MENSAL
+
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
                 if (data.conteudo.resumoGlobal) {
@@ -387,6 +398,8 @@
 
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
+                    if(!m.lastStatusChange) m.lastStatusChange = Date.now(); // INICIALIZA SE NÃO EXISTIR
+
                     if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
                     if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
 
@@ -419,6 +432,9 @@
 
                 iniciarRelogio();
                 atualizarDropdownOperadores();
+                
+                // ATUALIZAR MOSTRADOR MENSAL INICIAL
+                calcEficienciaGlobal();
 
                 document.getElementById('loading-spinner').style.display = 'none';
                 const actionDiv = document.getElementById('loading-action');
@@ -501,6 +517,7 @@
                 renderApontamento();
                 renderOperadoresConfig();
                 atualizarDropdownOperadores();
+                calcEficienciaGlobal();
             }
         }
 
@@ -515,6 +532,11 @@
                 if (m.status === "23-EMPRESA FECHADA") return; 
                 if (m.status === "22-SEM PROGRAMAÇÃO") { hasSemProg = true; return; }
                 
+                // SE ESTIVER PRODUZINDO OU BAIXA, CONTA PARA O MENSAL
+                if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
+                     dadosMensais.tempoProducaoTotal += secondsPassed;
+                }
+
                 if(m.status === "04-PRODUÇÃO") { 
                     hasProd = true; 
                     m.dadosTurno[t].tempoProducao += segundos; 
@@ -561,15 +583,14 @@
                 
                 const badgeAuto = document.getElementById('badge-auto');
 
-                // LÓGICA DO FIM DE SEMANA APLICADA
                 if (isFimDeSemana(agora)) {
                     badgeAuto.innerText = "PAUSA FDS";
                     badgeAuto.className = "bg-yellow-500 text-[10px] px-3 py-1 rounded-full font-black text-white";
-                    return; // Interrompe a contagem
+                    return; 
                 } else if (sistemaPausado) {
                     badgeAuto.innerText = "PAUSADO";
                     badgeAuto.className = "bg-orange-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse text-white";
-                    return; // Interrompe a contagem
+                    return; 
                 } else {
                     if (!manualOverride) {
                         badgeAuto.innerText = "AUTO";
@@ -592,6 +613,11 @@
                         m.dadosTurno[t].tempoSemProg = (m.dadosTurno[t].tempoSemProg || 0) + 1;
                         m.resumoTurno[t].tempoSemProg = (m.resumoTurno[t].tempoSemProg || 0) + 1;
                         return;
+                    }
+                    
+                    // CONTABILIZAR TEMPO MENSAL SE A MÁQUINA ESTIVER RODANDO (PROD ou BAIXA)
+                    if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
+                        dadosMensais.tempoProducaoTotal++;
                     }
 
                     if(m.status === "04-PRODUÇÃO") {
@@ -619,6 +645,7 @@
                 if(usuarioLogado !== null) {
                     updateTimersVisualOnly(); 
                     if(usuarioLogado === 'admin') {
+                        calcEficienciaGlobal(); // ATUALIZAR BARRA MENSAL
                         if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) atualizarResumoGlobalNumeros();
                         if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
                     }
@@ -684,6 +711,14 @@
                 
                 render(); 
                 if(usuarioLogado === 'admin') { renderApontamento(); iniciarGraficos(); }
+                salvarAutomatico();
+            }
+        }
+        
+        function resetarMes() {
+            if(confirm("⚠️ ATENÇÃO: Deseja zerar as HORAS MENSAIS ACUMULADAS? Faça isso apenas no início de um novo mês.")) {
+                dadosMensais.tempoProducaoTotal = 0;
+                calcEficienciaGlobal();
                 salvarAutomatico();
             }
         }
@@ -853,7 +888,6 @@
                 </div>`;
             }).join('');
             
-            if(usuarioLogado === 'admin') calcEficienciaGlobal();
             updateTimersVisualOnly();
         }
 
@@ -935,7 +969,7 @@
 
         function updateTimersVisualOnly() {
             if(!usuarioLogado) return;
-            const t = document.getElementById('filtro-turno').value;
+            const now = Date.now();
             
             let maquinasRender = maquinas;
             if (usuarioLogado !== 'admin') maquinasRender = maquinas.filter(m => m.id === usuarioLogado);
@@ -943,12 +977,17 @@
             maquinasRender.forEach(m => {
                 const el = document.getElementById(`timer-display-${m.id}`);
                 if(el) {
-                    const d = m.dadosTurno[t];
-                    if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(d.tempoProducao)}</span>`;
-                    else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(d.tempoBaixa)}</span>`;
-                    else if (m.status === "22-SEM PROGRAMAÇÃO") el.innerHTML = `<span class="text-slate-500 font-black"><i class="fa-solid fa-power-off"></i> SEM PROG: ${fmtTempo(d.tempoSemProg || 0)}</span>`;
+                    // CALCULAR TEMPO BASEADO NA ULTIMA TROCA DE STATUS
+                    let diff = 0;
+                    if (m.lastStatusChange) {
+                        diff = (now - m.lastStatusChange) / 1000;
+                    }
+
+                    if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(diff)}</span>`;
+                    else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(diff)}</span>`;
+                    else if (m.status === "22-SEM PROGRAMAÇÃO") el.innerHTML = `<span class="text-slate-500 font-black"><i class="fa-solid fa-power-off"></i> SEM PROG: ${fmtTempo(diff)}</span>`;
                     else if (m.status === "23-EMPRESA FECHADA") el.innerHTML = `<span class="text-slate-800 font-black"><i class="fa-solid fa-lock"></i> MÁQUINA DESATIVADA</span>`;
-                    else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(d.paradas)}</span>`;
+                    else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(diff)}</span>`;
                 }
             });
         }
@@ -1165,13 +1204,27 @@
             document.getElementById('global-timer-semprog').innerText = fmtTempo(totalSemProg);
         }
 
-        function atualizarStatus(id, st) { maquinas.find(x => x.id === id).status = st; render(); salvarAutomatico(); }
+        function atualizarStatus(id, st) { 
+            const m = maquinas.find(x => x.id === id);
+            m.status = st; 
+            m.lastStatusChange = Date.now(); // RESETA O CRONOMETRO VISUAL AO MUDAR STATUS
+            render(); 
+            salvarAutomatico(); 
+        }
         
+        // ================= FUNÇÃO DE CÁLCULO MENSAL ================= //
         function calcEficienciaGlobal() {
             if(usuarioLogado !== 'admin') return;
-            let prod = 0, meta = 0; const t = document.getElementById('filtro-turno').value;
-            maquinas.forEach(m => { prod += m.dadosTurno[t].boas; meta += m.fila[0]?.qtd || 0; });
-            document.getElementById('meta-global').innerText = (meta > 0 ? Math.round((prod/meta)*100) : 0) + "%";
+            
+            // Calculo baseado em horas trabalhadas vs meta de 1628 horas
+            const horasTrabalhadas = dadosMensais.tempoProducaoTotal / 3600;
+            const metaHoras = 1628;
+            
+            // Exibir no Header
+            document.getElementById('horas-trabalhadas-mes').innerText = horasTrabalhadas.toFixed(1) + "h";
+            
+            const porcentagem = (horasTrabalhadas / metaHoras) * 100;
+            document.getElementById('meta-global').innerText = porcentagem.toFixed(1) + "%";
         }
 
         function moverParaFimFila(maqId, index) {
@@ -1239,26 +1292,22 @@
             tbody.innerHTML = html || '<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhuma O.P na fila.</td></tr>';
         }
 
-        // ================= FUNÇÃO DE LIMPAR BUSCA ================= //
         function limparBuscaHistorico() {
             document.getElementById('busca-historico-op').value = '';
             document.getElementById('busca-historico-data').value = '';
             renderHistorico();
         }
 
-        // ================= RENDERIZAR E FILTRAR HISTÓRICO ================= //
         function renderHistorico() {
             if(usuarioLogado !== 'admin') return;
             const tbody = document.getElementById('lista-historico');
             let html = '';
             
             const buscaOp = document.getElementById('busca-historico-op').value.toLowerCase().trim();
-            const buscaData = document.getElementById('busca-historico-data').value; // Formato YYYY-MM-DD
+            const buscaData = document.getElementById('busca-historico-data').value; 
 
-            // Precisamos mapear o array com o index original para a função deletar não apagar o item errado
             let histMapeado = historico.map((h, index) => ({ ...h, indexOriginal: index })).reverse();
             
-            // Lógica do filtro
             let histFiltrado = histMapeado.filter(h => {
                 let matchOp = true;
                 let matchData = true;
@@ -1268,13 +1317,11 @@
                 }
 
                 if (buscaData) {
-                    // Converter a data do histórico para o mesmo formato (YYYY-MM-DD) do input date
                     const d = new Date(h.data);
                     const ano = d.getFullYear();
                     const mes = String(d.getMonth() + 1).padStart(2, '0');
                     const dia = String(d.getDate()).padStart(2, '0');
                     const dataFormatada = `${ano}-${mes}-${dia}`;
-                    
                     matchData = (dataFormatada === buscaData);
                 }
 
@@ -1346,6 +1393,7 @@
                     operadores: operadoresGlobais, 
                     historico: historico, 
                     resumoGlobal: resumoGlobal, 
+                    dadosMensais: dadosMensais, // SALVA O DADO MENSAL NO BANCO
                     lastUpdateTimestamp: timestamp 
                 } 
             }).eq('id', 1);
