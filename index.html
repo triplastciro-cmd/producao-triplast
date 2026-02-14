@@ -199,7 +199,6 @@
                 <div class="bg-white p-8 rounded-3xl shadow-2xl">
                     <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b pb-4 gap-4">
                         <h2 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i> REGISTRO HISTÓRICO DE PRODUÇÃO</h2>
-                        
                         <div class="flex flex-wrap gap-2">
                             <input type="text" id="busca-historico-op" placeholder="🔍 Buscar Nº O.P" oninput="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500">
                             <input type="date" id="busca-historico-data" onchange="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500 text-slate-600">
@@ -343,7 +342,7 @@
             3: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 }
         };
         
-        let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 }; // ADICIONADO CONTADOR DE EXTRA
+        let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
         const META_HORAS_MENSAL = 1628 * 3600; 
 
         let manualOverride = false;
@@ -355,18 +354,20 @@
         
         let sistemaPausado = false;
         let usuarioLogado = null; 
+        
+        // VARIAVEL PARA CONTROLAR SE O FIM DE SEMANA ESTÁ ATIVO
+        let fdsAtivo = false;
 
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
 
-        // LÓGICA DO FIM DE SEMANA
         function isFimDeSemana(agora) {
             const dia = agora.getDay(); 
             const minDoDia = agora.getHours() * 60 + agora.getMinutes();
-            if (dia === 5 && minDoDia >= 1416) return true; // Sexta após 23:36
-            if (dia === 6 || dia === 0) return true; // Sábado e Domingo
-            if (dia === 1 && minDoDia < 300) return true; // Segunda até 05:00
+            if (dia === 5 && minDoDia >= 1416) return true;
+            if (dia === 6 || dia === 0) return true;
+            if (dia === 1 && minDoDia < 300) return true;
             return false;
         }
 
@@ -398,7 +399,7 @@
                 operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
                 historico = data.conteudo.historico || []; 
                 if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais;
-                if(!dadosMensais.tempoHoraExtraTotal) dadosMensais.tempoHoraExtraTotal = 0; // GARANTE QUE O CAMPO EXISTE
+                if(!dadosMensais.tempoHoraExtraTotal) dadosMensais.tempoHoraExtraTotal = 0;
 
                 if(data.conteudo.modoHoraExtra !== undefined) modoHoraExtra = data.conteudo.modoHoraExtra; 
 
@@ -418,6 +419,7 @@
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
                     if(!m.lastStatusChange) m.lastStatusChange = Date.now(); 
+                    if(!m.accumulatedStatusTime) m.accumulatedStatusTime = 0; // TEMPO ACUMULADO CONGELADO
 
                     if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
                     if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
@@ -479,7 +481,7 @@
 
         function fazerLogin() {
             const tipo = document.getElementById('login-tipo').value;
-            const senha = document.getElementById('login-senha').value.trim().toUpperCase();
+            const senha = document.getElementById('login-senha').value.trim();
 
             if (tipo === 'admin') {
                 if (senha === '2026') { 
@@ -491,7 +493,7 @@
                 }
             } else {
                 const indexDaMaquina = maquinas.findIndex(m => m.id == tipo) + 1;
-                const senhaCorretaMaquina = 'M' + indexDaMaquina;
+                const senhaCorretaMaquina = 'm' + indexDaMaquina;
 
                 if (senha === senhaCorretaMaquina) { 
                     usuarioLogado = parseInt(tipo);
@@ -553,7 +555,6 @@
                 if (m.status === "23-EMPRESA FECHADA") return; 
                 if (m.status === "22-SEM PROGRAMAÇÃO") { hasSemProg = true; return; }
                 
-                // LÓGICA DE CONTAGEM MENSAL (SEPARANDO EXTRA E NORMAL)
                 if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
                      if (isFimDeSemana(agora) && modoHoraExtra) {
                          dadosMensais.tempoHoraExtraTotal += secondsPassed;
@@ -588,11 +589,26 @@
         function togglePause() {
             sistemaPausado = !sistemaPausado;
             const btn = document.getElementById('btn-pause');
+            
+            // CONGELAR O TEMPO VISUAL AO PAUSAR
             if(sistemaPausado) {
+                // ESTÁ PAUSANDO AGORA
+                maquinas.forEach(m => {
+                    if (m.lastStatusChange) {
+                        m.accumulatedStatusTime += (Date.now() - m.lastStatusChange);
+                        m.lastStatusChange = null; // Remove a referencia de tempo para parar o timer
+                    }
+                });
+                
                 btn.innerHTML = '<i class="fa-solid fa-play"></i> Retomar';
                 btn.classList.replace('bg-yellow-500', 'bg-green-500');
                 btn.classList.replace('hover:bg-yellow-400', 'hover:bg-green-400');
             } else {
+                // ESTÁ RETOMANDO AGORA
+                maquinas.forEach(m => {
+                    m.lastStatusChange = Date.now(); // Reinicia a referencia
+                });
+                
                 btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar';
                 btn.classList.replace('bg-green-500', 'bg-yellow-500');
                 btn.classList.replace('hover:bg-green-400', 'hover:bg-yellow-400');
@@ -603,13 +619,29 @@
         // ================= FUNÇÃO HORA EXTRA ================= //
         function toggleHoraExtra() {
             const agora = getBrasiliaDate();
-            // Só deixa ligar se for Fim de Semana
             if (!isFimDeSemana(agora)) {
                 alert("O modo Hora Extra só pode ser ativado quando o sistema entra no horário de Fim de Semana (Sexta 23:36).");
                 return;
             }
 
             modoHoraExtra = !modoHoraExtra;
+            
+            // LÓGICA DE CONGELAMENTO/DESCONGELAMENTO PARA HORA EXTRA
+            if(modoHoraExtra) {
+                // LIGOU HORA EXTRA: RETOMAR CONTAGEM DE ONDE PAROU
+                maquinas.forEach(m => {
+                    m.lastStatusChange = Date.now(); 
+                });
+            } else {
+                // DESLIGOU HORA EXTRA: CONGELAR CONTAGEM
+                maquinas.forEach(m => {
+                    if (m.lastStatusChange) {
+                        m.accumulatedStatusTime += (Date.now() - m.lastStatusChange);
+                        m.lastStatusChange = null; 
+                    }
+                });
+            }
+
             renderBotaoExtra();
             salvarAutomatico();
         }
@@ -620,16 +652,14 @@
             const fds = isFimDeSemana(agora);
 
             if (!fds) {
-                // SE NÃO FOR FIM DE SEMANA, BLOQUEIA O BOTÃO
                 btn.classList.remove('bg-purple-600', 'hover:bg-purple-500', 'animate-pulse');
                 btn.classList.add('bg-slate-400', 'cursor-not-allowed', 'opacity-50');
                 btn.innerHTML = '<i class="fa-solid fa-lock"></i> H. Extra (Bloq)';
-                btn.onclick = null; // Remove o click
-                modoHoraExtra = false; // Garante que está desligado
+                btn.onclick = null; 
+                if (modoHoraExtra) { modoHoraExtra = false; } 
             } else {
-                // SE FOR FIM DE SEMANA, LIBERA
                 btn.classList.remove('bg-slate-400', 'cursor-not-allowed', 'opacity-50');
-                btn.onclick = toggleHoraExtra; // Restaura o click
+                btn.onclick = toggleHoraExtra; 
 
                 if (modoHoraExtra) {
                     btn.classList.remove('bg-gray-500', 'hover:bg-gray-400');
@@ -650,16 +680,36 @@
                 const agora = getBrasiliaDate();
                 document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
                 
-                renderBotaoExtra(); // Verifica o estado do botão a cada segundo
+                renderBotaoExtra(); 
 
                 const badgeAuto = document.getElementById('badge-auto');
+                const ehFds = isFimDeSemana(agora);
 
-                // LÓGICA DO FIM DE SEMANA COM OVERRIDE
-                if (isFimDeSemana(agora) && !modoHoraExtra) {
+                // DETECÇÃO DE MUDANÇA DE ESTADO AUTOMÁTICA (ENTROU NO FIM DE SEMANA)
+                if (ehFds && !fdsAtivo && !modoHoraExtra) {
+                    // ACABOU DE ENTRAR NO FIM DE SEMANA - CONGELAR TUDO
+                    fdsAtivo = true;
+                    maquinas.forEach(m => {
+                        if (m.lastStatusChange) {
+                            m.accumulatedStatusTime += (Date.now() - m.lastStatusChange);
+                            m.lastStatusChange = null; 
+                        }
+                    });
+                    salvarAutomatico();
+                } else if (!ehFds && fdsAtivo) {
+                    // SAIU DO FIM DE SEMANA (SEGUNDA FEIRA) - RETOMAR
+                    fdsAtivo = false;
+                    maquinas.forEach(m => {
+                        m.lastStatusChange = Date.now();
+                    });
+                    salvarAutomatico();
+                }
+
+                if (ehFds && !modoHoraExtra) {
                     badgeAuto.innerText = "PAUSA FDS";
                     badgeAuto.className = "bg-yellow-500 text-[10px] px-3 py-1 rounded-full font-black text-white";
                     return; 
-                } else if (modoHoraExtra && isFimDeSemana(agora)) {
+                } else if (modoHoraExtra && ehFds) {
                     badgeAuto.innerText = "HORA EXTRA";
                     badgeAuto.className = "bg-purple-600 text-[10px] px-3 py-1 rounded-full font-black animate-pulse text-white";
                 } else if (sistemaPausado) {
@@ -691,8 +741,7 @@
                     }
                     
                     if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
-                        // SOMA NO ACUMULADO MENSAL (SEPARANDO EXTRA DE NORMAL)
-                        if (isFimDeSemana(agora) && modoHoraExtra) {
+                        if (ehFds && modoHoraExtra) {
                             dadosMensais.tempoHoraExtraTotal++;
                         } else {
                             dadosMensais.tempoProducaoTotal++;
@@ -1058,10 +1107,12 @@
             maquinasRender.forEach(m => {
                 const el = document.getElementById(`timer-display-${m.id}`);
                 if(el) {
-                    let diff = 0;
+                    let totalSeconds = m.accumulatedStatusTime || 0;
                     if (m.lastStatusChange) {
-                        diff = (now - m.lastStatusChange) / 1000;
+                        totalSeconds += (now - m.lastStatusChange);
                     }
+                    // Converter para segundos para a função fmtTempo
+                    let diff = totalSeconds / 1000;
 
                     if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(diff)}</span>`;
                     else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(diff)}</span>`;
@@ -1315,7 +1366,8 @@
         function atualizarStatus(id, st) { 
             const m = maquinas.find(x => x.id === id);
             m.status = st; 
-            m.lastStatusChange = Date.now(); // RESETA O CRONOMETRO VISUAL
+            m.lastStatusChange = Date.now(); 
+            m.accumulatedStatusTime = 0; // RESETAR O ACUMULADO AO MUDAR O STATUS
             render(); 
             salvarAutomatico(); 
         }
@@ -1323,7 +1375,6 @@
         function calcEficienciaGlobal() {
             if(usuarioLogado !== 'admin') return;
             
-            // SOMA AS DUAS VARIÁVEIS PARA O TOTAL
             const horasTrabalhadas = (dadosMensais.tempoProducaoTotal + dadosMensais.tempoHoraExtraTotal) / 3600;
             const metaHoras = 1628;
             
@@ -1500,7 +1551,7 @@
                     historico: historico, 
                     resumoGlobal: resumoGlobal, 
                     dadosMensais: dadosMensais, 
-                    modoHoraExtra: modoHoraExtra, // SALVA O ESTADO DA HORA EXTRA
+                    modoHoraExtra: modoHoraExtra, 
                     lastUpdateTimestamp: timestamp 
                 } 
             }).eq('id', 1);
