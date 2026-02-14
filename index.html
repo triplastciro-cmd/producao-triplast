@@ -112,9 +112,15 @@
                     <button onclick="fazerLogout()" class="text-[10px] bg-red-500 hover:bg-red-400 text-white font-black px-3 py-2 rounded-lg uppercase shadow-md transition-colors"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
                 </div>
                 <div class="flex items-center gap-4 bg-slate-700 p-2 rounded-xl flex-wrap justify-center">
+                    
                     <button id="btn-pause" onclick="togglePause()" class="bg-yellow-500 hover:bg-yellow-400 text-white text-[10px] font-black px-3 py-2 rounded-lg transition-all shadow-md uppercase">
                         <i class="fa-solid fa-pause"></i> Pausar
                     </button>
+
+                    <button id="btn-extra" onclick="toggleHoraExtra()" class="bg-gray-500 hover:bg-gray-400 text-white text-[10px] font-black px-3 py-2 rounded-lg transition-all shadow-md uppercase">
+                        <i class="fa-solid fa-bolt"></i> Hora Extra
+                    </button>
+
                     <span class="text-xs font-bold text-slate-400 ml-2">TURNO ATUAL:</span>
                     <select id="filtro-turno" onchange="mudarTurnoManual(this.value)" class="bg-slate-800 text-white font-bold p-2 rounded-lg outline-none border-none">
                         <option value="1">🌅 Manhã (05:00 - 14:18)</option>
@@ -327,11 +333,11 @@
             3: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 }
         };
         
-        // VARIÁVEL PARA A META MENSAL
         let dadosMensais = { tempoProducaoTotal: 0 }; 
-        const META_HORAS_MENSAL = 1628 * 3600; // 1628 horas em segundos
+        const META_HORAS_MENSAL = 1628 * 3600; 
 
         let manualOverride = false;
+        let modoHoraExtra = false; // NOVA VARIÁVEL PARA O SISTEMA DE HORA EXTRA
         let saveTimeout = null;
         let filtroGraficoId = 'todas';
         let charts = { oee: null, paradas: null, refugos: null };
@@ -346,7 +352,7 @@
 
         // LÓGICA DO FIM DE SEMANA
         function isFimDeSemana(agora) {
-            const dia = agora.getDay(); // 0 = Dom, 1 = Seg, 5 = Sex, 6 = Sáb
+            const dia = agora.getDay(); 
             const minDoDia = agora.getHours() * 60 + agora.getMinutes();
             if (dia === 5 && minDoDia >= 1416) return true;
             if (dia === 6 || dia === 0) return true;
@@ -381,7 +387,8 @@
                 coresGlobais = data.conteudo.cores || coresGlobais;
                 operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
                 historico = data.conteudo.historico || []; 
-                if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais; // CARREGA O ACUMULADO MENSAL
+                if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais;
+                if(data.conteudo.modoHoraExtra !== undefined) modoHoraExtra = data.conteudo.modoHoraExtra; // CARREGA ESTADO HORA EXTRA
 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
@@ -398,7 +405,7 @@
 
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
-                    if(!m.lastStatusChange) m.lastStatusChange = Date.now(); // INICIALIZA SE NÃO EXISTIR
+                    if(!m.lastStatusChange) m.lastStatusChange = Date.now(); 
 
                     if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
                     if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
@@ -431,9 +438,9 @@
                 if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
 
                 iniciarRelogio();
+                renderBotaoExtra(); // ATUALIZA O VISUAL DO BOTÃO
                 atualizarDropdownOperadores();
                 
-                // ATUALIZAR MOSTRADOR MENSAL INICIAL
                 calcEficienciaGlobal();
 
                 document.getElementById('loading-spinner').style.display = 'none';
@@ -500,11 +507,13 @@
                 document.getElementById('nav-principal').style.display = 'none'; 
                 document.getElementById('header-eficiencia').style.display = 'none'; 
                 document.getElementById('btn-pause').style.display = 'none'; 
+                document.getElementById('btn-extra').style.display = 'none'; // ESCONDE BOTAO EXTRA P/ MAQUINAS
                 trocarAba('painel'); 
             } else {
                 document.getElementById('nav-principal').style.display = 'flex';
                 document.getElementById('header-eficiencia').style.display = 'block';
                 document.getElementById('btn-pause').style.display = 'inline-block';
+                document.getElementById('btn-extra').style.display = 'inline-block'; // MOSTRA P/ ADMIN
             }
             
             render(); 
@@ -523,7 +532,8 @@
 
         function compensarTempoOffline(segundos) {
             const agora = getBrasiliaDate();
-            if (isFimDeSemana(agora) || sistemaPausado) return; 
+            // SE FOR FIM DE SEMANA E NÃO TIVER HORA EXTRA LIGADA, NÃO COMPENSA
+            if ((isFimDeSemana(agora) && !modoHoraExtra) || sistemaPausado) return; 
 
             const t = document.getElementById('filtro-turno').value;
             let hasProd = false, hasBaixa = false, hasParada = false, hasSemProg = false;
@@ -532,7 +542,6 @@
                 if (m.status === "23-EMPRESA FECHADA") return; 
                 if (m.status === "22-SEM PROGRAMAÇÃO") { hasSemProg = true; return; }
                 
-                // SE ESTIVER PRODUZINDO OU BAIXA, CONTA PARA O MENSAL
                 if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
                      dadosMensais.tempoProducaoTotal += secondsPassed;
                 }
@@ -575,6 +584,29 @@
             salvarAutomatico();
         }
 
+        // ================= FUNÇÃO HORA EXTRA ================= //
+        function toggleHoraExtra() {
+            modoHoraExtra = !modoHoraExtra;
+            renderBotaoExtra();
+            salvarAutomatico();
+        }
+
+        function renderBotaoExtra() {
+            const btn = document.getElementById('btn-extra');
+            if (modoHoraExtra) {
+                btn.classList.replace('bg-gray-500', 'bg-purple-600');
+                btn.classList.replace('hover:bg-gray-400', 'hover:bg-purple-500');
+                btn.innerHTML = '<i class="fa-solid fa-bolt"></i> H. Extra ATIVA';
+                btn.classList.add('animate-pulse');
+            } else {
+                btn.classList.replace('bg-purple-600', 'bg-gray-500');
+                btn.classList.replace('hover:bg-purple-500', 'hover:bg-gray-400');
+                btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Hora Extra';
+                btn.classList.remove('animate-pulse');
+            }
+        }
+        // ===================================================== //
+
         function iniciarRelogio() {
             if (relogioInterval) clearInterval(relogioInterval);
             relogioInterval = setInterval(() => {
@@ -583,10 +615,14 @@
                 
                 const badgeAuto = document.getElementById('badge-auto');
 
-                if (isFimDeSemana(agora)) {
+                // LÓGICA DO FIM DE SEMANA COM OVERRIDE
+                if (isFimDeSemana(agora) && !modoHoraExtra) {
                     badgeAuto.innerText = "PAUSA FDS";
                     badgeAuto.className = "bg-yellow-500 text-[10px] px-3 py-1 rounded-full font-black text-white";
                     return; 
+                } else if (modoHoraExtra && isFimDeSemana(agora)) {
+                    badgeAuto.innerText = "HORA EXTRA";
+                    badgeAuto.className = "bg-purple-600 text-[10px] px-3 py-1 rounded-full font-black animate-pulse text-white";
                 } else if (sistemaPausado) {
                     badgeAuto.innerText = "PAUSADO";
                     badgeAuto.className = "bg-orange-500 text-[10px] px-3 py-1 rounded-full font-black animate-pulse text-white";
@@ -615,7 +651,6 @@
                         return;
                     }
                     
-                    // CONTABILIZAR TEMPO MENSAL SE A MÁQUINA ESTIVER RODANDO (PROD ou BAIXA)
                     if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
                         dadosMensais.tempoProducaoTotal++;
                     }
@@ -645,7 +680,7 @@
                 if(usuarioLogado !== null) {
                     updateTimersVisualOnly(); 
                     if(usuarioLogado === 'admin') {
-                        calcEficienciaGlobal(); // ATUALIZAR BARRA MENSAL
+                        calcEficienciaGlobal(); 
                         if(document.getElementById('aba-graficos').classList.contains('aba-ativa')) atualizarResumoGlobalNumeros();
                         if(document.getElementById('aba-apontamento').classList.contains('aba-ativa')) renderApontamento();
                     }
@@ -888,6 +923,7 @@
                 </div>`;
             }).join('');
             
+            if(usuarioLogado === 'admin') calcEficienciaGlobal();
             updateTimersVisualOnly();
         }
 
@@ -977,7 +1013,6 @@
             maquinasRender.forEach(m => {
                 const el = document.getElementById(`timer-display-${m.id}`);
                 if(el) {
-                    // CALCULAR TEMPO BASEADO NA ULTIMA TROCA DE STATUS
                     let diff = 0;
                     if (m.lastStatusChange) {
                         diff = (now - m.lastStatusChange) / 1000;
@@ -1207,20 +1242,17 @@
         function atualizarStatus(id, st) { 
             const m = maquinas.find(x => x.id === id);
             m.status = st; 
-            m.lastStatusChange = Date.now(); // RESETA O CRONOMETRO VISUAL AO MUDAR STATUS
+            m.lastStatusChange = Date.now(); // RESETA O CRONOMETRO VISUAL
             render(); 
             salvarAutomatico(); 
         }
         
-        // ================= FUNÇÃO DE CÁLCULO MENSAL ================= //
         function calcEficienciaGlobal() {
             if(usuarioLogado !== 'admin') return;
             
-            // Calculo baseado em horas trabalhadas vs meta de 1628 horas
             const horasTrabalhadas = dadosMensais.tempoProducaoTotal / 3600;
             const metaHoras = 1628;
             
-            // Exibir no Header
             document.getElementById('horas-trabalhadas-mes').innerText = horasTrabalhadas.toFixed(1) + "h";
             
             const porcentagem = (horasTrabalhadas / metaHoras) * 100;
@@ -1393,7 +1425,7 @@
                     operadores: operadoresGlobais, 
                     historico: historico, 
                     resumoGlobal: resumoGlobal, 
-                    dadosMensais: dadosMensais, // SALVA O DADO MENSAL NO BANCO
+                    dadosMensais: dadosMensais, 
                     lastUpdateTimestamp: timestamp 
                 } 
             }).eq('id', 1);
