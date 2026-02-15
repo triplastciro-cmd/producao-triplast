@@ -22,8 +22,13 @@
         }
         
         /* Utilitários de Abas */
-        .aba-conteudo { display: none !important; }
-        .aba-ativa { display: block !important; }
+        .aba-conteudo { 
+            display: none !important; 
+        }
+        
+        .aba-ativa { 
+            display: block !important; 
+        }
 
         /* ================================================================= */
         /* ESTILO DOS CARDS DE MÁQUINA (PAINEL) */
@@ -37,79 +42,191 @@
             position: relative;
         }
         
-        .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
-        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
-        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; }
-        .status-fechada { border-left-color: #475569 !important; background-color: #e2e8f0; filter: grayscale(50%); opacity: 0.9; }
+        .status-produzindo { 
+            border-left-color: #22c55e !important; 
+            background-color: #f0fdf4; 
+        }
+        
+        .status-baixa { 
+            border-left-color: #f97316 !important; 
+            background-color: #fff7ed; 
+        }
+        
+        .status-sem-prog { 
+            border-left-color: #cbd5e1 !important; 
+            background-color: #f8fafc; 
+        }
+        
+        /* Status Fechada e Parada Programada usam o mesmo estilo visual neutro */
+        .status-fechada { 
+            border-left-color: #475569 !important; 
+            background-color: #e2e8f0; 
+            filter: grayscale(50%); 
+            opacity: 0.9; 
+        }
 
         .info-badge {
-            background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #f8fafc; 
+            padding: 6px; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
         }
-        .info-badge span:first-child { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
-        .info-badge span:last-child { font-weight: 900; line-height: 1; }
+        
+        .info-badge span:first-child { 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            margin-bottom: 2px; 
+        }
+        
+        .info-badge span:last-child { 
+            font-weight: 900; 
+            line-height: 1; 
+        }
 
         /* ================================================================= */
         /* ESTILO DOS BOTÕES DE NAVEGAÇÃO */
         /* ================================================================= */
         .tab-btn {
-            background: white; padding: 10px 20px; border-radius: 20px;
-            font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: 0.2s; border: 2px solid transparent; cursor: pointer; color: #64748b;
+            background: white; 
+            padding: 10px 20px; 
+            border-radius: 20px;
+            font-weight: 700; 
+            font-size: 13px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: 0.2s; 
+            border: 2px solid transparent; 
+            cursor: pointer; 
+            color: #64748b;
         }
-        .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
+        
+        .tab-btn.active { 
+            background: #3b82f6; 
+            color: white; 
+            border-color: #2563eb; 
+            box-shadow: 0 4px 10px rgba(37,99,235,0.3); 
+        }
 
-        header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        header { 
+            background: #1e293b; 
+            color: white; 
+            padding: 20px; 
+            border-radius: 0 0 20px 20px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2); 
+        }
         
         .modal-reset {
-            display: none; position: absolute; top: 40px; right: 10px; background: white;
-            border: 1px solid #ccc; padding: 10px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 50; width: 150px;
+            display: none; 
+            position: absolute; 
+            top: 40px; 
+            right: 10px; 
+            background: white;
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            border-radius: 10px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            z-index: 50; 
+            width: 150px;
         }
 
         /* ================================================================= */
         /* ESTILO: FILA HORIZONTAL (CARROSSEL) */
         /* ================================================================= */
         .scrolling-wrapper {
-            display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 16px;
-            padding-bottom: 15px; padding-top: 5px; -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 16px;
+            padding-bottom: 15px;
+            padding-top: 5px;
+            -webkit-overflow-scrolling: touch;
         }
         
-        .scrolling-wrapper::-webkit-scrollbar { height: 8px; }
-        .scrolling-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
-        .scrolling-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .scrolling-wrapper::-webkit-scrollbar { 
+            height: 8px; 
+        }
+        
+        .scrolling-wrapper::-webkit-scrollbar-track { 
+            background: #e2e8f0; 
+            border-radius: 4px; 
+        }
+        
+        .scrolling-wrapper::-webkit-scrollbar-thumb { 
+            background: #94a3b8; 
+            border-radius: 4px; 
+        }
+        
+        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { 
+            background: #64748b; 
+        }
 
         /* ================================================================= */
         /* ESTILO: NOVA ETIQUETA / FICHA TÉCNICA */
         /* ================================================================= */
         .ticket-card {
             flex: 0 0 auto;
-            width: 320px; /* Mais larga para caber as infos */
+            width: 320px; /* Largura fixa */
             background: white;
             border: 1px solid #cbd5e1;
             border-top: 6px solid #3b82f6;
             border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            display: flex; flex-direction: column; justify-content: space-between; position: relative;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            position: relative;
             overflow: hidden;
         }
         
         .ticket-header { 
-            background: #f1f5f9; padding: 10px; border-bottom: 1px solid #e2e8f0;
-            display: flex; justify-content: space-between; align-items: center;
+            background: #f1f5f9; 
+            padding: 10px; 
+            border-bottom: 1px solid #e2e8f0;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
         }
         
         .ficha-row {
-            display: flex; border-bottom: 1px dashed #e2e8f0; padding: 8px 12px;
-            align-items: center; justify-content: space-between;
+            display: flex; 
+            border-bottom: 1px dashed #e2e8f0; 
+            padding: 8px 12px;
+            align-items: center; 
+            justify-content: space-between;
         }
-        .ficha-label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
-        .ficha-value { font-size: 12px; color: #0f172a; font-weight: 700; text-align: right; }
+        
+        .ficha-label { 
+            font-size: 10px; 
+            color: #64748b; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+        }
+        
+        .ficha-value { 
+            font-size: 12px; 
+            color: #0f172a; 
+            font-weight: 700; 
+            text-align: right; 
+        }
 
         /* Scrollbar Global */
-        .scrollbar-custom::-webkit-scrollbar { width: 6px; }
-        .scrollbar-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        .scrollbar-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .scrollbar-custom::-webkit-scrollbar { 
+            width: 6px; 
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-track { 
+            background: #f1f5f9; 
+            border-radius: 10px; 
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 10px; 
+        }
     </style>
 </head>
 <body onclick="fecharMenusGlobais(event)">
@@ -149,9 +266,11 @@
                     <label class="text-[10px] font-bold text-slate-400">CLIENTE</label>
                     <input type="text" id="edit-op-cliente" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
                 </div>
+                
                 <div>
                     <label class="text-[10px] font-bold text-slate-400">NOME DO PRODUTO / PEÇA</label>
-                    <input type="text" id="edit-op-produto" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
+                    <select id="edit-op-produto" class="w-full p-2 bg-slate-50 border rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </select>
                 </div>
                 
                 <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mt-2">
@@ -319,8 +438,10 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Nome do Produto / Peça</label>
-                            <input type="text" id="f-produto" placeholder="Descrição da Peça" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
+                            <select id="f-produto" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                                <option value="">-- Selecione Produto --</option>
+                            </select>
                         </div>
                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
@@ -337,7 +458,7 @@
                             <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
                         </div>
                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Código Pigmento</label>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Cód. Pigmento</label>
                             <input type="text" id="f-pigmento" placeholder="Cód..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
                         </div>
                         <div class="md:col-span-1">
@@ -346,7 +467,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 bg-orange-50 p-4 rounded-xl border border-orange-100">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
                         <div class="md:col-span-2 flex items-center">
                             <label class="text-xs font-black text-orange-600 uppercase mr-2"><i class="fa-solid fa-box-open"></i> EMBALAGEM:</label>
                         </div>
@@ -370,9 +491,18 @@
                 
                 <div id="container-filas" class="space-y-6"></div>
 
+                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8 border border-slate-100">
+                    <h2 class="text-2xl font-black mb-8 border-b pb-4 text-slate-700">📦 GERENCIAR CATÁLOGO DE PRODUTOS</h2>
+                    <div class="flex gap-4 mb-8">
+                        <input type="text" id="novo-produto-catalog" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Produto...">
+                        <button onclick="gerenciarProdutoCatalog('add')" class="bg-blue-600 hover:bg-blue-500 text-white px-8 rounded-xl font-black text-2xl shadow-md transition-colors">+</button>
+                    </div>
+                    <div id="lista-produtos-config" class="flex flex-wrap gap-3"></div>
+                </div>
+
                 <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
                     <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b pb-4 gap-4">
-                        <h2 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> HISTÓRICO COMPLETO</h2>
+                        <h2 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> HISTÓRICO</h2>
                         <div class="flex flex-wrap gap-2">
                             <input type="text" id="busca-historico-op" placeholder="🔍 Buscar Nº O.P" oninput="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500">
                             <input type="date" id="busca-historico-data" onchange="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500 text-slate-600">
@@ -516,6 +646,7 @@
         let historico = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let operadoresGlobais = ["João", "Maria", "José"]; 
+        let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; // LISTA DE PRODUTOS
         
         let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
         const META_HORAS_MENSAL = 1628 * 3600; 
@@ -530,6 +661,7 @@
         let sistemaPausado = false;
         let usuarioLogado = null; 
         
+        // VARIÁVEL DE CONTROLE PARA CONGELAMENTO DE TEMPO
         let fdsAtivo = false;
 
         // FUNÇÕES AUXILIARES DE TEMPO
@@ -621,6 +753,10 @@
                 maquinas = data.conteudo.maquinas;
                 coresGlobais = data.conteudo.cores || coresGlobais;
                 operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
+                
+                // CARREGA PRODUTOS
+                if (data.conteudo.produtos) produtosGlobais = data.conteudo.produtos;
+
                 historico = data.conteudo.historico || []; 
                 if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais;
                 
@@ -651,7 +787,7 @@
 
                 iniciarRelogio();
                 renderBotaoExtra(); 
-                atualizarDropdownOperadores();
+                atualizarDropdowns(); // Agora atualiza operadores e produtos
                 
                 calcEficienciaGlobal();
 
@@ -738,7 +874,8 @@
                 renderHistorico();
                 renderApontamento();
                 renderOperadoresConfig();
-                atualizarDropdownOperadores();
+                renderProdutosConfig();
+                atualizarDropdowns();
                 calcEficienciaGlobal();
             }
         }
@@ -752,10 +889,7 @@
             maquinas.forEach(m => {
                 if (m.status === "23-EMPRESA FECHADA") return; 
                 
-                // Proteção contra undefined no loop
-                if (!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
-                if (!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
-
+                // Agrupando SEM PROG e PARADA PROGRAMADA como tempo neutro
                 if (m.status === "22-SEM PROGRAMAÇÃO" || m.status === "24-PARADA PROGRAMADA") { 
                     m.dadosTurno[t].tempoSemProg += segundos; 
                     m.resumoTurno[t].tempoSemProg += segundos; 
@@ -922,7 +1056,6 @@
 
                 processarTurnoAuto();
                 const t = document.getElementById('filtro-turno').value;
-                let hasProd = false;
                 
                 maquinas.forEach(m => {
                     if (m.status === "23-EMPRESA FECHADA") return; 
@@ -943,7 +1076,6 @@
                     }
 
                     if(m.status === "04-PRODUÇÃO") {
-                        hasProd = true;
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
                     }
@@ -977,7 +1109,7 @@
             
             if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
             if(id === 'apontamento') { renderApontamento(); }
-            if(id === 'lista') { renderListaOPs(); renderHistorico(); renderOperadoresConfig(); }
+            if(id === 'lista') { renderListaOPs(); renderHistorico(); renderOperadoresConfig(); renderProdutosConfig(); }
         }
 
         function processarTurnoAuto() {
@@ -1238,7 +1370,9 @@
                                 <span class="ficha-value">${op.qtd} PÇS</span>
                             </div>
 
-                            <div class="px-3 py-1 bg-blue-50/50 mt-1"><span class="text-[9px] font-black text-blue-400 uppercase">MATÉRIA-PRIMA</span></div>
+                            <div class="px-3 py-1 bg-blue-50/50 mt-1">
+                                <span class="text-[9px] font-black text-blue-400 uppercase">MATÉRIA-PRIMA</span>
+                            </div>
                             <div class="ficha-row">
                                 <span class="ficha-label">MATERIAL</span>
                                 <span class="ficha-value">${op.material || '-'} <span class="text-[9px] text-slate-400 font-normal">(${op.materialQtd || '-'})</span></span>
@@ -1252,7 +1386,9 @@
                                 <span class="ficha-value text-red-500">${op.porcentagem || '0%'}</span>
                             </div>
 
-                             <div class="px-3 py-1 bg-orange-50/50 mt-1"><span class="text-[9px] font-black text-orange-400 uppercase">EMBALAGEM</span></div>
+                             <div class="px-3 py-1 bg-orange-50/50 mt-1">
+                                <span class="text-[9px] font-black text-orange-400 uppercase">EMBALAGEM</span>
+                            </div>
                              <div class="ficha-row">
                                 <span class="ficha-label">CAIXA</span>
                                 <span class="ficha-value text-[10px]">${op.caixa || '-'}</span>
@@ -1300,10 +1436,13 @@
             
             document.getElementById('edit-op-num').value = op.op;
             document.getElementById('edit-op-cliente').value = op.cliente || '';
-            document.getElementById('edit-op-produto').value = op.produto;
             document.getElementById('edit-op-qtd').value = op.qtd;
 
-            // Novos Campos
+            // Agora Produto é um Select
+            const selProd = document.getElementById('edit-op-produto');
+            selProd.innerHTML = '<option value="">-- Selecione --</option>' + produtosGlobais.map(p => `<option value="${p}" ${p===op.produto?'selected':''}>${p}</option>`).join('');
+
+            // Preencher campos novos
             document.getElementById('edit-op-material').value = op.material || '';
             document.getElementById('edit-op-material-qtd').value = op.materialQtd || '';
             document.getElementById('edit-op-pigmento').value = op.pigmento || '';
@@ -1325,7 +1464,7 @@
             if (m && m.fila[opIndex]) {
                 m.fila[opIndex].op = document.getElementById('edit-op-num').value;
                 m.fila[opIndex].cliente = document.getElementById('edit-op-cliente').value;
-                m.fila[opIndex].produto = document.getElementById('edit-op-produto').value;
+                m.fila[opIndex].produto = document.getElementById('edit-op-produto').value; // Pega valor do select
                 m.fila[opIndex].qtd = parseInt(document.getElementById('edit-op-qtd').value) || 0;
                 
                 // Salvar Novos Campos
@@ -1394,14 +1533,17 @@
             salvarAutomatico();
         }
 
-        function atualizarDropdownOperadores() {
-            const select = document.getElementById('f-operador');
-            if(select) {
-                select.innerHTML = '<option value="">-- Selecione o Operador --</option>' + 
-                                   operadoresGlobais.map(o => `<option value="${o}">${o}</option>`).join('');
-            }
+        function atualizarDropdowns() {
+            // Operadores
+            const opHtml = '<option value="">-- Selecione o Operador --</option>' + operadoresGlobais.map(o => `<option value="${o}">${o}</option>`).join('');
+            if(document.getElementById('f-operador')) document.getElementById('f-operador').innerHTML = opHtml;
+            
+            // Produtos (NOVO)
+            const prodHtml = '<option value="">-- Selecione o Produto --</option>' + produtosGlobais.map(p => `<option value="${p}">${p}</option>`).join('');
+            if(document.getElementById('f-produto')) document.getElementById('f-produto').innerHTML = prodHtml;
         }
 
+        // CRUD Operadores
         function gerenciarOperador(acao) {
             if(acao === 'add') { 
                 const v = document.getElementById('novo-operador').value.trim(); 
@@ -1411,7 +1553,7 @@
                 }
             }
             renderOperadoresConfig(); 
-            atualizarDropdownOperadores();
+            atualizarDropdowns();
             render();
             salvarAutomatico();
         }
@@ -1419,7 +1561,7 @@
         function deletarOperador(nome) {
             operadoresGlobais = operadoresGlobais.filter(x => x !== nome);
             renderOperadoresConfig();
-            atualizarDropdownOperadores();
+            atualizarDropdowns();
             render();
             salvarAutomatico();
         }
@@ -1430,6 +1572,39 @@
                 <div class="bg-slate-100 px-4 py-2 rounded-xl font-bold flex gap-3 items-center border border-slate-200 shadow-sm">
                     👤 ${o} 
                     <button onclick="deletarOperador('${o}')" class="text-red-500 hover:text-red-700 font-black text-xl leading-none">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        // CRUD Produtos (NOVO)
+        function gerenciarProdutoCatalog(acao) {
+            if(acao === 'add') { 
+                const v = document.getElementById('novo-produto-catalog').value.trim(); 
+                if(v && !produtosGlobais.includes(v)) {
+                    produtosGlobais.push(v); 
+                    document.getElementById('novo-produto-catalog').value = ""; 
+                }
+            }
+            renderProdutosConfig(); 
+            atualizarDropdowns();
+            render();
+            salvarAutomatico();
+        }
+
+        function deletarProdutoCatalog(nome) {
+            produtosGlobais = produtosGlobais.filter(x => x !== nome);
+            renderProdutosConfig();
+            atualizarDropdowns();
+            render();
+            salvarAutomatico();
+        }
+
+        function renderProdutosConfig() {
+            if(usuarioLogado !== 'admin') return;
+            document.getElementById('lista-produtos-config').innerHTML = produtosGlobais.map(p => `
+                <div class="bg-slate-100 px-4 py-2 rounded-xl font-bold flex gap-3 items-center border border-slate-200 shadow-sm">
+                    📦 ${p} 
+                    <button onclick="deletarProdutoCatalog('${p}')" class="text-red-500 hover:text-red-700 font-black text-xl leading-none">&times;</button>
                 </div>
             `).join('');
         }
@@ -1451,7 +1626,7 @@
                     if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(diff)}</span>`;
                     else if (m.status.includes("BAIXA") || m.status.includes("MATERIA")) el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(diff)}</span>`;
                     else if (m.status.includes("SEM")) el.innerHTML = `<span class="text-slate-500 font-black"><i class="fa-solid fa-power-off"></i> SEM PROG: ${fmtTempo(diff)}</span>`;
-                    else if (m.status === "24-PARADA PROGRAMADA") el.innerHTML = `<span class="text-slate-600 font-black"><i class="fa-solid fa-clock"></i> PARADA PROG: ${fmtTempo(diff)}</span>`;
+                    else if (m.status.includes("PARADA PROGRAMADA")) el.innerHTML = `<span class="text-purple-600 font-black"><i class="fa-solid fa-clock"></i> PARADA PROG: ${fmtTempo(diff)}</span>`;
                     else if (m.status.includes("FECHADA")) el.innerHTML = `<span class="text-slate-800 font-black"><i class="fa-solid fa-lock"></i> MÁQUINA DESATIVADA</span>`;
                     else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(diff)}</span>`;
                 }
@@ -1792,7 +1967,7 @@
             m.fila.push({ 
                 op: document.getElementById('f-op').value, 
                 cliente: document.getElementById('f-cliente').value, 
-                produto: document.getElementById('f-produto').value, 
+                produto: document.getElementById('f-produto').value, // PEGA DO SELECT
                 qtd: parseInt(document.getElementById('f-qtd').value) || 0, 
                 
                 // NOVOS CAMPOS
@@ -1824,12 +1999,13 @@
                     maquinas, 
                     cores: coresGlobais, 
                     operadores: operadoresGlobais, 
+                    produtos: produtosGlobais, 
                     historico, 
                     dadosMensais, 
                     modoHoraExtra, 
                     lastUpdateTimestamp: Date.now() 
                 } 
-            }).eq('id', 1); 
+            }).eq('id', 1); // SALVA TUDO
         }
 
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
