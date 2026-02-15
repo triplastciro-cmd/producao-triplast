@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Integrado de Produção (V12)</title>
+    <title>Triplast - Sistema Integrado de Produção (V14)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -15,11 +15,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <style>
-        /* Importação de Fontes */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         
         /* =================================================================
-           ESTILOS GERAIS
+           ESTILOS GERAIS DO SISTEMA
            ================================================================= 
         */
         body { 
@@ -29,10 +28,10 @@
             padding: 0; 
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            padding-bottom: 60px;
+            padding-bottom: 80px; /* Espaço extra no final para mobile */
         }
         
-        /* Transições Suaves para Abas */
+        /* Utilitário para esconder/mostrar Abas com animação */
         .aba-conteudo { 
             display: none !important; 
             animation: fadeIn 0.4s ease-in-out;
@@ -54,19 +53,19 @@
         }
 
         /* =================================================================
-           NOTIFICAÇÕES (TOAST)
+           NOTIFICAÇÕES FLUTUANTES (TOAST)
            ================================================================= 
         */
         #toast-notification {
             position: fixed;
             top: 20px;
             left: 50%;
-            transform: translateX(-50%) translateY(-200%);
-            background-color: #1e293b;
+            transform: translateX(-50%) translateY(-200%); /* Começa escondido */
+            background-color: #1e293b; /* Azul escuro */
             color: white;
             padding: 12px 24px;
             border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -77,29 +76,29 @@
             text-transform: uppercase;
             border: 1px solid #334155;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none;
+            pointer-events: none; /* Não bloqueia cliques quando escondido */
         }
 
         #toast-notification.show {
-            transform: translateX(-50%) translateY(0);
+            transform: translateX(-50%) translateY(0); /* Aparece */
         }
 
         .status-dot {
             width: 10px;
             height: 10px;
-            background-color: #22c55e;
+            background-color: #22c55e; /* Verde sucesso */
             border-radius: 50%;
             box-shadow: 0 0 10px #22c55e;
         }
 
         .status-dot.saving {
-            background-color: #eab308; /* Amarelo */
+            background-color: #eab308; /* Amarelo salvando */
             box-shadow: 0 0 10px #eab308;
             animation: pulse-yellow 1s infinite;
         }
 
         .status-dot.error {
-            background-color: #ef4444; /* Vermelho */
+            background-color: #ef4444; /* Vermelho erro */
             box-shadow: 0 0 10px #ef4444;
         }
 
@@ -110,14 +109,14 @@
         }
 
         /* =================================================================
-           CARDS DE MÁQUINA (PAINEL PRINCIPAL)
+           ESTILO: CARDS DE MÁQUINA (PAINEL PRINCIPAL)
            ================================================================= 
         */
         .card-producao {
             background: white; 
             border-radius: 16px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border-left: 12px solid #ef4444; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-left: 12px solid #ef4444; /* Padrão vermelho */
             transition: all 0.2s ease; 
             position: relative;
             overflow: visible;
@@ -128,7 +127,7 @@
             box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
         }
         
-        /* Cores de Status das Máquinas */
+        /* Variações de cor por status */
         .status-produzindo { 
             border-left-color: #22c55e !important; 
             background-color: #f0fdf4; 
@@ -144,7 +143,6 @@
             background-color: #f8fafc; 
         }
         
-        /* Status Neutro (Fechada ou Parada Programada) */
         .status-fechada { 
             border-left-color: #475569 !important; 
             background-color: #e2e8f0; 
@@ -152,7 +150,7 @@
             opacity: 0.8; 
         }
 
-        /* Badge Informativo dentro do Card */
+        /* Badges de Informação (Meta, Feito, etc) */
         .info-badge {
             background: #f8fafc; 
             padding: 8px 4px; 
@@ -180,7 +178,7 @@
         }
 
         /* =================================================================
-           CARROSSEL HORIZONTAL E ETIQUETAS
+           ESTILO: CARROSSEL HORIZONTAL E ETIQUETAS
            ================================================================= 
         */
         .scrolling-wrapper {
@@ -199,7 +197,7 @@
             cursor: grabbing;
         }
         
-        /* Estilização da Barra de Rolagem Horizontal */
+        /* Barra de rolagem personalizada para o carrossel */
         .scrolling-wrapper::-webkit-scrollbar { 
             height: 10px; 
         }
@@ -219,13 +217,13 @@
             background: #64748b; 
         }
 
-        /* O Cartão de Etiqueta */
+        /* Cartão de Etiqueta (Ficha Técnica) */
         .ticket-card {
             flex: 0 0 auto;
-            width: 320px; 
+            width: 320px; /* Largura fixa boa para celular */
             background: white;
             border: 1px solid #cbd5e1;
-            border-top: 6px solid #3b82f6; 
+            border-top: 6px solid #3b82f6; /* Topo azul */
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             display: flex; 
@@ -271,7 +269,7 @@
             text-align: right; 
         }
 
-        /* Botões Específicos do Carrossel */
+        /* Botões de Mover Fila (Mobile Friendly) */
         .btn-mover {
             width: 32px;
             height: 32px;
@@ -340,7 +338,7 @@
             width: 140px;
         }
 
-        /* Barra de Rolagem Padrão do Sistema */
+        /* Scrollbar Global do Sistema */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -407,7 +405,7 @@
                         <input type="text" id="edit-op-cliente" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm focus:border-blue-500 outline-none" placeholder="Nome do Cliente">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Produto / Peça (Lista)</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Produto (Lista)</label>
                         <select id="edit-op-produto" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 text-sm outline-none focus:border-blue-500">
                             </select>
                     </div>
@@ -470,7 +468,7 @@
         <div id="loading-spinner" class="flex flex-col items-center">
             <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
             <p class="text-slate-400 font-bold text-sm tracking-widest uppercase animate-pulse">Conectando ao banco de dados...</p>
-            <p id="aviso-demora" class="text-yellow-500 text-[10px] mt-4 hidden font-bold">Conexão lenta... Tentando forçar acesso.</p>
+            <p id="aviso-demora" class="text-yellow-500 text-[10px] mt-4 hidden font-bold">Tentando forçar acesso (4s)...</p>
         </div>
 
         <div id="loading-action" class="hidden flex-col items-center text-center px-4">
@@ -486,7 +484,7 @@
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center" style="display: none;">
         <div class="bg-white p-10 rounded-[2rem] shadow-2xl w-96 max-w-[90%] text-center border border-slate-800">
             <h1 class="text-5xl font-black italic tracking-tighter mb-2 text-slate-800">TRI<span class="text-blue-600">PLAST</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 mb-10 uppercase tracking-[0.2em]">Painel de Controle v11.0</p>
+            <p class="text-[10px] font-bold text-slate-400 mb-10 uppercase tracking-[0.2em]">Painel de Controle v14.0</p>
             
             <div class="mb-6 text-left">
                 <label class="text-[10px] font-black text-slate-400 block mb-1 uppercase pl-1">Identificação</label>
@@ -580,7 +578,7 @@
                             class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-600 outline-none focus:border-blue-500 focus:bg-white transition-all">
                     </div>
                     
-                    <button onclick="abrirModalCriacao()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white py-3 px-8 rounded-xl font-black uppercase shadow-lg shadow-blue-500/30 active:scale-95 flex items-center justify-center gap-2 transition-all">
+                    <button onclick="abrirModalCriacao()" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white py-3 px-8 rounded-xl font-black uppercase shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center justify-center gap-2">
                         <i class="fa-solid fa-circle-plus text-xl"></i> Nova Ficha Técnica
                     </button>
                 </div>
@@ -764,8 +762,10 @@
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let operadoresGlobais = ["João", "Maria", "José"]; 
         let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; 
-        let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
         
+        let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
+        const META_HORAS_MENSAL = 1628 * 3600; 
+
         let manualOverride = false;
         let modoHoraExtra = false;
         let saveTimeout = null;
@@ -779,8 +779,8 @@
         let dadosLocaisLastUpdate = 0; 
 
         // UTILS
-        function getBrasiliaDate() {
-            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+        function getBrasiliaDate() { 
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"})); 
         }
 
         function isFimDeSemana(agora) {
@@ -830,10 +830,6 @@
             }
         }
 
-        function hideToast() {
-            document.getElementById('toast-notification').classList.remove('show');
-        }
-
         // --- VACINA DE DADOS (IMPEDE NAN/UNDEFINED) ---
         function sanitizarDados() {
             if(!dadosMensais) dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
@@ -861,42 +857,52 @@
 
         // --- CARREGAMENTO DO BANCO DE DADOS (ROBUSTO) ---
         async function carregarBanco() {
-            try {
-                // Tenta buscar ID 1
+            // Promise Race: Se o DB demorar > 4s, lança erro de timeout
+            const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+            const dbRequest = async () => {
                 let { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
-
-                // Se der erro ou não existir, cria o padrão
                 if (error || !data) {
-                    console.warn("Banco vazio ou erro. Criando padrão...");
-                    const padraoInicial = {
-                        id: 1,
-                        conteudo: {
-                            maquinas: Array.from({length: 12}, (_, i) => ({
-                                id: i+1, nome: `M${i+1}`, status: "22-SEM PROGRAMAÇÃO", 
-                                fila: [], dadosTurno: {1:createZero(),2:createZero(),3:createZero()}, resumoTurno: {1:createZero(),2:createZero(),3:createZero()},
-                                accumulatedStatusTime: 0, lastStatusChange: Date.now()
-                            })),
-                            cores: ["Natural", "Preto", "Branco"],
-                            operadores: ["Operador 1"],
-                            produtos: [],
-                            historico: [],
-                            dadosMensais: { tempoProducaoTotal: 0 },
-                            lastUpdateTimestamp: Date.now()
-                        }
+                    // Auto-Healing: Cria o banco se não existir
+                    const padrao = { 
+                        id: 1, 
+                        conteudo: { 
+                            maquinas: Array.from({length: 12}, (_, i) => ({ 
+                                id: i+1, nome: `M${i+1}`, status: "22-SEM PROGRAMAÇÃO", fila: [], 
+                                dadosTurno: {1:createZero(),2:createZero(),3:createZero()}, 
+                                resumoTurno: {1:createZero(),2:createZero(),3:createZero()}, 
+                                accumulatedStatusTime: 0, lastStatusChange: Date.now() 
+                            })), 
+                            cores: ["Natural", "Preto", "Branco"], 
+                            operadores: ["Operador 1"], 
+                            produtos: [], historico: [], 
+                            dadosMensais: { tempoProducaoTotal: 0 }, 
+                            lastUpdateTimestamp: Date.now() 
+                        } 
                     };
-                    // Upsert garante que cria se não existir
-                    await sb.from('sistema').upsert(padraoInicial);
-                    data = padraoInicial;
+                    await sb.from('sistema').upsert(padrao);
+                    return padrao;
                 }
+                return data;
+            };
 
+            try {
+                const data = await Promise.race([dbRequest(), timeout]);
                 aplicarDados(data.conteudo);
-                finalizarCarregamento();
-                setInterval(sincronizarComServidor, 2000); // Sync rápido (2s)
-
             } catch (err) {
-                console.error("Erro fatal no carregamento:", err);
-                // Força entrada mesmo sem DB após timeout
-                setTimeout(finalizarCarregamento, 1000);
+                console.warn("Modo Offline ativado por demora ou erro:", err);
+                // Carrega dados padrão se falhar
+                aplicarDados({
+                    maquinas: Array.from({length: 12}, (_, i) => ({ id: i+1, nome: `M${i+1}`, status: "22-SEM PROGRAMAÇÃO", fila: [], dadosTurno: {1:createZero(),2:createZero(),3:createZero()}, resumoTurno: {1:createZero(),2:createZero(),3:createZero()}, accumulatedStatusTime: 0, lastStatusChange: Date.now() })),
+                    cores: ["Natural", "Preto", "Branco"],
+                    operadores: ["Operador 1"],
+                    produtos: [], historico: [],
+                    dadosMensais: { tempoProducaoTotal: 0 },
+                    lastUpdateTimestamp: Date.now()
+                });
+            } finally {
+                finalizarCarregamento();
+                // Tenta sincronizar em segundo plano mesmo se falhou o primeiro load
+                setInterval(sincronizarComServidor, 2000);
             }
         }
 
@@ -926,8 +932,10 @@
                 document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 TODAS</option>' + maquinas.map(m => `<option value="${m.id}">🏭 ${m.nome}</option>`).join('');
             }
             
+            sanitizarDados();
             atualizarDropdowns();
             processarTurnoAuto();
+            
             const now = Date.now();
             const secondsPassed = Math.floor((now - dadosLocaisLastUpdate) / 1000);
             if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
@@ -986,12 +994,13 @@
         }
 
         async function salvarAutomatico() {
+            // Delay para não salvar a cada letra digitada
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
                 await forcarSalvarImediato();
                 document.getElementById('status-nuvem').innerText = "☁️";
-            }, 2000); // Delay de 2s para digitação
+            }, 2000); 
         }
 
         // --- AUTH ---
@@ -1495,9 +1504,38 @@
             coresGlobais=coresGlobais.filter(x=>x!==c); renderCoresModal(); forcarSalvarImediato(); 
         }
 
+        function alterarFiltroGrafico(valor) { 
+            filtroGraficoId = valor; 
+            atualizarResumoGlobalNumeros(); 
+            iniciarGraficos(); 
+        }
+
+        function atualizarResumoGlobalNumeros() {
+            if(usuarioLogado !== 'admin') return;
+            const t = document.getElementById('filtro-turno').value;
+            let d = { tp:0, tb:0, pa:0, sp:0 };
+            
+            maquinas.forEach(m => { 
+                if(filtroGraficoId==='todas' || m.id==filtroGraficoId) { 
+                    if(m.resumoTurno[t]) {
+                        d.tp += (m.resumoTurno[t].tempoProducao || 0); 
+                        d.tb += (m.resumoTurno[t].tempoBaixa || 0); 
+                        d.pa += (m.resumoTurno[t].paradas || 0); 
+                        d.sp += (m.resumoTurno[t].tempoSemProg || 0); 
+                    }
+                } 
+            });
+            if(document.getElementById('global-timer-prod')) {
+                document.getElementById('global-timer-prod').innerText = fmtTempo(d.tp); 
+                document.getElementById('global-timer-baixa').innerText = fmtTempo(d.tb);
+                document.getElementById('global-timer-parado').innerText = fmtTempo(d.pa); 
+                document.getElementById('global-timer-semprog').innerText = fmtTempo(d.sp);
+            }
+        }
+
         window.addEventListener('beforeunload', () => { forcarSalvarImediato(); });
         
-        // Start Seguro (Fallback)
+        // Start Seguro (Fallback para evitar tela branca)
         setTimeout(() => { 
             if(document.getElementById('loading-spinner').style.display !== 'none') 
                 document.getElementById('aviso-demora').style.display='block'; 
