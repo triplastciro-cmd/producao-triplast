@@ -37,6 +37,7 @@
         .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
         .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
         .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; }
+        /* Status Fechada e Parada Programada usam o mesmo estilo visual neutro */
         .status-fechada { border-left-color: #475569 !important; background-color: #e2e8f0; filter: grayscale(50%); opacity: 0.9; }
 
         .info-badge {
@@ -393,7 +394,7 @@
                         <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
                         <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl"></select>
                     </div>
-                    <div class="w-full max-w-sm"><canvas id="chartOEE"></canvas></div>
+                    <div class="w-full max-w-md h-80 flex items-center justify-center"><canvas id="chartOEE"></canvas></div>
                     <div class="w-full mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div class="bg-green-50 p-4 rounded-xl border border-green-200">
                             <div class="text-green-600 text-[10px] md:text-xs font-bold uppercase mb-1">PRODUZINDO</div>
@@ -408,7 +409,7 @@
                             <div id="global-timer-parado" class="text-lg md:text-2xl font-black text-red-700">00:00:00</div>
                         </div>
                         <div class="bg-slate-100 p-4 rounded-xl border border-slate-200">
-                            <div class="text-slate-500 text-[10px] md:text-xs font-bold uppercase mb-1">SEM PROG.</div>
+                            <div class="text-slate-500 text-[10px] md:text-xs font-bold uppercase mb-1">SEM PROG. / P. PROG</div>
                             <div id="global-timer-semprog" class="text-lg md:text-2xl font-black text-slate-600">00:00:00</div>
                         </div>
                     </div>
@@ -419,7 +420,7 @@
                         <div class="bg-purple-100 p-2 rounded-lg text-purple-600"><i class="fa-solid fa-business-time"></i></div>
                         <h3 class="font-black text-slate-700 text-lg uppercase">Horas Normais vs. Horas Extras (Mês)</h3>
                     </div>
-                    <div class="w-full h-40">
+                    <div class="w-full h-64">
                          <canvas id="chartHorasExtras"></canvas>
                     </div>
                 </div>
@@ -429,7 +430,9 @@
                         <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-clock"></i></div>
                         <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Paradas (Minutos)</h3>
                     </div>
-                    <canvas id="chartParadas"></canvas>
+                    <div class="h-64">
+                        <canvas id="chartParadas"></canvas>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-3xl shadow-xl">
@@ -437,7 +440,9 @@
                         <div class="bg-red-100 p-2 rounded-lg text-red-600"><i class="fa-solid fa-trash"></i></div>
                         <h3 class="font-black text-slate-700 text-lg uppercase">Ranking de Refugo (Peças)</h3>
                     </div>
-                    <canvas id="chartRefugos"></canvas>
+                    <div class="h-64">
+                        <canvas id="chartRefugos"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -467,7 +472,7 @@
                             <th class="p-4 bg-green-900">T. Prod</th>
                             <th class="p-4 bg-orange-900">T. Baixa</th>
                             <th class="p-4 bg-red-900">T. Parado</th>
-                            <th class="p-4 bg-slate-600">T. Sem Prog</th>
+                            <th class="p-4 bg-slate-600">T. Neutro (Sem Prog/P.Prog)</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-apontamento" class="font-bold text-slate-700 text-xs"></tbody>
@@ -485,12 +490,6 @@
         let historico = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let operadoresGlobais = ["João", "Maria", "José"]; 
-        
-        let resumoGlobal = {
-            1: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 },
-            2: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 },
-            3: { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 }
-        };
         
         let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
         const META_HORAS_MENSAL = 1628 * 3600; 
@@ -528,7 +527,9 @@
             "08-LANCHE", "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INICIO DE PROCESSO", 
             "12-FALTA DE ENERGIA ELÉTRICA", "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", 
             "15-PROBLEMA AR", "16-PROBLEMA CAMARÃ QUENTE", "17-TROCA DE BICO DE INJEÇÃO", 
-            "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA"
+            "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS", 
+            "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", 
+            "24-PARADA PROGRAMADA" 
         ];
         
         const codigosRefugo = ["Falha de injeção", "Arranhão/batido", "Fora de cor", "Peça presa no molde", "Bolha", "Mancha", "Trinca", "Espirro", "Material contaminado", "Outros"];
@@ -546,7 +547,7 @@
                 if(!dadosMensais.tempoHoraExtraTotal) dadosMensais.tempoHoraExtraTotal = 0;
 
                 if(data.conteudo.modoHoraExtra !== undefined) modoHoraExtra = data.conteudo.modoHoraExtra; 
-                if (data.conteudo.resumoGlobal) resumoGlobal = data.conteudo.resumoGlobal;
+                // Removemos o carregamento do resumoGlobal pois agora ele é calculado dinamicamente
 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
@@ -615,7 +616,7 @@
 
         function fazerLogin() {
             const tipo = document.getElementById('login-tipo').value;
-            const senha = document.getElementById('login-senha').value.trim(); // Removido toUpperCase()
+            const senha = document.getElementById('login-senha').value.trim(); 
 
             if (tipo === 'admin') {
                 if (senha === '2026') { 
@@ -627,7 +628,7 @@
                 }
             } else {
                 const indexDaMaquina = maquinas.findIndex(m => m.id == tipo) + 1;
-                const senhaCorretaMaquina = 'm' + indexDaMaquina; // Senha minúscula
+                const senhaCorretaMaquina = 'm' + indexDaMaquina; 
 
                 if (senha === senhaCorretaMaquina) { 
                     usuarioLogado = parseInt(tipo);
@@ -684,11 +685,12 @@
             if ((isFimDeSemana(agora) && !modoHoraExtra) || sistemaPausado) return; 
 
             const t = document.getElementById('filtro-turno').value;
-            let hasProd = false;
-
+            
             maquinas.forEach(m => {
                 if (m.status === "23-EMPRESA FECHADA") return; 
-                if (m.status === "22-SEM PROGRAMAÇÃO") { 
+                
+                // Agrupando SEM PROG e PARADA PROGRAMADA como tempo neutro
+                if (m.status === "22-SEM PROGRAMAÇÃO" || m.status === "24-PARADA PROGRAMADA") { 
                     m.dadosTurno[t].tempoSemProg += segundos; 
                     m.resumoTurno[t].tempoSemProg += segundos; 
                     return; 
@@ -696,14 +698,13 @@
                 
                 if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
                      if (isFimDeSemana(agora) && modoHoraExtra) {
-                         dadosMensais.tempoHoraExtraTotal += secondsPassed;
+                         dadosMensais.tempoHoraExtraTotal += segundos; // Fix: usar segundos, não secondsPassed
                      } else {
-                         dadosMensais.tempoProducaoTotal += secondsPassed;
+                         dadosMensais.tempoProducaoTotal += segundos;
                      }
                 }
 
                 if(m.status === "04-PRODUÇÃO") { 
-                    hasProd = true; 
                     m.dadosTurno[t].tempoProducao += segundos; 
                     m.resumoTurno[t].tempoProducao += segundos; 
                 }
@@ -716,8 +717,7 @@
                     m.resumoTurno[t].paradas += segundos; 
                 }
             });
-
-            if (hasProd) resumoGlobal[t].tempoProducao += segundos;
+            // O resumo global é calculado dinamicamente agora, não precisa somar aqui
         }
 
         function togglePause() {
@@ -725,7 +725,6 @@
             const btn = document.getElementById('btn-pause');
             
             if(sistemaPausado) {
-                // Pausar: Congelar contagem visual
                 maquinas.forEach(m => {
                     if (m.lastStatusChange) {
                         m.accumulatedStatusTime += (Date.now() - m.lastStatusChange);
@@ -737,7 +736,6 @@
                 btn.classList.replace('bg-yellow-500', 'bg-green-500');
                 btn.classList.replace('hover:bg-yellow-400', 'hover:bg-green-400');
             } else {
-                // Retomar: Descongelar
                 maquinas.forEach(m => {
                     m.lastStatusChange = Date.now(); 
                 });
@@ -760,12 +758,10 @@
             modoHoraExtra = !modoHoraExtra;
             
             if(modoHoraExtra) {
-                // LIGOU HORA EXTRA: RETOMAR CONTAGEM DE ONDE PAROU
                 maquinas.forEach(m => {
                     m.lastStatusChange = Date.now(); 
                 });
             } else {
-                // DESLIGOU HORA EXTRA: CONGELAR CONTAGEM
                 maquinas.forEach(m => {
                     if (m.lastStatusChange) {
                         m.accumulatedStatusTime += (Date.now() - m.lastStatusChange);
@@ -816,7 +812,7 @@
                 const badgeAuto = document.getElementById('badge-auto');
                 const ehFds = isFimDeSemana(agora);
 
-                // DETECÇÃO DE MUDANÇA DE ESTADO AUTOMÁTICA (ENTROU NO FIM DE SEMANA)
+                // DETECÇÃO DE MUDANÇA DE ESTADO AUTOMÁTICA
                 if (ehFds && !fdsAtivo && !modoHoraExtra) {
                     fdsAtivo = true;
                     maquinas.forEach(m => {
@@ -827,7 +823,6 @@
                     });
                     salvarAutomatico();
                 } else if (!ehFds && fdsAtivo) {
-                    // SAIU DO FIM DE SEMANA
                     fdsAtivo = false;
                     maquinas.forEach(m => {
                         m.lastStatusChange = Date.now();
@@ -863,7 +858,8 @@
                 maquinas.forEach(m => {
                     if (m.status === "23-EMPRESA FECHADA") return; 
 
-                    if (m.status === "22-SEM PROGRAMAÇÃO") {
+                    // FIX: Parada Programada também congela o OEE (tempo neutro)
+                    if (m.status === "22-SEM PROGRAMAÇÃO" || m.status === "24-PARADA PROGRAMADA") {
                         m.dadosTurno[t].tempoSemProg = (m.dadosTurno[t].tempoSemProg || 0) + 1;
                         m.resumoTurno[t].tempoSemProg = (m.resumoTurno[t].tempoSemProg || 0) + 1;
                         return;
@@ -891,8 +887,6 @@
                         m.resumoTurno[t].paradas++;
                     }
                 });
-
-                if (hasProd) resumoGlobal[t].tempoProducao++;
 
                 if(usuarioLogado !== null) {
                     updateTimersVisualOnly(); 
@@ -959,7 +953,6 @@
                     m.dadosTurno[t] = createZero(); 
                     m.resumoTurno[t] = createZero(); 
                 });
-                resumoGlobal[t] = { tempoProducao: 0, tempoBaixa: 0, paradas: 0, tempoSemProg: 0 };
                 
                 render(); 
                 if(usuarioLogado === 'admin') { renderApontamento(); iniciarGraficos(); }
@@ -1034,7 +1027,7 @@
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
                 else if (m.status === "22-SEM PROGRAMAÇÃO") sClass = "status-sem-prog";
-                else if (m.status === "23-EMPRESA FECHADA") sClass = "status-fechada";
+                else if (m.status === "23-EMPRESA FECHADA" || m.status === "24-PARADA PROGRAMADA") sClass = "status-fechada"; // Mesma cor cinza
 
                 const renderOperador = `
                     <div class="dropdown-container absolute top-3 right-3 z-20">
@@ -1133,7 +1126,7 @@
 
                     <select onchange="atualizarStatus(${m.id}, this.value)" class="w-full p-2 font-bold text-xs border-2 rounded-xl bg-white focus:border-blue-500 mb-2">
                         ${paradasCodigos.map(p => {
-                            let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : (p.includes("SEM PROGRAMAÇÃO") ? "text-slate-400" : (p.includes("EMPRESA FECHADA") ? "text-slate-800 font-black bg-slate-200" : "text-red-600")));
+                            let color = p.includes("BAIXA") ? "text-orange-500" : (p.includes("PRODUÇÃO") ? "text-green-600" : (p.includes("SEM PROGRAMAÇÃO") ? "text-slate-400" : (p.includes("EMPRESA FECHADA") ? "text-slate-800 font-black bg-slate-200" : (p.includes("PARADA PROGRAMADA") ? "text-purple-600 font-bold" : "text-red-600"))));
                             return `<option value="${p}" class="${color}" ${m.status === p ? 'selected' : ''}>${p}</option>`
                         }).join('')}
                     </select>
@@ -1354,6 +1347,7 @@
                     if (m.status === "04-PRODUÇÃO") el.innerHTML = `<span class="text-green-600">PRODUZINDO: ${fmtTempo(diff)}</span>`;
                     else if (m.status.includes("BAIXA") || m.status.includes("MATERIA")) el.innerHTML = `<span class="text-orange-500">BAIXA EFIC.: ${fmtTempo(diff)}</span>`;
                     else if (m.status.includes("SEM")) el.innerHTML = `<span class="text-slate-500 font-black"><i class="fa-solid fa-power-off"></i> SEM PROG: ${fmtTempo(diff)}</span>`;
+                    else if (m.status === "24-PARADA PROGRAMADA") el.innerHTML = `<span class="text-slate-600 font-black"><i class="fa-solid fa-clock"></i> PARADA PROG: ${fmtTempo(diff)}</span>`;
                     else if (m.status.includes("FECHADA")) el.innerHTML = `<span class="text-slate-800 font-black"><i class="fa-solid fa-lock"></i> MÁQUINA DESATIVADA</span>`;
                     else el.innerHTML = `<span class="text-red-600">PARADO: ${fmtTempo(diff)}</span>`;
                 }
@@ -1434,12 +1428,16 @@
             }
         }
 
+        // --- CORREÇÃO DO BUG DOS NÚMEROS: CÁLCULO DINÂMICO ---
         function renderApontamento() {
             if(usuarioLogado !== 'admin') return;
             const filtro = document.getElementById('filtro-resumo').value; 
+            
             document.getElementById('tabela-apontamento').innerHTML = maquinas.map(m => {
                 let d = { boas:0, refugo:0, paradas:0, tempoProducao:0, tempoBaixa:0, tempoSemProg:0 };
+                
                 if (filtro === 'todas') { 
+                    // Soma todos os turnos
                     for(let i=1; i<=3; i++) { 
                         if(m.resumoTurno[i]) { 
                             d.boas += m.resumoTurno[i].boas; 
@@ -1453,6 +1451,7 @@
                 } else if(m.resumoTurno[filtro]) { 
                     d = m.resumoTurno[filtro]; 
                 }
+                
                 const perc = d.boas > 0 ? ((d.refugo/(d.boas+d.refugo))*100).toFixed(1) : 0;
                 return `<tr class="border-b hover:bg-slate-50">
                     <td class="p-4 font-black">${m.nome}</td>
@@ -1481,7 +1480,7 @@
                 if(filtroGraficoId === 'todas' || m.id == filtroGraficoId) { 
                     if(m.status==="04-PRODUÇÃO") s.p++; 
                     else if(m.status.includes("BAIXA")) s.b++; 
-                    else if(m.status.includes("SEM")) s.sp++; 
+                    else if(m.status.includes("SEM") || m.status.includes("PARADA PROGRAMADA")) s.sp++; 
                     else if(!m.status.includes("FECHADA")) s.s++; 
                 } 
             });
@@ -1489,15 +1488,19 @@
             charts.oee = new Chart(document.getElementById('chartOEE'), {
                 type: 'doughnut', 
                 data: { 
-                    labels: ['Produzindo', 'Baixa Efic.', 'Parado', 'Sem Prog.'], 
+                    labels: ['Produzindo', 'Baixa Efic.', 'Parado', 'Neutro'], 
                     datasets: [{ 
                         data: [s.p, s.b, s.s, s.sp], 
-                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#cbd5e1'] 
+                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#cbd5e1'],
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }] 
                 },
                 options: { 
+                    responsive: true,
+                    cutout: '70%', 
                     plugins: { 
-                        legend: {display: false},
+                        legend: { position: 'right', labels: { usePointStyle: true, font: { weight: 'bold' } } },
                         datalabels: {
                             color: '#fff',
                             font: { weight: 'bold', size: 14 },
@@ -1505,6 +1508,7 @@
                                 let sum = 0;
                                 let dataArr = ctx.chart.data.datasets[0].data;
                                 dataArr.map(data => { sum += data; });
+                                if (sum === 0) return '';
                                 let percentage = (value*100 / sum).toFixed(0)+"%";
                                 return value > 0 ? percentage : '';
                             }
@@ -1520,17 +1524,24 @@
                 type: 'bar', 
                 data: { 
                     labels: lbls, 
-                    datasets: [{ label:'Parada', data: mf.map(m=> (m.resumoTurno[t].paradas/60).toFixed(1)), backgroundColor:'#ef4444' }] 
+                    datasets: [{ 
+                        label:'Minutos Parados', 
+                        data: mf.map(m=> (m.resumoTurno[t].paradas/60).toFixed(1)), 
+                        backgroundColor:'#ef4444',
+                        borderRadius: 6
+                    }] 
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
+                        legend: { display: false },
                         datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: Math.round,
+                            anchor: 'end', align: 'top', formatter: Math.round,
                             font: { weight: 'bold' }
                         }
-                    }
+                    },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
 
@@ -1538,16 +1549,23 @@
                 type: 'bar', 
                 data: { 
                     labels: lbls, 
-                    datasets: [{ label:'Refugo', data: mf.map(m=> m.resumoTurno[t].refugo), backgroundColor:'#ef4444' }] 
+                    datasets: [{ 
+                        label:'Peças Refugadas', 
+                        data: mf.map(m=> m.resumoTurno[t].refugo), 
+                        backgroundColor:'#ef4444',
+                        borderRadius: 6
+                    }] 
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
+                        legend: { display: false },
                         datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            font: { weight: 'bold' }
+                            anchor: 'end', align: 'top', font: { weight: 'bold' }
                         }
-                    }
+                    },
+                    scales: { y: { beginAtZero: true } }
                 }
             });
 
@@ -1557,29 +1575,36 @@
             charts.horas = new Chart(document.getElementById('chartHorasExtras'), { 
                 type: 'bar', 
                 data: { 
-                    labels: ['Horas Trabalhadas'], 
+                    labels: ['Acumulado Mensal'], 
                     datasets: [
-                        { label:'Normais', data:[hNormal], backgroundColor:'#3b82f6'}, 
-                        { label:'Extras', data:[hExtra], backgroundColor:'#9333ea'}
+                        { label:'Horas Normais', data:[hNormal], backgroundColor:'#3b82f6', borderRadius: 6}, 
+                        { label:'Horas Extras', data:[hExtra], backgroundColor:'#9333ea', borderRadius: 6}
                     ] 
                 }, 
                 options: { 
                     indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            anchor: 'end',
-                            align: 'right',
-                            font: { weight: 'bold' }
+                            color: 'white',
+                            anchor: 'center',
+                            align: 'center',
+                            font: { weight: 'bold' },
+                            formatter: (v) => v > 0 ? v + 'h' : ''
                         }
                     }
                 } 
             });
         }
 
+        // --- CORREÇÃO DO BUG DOS NÚMEROS: CÁLCULO DINÂMICO ---
         function atualizarResumoGlobalNumeros() {
             if(usuarioLogado !== 'admin') return;
             const t = document.getElementById('filtro-turno').value;
             let d = { tp:0, tb:0, pa:0, sp:0 };
+            
+            // Somamos na hora, sem depender de variável incremental que falha
             maquinas.forEach(m => { 
                 if(filtroGraficoId==='todas' || m.id==filtroGraficoId) { 
                     d.tp+=m.resumoTurno[t].tempoProducao; 
@@ -1666,13 +1691,13 @@
         }
 
         async function salvarGeral() { 
+            // O resumoGlobal não precisa ser salvo pois é calculado on-the-fly, mas salvamos o objeto vazio para manter compatibilidade
             await sb.from('sistema').update({ 
                 conteudo: { 
                     maquinas, 
                     cores: coresGlobais, 
                     operadores: operadoresGlobais, 
                     historico, 
-                    resumoGlobal, 
                     dadosMensais, 
                     modoHoraExtra, 
                     lastUpdateTimestamp: Date.now() 
