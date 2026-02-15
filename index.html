@@ -21,10 +21,18 @@
             padding: 0; 
         }
         
-        .aba-conteudo { display: none !important; }
-        .aba-ativa { display: block !important; }
+        /* Utilitários de Abas */
+        .aba-conteudo { 
+            display: none !important; 
+        }
+        
+        .aba-ativa { 
+            display: block !important; 
+        }
 
-        /* --- CARD DA MÁQUINA (PAINEL) --- */
+        /* ================================================================= */
+        /* ESTILO DOS CARDS DE MÁQUINA (PAINEL) */
+        /* ================================================================= */
         .card-producao {
             background: white; 
             border-radius: 16px; 
@@ -34,11 +42,28 @@
             position: relative;
         }
         
-        .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
-        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
-        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; }
+        .status-produzindo { 
+            border-left-color: #22c55e !important; 
+            background-color: #f0fdf4; 
+        }
+        
+        .status-baixa { 
+            border-left-color: #f97316 !important; 
+            background-color: #fff7ed; 
+        }
+        
+        .status-sem-prog { 
+            border-left-color: #cbd5e1 !important; 
+            background-color: #f8fafc; 
+        }
+        
         /* Status Fechada e Parada Programada usam o mesmo estilo visual neutro */
-        .status-fechada { border-left-color: #475569 !important; background-color: #e2e8f0; filter: grayscale(50%); opacity: 0.9; }
+        .status-fechada { 
+            border-left-color: #475569 !important; 
+            background-color: #e2e8f0; 
+            filter: grayscale(50%); 
+            opacity: 0.9; 
+        }
 
         .info-badge {
             background: #f8fafc; 
@@ -50,18 +75,22 @@
             align-items: center; 
             justify-content: center;
         }
+        
         .info-badge span:first-child { 
             font-size: 0.65rem; 
             font-weight: 800; 
             text-transform: uppercase; 
             margin-bottom: 2px; 
         }
+        
         .info-badge span:last-child { 
             font-weight: 900; 
             line-height: 1; 
         }
 
-        /* --- BOTÕES DE NAVEGAÇÃO --- */
+        /* ================================================================= */
+        /* ESTILO DOS BOTÕES DE NAVEGAÇÃO */
+        /* ================================================================= */
         .tab-btn {
             background: white; 
             padding: 10px 20px; 
@@ -74,6 +103,7 @@
             cursor: pointer; 
             color: #64748b;
         }
+        
         .tab-btn.active { 
             background: #3b82f6; 
             color: white; 
@@ -103,7 +133,9 @@
             width: 150px;
         }
 
-        /* --- NOVO ESTILO: FILA HORIZONTAL (CARROSSEL) --- */
+        /* ================================================================= */
+        /* ESTILO: FILA HORIZONTAL (CARROSSEL) */
+        /* ================================================================= */
         .scrolling-wrapper {
             display: flex;
             flex-wrap: nowrap;
@@ -114,12 +146,27 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        .scrolling-wrapper::-webkit-scrollbar { height: 8px; }
-        .scrolling-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
-        .scrolling-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .scrolling-wrapper::-webkit-scrollbar { 
+            height: 8px; 
+        }
+        
+        .scrolling-wrapper::-webkit-scrollbar-track { 
+            background: #e2e8f0; 
+            border-radius: 4px; 
+        }
+        
+        .scrolling-wrapper::-webkit-scrollbar-thumb { 
+            background: #94a3b8; 
+            border-radius: 4px; 
+        }
+        
+        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { 
+            background: #64748b; 
+        }
 
-        /* --- CARD TIPO ETIQUETA (PEDIDO) --- */
+        /* ================================================================= */
+        /* ESTILO: CARD TIPO ETIQUETA (PEDIDO) */
+        /* ================================================================= */
         .ticket-card {
             flex: 0 0 auto;
             width: 280px;
@@ -143,6 +190,7 @@
             justify-content: space-between; 
             align-items: center; 
         }
+        
         .ticket-label { 
             font-size: 10px; 
             color: #64748b; 
@@ -150,11 +198,13 @@
             text-transform: uppercase; 
             letter-spacing: 0.5px; 
         }
+        
         .ticket-value { 
             font-size: 14px; 
             color: #1e293b; 
             font-weight: 900; 
         }
+        
         .ticket-tag { 
             background: #eff6ff; 
             color: #2563eb; 
@@ -164,9 +214,20 @@
             font-weight: 800; 
         }
 
-        .scrollbar-custom::-webkit-scrollbar { width: 6px; }
-        .scrollbar-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        .scrollbar-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        /* Scrollbar Global Personalizada */
+        .scrollbar-custom::-webkit-scrollbar { 
+            width: 6px; 
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-track { 
+            background: #f1f5f9; 
+            border-radius: 10px; 
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 10px; 
+        }
     </style>
 </head>
 <body onclick="fecharMenusGlobais(event)">
@@ -394,7 +455,9 @@
                         <h3 class="font-black text-slate-700 text-xl">⏱️ STATUS GERAL (REAL TIME)</h3>
                         <select id="filtro-grafico-status" onchange="alterarFiltroGrafico(this.value)" class="mt-2 sm:mt-0 bg-slate-100 border border-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl"></select>
                     </div>
-                    <div class="w-full max-w-md h-80 flex items-center justify-center"><canvas id="chartOEE"></canvas></div>
+                    <div class="w-full max-w-md h-80 flex items-center justify-center">
+                        <canvas id="chartOEE"></canvas>
+                    </div>
                     <div class="w-full mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div class="bg-green-50 p-4 rounded-xl border border-green-200">
                             <div class="text-green-600 text-[10px] md:text-xs font-bold uppercase mb-1">PRODUZINDO</div>
@@ -482,10 +545,12 @@
     </div>
 
     <script>
+        // CONFIGURAÇÕES DO SUPABASE
         const S_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y';
         const sb = window.supabase.createClient(S_URL, S_KEY);
 
+        // VARIÁVEIS GLOBAIS
         let maquinas = [];
         let historico = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
@@ -504,9 +569,9 @@
         let sistemaPausado = false;
         let usuarioLogado = null; 
         
-        // VARIÁVEL DE CONTROLE PARA CONGELAMENTO DE TEMPO
         let fdsAtivo = false;
 
+        // FUNÇÕES AUXILIARES DE TEMPO
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
@@ -521,14 +586,31 @@
             return false;
         }
 
+        // LISTA DE STATUS E REFUGOS
         const paradasCodigos = [
-            "04-PRODUÇÃO", "21-BAIXA EFICIÊNCIA", "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", 
-            "03-MATERIA-PRIMA/ AJUSTE", "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", 
-            "08-LANCHE", "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INICIO DE PROCESSO", 
-            "12-FALTA DE ENERGIA ELÉTRICA", "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", 
-            "15-PROBLEMA AR", "16-PROBLEMA CAMARÃ QUENTE", "17-TROCA DE BICO DE INJEÇÃO", 
-            "18-FALTA DE OPERADOR", "19-ELÉTRICA DE MOLDE", "20-OUTROS", 
-            "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", 
+            "04-PRODUÇÃO", 
+            "21-BAIXA EFICIÊNCIA", 
+            "01-TROCA DE MOLDE", 
+            "02-TROCA DE POSTIÇO", 
+            "03-MATERIA-PRIMA/ AJUSTE", 
+            "05-AQUECIMENTO DE MÁQUINA", 
+            "06-TROCA DE COR", 
+            "07-MANUTENÇÃO GELADEIRA", 
+            "08-LANCHE", 
+            "09-LIMPEZA", 
+            "10-PEÇA PRESA NO MOLDE", 
+            "11-INICIO DE PROCESSO", 
+            "12-FALTA DE ENERGIA ELÉTRICA", 
+            "13-MANUTENÇÃO DE MOLDE", 
+            "14-MANUTENÇÃO DE MÁQUINA", 
+            "15-PROBLEMA AR", 
+            "16-PROBLEMA CAMARÃ QUENTE", 
+            "17-TROCA DE BICO DE INJEÇÃO", 
+            "18-FALTA DE OPERADOR", 
+            "19-ELÉTRICA DE MOLDE", 
+            "20-OUTROS", 
+            "22-SEM PROGRAMAÇÃO", 
+            "23-EMPRESA FECHADA", 
             "24-PARADA PROGRAMADA" 
         ];
         
@@ -536,6 +618,42 @@
 
         function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0, tempoSemProg: 0 }; }
 
+        // ==========================================================
+        //  A VACINA CONTRA BUGS (SANITIZAÇÃO DE DADOS)
+        // ==========================================================
+        function sanitizarDados() {
+            // Se dadosMensais estiver corrompido
+            if(!dadosMensais) dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
+            dadosMensais.tempoProducaoTotal = Number(dadosMensais.tempoProducaoTotal) || 0;
+            dadosMensais.tempoHoraExtraTotal = Number(dadosMensais.tempoHoraExtraTotal) || 0;
+
+            maquinas.forEach(m => {
+                // Se o acumulado estiver bugado
+                m.accumulatedStatusTime = Number(m.accumulatedStatusTime) || 0;
+                
+                // Garante que as estruturas existam
+                if(!m.dadosTurno) m.dadosTurno = {};
+                if(!m.resumoTurno) m.resumoTurno = {};
+
+                [1, 2, 3].forEach(t => {
+                    if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
+                    if(!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
+
+                    // Lista de campos numéricos obrigatórios
+                    const campos = ['boas', 'refugo', 'paradas', 'tempoProducao', 'tempoBaixa', 'tempoSemProg'];
+                    
+                    campos.forEach(campo => {
+                        // FORÇA BRUTA: Se for NaN, null ou undefined, vira 0.
+                        m.dadosTurno[t][campo] = Number(m.dadosTurno[t][campo]) || 0;
+                        m.resumoTurno[t][campo] = Number(m.resumoTurno[t][campo]) || 0;
+                    });
+                });
+            });
+        }
+
+        // ==========================================================
+        //  CARREGAR DADOS DO SUPABASE
+        // ==========================================================
         async function carregarBanco() {
             const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data) {
@@ -544,33 +662,17 @@
                 operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
                 historico = data.conteudo.historico || []; 
                 if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais;
-                if(!dadosMensais.tempoHoraExtraTotal) dadosMensais.tempoHoraExtraTotal = 0;
-
+                
                 if(data.conteudo.modoHoraExtra !== undefined) modoHoraExtra = data.conteudo.modoHoraExtra; 
-                // Removemos o carregamento do resumoGlobal pois agora ele é calculado dinamicamente
 
                 const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
                 
+                // INJETAR A VACINA AQUI
+                sanitizarDados();
+
                 maquinas.forEach(m => {
                     if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
                     if(!m.lastStatusChange) m.lastStatusChange = Date.now(); 
-                    if(!m.accumulatedStatusTime) m.accumulatedStatusTime = 0; 
-
-                    if(!m.dadosTurno) m.dadosTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
-                    if(!m.resumoTurno) m.resumoTurno = { 1: createZero(), 2: createZero(), 3: createZero() };
-
-                    for(let i=1; i<=3; i++) {
-                        if(!m.dadosTurno[i]) m.dadosTurno[i] = createZero();
-                        if(!m.resumoTurno[i]) m.resumoTurno[i] = createZero();
-
-                        if (m.dadosTurno[i].boas > m.resumoTurno[i].boas) m.resumoTurno[i].boas = m.dadosTurno[i].boas;
-                        if (m.dadosTurno[i].refugo > m.resumoTurno[i].refugo) m.resumoTurno[i].refugo = m.dadosTurno[i].refugo;
-                        
-                        if (m.dadosTurno[i].tempoProducao > m.resumoTurno[i].tempoProducao) m.resumoTurno[i].tempoProducao = m.dadosTurno[i].tempoProducao;
-                        if (m.dadosTurno[i].tempoBaixa > m.resumoTurno[i].tempoBaixa) m.resumoTurno[i].tempoBaixa = m.dadosTurno[i].tempoBaixa;
-                        if (m.dadosTurno[i].paradas > m.resumoTurno[i].paradas) m.resumoTurno[i].paradas = m.dadosTurno[i].paradas;
-                        if ((m.dadosTurno[i].tempoSemProg || 0) > (m.resumoTurno[i].tempoSemProg || 0)) m.resumoTurno[i].tempoSemProg = m.dadosTurno[i].tempoSemProg;
-                    }
                 });
                 
                 const selectLogin = document.getElementById('login-tipo');
@@ -628,7 +730,7 @@
                 }
             } else {
                 const indexDaMaquina = maquinas.findIndex(m => m.id == tipo) + 1;
-                const senhaCorretaMaquina = 'm' + indexDaMaquina; 
+                const senhaCorretaMaquina = 'm' + indexDaMaquina; // Senha minúscula
 
                 if (senha === senhaCorretaMaquina) { 
                     usuarioLogado = parseInt(tipo);
@@ -689,7 +791,10 @@
             maquinas.forEach(m => {
                 if (m.status === "23-EMPRESA FECHADA") return; 
                 
-                // Agrupando SEM PROG e PARADA PROGRAMADA como tempo neutro
+                // Proteção contra undefined no loop
+                if (!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
+                if (!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
+
                 if (m.status === "22-SEM PROGRAMAÇÃO" || m.status === "24-PARADA PROGRAMADA") { 
                     m.dadosTurno[t].tempoSemProg += segundos; 
                     m.resumoTurno[t].tempoSemProg += segundos; 
@@ -698,7 +803,7 @@
                 
                 if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
                      if (isFimDeSemana(agora) && modoHoraExtra) {
-                         dadosMensais.tempoHoraExtraTotal += segundos; // Fix: usar segundos, não secondsPassed
+                         dadosMensais.tempoHoraExtraTotal += segundos;
                      } else {
                          dadosMensais.tempoProducaoTotal += segundos;
                      }
@@ -717,7 +822,6 @@
                     m.resumoTurno[t].paradas += segundos; 
                 }
             });
-            // O resumo global é calculado dinamicamente agora, não precisa somar aqui
         }
 
         function togglePause() {
@@ -725,6 +829,7 @@
             const btn = document.getElementById('btn-pause');
             
             if(sistemaPausado) {
+                // Pausar: Congelar contagem visual
                 maquinas.forEach(m => {
                     if (m.lastStatusChange) {
                         m.accumulatedStatusTime += (Date.now() - m.lastStatusChange);
@@ -736,6 +841,7 @@
                 btn.classList.replace('bg-yellow-500', 'bg-green-500');
                 btn.classList.replace('hover:bg-yellow-400', 'hover:bg-green-400');
             } else {
+                // Retomar: Descongelar
                 maquinas.forEach(m => {
                     m.lastStatusChange = Date.now(); 
                 });
@@ -758,10 +864,12 @@
             modoHoraExtra = !modoHoraExtra;
             
             if(modoHoraExtra) {
+                // LIGOU HORA EXTRA: RETOMAR CONTAGEM DE ONDE PAROU
                 maquinas.forEach(m => {
                     m.lastStatusChange = Date.now(); 
                 });
             } else {
+                // DESLIGOU HORA EXTRA: CONGELAR CONTAGEM
                 maquinas.forEach(m => {
                     if (m.lastStatusChange) {
                         m.accumulatedStatusTime += (Date.now() - m.lastStatusChange);
@@ -1017,17 +1125,20 @@
 
             grid.innerHTML = maquinasRender.map(m => {
                 const op = m.fila[0] || { op: '---', produto: 'AGUARDANDO O.P', cliente: '---', qtd: 0, padrao: 1, operador: 'NENHUM' };
-                const d = m.dadosTurno[t]; 
-                const percPerda = (d.refugo > 0 && (d.boas + d.refugo) > 0) ? ((d.refugo / (d.boas + d.refugo)) * 100).toFixed(1) : "0";
-                
+                // PROTEÇÃO AQUI: || 0
+                const d = m.dadosTurno[t] || createZero(); 
+                const boasSafe = d.boas || 0;
+                const refugoSafe = d.refugo || 0;
+
+                const percPerda = (refugoSafe > 0 && (boasSafe + refugoSafe) > 0) ? ((refugoSafe / (boasSafe + refugoSafe)) * 100).toFixed(1) : "0";
                 const meta = op.qtd || 0;
-                const progresso = meta > 0 ? Math.min((d.boas / meta) * 100, 100) : 0;
+                const progresso = meta > 0 ? Math.min((boasSafe / meta) * 100, 100) : 0;
 
                 let sClass = "";
                 if (m.status === "04-PRODUÇÃO") sClass = "status-produzindo";
                 else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") sClass = "status-baixa";
                 else if (m.status === "22-SEM PROGRAMAÇÃO") sClass = "status-sem-prog";
-                else if (m.status === "23-EMPRESA FECHADA" || m.status === "24-PARADA PROGRAMADA") sClass = "status-fechada"; // Mesma cor cinza
+                else if (m.status === "23-EMPRESA FECHADA" || m.status === "24-PARADA PROGRAMADA") sClass = "status-fechada";
 
                 const renderOperador = `
                     <div class="dropdown-container absolute top-3 right-3 z-20">
@@ -1088,11 +1199,11 @@
                             </div>
                             <div class="info-badge border-green-200 bg-green-50">
                                 <span class="text-green-400">FEITO</span>
-                                <span class="text-green-700 text-xl">${d.boas}</span>
+                                <span class="text-green-700 text-xl">${boasSafe}</span>
                             </div>
                             <div class="info-badge">
                                 <span class="text-red-400">REFUGO</span>
-                                <span class="text-red-600 text-lg">${d.refugo}</span>
+                                <span class="text-red-600 text-lg">${refugoSafe}</span>
                             </div>
                             <div class="info-badge">
                                 <span class="text-red-400">PERDA</span>
@@ -1381,8 +1492,9 @@
         function addRefugo(id) { 
             const t = document.getElementById('filtro-turno').value; 
             const maq = maquinas.find(x => x.id === id);
-            maq.dadosTurno[t].refugo += (parseInt(document.getElementById(`qtd-refugo-${id}`).value)||1);
-            maq.resumoTurno[t].refugo += (parseInt(document.getElementById(`qtd-refugo-${id}`).value)||1);
+            const val = parseInt(document.getElementById(`qtd-refugo-${id}`).value)||1;
+            maq.dadosTurno[t].refugo += val;
+            maq.resumoTurno[t].refugo += val;
             document.getElementById(`qtd-refugo-${id}`).value = 1;
             render(); 
             if(usuarioLogado === 'admin') renderApontamento(); 
@@ -1399,7 +1511,7 @@
                         ...op, 
                         data: new Date().toISOString(), 
                         maquina: m.nome, 
-                        qtdFeita: m.dadosTurno[t].boas,
+                        qtdFeita: m.dadosTurno[t].boas || 0,
                         status: 'CONCLUÍDO'
                     });
                 }
@@ -1440,17 +1552,22 @@
                     // Soma todos os turnos
                     for(let i=1; i<=3; i++) { 
                         if(m.resumoTurno[i]) { 
-                            d.boas += m.resumoTurno[i].boas; 
-                            d.refugo += m.resumoTurno[i].refugo; 
-                            d.paradas += m.resumoTurno[i].paradas; 
-                            d.tempoProducao += m.resumoTurno[i].tempoProducao; 
-                            d.tempoBaixa += m.resumoTurno[i].tempoBaixa; 
-                            d.tempoSemProg += m.resumoTurno[i].tempoSemProg; 
+                            // PROTEÇÃO BLINDADA AQUI TAMBÉM
+                            d.boas += (m.resumoTurno[i].boas || 0); 
+                            d.refugo += (m.resumoTurno[i].refugo || 0); 
+                            d.paradas += (m.resumoTurno[i].paradas || 0); 
+                            d.tempoProducao += (m.resumoTurno[i].tempoProducao || 0); 
+                            d.tempoBaixa += (m.resumoTurno[i].tempoBaixa || 0); 
+                            d.tempoSemProg += (m.resumoTurno[i].tempoSemProg || 0); 
                         } 
                     } 
                 } else if(m.resumoTurno[filtro]) { 
                     d = m.resumoTurno[filtro]; 
                 }
+                
+                // Força Zero se for NaN
+                d.boas = d.boas || 0;
+                d.refugo = d.refugo || 0;
                 
                 const perc = d.boas > 0 ? ((d.refugo/(d.boas+d.refugo))*100).toFixed(1) : 0;
                 return `<tr class="border-b hover:bg-slate-50">
@@ -1526,7 +1643,8 @@
                     labels: lbls, 
                     datasets: [{ 
                         label:'Minutos Parados', 
-                        data: mf.map(m=> (m.resumoTurno[t].paradas/60).toFixed(1)), 
+                        // Proteção aqui também
+                        data: mf.map(m=> ((m.resumoTurno[t].paradas || 0)/60).toFixed(1)), 
                         backgroundColor:'#ef4444',
                         borderRadius: 6
                     }] 
@@ -1537,7 +1655,9 @@
                     plugins: {
                         legend: { display: false },
                         datalabels: {
-                            anchor: 'end', align: 'top', formatter: Math.round,
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: Math.round,
                             font: { weight: 'bold' }
                         }
                     },
@@ -1551,7 +1671,7 @@
                     labels: lbls, 
                     datasets: [{ 
                         label:'Peças Refugadas', 
-                        data: mf.map(m=> m.resumoTurno[t].refugo), 
+                        data: mf.map(m=> (m.resumoTurno[t].refugo || 0)), 
                         backgroundColor:'#ef4444',
                         borderRadius: 6
                     }] 
@@ -1562,15 +1682,17 @@
                     plugins: {
                         legend: { display: false },
                         datalabels: {
-                            anchor: 'end', align: 'top', font: { weight: 'bold' }
+                            anchor: 'end',
+                            align: 'top',
+                            font: { weight: 'bold' }
                         }
                     },
                     scales: { y: { beginAtZero: true } }
                 }
             });
 
-            const hNormal = (dadosMensais.tempoProducaoTotal / 3600).toFixed(1);
-            const hExtra = (dadosMensais.tempoHoraExtraTotal / 3600).toFixed(1);
+            const hNormal = ((dadosMensais.tempoProducaoTotal || 0) / 3600).toFixed(1);
+            const hExtra = ((dadosMensais.tempoHoraExtraTotal || 0) / 3600).toFixed(1);
 
             charts.horas = new Chart(document.getElementById('chartHorasExtras'), { 
                 type: 'bar', 
@@ -1598,7 +1720,6 @@
             });
         }
 
-        // --- CORREÇÃO DO BUG DOS NÚMEROS: CÁLCULO DINÂMICO ---
         function atualizarResumoGlobalNumeros() {
             if(usuarioLogado !== 'admin') return;
             const t = document.getElementById('filtro-turno').value;
@@ -1607,10 +1728,13 @@
             // Somamos na hora, sem depender de variável incremental que falha
             maquinas.forEach(m => { 
                 if(filtroGraficoId==='todas' || m.id==filtroGraficoId) { 
-                    d.tp+=m.resumoTurno[t].tempoProducao; 
-                    d.tb+=m.resumoTurno[t].tempoBaixa; 
-                    d.pa+=m.resumoTurno[t].paradas; 
-                    d.sp+=m.resumoTurno[t].tempoSemProg; 
+                    // AQUI ESTAVA O ERRO DE UNDEFINED - CORRIGIDO
+                    if(m.resumoTurno[t]) {
+                        d.tp += (m.resumoTurno[t].tempoProducao || 0); 
+                        d.tb += (m.resumoTurno[t].tempoBaixa || 0); 
+                        d.pa += (m.resumoTurno[t].paradas || 0); 
+                        d.sp += (m.resumoTurno[t].tempoSemProg || 0); 
+                    }
                 } 
             });
             if(document.getElementById('global-timer-prod')) {
@@ -1632,7 +1756,7 @@
         
         function calcEficienciaGlobal() { 
             if(usuarioLogado !== 'admin') return; 
-            const h = (dadosMensais.tempoProducaoTotal + dadosMensais.tempoHoraExtraTotal) / 3600; 
+            const h = ((dadosMensais.tempoProducaoTotal || 0) + (dadosMensais.tempoHoraExtraTotal || 0)) / 3600; 
             document.getElementById('horas-trabalhadas-mes').innerText = h.toFixed(1) + "h"; 
             document.getElementById('meta-global').innerText = ((h / 1628) * 100).toFixed(1) + "%"; 
         }
@@ -1687,11 +1811,11 @@
         async function salvarAutomatico() { 
             document.getElementById('status-nuvem').innerText = "⏳"; 
             if(saveTimeout) clearTimeout(saveTimeout); 
-            saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000); 
+            // Salva e depois sanitiza novamente pra garantir
+            saveTimeout = setTimeout(async () => { sanitizarDados(); await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000); 
         }
 
         async function salvarGeral() { 
-            // O resumoGlobal não precisa ser salvo pois é calculado on-the-fly, mas salvamos o objeto vazio para manter compatibilidade
             await sb.from('sistema').update({ 
                 conteudo: { 
                     maquinas, 
