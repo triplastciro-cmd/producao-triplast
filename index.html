@@ -22,13 +22,8 @@
         }
         
         /* Utilitários de Abas */
-        .aba-conteudo { 
-            display: none !important; 
-        }
-        
-        .aba-ativa { 
-            display: block !important; 
-        }
+        .aba-conteudo { display: none !important; }
+        .aba-ativa { display: block !important; }
 
         /* ================================================================= */
         /* ESTILO DOS CARDS DE MÁQUINA (PAINEL) */
@@ -42,192 +37,79 @@
             position: relative;
         }
         
-        .status-produzindo { 
-            border-left-color: #22c55e !important; 
-            background-color: #f0fdf4; 
-        }
-        
-        .status-baixa { 
-            border-left-color: #f97316 !important; 
-            background-color: #fff7ed; 
-        }
-        
-        .status-sem-prog { 
-            border-left-color: #cbd5e1 !important; 
-            background-color: #f8fafc; 
-        }
-        
-        /* Status Fechada e Parada Programada usam o mesmo estilo visual neutro */
-        .status-fechada { 
-            border-left-color: #475569 !important; 
-            background-color: #e2e8f0; 
-            filter: grayscale(50%); 
-            opacity: 0.9; 
-        }
+        .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
+        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
+        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; }
+        .status-fechada { border-left-color: #475569 !important; background-color: #e2e8f0; filter: grayscale(50%); opacity: 0.9; }
 
         .info-badge {
-            background: #f8fafc; 
-            padding: 6px; 
-            border-radius: 8px; 
-            border: 1px solid #e2e8f0;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
+            background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        
-        .info-badge span:first-child { 
-            font-size: 0.65rem; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            margin-bottom: 2px; 
-        }
-        
-        .info-badge span:last-child { 
-            font-weight: 900; 
-            line-height: 1; 
-        }
+        .info-badge span:first-child { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
+        .info-badge span:last-child { font-weight: 900; line-height: 1; }
 
         /* ================================================================= */
         /* ESTILO DOS BOTÕES DE NAVEGAÇÃO */
         /* ================================================================= */
         .tab-btn {
-            background: white; 
-            padding: 10px 20px; 
-            border-radius: 20px;
-            font-weight: 700; 
-            font-size: 13px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: 0.2s; 
-            border: 2px solid transparent; 
-            cursor: pointer; 
-            color: #64748b;
+            background: white; padding: 10px 20px; border-radius: 20px;
+            font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: 0.2s; border: 2px solid transparent; cursor: pointer; color: #64748b;
         }
-        
-        .tab-btn.active { 
-            background: #3b82f6; 
-            color: white; 
-            border-color: #2563eb; 
-            box-shadow: 0 4px 10px rgba(37,99,235,0.3); 
-        }
+        .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
 
-        header { 
-            background: #1e293b; 
-            color: white; 
-            padding: 20px; 
-            border-radius: 0 0 20px 20px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2); 
-        }
+        header { background: #1e293b; color: white; padding: 20px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
         
         .modal-reset {
-            display: none; 
-            position: absolute; 
-            top: 40px; 
-            right: 10px; 
-            background: white;
-            border: 1px solid #ccc; 
-            padding: 10px; 
-            border-radius: 10px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
-            z-index: 50; 
-            width: 150px;
+            display: none; position: absolute; top: 40px; right: 10px; background: white;
+            border: 1px solid #ccc; padding: 10px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 50; width: 150px;
         }
 
         /* ================================================================= */
         /* ESTILO: FILA HORIZONTAL (CARROSSEL) */
         /* ================================================================= */
         .scrolling-wrapper {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            gap: 16px;
-            padding-bottom: 15px;
-            padding-top: 5px;
-            -webkit-overflow-scrolling: touch;
+            display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 16px;
+            padding-bottom: 15px; padding-top: 5px; -webkit-overflow-scrolling: touch;
         }
         
-        .scrolling-wrapper::-webkit-scrollbar { 
-            height: 8px; 
-        }
-        
-        .scrolling-wrapper::-webkit-scrollbar-track { 
-            background: #e2e8f0; 
-            border-radius: 4px; 
-        }
-        
-        .scrolling-wrapper::-webkit-scrollbar-thumb { 
-            background: #94a3b8; 
-            border-radius: 4px; 
-        }
-        
-        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { 
-            background: #64748b; 
-        }
+        .scrolling-wrapper::-webkit-scrollbar { height: 8px; }
+        .scrolling-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+        .scrolling-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
         /* ================================================================= */
-        /* ESTILO: CARD TIPO ETIQUETA (PEDIDO) */
+        /* ESTILO: NOVA ETIQUETA / FICHA TÉCNICA */
         /* ================================================================= */
         .ticket-card {
             flex: 0 0 auto;
-            width: 280px;
+            width: 320px; /* Mais larga para caber as infos */
             background: white;
-            border: 1px solid #e2e8f0;
-            border-left: 6px solid #3b82f6;
-            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            border-top: 6px solid #3b82f6;
+            border-radius: 8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            padding: 16px;
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-            position: relative;
+            display: flex; flex-direction: column; justify-content: space-between; position: relative;
+            overflow: hidden;
         }
         
         .ticket-header { 
-            border-bottom: 1px dashed #cbd5e1; 
-            padding-bottom: 8px; 
-            margin-bottom: 8px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            background: #f1f5f9; padding: 10px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
         }
         
-        .ticket-label { 
-            font-size: 10px; 
-            color: #64748b; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
+        .ficha-row {
+            display: flex; border-bottom: 1px dashed #e2e8f0; padding: 8px 12px;
+            align-items: center; justify-content: space-between;
         }
-        
-        .ticket-value { 
-            font-size: 14px; 
-            color: #1e293b; 
-            font-weight: 900; 
-        }
-        
-        .ticket-tag { 
-            background: #eff6ff; 
-            color: #2563eb; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            font-size: 10px; 
-            font-weight: 800; 
-        }
+        .ficha-label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
+        .ficha-value { font-size: 12px; color: #0f172a; font-weight: 700; text-align: right; }
 
-        /* Scrollbar Global Personalizada */
-        .scrollbar-custom::-webkit-scrollbar { 
-            width: 6px; 
-        }
-        
-        .scrollbar-custom::-webkit-scrollbar-track { 
-            background: #f1f5f9; 
-            border-radius: 10px; 
-        }
-        
-        .scrollbar-custom::-webkit-scrollbar-thumb { 
-            background: #cbd5e1; 
-            border-radius: 10px; 
-        }
+        /* Scrollbar Global */
+        .scrollbar-custom::-webkit-scrollbar { width: 6px; }
+        .scrollbar-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .scrollbar-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body onclick="fecharMenusGlobais(event)">
@@ -247,31 +129,70 @@
     </div>
 
     <div id="modal-editar-op" class="fixed inset-0 bg-slate-900/80 z-[200] hidden items-center justify-center">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl w-96 max-w-[90%]">
-            <h3 class="font-black text-xl text-slate-800 mb-4 border-b pb-2">✏️ Editar Pedido (Etiqueta)</h3>
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-[500px] max-w-[95%] overflow-y-auto max-h-[90vh]">
+            <h3 class="font-black text-xl text-slate-800 mb-4 border-b pb-2">✏️ Editar Ficha Técnica</h3>
             <input type="hidden" id="edit-maq-id">
             <input type="hidden" id="edit-op-index">
             
             <div class="space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400">NÚMERO O.P</label>
-                    <input type="text" id="edit-op-num" class="w-full p-3 bg-slate-50 border rounded-xl font-bold">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400">NÚMERO O.P</label>
+                        <input type="text" id="edit-op-num" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400">QUANTIDADE META</label>
+                        <input type="number" id="edit-op-qtd" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
+                    </div>
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400">CLIENTE</label>
-                    <input type="text" id="edit-op-cliente" class="w-full p-3 bg-slate-50 border rounded-xl font-bold">
+                    <input type="text" id="edit-op-cliente" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-slate-400">PRODUTO</label>
-                    <input type="text" id="edit-op-produto" class="w-full p-3 bg-slate-50 border rounded-xl font-bold">
+                    <label class="text-[10px] font-bold text-slate-400">NOME DO PRODUTO / PEÇA</label>
+                    <input type="text" id="edit-op-produto" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400">QUANTIDADE META</label>
-                    <input type="number" id="edit-op-qtd" class="w-full p-3 bg-slate-50 border rounded-xl font-bold">
+                
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mt-2">
+                    <p class="text-[10px] font-black text-blue-600 uppercase mb-2">Detalhes da Mistura</p>
+                    <div class="grid grid-cols-2 gap-2">
+                         <div>
+                            <label class="text-[9px] font-bold text-slate-500">MATERIAL</label>
+                            <input type="text" id="edit-op-material" class="w-full p-2 bg-white border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500">QTD MATERIAL</label>
+                            <input type="text" id="edit-op-material-qtd" class="w-full p-2 bg-white border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500">CÓD. PIGMENTO</label>
+                            <input type="text" id="edit-op-pigmento" class="w-full p-2 bg-white border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500">% PIGMENTO</label>
+                            <input type="text" id="edit-op-porcentagem" class="w-full p-2 bg-white border rounded-lg text-sm">
+                        </div>
+                    </div>
                 </div>
+
+                 <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 mt-2">
+                    <p class="text-[10px] font-black text-orange-600 uppercase mb-2">Embalagem</p>
+                    <div class="grid grid-cols-2 gap-2">
+                         <div>
+                            <label class="text-[9px] font-bold text-slate-500">TIPO DE CAIXA</label>
+                            <input type="text" id="edit-op-caixa" class="w-full p-2 bg-white border rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500">TIPO DE SACO</label>
+                            <input type="text" id="edit-op-saco" class="w-full p-2 bg-white border rounded-lg text-sm">
+                        </div>
+                    </div>
+                </div>
+
                 <div>
-                    <label class="text-[10px] font-bold text-slate-400">OPERADOR</label>
-                    <select id="edit-op-operador" class="w-full p-3 bg-slate-50 border rounded-xl font-bold"></select>
+                    <label class="text-[10px] font-bold text-slate-400">OPERADOR DEFINIDO</label>
+                    <select id="edit-op-operador" class="w-full p-2 bg-slate-50 border rounded-xl font-bold"></select>
                 </div>
             </div>
 
@@ -375,7 +296,8 @@
             <div class="max-w-7xl mx-auto grid grid-cols-1 gap-8">
                 
                 <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
-                    <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-blue-600"></i> REGISTRAR NOVA O.P</h2>
+                    <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)</h2>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Máquina</label>
@@ -385,26 +307,65 @@
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Nº O.P</label>
                             <input type="text" id="f-op" placeholder="Ex: 12345" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
-                        <div class="md:col-span-2">
+                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
                             <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
+                         <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
+                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div class="md:col-span-2">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Nome do Produto / Peça</label>
                             <input type="text" id="f-produto" placeholder="Descrição da Peça" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade</label>
-                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
+                            <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Operador</label>
-                            <select id="f-operador" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
+                         <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
+                            <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
                     </div>
-                    <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 hover:shadow-blue-500/30 transition-all active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR NA FILA</button>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <div class="md:col-span-2 flex items-center">
+                            <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Código Pigmento</label>
+                            <input type="text" id="f-pigmento" placeholder="Cód..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Porcentagem (%)</label>
+                            <input type="text" id="f-porcentagem" placeholder="Ex: 2%" class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 bg-orange-50 p-4 rounded-xl border border-orange-100">
+                        <div class="md:col-span-2 flex items-center">
+                            <label class="text-xs font-black text-orange-600 uppercase mr-2"><i class="fa-solid fa-box-open"></i> EMBALAGEM:</label>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Caixa</label>
+                            <input type="text" id="f-caixa" placeholder="Ex: CX Padrão" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Saco Plástico</label>
+                            <input type="text" id="f-saco" placeholder="Ex: 40x60" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Operador Responsável</label>
+                        <select id="f-operador" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
+                    </div>
+
+                    <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 hover:shadow-blue-500/30 transition-all active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR FICHA NA PRODUÇÃO</button>
                 </div>
                 
                 <div id="container-filas" class="space-y-6"></div>
@@ -1250,7 +1211,7 @@
         }
 
         // ==========================================
-        //  NOVA LÓGICA DE FILA HORIZONTAL (ETIQUETAS)
+        //  NOVA LÓGICA DE FILA HORIZONTAL (ETIQUETAS / FICHA TÉCNICA)
         // ==========================================
         function renderListaOPs() {
             if(usuarioLogado !== 'admin') return;
@@ -1258,37 +1219,52 @@
                 const cardsHTML = m.fila.map((op, index) => `
                     <div class="ticket-card group">
                         <div class="ticket-header">
-                            <span class="ticket-tag">${m.nome}</span>
-                            <span class="text-xs font-black text-slate-400">#${index + 1}</span>
-                        </div>
-                        
-                        <div class="space-y-2 mb-4">
                             <div>
-                                <div class="ticket-label">NÚMERO O.P</div>
-                                <div class="ticket-value text-blue-800">${op.op}</div>
+                                <div class="text-[10px] text-slate-400 font-black uppercase">PRODUTO / PEÇA</div>
+                                <div class="text-sm font-black text-slate-800 uppercase leading-tight">${op.produto}</div>
                             </div>
-                            <div>
-                                <div class="ticket-label">CLIENTE</div>
-                                <div class="text-xs font-bold text-slate-600 truncate">${op.cliente || '-'}</div>
-                            </div>
-                            <div>
-                                <div class="ticket-label">PRODUTO</div>
-                                <div class="text-xs font-bold text-slate-600 truncate" title="${op.produto}">${op.produto}</div>
-                            </div>
-                            <div class="flex justify-between">
-                                <div>
-                                    <div class="ticket-label">QUANTIDADE</div>
-                                    <div class="ticket-value">${op.qtd}</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="ticket-label">OPERADOR</div>
-                                    <div class="text-xs font-bold text-slate-700">${op.operador || '---'}</div>
-                                </div>
+                            <div class="text-right">
+                                <div class="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-black">#${index + 1}</div>
                             </div>
                         </div>
 
-                        <div class="flex justify-between items-center border-t border-slate-100 pt-3 mt-auto">
-                            <button onclick="abrirModalEdicao(${m.id}, ${index})" class="text-blue-500 hover:text-blue-700 text-sm font-bold flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                        <div class="flex-1 bg-white">
+                            <div class="ficha-row bg-slate-50">
+                                <span class="ficha-label">O.P NÚMERO</span>
+                                <span class="ficha-value text-lg text-blue-600">${op.op}</span>
+                            </div>
+                            <div class="ficha-row">
+                                <span class="ficha-label">QUANTIDADE</span>
+                                <span class="ficha-value">${op.qtd} PÇS</span>
+                            </div>
+
+                            <div class="px-3 py-1 bg-blue-50/50 mt-1"><span class="text-[9px] font-black text-blue-400 uppercase">MATÉRIA-PRIMA</span></div>
+                            <div class="ficha-row">
+                                <span class="ficha-label">MATERIAL</span>
+                                <span class="ficha-value">${op.material || '-'} <span class="text-[9px] text-slate-400 font-normal">(${op.materialQtd || '-'})</span></span>
+                            </div>
+                             <div class="ficha-row">
+                                <span class="ficha-label">PIGMENTO</span>
+                                <span class="ficha-value">${op.pigmento || '-'}</span>
+                            </div>
+                            <div class="ficha-row">
+                                <span class="ficha-label">PORCENTAGEM</span>
+                                <span class="ficha-value text-red-500">${op.porcentagem || '0%'}</span>
+                            </div>
+
+                             <div class="px-3 py-1 bg-orange-50/50 mt-1"><span class="text-[9px] font-black text-orange-400 uppercase">EMBALAGEM</span></div>
+                             <div class="ficha-row">
+                                <span class="ficha-label">CAIXA</span>
+                                <span class="ficha-value text-[10px]">${op.caixa || '-'}</span>
+                            </div>
+                            <div class="ficha-row border-none">
+                                <span class="ficha-label">SACO</span>
+                                <span class="ficha-value text-[10px]">${op.saco || '-'}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+                            <button onclick="abrirModalEdicao(${m.id}, ${index})" class="text-blue-500 hover:text-blue-700 text-xs font-bold flex items-center gap-1 bg-white border border-blue-200 px-2 py-1 rounded shadow-sm">
                                 <i class="fa-solid fa-pen-to-square"></i> EDITAR
                             </button>
                             
@@ -1305,7 +1281,7 @@
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                     <h3 class="text-lg font-black text-slate-700 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-layer-group text-blue-500"></i> Fila: ${m.nome} 
-                        <span class="text-xs bg-slate-100 px-2 py-1 rounded-full text-slate-500">${m.fila.length} pedidos</span>
+                        <span class="text-xs bg-slate-100 px-2 py-1 rounded-full text-slate-500">${m.fila.length} fichas</span>
                     </h3>
                     <div class="scrolling-wrapper">
                         ${m.fila.length > 0 ? cardsHTML : '<div class="p-6 text-center text-slate-400 text-sm font-bold border-2 border-dashed border-slate-200 rounded-xl w-full">Fila vazia.</div>'}
@@ -1326,6 +1302,14 @@
             document.getElementById('edit-op-cliente').value = op.cliente || '';
             document.getElementById('edit-op-produto').value = op.produto;
             document.getElementById('edit-op-qtd').value = op.qtd;
+
+            // Novos Campos
+            document.getElementById('edit-op-material').value = op.material || '';
+            document.getElementById('edit-op-material-qtd').value = op.materialQtd || '';
+            document.getElementById('edit-op-pigmento').value = op.pigmento || '';
+            document.getElementById('edit-op-porcentagem').value = op.porcentagem || '';
+            document.getElementById('edit-op-caixa').value = op.caixa || '';
+            document.getElementById('edit-op-saco').value = op.saco || '';
             
             const sel = document.getElementById('edit-op-operador');
             sel.innerHTML = '<option value="">-- Selecione --</option>' + operadoresGlobais.map(o => `<option value="${o}" ${o===op.operador?'selected':''}>${o}</option>`).join('');
@@ -1343,6 +1327,15 @@
                 m.fila[opIndex].cliente = document.getElementById('edit-op-cliente').value;
                 m.fila[opIndex].produto = document.getElementById('edit-op-produto').value;
                 m.fila[opIndex].qtd = parseInt(document.getElementById('edit-op-qtd').value) || 0;
+                
+                // Salvar Novos Campos
+                m.fila[opIndex].material = document.getElementById('edit-op-material').value;
+                m.fila[opIndex].materialQtd = document.getElementById('edit-op-material-qtd').value;
+                m.fila[opIndex].pigmento = document.getElementById('edit-op-pigmento').value;
+                m.fila[opIndex].porcentagem = document.getElementById('edit-op-porcentagem').value;
+                m.fila[opIndex].caixa = document.getElementById('edit-op-caixa').value;
+                m.fila[opIndex].saco = document.getElementById('edit-op-saco').value;
+
                 m.fila[opIndex].operador = document.getElementById('edit-op-operador').value;
                 
                 document.getElementById('modal-editar-op').style.display = 'none';
@@ -1795,14 +1788,24 @@
         function adicionarFila() {
             const id = parseInt(document.getElementById('f-maquina').value);
             const m = maquinas.find(x => x.id === id);
+            
             m.fila.push({ 
                 op: document.getElementById('f-op').value, 
                 cliente: document.getElementById('f-cliente').value, 
                 produto: document.getElementById('f-produto').value, 
                 qtd: parseInt(document.getElementById('f-qtd').value) || 0, 
+                
+                // NOVOS CAMPOS
+                material: document.getElementById('f-material').value,
+                materialQtd: document.getElementById('f-material-qtd').value,
+                pigmento: document.getElementById('f-pigmento').value,
+                porcentagem: document.getElementById('f-porcentagem').value,
+                caixa: document.getElementById('f-caixa').value,
+                saco: document.getElementById('f-saco').value,
+
                 operador: document.getElementById('f-operador').value 
             });
-            alert("O.P Agendada!"); 
+            alert("Ficha Técnica Lançada!"); 
             renderListaOPs(); 
             render(); 
             salvarAutomatico();
