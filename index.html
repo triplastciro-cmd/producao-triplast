@@ -22,13 +22,8 @@
         }
         
         /* Utilitários de Abas */
-        .aba-conteudo { 
-            display: none !important; 
-        }
-        
-        .aba-ativa { 
-            display: block !important; 
-        }
+        .aba-conteudo { display: none !important; }
+        .aba-ativa { display: block !important; }
 
         /* ================================================================= */
         /* ESTILO DOS CARDS DE MÁQUINA (PAINEL) */
@@ -42,28 +37,10 @@
             position: relative;
         }
         
-        .status-produzindo { 
-            border-left-color: #22c55e !important; 
-            background-color: #f0fdf4; 
-        }
-        
-        .status-baixa { 
-            border-left-color: #f97316 !important; 
-            background-color: #fff7ed; 
-        }
-        
-        .status-sem-prog { 
-            border-left-color: #cbd5e1 !important; 
-            background-color: #f8fafc; 
-        }
-        
-        /* Status Fechada e Parada Programada usam o mesmo estilo visual neutro */
-        .status-fechada { 
-            border-left-color: #475569 !important; 
-            background-color: #e2e8f0; 
-            filter: grayscale(50%); 
-            opacity: 0.9; 
-        }
+        .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
+        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
+        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; }
+        .status-fechada { border-left-color: #475569 !important; background-color: #e2e8f0; filter: grayscale(50%); opacity: 0.9; }
 
         .info-badge {
             background: #f8fafc; 
@@ -146,30 +123,17 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        .scrolling-wrapper::-webkit-scrollbar { 
-            height: 8px; 
-        }
-        
-        .scrolling-wrapper::-webkit-scrollbar-track { 
-            background: #e2e8f0; 
-            border-radius: 4px; 
-        }
-        
-        .scrolling-wrapper::-webkit-scrollbar-thumb { 
-            background: #94a3b8; 
-            border-radius: 4px; 
-        }
-        
-        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { 
-            background: #64748b; 
-        }
+        .scrolling-wrapper::-webkit-scrollbar { height: 8px; }
+        .scrolling-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+        .scrolling-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
         /* ================================================================= */
         /* ESTILO: NOVA ETIQUETA / FICHA TÉCNICA */
         /* ================================================================= */
         .ticket-card {
             flex: 0 0 auto;
-            width: 320px; /* Largura fixa */
+            width: 320px; 
             background: white;
             border: 1px solid #cbd5e1;
             border-top: 6px solid #3b82f6;
@@ -199,37 +163,31 @@
             justify-content: space-between;
         }
         
-        .ficha-label { 
-            font-size: 10px; 
-            color: #64748b; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-        }
-        
-        .ficha-value { 
-            font-size: 12px; 
-            color: #0f172a; 
-            font-weight: 700; 
-            text-align: right; 
-        }
+        .ficha-label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
+        .ficha-value { font-size: 12px; color: #0f172a; font-weight: 700; text-align: right; }
 
         /* Scrollbar Global */
-        .scrollbar-custom::-webkit-scrollbar { 
-            width: 6px; 
+        .scrollbar-custom::-webkit-scrollbar { width: 6px; }
+        .scrollbar-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .scrollbar-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* ================================================================= */
+        /* ESTILO: NOTIFICAÇÃO TOAST (SALVAMENTO) */
+        /* ================================================================= */
+        #toast-notification {
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 9999;
         }
-        
-        .scrollbar-custom::-webkit-scrollbar-track { 
-            background: #f1f5f9; 
-            border-radius: 10px; 
-        }
-        
-        .scrollbar-custom::-webkit-scrollbar-thumb { 
-            background: #cbd5e1; 
-            border-radius: 10px; 
-        }
+        .toast-show { transform: translate(-50%, 20px) !important; }
+        .toast-hide { transform: translate(-50%, -100px) !important; }
     </style>
 </head>
 <body onclick="fecharMenusGlobais(event)">
+
+    <div id="toast-notification" class="fixed top-0 left-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 toast-hide border border-slate-600">
+        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]"></div>
+        <span class="text-[10px] font-black tracking-widest uppercase" id="toast-msg">DADOS SINCRONIZADOS</span>
+    </div>
 
     <div id="modal-cores" class="fixed inset-0 bg-slate-900/80 z-[150] hidden items-center justify-center">
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-96 max-w-[90%]">
@@ -276,36 +234,18 @@
                 <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mt-2">
                     <p class="text-[10px] font-black text-blue-600 uppercase mb-2">Detalhes da Mistura</p>
                     <div class="grid grid-cols-2 gap-2">
-                         <div>
-                            <label class="text-[9px] font-bold text-slate-500">MATERIAL</label>
-                            <input type="text" id="edit-op-material" class="w-full p-2 bg-white border rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-bold text-slate-500">QTD MATERIAL</label>
-                            <input type="text" id="edit-op-material-qtd" class="w-full p-2 bg-white border rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-bold text-slate-500">CÓD. PIGMENTO</label>
-                            <input type="text" id="edit-op-pigmento" class="w-full p-2 bg-white border rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-bold text-slate-500">% PIGMENTO</label>
-                            <input type="text" id="edit-op-porcentagem" class="w-full p-2 bg-white border rounded-lg text-sm">
-                        </div>
+                         <div><label class="text-[9px] font-bold text-slate-500">MATERIAL</label><input type="text" id="edit-op-material" class="w-full p-2 bg-white border rounded-lg text-sm"></div>
+                         <div><label class="text-[9px] font-bold text-slate-500">QTD MATERIAL</label><input type="text" id="edit-op-material-qtd" class="w-full p-2 bg-white border rounded-lg text-sm"></div>
+                         <div><label class="text-[9px] font-bold text-slate-500">CÓD. PIGMENTO</label><input type="text" id="edit-op-pigmento" class="w-full p-2 bg-white border rounded-lg text-sm"></div>
+                         <div><label class="text-[9px] font-bold text-slate-500">% PIGMENTO</label><input type="text" id="edit-op-porcentagem" class="w-full p-2 bg-white border rounded-lg text-sm"></div>
                     </div>
                 </div>
 
                  <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 mt-2">
                     <p class="text-[10px] font-black text-orange-600 uppercase mb-2">Embalagem</p>
                     <div class="grid grid-cols-2 gap-2">
-                         <div>
-                            <label class="text-[9px] font-bold text-slate-500">TIPO DE CAIXA</label>
-                            <input type="text" id="edit-op-caixa" class="w-full p-2 bg-white border rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="text-[9px] font-bold text-slate-500">TIPO DE SACO</label>
-                            <input type="text" id="edit-op-saco" class="w-full p-2 bg-white border rounded-lg text-sm">
-                        </div>
+                         <div><label class="text-[9px] font-bold text-slate-500">TIPO DE CAIXA</label><input type="text" id="edit-op-caixa" class="w-full p-2 bg-white border rounded-lg text-sm"></div>
+                         <div><label class="text-[9px] font-bold text-slate-500">TIPO DE SACO</label><input type="text" id="edit-op-saco" class="w-full p-2 bg-white border rounded-lg text-sm"></div>
                     </div>
                 </div>
 
@@ -646,7 +586,7 @@
         let historico = [];
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let operadoresGlobais = ["João", "Maria", "José"]; 
-        let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; // LISTA DE PRODUTOS
+        let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; 
         
         let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
         const META_HORAS_MENSAL = 1628 * 3600; 
@@ -661,25 +601,40 @@
         let sistemaPausado = false;
         let usuarioLogado = null; 
         
-        // VARIÁVEL DE CONTROLE PARA CONGELAMENTO DE TEMPO
         let fdsAtivo = false;
+        let dadosLocaisLastUpdate = 0; // Controle de sincronia
 
-        // FUNÇÕES AUXILIARES DE TEMPO
+        // ==========================================================
+        //  FUNÇÕES DE NOTIFICAÇÃO (TOAST)
+        // ==========================================================
+        function showToast(msg) {
+            const t = document.getElementById('toast-notification');
+            const m = document.getElementById('toast-msg');
+            m.innerText = msg;
+            t.classList.remove('toast-hide');
+            t.classList.add('toast-show');
+            setTimeout(() => {
+                t.classList.remove('toast-show');
+                t.classList.add('toast-hide');
+            }, 3000);
+        }
+
+        // ==========================================================
+        //  FUNÇÕES AUXILIARES DE TEMPO E LÓGICA
+        // ==========================================================
         function getBrasiliaDate() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
         }
 
-        // LÓGICA DE FIM DE SEMANA
         function isFimDeSemana(agora) {
             const dia = agora.getDay(); 
             const minDoDia = agora.getHours() * 60 + agora.getMinutes();
-            if (dia === 5 && minDoDia >= 1416) return true; // Sexta depois das 23:36
-            if (dia === 6 || dia === 0) return true; // Sábado e Domingo
-            if (dia === 1 && minDoDia < 300) return true; // Segunda antes das 05:00
+            if (dia === 5 && minDoDia >= 1416) return true; 
+            if (dia === 6 || dia === 0) return true; 
+            if (dia === 1 && minDoDia < 300) return true; 
             return false;
         }
 
-        // LISTA DE STATUS E REFUGOS
         const paradasCodigos = [
             "04-PRODUÇÃO", 
             "21-BAIXA EFICIÊNCIA", 
@@ -711,20 +666,14 @@
 
         function createZero() { return { boas: 0, refugo: 0, paradas: 0, tempoProducao: 0, tempoBaixa: 0, tempoSemProg: 0 }; }
 
-        // ==========================================================
-        //  A VACINA CONTRA BUGS (SANITIZAÇÃO DE DADOS)
-        // ==========================================================
         function sanitizarDados() {
-            // Se dadosMensais estiver corrompido
             if(!dadosMensais) dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
             dadosMensais.tempoProducaoTotal = Number(dadosMensais.tempoProducaoTotal) || 0;
             dadosMensais.tempoHoraExtraTotal = Number(dadosMensais.tempoHoraExtraTotal) || 0;
 
             maquinas.forEach(m => {
-                // Se o acumulado estiver bugado
                 m.accumulatedStatusTime = Number(m.accumulatedStatusTime) || 0;
                 
-                // Garante que as estruturas existam
                 if(!m.dadosTurno) m.dadosTurno = {};
                 if(!m.resumoTurno) m.resumoTurno = {};
 
@@ -732,11 +681,8 @@
                     if(!m.dadosTurno[t]) m.dadosTurno[t] = createZero();
                     if(!m.resumoTurno[t]) m.resumoTurno[t] = createZero();
 
-                    // Lista de campos numéricos obrigatórios
                     const campos = ['boas', 'refugo', 'paradas', 'tempoProducao', 'tempoBaixa', 'tempoSemProg'];
-                    
                     campos.forEach(campo => {
-                        // FORÇA BRUTA: Se for NaN, null ou undefined, vira 0.
                         m.dadosTurno[t][campo] = Number(m.dadosTurno[t][campo]) || 0;
                         m.resumoTurno[t][campo] = Number(m.resumoTurno[t][campo]) || 0;
                     });
@@ -745,56 +691,86 @@
         }
 
         // ==========================================================
-        //  CARREGAR DADOS DO SUPABASE
+        //  BANCO DE DADOS & SINCRONIZAÇÃO EM TEMPO REAL
         // ==========================================================
+        
+        // Função principal de carregamento inicial
         async function carregarBanco() {
             const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
             if (data) {
-                maquinas = data.conteudo.maquinas;
-                coresGlobais = data.conteudo.cores || coresGlobais;
-                operadoresGlobais = data.conteudo.operadores || operadoresGlobais;
-                
-                // CARREGA PRODUTOS
-                if (data.conteudo.produtos) produtosGlobais = data.conteudo.produtos;
-
-                historico = data.conteudo.historico || []; 
-                if(data.conteudo.dadosMensais) dadosMensais = data.conteudo.dadosMensais;
-                
-                if(data.conteudo.modoHoraExtra !== undefined) modoHoraExtra = data.conteudo.modoHoraExtra; 
-
-                const lastSavedTime = data.conteudo.lastUpdateTimestamp || Date.now();
-                
-                // INJETAR A VACINA AQUI
-                sanitizarDados();
-
-                maquinas.forEach(m => {
-                    if(!m.status || m.status === "") m.status = "04-PRODUÇÃO";
-                    if(!m.lastStatusChange) m.lastStatusChange = Date.now(); 
-                });
-                
-                const selectLogin = document.getElementById('login-tipo');
-                selectLogin.innerHTML = '<option value="admin">👨‍💻 Triplast (Administrador)</option>' + 
-                                        maquinas.map(m => `<option value="${m.id}">🏭 TELA DA MÁQUINA: ${m.nome}</option>`).join('');
-
-                document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-                document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 Todas as Máquinas</option>' + maquinas.map(m => `<option value="${m.id}">🏭 ${m.nome}</option>`).join('');
-                
-                processarTurnoAuto();
-                
-                const now = Date.now();
-                const secondsPassed = Math.floor((now - lastSavedTime) / 1000);
-                if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
-
+                aplicarDadosDoServidor(data.conteudo);
                 iniciarRelogio();
-                renderBotaoExtra(); 
-                atualizarDropdowns(); // Agora atualiza operadores e produtos
                 
-                calcEficienciaGlobal();
+                // Iniciar o Loop de Sincronização (Polling)
+                setInterval(sincronizarComServidor, 3000); // Verifica a cada 3 segundos
 
                 document.getElementById('loading-spinner').style.display = 'none';
-                const actionDiv = document.getElementById('loading-action');
-                actionDiv.classList.remove('hidden');
-                actionDiv.classList.add('flex');
+                document.getElementById('loading-action').classList.remove('hidden');
+                document.getElementById('loading-action').classList.add('flex');
+            }
+        }
+
+        function aplicarDadosDoServidor(conteudo) {
+            maquinas = conteudo.maquinas;
+            coresGlobais = conteudo.cores || coresGlobais;
+            operadoresGlobais = conteudo.operadores || operadoresGlobais;
+            if (conteudo.produtos) produtosGlobais = conteudo.produtos;
+            historico = conteudo.historico || []; 
+            if(conteudo.dadosMensais) dadosMensais = conteudo.dadosMensais;
+            if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra; 
+            
+            // Atualiza timestamp local para saber se estamos atualizados
+            dadosLocaisLastUpdate = conteudo.lastUpdateTimestamp || 0;
+
+            sanitizarDados();
+
+            // Configura Selects Iniciais se for a primeira vez ou re-renderização
+            const selectLogin = document.getElementById('login-tipo');
+            if (selectLogin.options.length <= 1) {
+                selectLogin.innerHTML = '<option value="admin">👨‍💻 Triplast (Administrador)</option>' + 
+                                        maquinas.map(m => `<option value="${m.id}">🏭 TELA DA MÁQUINA: ${m.nome}</option>`).join('');
+                document.getElementById('f-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+                document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 Todas as Máquinas</option>' + maquinas.map(m => `<option value="${m.id}">🏭 ${m.nome}</option>`).join('');
+            }
+
+            processarTurnoAuto();
+            const now = Date.now();
+            const secondsPassed = Math.floor((now - dadosLocaisLastUpdate) / 1000);
+            if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
+
+            renderBotaoExtra(); 
+            atualizarDropdowns();
+            calcEficienciaGlobal();
+            
+            // Se já estiver logado, atualiza a tela
+            if (usuarioLogado) {
+                render();
+                if (usuarioLogado === 'admin') {
+                    renderListaOPs();
+                    renderHistorico();
+                    renderApontamento();
+                    iniciarGraficos();
+                }
+            }
+        }
+
+        // Função que roda em background para buscar novidades
+        async function sincronizarComServidor() {
+            // Se o usuário estiver editando algo (modal aberto), não atualiza para não atrapalhar
+            if (document.getElementById('modal-editar-op').style.display === 'flex' || 
+                document.getElementById('modal-cores').style.display === 'flex') {
+                return;
+            }
+
+            const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+            if (data && data.conteudo) {
+                const serverTime = data.conteudo.lastUpdateTimestamp || 0;
+                
+                // Se o servidor tem dados mais novos que os meus (diferença maior que 2s para evitar loop do próprio save)
+                if (serverTime > dadosLocaisLastUpdate + 2000) {
+                    aplicarDadosDoServidor(data.conteudo);
+                    showToast("SISTEMA SINCRONIZADO");
+                }
             }
         }
 
@@ -827,7 +803,7 @@
                 }
             } else {
                 const indexDaMaquina = maquinas.findIndex(m => m.id == tipo) + 1;
-                const senhaCorretaMaquina = 'm' + indexDaMaquina; // Senha minúscula
+                const senhaCorretaMaquina = 'm' + indexDaMaquina; 
 
                 if (senha === senhaCorretaMaquina) { 
                     usuarioLogado = parseInt(tipo);
@@ -1056,6 +1032,7 @@
 
                 processarTurnoAuto();
                 const t = document.getElementById('filtro-turno').value;
+                let hasProd = false;
                 
                 maquinas.forEach(m => {
                     if (m.status === "23-EMPRESA FECHADA") return; 
@@ -1076,6 +1053,7 @@
                     }
 
                     if(m.status === "04-PRODUÇÃO") {
+                        hasProd = true;
                         m.dadosTurno[t].tempoProducao++;
                         m.resumoTurno[t].tempoProducao++;
                     }
@@ -2006,6 +1984,10 @@
                     lastUpdateTimestamp: Date.now() 
                 } 
             }).eq('id', 1); // SALVA TUDO
+            
+            // ATUALIZA TIMESTAMP LOCAL PARA EVITAR AUTO-REFRESH NO PRÓPRIO DISPOSITIVO QUE SALVOU
+            dadosLocaisLastUpdate = Date.now();
+            showToast("DADOS SALVOS");
         }
 
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
