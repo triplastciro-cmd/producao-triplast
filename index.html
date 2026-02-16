@@ -1,5 +1,188 @@
 <!DOCTYPE html>
-Triplast - Monitoramento Completo
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triplast - Monitoramento Completo</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body { 
+            background-color: #eef2f6; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        /* Utilitários de Abas */
+        .aba-conteudo { display: none !important; }
+        .aba-ativa { display: block !important; }
+
+        /* ================================================================= */
+        /* ESTILO DOS CARDS DE MÁQUINA (PAINEL) */
+        /* ================================================================= */
+        .card-producao {
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 12px solid #ef4444; 
+            transition: 0.3s; 
+            position: relative;
+        }
+        
+        .status-produzindo { border-left-color: #22c55e !important; background-color: #f0fdf4; }
+        .status-baixa { border-left-color: #f97316 !important; background-color: #fff7ed; }
+        .status-sem-prog { border-left-color: #cbd5e1 !important; background-color: #f8fafc; }
+        .status-fechada { border-left-color: #475569 !important; background-color: #e2e8f0; filter: grayscale(50%); opacity: 0.9; }
+
+        .info-badge {
+            background: #f8fafc; 
+            padding: 6px; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+        }
+        
+        .info-badge span:first-child { 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            margin-bottom: 2px; 
+        }
+        
+        .info-badge span:last-child { 
+            font-weight: 900; 
+            line-height: 1; 
+        }
+
+        /* ================================================================= */
+        /* ESTILO DOS BOTÕES DE NAVEGAÇÃO */
+        /* ================================================================= */
+        .tab-btn {
+            background: white; 
+            padding: 10px 20px; 
+            border-radius: 20px;
+            font-weight: 700; 
+            font-size: 13px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: 0.2s; 
+            border: 2px solid transparent; 
+            cursor: pointer; 
+            color: #64748b;
+        }
+        
+        .tab-btn.active { 
+            background: #3b82f6; 
+            color: white; 
+            border-color: #2563eb; 
+            box-shadow: 0 4px 10px rgba(37,99,235,0.3); 
+        }
+
+        header { 
+            background: #1e293b; 
+            color: white; 
+            padding: 20px; 
+            border-radius: 0 0 20px 20px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2); 
+        }
+        
+        .modal-reset {
+            display: none; 
+            position: absolute; 
+            top: 40px; 
+            right: 10px; 
+            background: white;
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            border-radius: 10px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            z-index: 50; 
+            width: 150px;
+        }
+
+        /* ================================================================= */
+        /* ESTILO: FILA HORIZONTAL (CARROSSEL) */
+        /* ================================================================= */
+        .scrolling-wrapper {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 16px;
+            padding-bottom: 15px;
+            padding-top: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .scrolling-wrapper::-webkit-scrollbar { height: 8px; }
+        .scrolling-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 4px; }
+        .scrolling-wrapper::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* ================================================================= */
+        /* ESTILO: NOVA ETIQUETA / FICHA TÉCNICA */
+        /* ================================================================= */
+        .ticket-card {
+            flex: 0 0 auto;
+            width: 320px; 
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-top: 6px solid #3b82f6;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ticket-header { 
+            background: #f1f5f9; 
+            padding: 10px; 
+            border-bottom: 1px solid #e2e8f0;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        
+        .ficha-row {
+            display: flex; 
+            border-bottom: 1px dashed #e2e8f0; 
+            padding: 8px 12px;
+            align-items: center; 
+            justify-content: space-between;
+        }
+        
+        .ficha-label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; }
+        .ficha-value { font-size: 12px; color: #0f172a; font-weight: 700; text-align: right; }
+
+        /* Scrollbar Global */
+        .scrollbar-custom::-webkit-scrollbar { width: 6px; }
+        .scrollbar-custom::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .scrollbar-custom::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* ================================================================= */
+        /* ESTILO: NOTIFICAÇÃO TOAST (SALVAMENTO) */
+        /* ================================================================= */
+        #toast-notification {
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 9999;
+        }
+        .toast-show { transform: translate(-50%, 20px) !important; }
+        .toast-hide { transform: translate(-50%, -100px) !important; }
+    </style>
+</head>
+<body onclick="fecharMenusGlobais(event)">
 
     <div id="toast-notification" class="fixed top-0 left-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 toast-hide border border-slate-600">
         <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]"></div>
@@ -1813,3 +1996,5 @@ Triplast - Monitoramento Completo
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
     </script>
+</body>
+</html>
