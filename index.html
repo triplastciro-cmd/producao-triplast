@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Integrado V18 (Completo)</title>
+    <title>Triplast - Sistema Integrado V19 (Gerenciável)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,10 +28,10 @@
             padding-bottom: 100px;
         }
         
-        /* Sistema de Abas (Crítico: display none por padrão, block quando ativa) */
+        /* Utilitários de Abas */
         .aba-conteudo { 
             display: none !important; 
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.4s ease-in-out;
         }
         
         .aba-ativa { 
@@ -150,7 +150,7 @@
         }
 
         /* =================================================================
-           CARROSSEL E ETIQUETAS
+           CARROSSEL (TICKETS)
            ================================================================= 
         */
         .scrolling-wrapper {
@@ -270,6 +270,7 @@
             width: 140px;
         }
 
+        /* Scrollbar Global */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -294,7 +295,7 @@
             </div>
             
             <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 text-xs text-blue-700 font-bold">
-                <i class="fa-solid fa-circle-info mr-1"></i> Adicione ou remova máquinas aqui. A senha será sempre "m" + o ID (Ex: ID 5 = Senha m5).
+                <i class="fa-solid fa-circle-info mr-1"></i> Adicione, remova ou renomeie máquinas. O login é automático (Senha: "m" + ID, ex: m5).
             </div>
 
             <div id="lista-maquinas-config" class="flex-1 overflow-y-auto pr-2 space-y-2 mb-4 custom-scroll">
@@ -436,7 +437,7 @@
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center" style="display: none;">
         <div class="bg-white p-10 rounded-[2rem] shadow-2xl w-96 max-w-[90%] text-center border border-slate-800">
             <h1 class="text-5xl font-black italic tracking-tighter mb-2 text-slate-800">TRI<span class="text-blue-600">PLAST</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 mb-10 uppercase tracking-[0.2em]">Painel de Controle v18.0</p>
+            <p class="text-[10px] font-bold text-slate-400 mb-10 uppercase tracking-[0.2em]">Painel de Controle v19.0</p>
             
             <div class="mb-6 text-left">
                 <label class="text-[10px] font-black text-slate-400 block mb-1 uppercase pl-1">Identificação</label>
@@ -519,7 +520,7 @@
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
             
             <div class="max-w-7xl mx-auto mb-6" id="area-admin-painel">
-                <button onclick="abrirGerenciadorMaquinas()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center gap-2 transition-all">
+                <button onclick="abrirGerenciadorMaquinas()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center gap-2 transition-all w-full md:w-auto justify-center">
                     <i class="fa-solid fa-gears"></i> GERENCIAR MÁQUINAS (ADICIONAR / REMOVER)
                 </button>
             </div>
@@ -765,6 +766,10 @@
             }
         }
 
+        function hideToast() {
+            document.getElementById('toast-notification').classList.remove('show');
+        }
+
         // --- VACINA DE DADOS (IMPEDE NAN/UNDEFINED) ---
         function sanitizarDados() {
             if(!dadosMensais) dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
@@ -797,6 +802,7 @@
                     const padrao = { 
                         id: 1, 
                         conteudo: { 
+                            // AQUI ESTÁ A CORREÇÃO: LENGTH: 4
                             maquinas: Array.from({length: 4}, (_, i) => ({ 
                                 id: i+1, nome: `M${i+1}`, status: "22-SEM PROGRAMAÇÃO", fila: [], 
                                 dadosTurno: {1:createZero(),2:createZero(),3:createZero()}, 
@@ -821,6 +827,7 @@
                 aplicarDados(data.conteudo);
             } catch (err) {
                 console.warn("Modo Offline ativado por demora ou erro:", err);
+                // Carrega dados padrão se falhar (Offline Mode)
                 aplicarDados({
                     maquinas: Array.from({length: 4}, (_, i) => ({ id: i+1, nome: `M${i+1}`, status: "22-SEM PROGRAMAÇÃO", fila: [], dadosTurno: {1:createZero(),2:createZero(),3:createZero()}, resumoTurno: {1:createZero(),2:createZero(),3:createZero()}, accumulatedStatusTime: 0, lastStatusChange: Date.now() })),
                     cores: ["Natural", "Preto", "Branco"],
@@ -881,11 +888,7 @@
 
         // --- SINCRONIZAÇÃO ---
         async function sincronizarComServidor() {
-            if(document.getElementById('modal-editar-op').style.display === 'flex' || 
-               document.getElementById('modal-cores').style.display === 'flex') {
-                return;
-            }
-
+            if(document.getElementById('modal-editar-op').style.display === 'flex' || document.getElementById('modal-cores').style.display === 'flex') return;
             const { data } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
             if (data && data.conteudo) {
                 if ((data.conteudo.lastUpdateTimestamp || 0) > dadosLocaisLastUpdate + 2000) {
@@ -898,30 +901,15 @@
         async function forcarSalvarImediato() {
             if(saveTimeout) clearTimeout(saveTimeout);
             showToast("☁️ ENVIANDO...", "saving");
-            
-            const payload = { 
-                maquinas, cores: coresGlobais, operadores: operadoresGlobais, produtos: produtosGlobais, 
-                historico, dadosMensais, modoHoraExtra, lastUpdateTimestamp: Date.now() 
-            };
-
+            const payload = { maquinas, cores: coresGlobais, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, lastUpdateTimestamp: Date.now() };
             const { error } = await sb.from('sistema').upsert({ id: 1, conteudo: payload });
-
-            if(error) {
-                showToast("ERRO AO SALVAR", "error");
-                console.error(error);
-            } else {
-                dadosLocaisLastUpdate = payload.lastUpdateTimestamp;
-                showToast("SALVO NA NUVEM", "success");
-            }
+            if(error) { showToast("ERRO AO SALVAR", "error"); } else { dadosLocaisLastUpdate = payload.lastUpdateTimestamp; showToast("SALVO NA NUVEM", "success"); }
         }
 
         async function salvarAutomatico() {
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                await forcarSalvarImediato();
-                document.getElementById('status-nuvem').innerText = "☁️";
-            }, 2000); 
+            saveTimeout = setTimeout(async () => { await forcarSalvarImediato(); document.getElementById('status-nuvem').innerText = "☁️"; }, 2000); 
         }
 
         // --- AUTH ---
@@ -929,6 +917,7 @@
         function fazerLogin() { 
             const t = document.getElementById('login-tipo').value; 
             const s = document.getElementById('login-senha').value.trim(); 
+            // LÓGICA DE SENHA MÁQUINA: "m" + ID
             if((t==='admin' && s==='2026') || (t!=='admin' && s === 'm' + t)) { 
                 usuarioLogado = t==='admin'?'admin':parseInt(t); localStorage.setItem('triplast_user', t); iniciarSistema(); 
             } else alert('Senha incorreta!'); 
@@ -938,6 +927,11 @@
         function iniciarSistema() {
             document.getElementById('tela-login').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
+            
+            // GARANTE QUE A ABA ATIVA SEJA VISÍVEL
+            document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.remove('aba-ativa'));
+            document.getElementById('aba-painel').classList.add('aba-ativa');
+            
             if(usuarioLogado !== 'admin') { 
                 ['nav-principal','header-eficiencia','btn-pause','btn-extra', 'area-admin-painel'].forEach(id=>{
                     const el = document.getElementById(id);
@@ -1185,8 +1179,12 @@
         function deletarCor(c) { coresGlobais=coresGlobais.filter(x=>x!==c); renderCoresModal(); forcarSalvarImediato(); }
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
         function atualizarResumoGlobalNumeros() { if(usuarioLogado !== 'admin') return; const t = document.getElementById('filtro-turno').value; let d = { tp:0, tb:0, pa:0, sp:0 }; maquinas.forEach(m => { if(filtroGraficoId==='todas' || m.id==filtroGraficoId) { if(m.resumoTurno[t]) { d.tp += (m.resumoTurno[t].tempoProducao || 0); d.tb += (m.resumoTurno[t].tempoBaixa || 0); d.pa += (m.resumoTurno[t].paradas || 0); d.sp += (m.resumoTurno[t].tempoSemProg || 0); } } }); if(document.getElementById('global-timer-prod')) { document.getElementById('global-timer-prod').innerText = fmtTempo(d.tp); document.getElementById('global-timer-baixa').innerText = fmtTempo(d.tb); document.getElementById('global-timer-parado').innerText = fmtTempo(d.pa); document.getElementById('global-timer-semprog').innerText = fmtTempo(d.sp); } }
-        
-        // --- FUNÇÕES DE NAVEGAÇÃO ENTRE ABAS ---
+        function renderApontamento() { const turno = document.getElementById('filtro-resumo').value; const tBody = document.getElementById('tabela-apontamento'); tBody.innerHTML = maquinas.map(m => { let d = { boas:0, refugo:0, tempoProducao:0, paradas:0, tempoBaixa:0, tempoSemProg:0 }; if(turno === 'todas') { [1,2,3].forEach(t => { d.boas+=m.dadosTurno[t].boas; d.refugo+=m.dadosTurno[t].refugo; d.tempoProducao+=m.dadosTurno[t].tempoProducao; d.paradas+=m.dadosTurno[t].paradas; d.tempoBaixa+=m.dadosTurno[t].tempoBaixa; d.tempoSemProg+=m.dadosTurno[t].tempoSemProg; }); } else { d = m.dadosTurno[turno]; } const perc = d.boas > 0 ? ((d.refugo/(d.boas+d.refugo))*100).toFixed(1) : 0; return `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3 font-bold">${m.nome}</td><td class="p-3 text-xs">${m.fila[0]?.op || '-'}</td><td class="p-3 text-green-600 font-bold text-lg">${d.boas}</td><td class="p-3 text-red-500 font-bold">${d.refugo}</td><td class="p-3 text-red-400 text-xs">${perc}%</td><td class="p-3 text-slate-500 font-mono text-xs bg-green-50">${fmtTempo(d.tempoProducao)}</td><td class="p-3 text-slate-500 font-mono text-xs bg-orange-50">${fmtTempo(d.tempoBaixa)}</td><td class="p-3 text-slate-500 font-mono text-xs bg-red-50">${fmtTempo(d.paradas)}</td><td class="p-3 text-slate-400 font-mono text-xs bg-slate-100">${fmtTempo(d.tempoSemProg)}</td></tr>`; }).join(''); }
+        function calcEficienciaGlobal() { if(usuarioLogado !== 'admin') return; const h = ((dadosMensais.tempoProducaoTotal || 0) + (dadosMensais.tempoHoraExtraTotal || 0)) / 3600; document.getElementById('horas-trabalhadas-mes').innerText = h.toFixed(1) + "h"; document.getElementById('meta-global').innerText = ((h / 1628) * 100).toFixed(1) + "%"; }
+        function limparBuscaHistorico() { document.getElementById('busca-historico-op').value=''; renderHistorico(); }
+        function renderHistorico() { if(usuarioLogado !== 'admin') return; const opFilter = document.getElementById('busca-historico-op').value.toLowerCase(); const filtered = historico.slice().reverse().filter(h => String(h.op).toLowerCase().includes(opFilter)); document.getElementById('lista-historico').innerHTML = filtered.map(h => `<tr class="border-b hover:bg-slate-50"><td class="p-3 text-xs text-slate-500">${new Date(h.data).toLocaleString('pt-BR')}</td><td class="p-3"><span class="text-[9px] font-black px-2 py-1 rounded ${h.status==='CANCELADO'?'bg-red-100 text-red-600':'bg-green-100 text-green-600'}">${h.status||'CONCLUÍDO'}</span></td><td class="p-3 font-bold text-blue-600">${h.maquina}</td><td class="p-3 font-bold">${h.op}</td><td class="p-3 text-xs uppercase">${h.produto}</td><td class="p-3 font-bold">${h.qtdFeita}</td><td class="p-3 text-right text-green-500"><i class="fa-solid fa-check"></i></td></tr>`).join(''); }
+
+        // --- SISTEMA DE ABAS (CRÍTICO) ---
         function trocarAba(id) { 
             // 1. Esconde todas as abas
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa')); 
@@ -1212,9 +1210,16 @@
             if(!ctx || charts.oee) return;
             charts.oee = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels: ['Prod', 'Baixa', 'Parado', 'Neutro'], datasets: [{ data: [0,0,0,1], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#cbd5e1'] }] },
-                options: { responsive: true, cutout: '70%', plugins: { legend: { display: false } } }
+                data: { labels: ['Produzindo', 'Baixa Efic.', 'Parado', 'Neutro'], datasets: [{ data: [0,0,0,1], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#cbd5e1'], borderWidth: 0, hoverOffset: 4 }] },
+                options: { responsive: true, cutout: '70%', plugins: { legend: { display: false }, datalabels: { color: '#fff', font: { weight: 'bold', size: 14 }, formatter: (value, ctx) => { let sum = 0; let dataArr = ctx.chart.data.datasets[0].data; dataArr.map(data => { sum += data; }); if (sum === 0) return ''; let percentage = (value*100 / sum).toFixed(0)+"%"; return value > 0 ? percentage : ''; } } } }
             });
+
+            // Outros gráficos (Barras)
+            if(!charts.paradas) {
+               charts.paradas = new Chart(document.getElementById('chartParadas'), { type: 'bar', data: { labels: [], datasets: [{ label:'Minutos', data: [], backgroundColor:'#ef4444', borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: {display:false} } } });
+               charts.refugos = new Chart(document.getElementById('chartRefugos'), { type: 'bar', data: { labels: [], datasets: [{ label:'Peças', data: [], backgroundColor:'#ef4444', borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: {display:false} } } });
+               charts.horas = new Chart(document.getElementById('chartHorasExtras'), { type: 'bar', data: { labels: ['Mês'], datasets: [{ label:'Normal', data:[0], backgroundColor:'#3b82f6'}, { label:'Extra', data:[0], backgroundColor:'#9333ea'}] }, options: { indexAxis: 'y', responsive: true } });
+            }
         }
 
         window.addEventListener('beforeunload', () => { forcarSalvarImediato(); });
