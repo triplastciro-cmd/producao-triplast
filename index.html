@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Integrado (Gerenciável V17)</title>
+    <title>Triplast - Sistema Integrado V18 (Completo)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,12 +25,13 @@
             padding: 0; 
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            padding-bottom: 80px;
+            padding-bottom: 100px;
         }
         
+        /* Sistema de Abas (Crítico: display none por padrão, block quando ativa) */
         .aba-conteudo { 
             display: none !important; 
-            animation: fadeIn 0.4s ease-in-out;
+            animation: fadeIn 0.3s ease-in-out;
         }
         
         .aba-ativa { 
@@ -43,7 +44,7 @@
         }
 
         /* =================================================================
-           NOTIFICAÇÕES
+           NOTIFICAÇÕES (TOAST)
            ================================================================= 
         */
         #toast-notification {
@@ -149,7 +150,7 @@
         }
 
         /* =================================================================
-           CARROSSEL (TICKETS)
+           CARROSSEL E ETIQUETAS
            ================================================================= 
         */
         .scrolling-wrapper {
@@ -293,7 +294,7 @@
             </div>
             
             <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 text-xs text-blue-700 font-bold">
-                <i class="fa-solid fa-circle-info mr-1"></i> A senha será sempre "m" + o ID da máquina. (Ex: ID 5 = Senha m5).
+                <i class="fa-solid fa-circle-info mr-1"></i> Adicione ou remova máquinas aqui. A senha será sempre "m" + o ID (Ex: ID 5 = Senha m5).
             </div>
 
             <div id="lista-maquinas-config" class="flex-1 overflow-y-auto pr-2 space-y-2 mb-4 custom-scroll">
@@ -435,7 +436,7 @@
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center" style="display: none;">
         <div class="bg-white p-10 rounded-[2rem] shadow-2xl w-96 max-w-[90%] text-center border border-slate-800">
             <h1 class="text-5xl font-black italic tracking-tighter mb-2 text-slate-800">TRI<span class="text-blue-600">PLAST</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 mb-10 uppercase tracking-[0.2em]">Painel de Controle v17.0</p>
+            <p class="text-[10px] font-bold text-slate-400 mb-10 uppercase tracking-[0.2em]">Painel de Controle v18.0</p>
             
             <div class="mb-6 text-left">
                 <label class="text-[10px] font-black text-slate-400 block mb-1 uppercase pl-1">Identificação</label>
@@ -749,18 +750,22 @@
         ];
         const codigosRefugo = ["Falha de injeção", "Arranhão/batido", "Fora de cor", "Peça presa no molde", "Bolha", "Mancha", "Trinca", "Espirro", "Material contaminado", "Outros"];
 
-        // --- SISTEMA DE TOAST ---
+        // --- SISTEMA DE TOAST (NOTIFICAÇÃO INTELIGENTE) ---
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast-notification');
             const m = document.getElementById('toast-msg');
             const d = document.getElementById('toast-dot');
+            
             m.innerText = msg;
             d.className = 'status-dot ' + (type === 'saving' ? 'saving' : (type === 'error' ? 'error' : ''));
+            
             t.classList.add('show');
-            if (type !== 'saving') setTimeout(() => t.classList.remove('show'), 3000);
+            if (type !== 'saving') {
+                setTimeout(() => { t.classList.remove('show'); }, 3000);
+            }
         }
 
-        // --- VACINA DE DADOS ---
+        // --- VACINA DE DADOS (IMPEDE NAN/UNDEFINED) ---
         function sanitizarDados() {
             if(!dadosMensais) dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
             dadosMensais.tempoProducaoTotal = Number(dadosMensais.tempoProducaoTotal) || 0;
@@ -780,13 +785,15 @@
             });
         }
 
-        // --- CARREGAMENTO DO BANCO ---
+        // --- CARREGAMENTO DO BANCO DE DADOS (COM 4 MÁQUINAS) ---
         async function carregarBanco() {
             const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+            
             const dbRequest = async () => {
                 let { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
+                
+                // Se não existir, CRIA O PADRÃO COM 4 MÁQUINAS
                 if (error || !data) {
-                    // CRIA 4 MÁQUINAS SE NÃO EXISTIR
                     const padrao = { 
                         id: 1, 
                         conteudo: { 
@@ -796,7 +803,11 @@
                                 resumoTurno: {1:createZero(),2:createZero(),3:createZero()}, 
                                 accumulatedStatusTime: 0, lastStatusChange: Date.now() 
                             })), 
-                            cores: ["Natural", "Preto", "Branco"], operadores: ["Operador 1"], produtos: [], historico: [], dadosMensais: { tempoProducaoTotal: 0 }, lastUpdateTimestamp: Date.now() 
+                            cores: ["Natural", "Preto", "Branco"], 
+                            operadores: ["Operador 1"], 
+                            produtos: [], historico: [], 
+                            dadosMensais: { tempoProducaoTotal: 0 }, 
+                            lastUpdateTimestamp: Date.now() 
                         } 
                     };
                     await sb.from('sistema').upsert(padrao);
@@ -809,10 +820,14 @@
                 const data = await Promise.race([dbRequest(), timeout]);
                 aplicarDados(data.conteudo);
             } catch (err) {
-                console.warn("Modo Offline ativado:", err);
+                console.warn("Modo Offline ativado por demora ou erro:", err);
                 aplicarDados({
                     maquinas: Array.from({length: 4}, (_, i) => ({ id: i+1, nome: `M${i+1}`, status: "22-SEM PROGRAMAÇÃO", fila: [], dadosTurno: {1:createZero(),2:createZero(),3:createZero()}, resumoTurno: {1:createZero(),2:createZero(),3:createZero()}, accumulatedStatusTime: 0, lastStatusChange: Date.now() })),
-                    cores: ["Natural", "Preto", "Branco"], operadores: ["Operador 1"], produtos: [], historico: [], dadosMensais: { tempoProducaoTotal: 0 }, lastUpdateTimestamp: Date.now()
+                    cores: ["Natural", "Preto", "Branco"],
+                    operadores: ["Operador 1"],
+                    produtos: [], historico: [],
+                    dadosMensais: { tempoProducaoTotal: 0 },
+                    lastUpdateTimestamp: Date.now()
                 });
             } finally {
                 finalizarCarregamento();
@@ -837,9 +852,10 @@
             modoHoraExtra = conteudo.modoHoraExtra || false;
             dadosLocaisLastUpdate = conteudo.lastUpdateTimestamp || 0;
 
-            const sel = document.getElementById('login-tipo');
-            // Reconstroi login se mudar máquinas
-            sel.innerHTML = '<option value="admin">👨‍💻 ADMINISTRADOR (GERAL)</option>' + maquinas.map(m => `<option value="${m.id}">🏭 TELA: ${m.nome}</option>`).join('');
+            // Preenche selects se estiver vazio
+            const selLogin = document.getElementById('login-tipo');
+            selLogin.innerHTML = '<option value="admin">👨‍💻 ADMINISTRADOR (GERAL)</option>' + 
+                                    maquinas.map(m => `<option value="${m.id}">🏭 TELA: ${m.nome}</option>`).join('');
             
             document.getElementById('edit-op-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
             document.getElementById('filtro-grafico-status').innerHTML = '<option value="todas">🏭 TODAS</option>' + maquinas.map(m => `<option value="${m.id}">🏭 ${m.nome}</option>`).join('');
@@ -852,11 +868,24 @@
             if (secondsPassed > 0 && secondsPassed < 86400) compensarTempoOffline(secondsPassed);
             renderBotaoExtra(); 
             calcEficienciaGlobal();
-            if(usuarioLogado) { render(); if(usuarioLogado === 'admin') { renderListaOPs(); renderApontamento(); } updateTimersVisualOnly(); }
+            
+            if(usuarioLogado) {
+                render();
+                if(usuarioLogado === 'admin') {
+                    renderListaOPs();
+                    renderApontamento();
+                }
+                updateTimersVisualOnly();
+            }
         }
 
+        // --- SINCRONIZAÇÃO ---
         async function sincronizarComServidor() {
-            if(document.getElementById('modal-editar-op').style.display === 'flex' || document.getElementById('modal-cores').style.display === 'flex') return;
+            if(document.getElementById('modal-editar-op').style.display === 'flex' || 
+               document.getElementById('modal-cores').style.display === 'flex') {
+                return;
+            }
+
             const { data } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
             if (data && data.conteudo) {
                 if ((data.conteudo.lastUpdateTimestamp || 0) > dadosLocaisLastUpdate + 2000) {
@@ -869,15 +898,30 @@
         async function forcarSalvarImediato() {
             if(saveTimeout) clearTimeout(saveTimeout);
             showToast("☁️ ENVIANDO...", "saving");
-            const payload = { maquinas, cores: coresGlobais, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, lastUpdateTimestamp: Date.now() };
+            
+            const payload = { 
+                maquinas, cores: coresGlobais, operadores: operadoresGlobais, produtos: produtosGlobais, 
+                historico, dadosMensais, modoHoraExtra, lastUpdateTimestamp: Date.now() 
+            };
+
             const { error } = await sb.from('sistema').upsert({ id: 1, conteudo: payload });
-            if(error) { showToast("ERRO AO SALVAR", "error"); } else { dadosLocaisLastUpdate = payload.lastUpdateTimestamp; showToast("SALVO NA NUVEM", "success"); }
+
+            if(error) {
+                showToast("ERRO AO SALVAR", "error");
+                console.error(error);
+            } else {
+                dadosLocaisLastUpdate = payload.lastUpdateTimestamp;
+                showToast("SALVO NA NUVEM", "success");
+            }
         }
 
         async function salvarAutomatico() {
             document.getElementById('status-nuvem').innerText = "⏳";
             if(saveTimeout) clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => { await forcarSalvarImediato(); document.getElementById('status-nuvem').innerText = "☁️"; }, 2000); 
+            saveTimeout = setTimeout(async () => {
+                await forcarSalvarImediato();
+                document.getElementById('status-nuvem').innerText = "☁️";
+            }, 2000); 
         }
 
         // --- AUTH ---
@@ -885,7 +929,6 @@
         function fazerLogin() { 
             const t = document.getElementById('login-tipo').value; 
             const s = document.getElementById('login-senha').value.trim(); 
-            // LÓGICA DE SENHA MÁQUINA: "m" + ID
             if((t==='admin' && s==='2026') || (t!=='admin' && s === 'm' + t)) { 
                 usuarioLogado = t==='admin'?'admin':parseInt(t); localStorage.setItem('triplast_user', t); iniciarSistema(); 
             } else alert('Senha incorreta!'); 
@@ -909,7 +952,7 @@
             render(); 
         }
 
-        // --- GERENCIADOR DE MÁQUINAS ---
+        // --- GERENCIADOR DE MÁQUINAS (NOVO) ---
         function abrirGerenciadorMaquinas() {
             document.getElementById('modal-gerenciar-maquinas').style.display = 'flex';
             renderListaMaquinasConfig();
@@ -942,11 +985,11 @@
             });
             renderListaMaquinasConfig();
             forcarSalvarImediato();
-            // Atualiza tela principal se necessário
             if(usuarioLogado === 'admin') {
                 render();
-                const sel = document.getElementById('login-tipo');
-                sel.innerHTML = '<option value="admin">👨‍💻 ADMINISTRADOR (GERAL)</option>' + maquinas.map(m => `<option value="${m.id}">🏭 TELA: ${m.nome}</option>`).join('');
+                // Atualiza Selects
+                document.getElementById('login-tipo').innerHTML = '<option value="admin">👨‍💻 ADMINISTRADOR (GERAL)</option>' + maquinas.map(m => `<option value="${m.id}">🏭 TELA: ${m.nome}</option>`).join('');
+                document.getElementById('edit-op-maquina').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
             }
         }
 
@@ -1142,6 +1185,37 @@
         function deletarCor(c) { coresGlobais=coresGlobais.filter(x=>x!==c); renderCoresModal(); forcarSalvarImediato(); }
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
         function atualizarResumoGlobalNumeros() { if(usuarioLogado !== 'admin') return; const t = document.getElementById('filtro-turno').value; let d = { tp:0, tb:0, pa:0, sp:0 }; maquinas.forEach(m => { if(filtroGraficoId==='todas' || m.id==filtroGraficoId) { if(m.resumoTurno[t]) { d.tp += (m.resumoTurno[t].tempoProducao || 0); d.tb += (m.resumoTurno[t].tempoBaixa || 0); d.pa += (m.resumoTurno[t].paradas || 0); d.sp += (m.resumoTurno[t].tempoSemProg || 0); } } }); if(document.getElementById('global-timer-prod')) { document.getElementById('global-timer-prod').innerText = fmtTempo(d.tp); document.getElementById('global-timer-baixa').innerText = fmtTempo(d.tb); document.getElementById('global-timer-parado').innerText = fmtTempo(d.pa); document.getElementById('global-timer-semprog').innerText = fmtTempo(d.sp); } }
+        
+        // --- FUNÇÕES DE NAVEGAÇÃO ENTRE ABAS ---
+        function trocarAba(id) { 
+            // 1. Esconde todas as abas
+            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa')); 
+            
+            // 2. Tira o destaque de todos os botões
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+            
+            // 3. Mostra a aba clicada
+            document.getElementById('aba-' + id).classList.add('aba-ativa'); 
+            
+            // 4. Destaca o botão clicado
+            document.getElementById('btn-' + id).classList.add('active'); 
+            
+            // 5. Carrega conteúdo específico se necessário
+            if(id==='lista') { renderListaOPs(); }
+            if(id==='graficos') { iniciarGraficos(); }
+            if(id==='apontamento') { renderApontamento(); }
+        }
+
+        // --- CHART.JS ---
+        function iniciarGraficos() {
+            const ctx = document.getElementById('chartOEE');
+            if(!ctx || charts.oee) return;
+            charts.oee = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: ['Prod', 'Baixa', 'Parado', 'Neutro'], datasets: [{ data: [0,0,0,1], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#cbd5e1'] }] },
+                options: { responsive: true, cutout: '70%', plugins: { legend: { display: false } } }
+            });
+        }
 
         window.addEventListener('beforeunload', () => { forcarSalvarImediato(); });
         setTimeout(() => { if(document.getElementById('loading-spinner').style.display !== 'none') document.getElementById('aviso-demora').style.display='block'; }, 4000);
