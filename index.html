@@ -2045,62 +2045,82 @@
     </script>
 
         <script>
-// === FUNÇÃO DE CÁLCULO DE INSUMOS (Versão Final) ===
+// === FUNÇÃO DE CÁLCULO (AJUSTADA CONFORME FÁBRICA) ===
 function calcularPrevisao() {
     try {
-        // 1. Pega os dados
+        // --- 1. PEGAR OS VALORES DA TELA ---
         let elQtd = document.getElementById('f-qtd');
-        let qtdPecas = elQtd ? parseFloat(elQtd.value) : 0; // Meta
+        let qtdMeta = elQtd ? parseFloat(elQtd.value) : 0; // Quantidade de peças
 
-        let pesoPecaGramas = parseFloat(document.getElementById('tec-peso').value) || 0;       
-        let cicloSegundos = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
+        let pesoPeca = parseFloat(document.getElementById('tec-peso').value) || 0; // Em gramas      
+        let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
         let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
-        let porcentagemPigmento = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
+        let porcPigmento = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
-        // Se faltar dados, limpa os campos de resultado
-        if (!qtdPecas || !pesoPecaGramas) {
+        // Se não tiver meta ou peso, zera tudo
+        if (!qtdMeta || !pesoPeca) {
             document.getElementById('out-tempo').innerText = "-";
             document.getElementById('out-material').innerText = "-";
             document.getElementById('out-pigmento').innerText = "-";
             return;
         }
 
-        // === CÁLCULO 1: PESO TOTAL DO MATERIAL (KG) ===
-        // (Quantidade * Peso unitário) / 1000
-        let pesoTotalMaterialKg = (qtdPecas * pesoPecaGramas) / 1000;
+        // --- 2. CÁLCULO DO MATERIAL (O "PESO") ---
+        // Fórmula: (Quantidade de Peças * Peso de uma Peça) / 1000
+        // Ex: 5000 peças * 20g = 100.000g = 100kg
+        let pesoTotalMaterialKg = (qtdMeta * pesoPeca) / 1000;
 
-        // === CÁLCULO 2: PESO DO PIGMENTO (KG) ===
-        // A porcentagem é calculada sobre o PESO DO MATERIAL
-        let pesoTotalPigmentoKg = pesoTotalMaterialKg * (porcentagemPigmento / 100);
+        // --- 3. CÁLCULO DO PIGMENTO (CORRIGIDO) ---
+        // Se o pai disse "Dividido por 2%", matematicamente ele quer extrair a porcentagem.
+        // Fórmula Fábrica: Peso Material * (Porcentagem / 100)
+        // Ex: 100kg * (2 / 100) = 2kg.
+        
+        let pesoTotalPigmentoKg = 0;
+        
+        // Proteção: Se o usuário digitar "0.02" achando que é decimal, ou "2" achando que é porcentagem
+        if (porcPigmento < 1 && porcPigmento > 0) {
+            // Se digitou tipo 0.02, o sistema entende que já dividiu
+            pesoTotalPigmentoKg = pesoTotalMaterialKg * porcPigmento;
+        } else {
+            // Se digitou 2, o sistema divide por 100 (Padrão)
+            pesoTotalPigmentoKg = pesoTotalMaterialKg * (porcPigmento / 100);
+        }
 
-        // === CÁLCULO 3: TEMPO ESTIMADO ===
-        let totalCiclos = qtdPecas / cavidades;
-        let totalSegundos = totalCiclos * cicloSegundos;
+        // --- 4. CÁLCULO DO TEMPO ---
+        let totalCiclos = qtdMeta / cavidades;
+        let totalSegundos = totalCiclos * ciclo;
         let totalHoras = totalSegundos / 3600;
 
-        // Formatação de Horas (00h 00m)
         let h = Math.floor(totalHoras);
         let m = Math.round((totalHoras - h) * 60);
-        let textoTempo = (cicloSegundos > 0) ? `${h}h ${m}m` : "-";
+        let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
 
-        // === EXIBIR RESULTADOS NA TELA ===
+        // --- 5. EXIBIR RESULTADOS (COM FORMATAÇÃO INTELIGENTE) ---
         document.getElementById('out-tempo').innerText = textoTempo;
         document.getElementById('out-material').innerText = pesoTotalMaterialKg.toFixed(2) + " kg";
-        document.getElementById('out-pigmento').innerText = pesoTotalPigmentoKg.toFixed(3) + " kg";
+        
+        // Se der menos de 1kg de pigmento, mostra em gramas pra não confundir (ex: 0.400kg vira 400g)
+        if (pesoTotalPigmentoKg < 1) {
+            let gramas = pesoTotalPigmentoKg * 1000;
+            document.getElementById('out-pigmento').innerText = gramas.toFixed(0) + " g";
+        } else {
+            document.getElementById('out-pigmento').innerText = pesoTotalPigmentoKg.toFixed(2) + " kg";
+        }
 
-        // Preenche também os campos do formulário original para agilizar
+        // Preenche os campos do formulário original também
         let campoMatOriginal = document.getElementById('f-material-qtd');
         if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterialKg.toFixed(2) + " kg";
         
         let campoPorcOriginal = document.getElementById('f-porcentagem');
-        if(campoPorcOriginal) campoPorcOriginal.value = porcentagemPigmento + "%";
+        if(campoPorcOriginal) campoPorcOriginal.value = porcPigmento + "%";
 
-    } catch (erro) {
-        console.log("Aguardando preenchimento completo...");
+    } catch (e) {
+        console.log("Calculando...", e);
     }
 }
 </script>
         
 </body>
 </html>
+
 
