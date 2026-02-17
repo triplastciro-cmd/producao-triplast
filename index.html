@@ -3,242 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast Cloud | Industrial ERP</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>TRIPLAST | Sistema de Produção</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-        :root { --primary: #2563eb; --dark: #0f172a; }
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
         
-        .sidebar-btn { transition: 0.3s; border-radius: 12px; display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; font-weight: 600; color: #64748b; }
+        /* Sidebar e Layout */
+        .sidebar-btn { transition: 0.2s; border-radius: 8px; display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; font-weight: 600; color: #94a3b8; cursor: pointer; text-align: left; }
         .sidebar-btn:hover { background: #e2e8f0; color: var(--primary); }
-        .sidebar-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        .sidebar-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3); }
         
-        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section { display: none; height: 100%; overflow-y: auto; padding-bottom: 80px; animation: fadeIn 0.3s ease; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Estilo Vidro (Glassmorphism) */
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        /* Estilos Especiais */
+        .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .kiosk-mode { position: fixed; inset: 0; z-index: 50; background: #f1f5f9; padding: 20px; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="flex">
+<body class="flex text-slate-800">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex items-center justify-center p-4">
-        <div class="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md text-center">
-            <div class="w-20 h-20 bg-blue-600 rounded-3xl mx-auto mb-6 flex items-center justify-center text-white text-4xl shadow-lg shadow-blue-500/30">
-                <i class="fa-solid fa-industry"></i>
-            </div>
-            <h1 class="text-4xl font-extrabold text-slate-800 mb-2 italic tracking-tighter">TRIPLAST</h1>
-            <p class="text-slate-400 font-bold mb-8 uppercase text-[10px] tracking-widest">Controle de Produção</p>
-            
-            <div class="space-y-4">
-                <input type="password" id="pass-code" placeholder="Senha de Acesso" class="w-full p-4 bg-slate-100 rounded-2xl text-center font-bold outline-none border-2 border-transparent focus:border-blue-500 transition-all">
-                <button onclick="validaLogin()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition-all">ENTRAR</button>
-            </div>
-            <p class="mt-6 text-[10px] text-slate-300 font-bold uppercase">Software Versão 2.0.26</p>
+        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-sm text-center">
+            <h1 class="text-5xl font-black text-slate-900 mb-2 italic tracking-tighter">TRIPLAST</h1>
+            <p class="text-slate-400 font-bold mb-8 uppercase text-[10px] tracking-widest">Acesso Restrito</p>
+            <input type="password" id="pass-code" placeholder="Senha (Admin ou Máquina)" class="w-full p-4 bg-slate-100 rounded-xl text-center font-bold outline-none border-2 border-transparent focus:border-slate-900 transition-all text-xl mb-4">
+            <button onclick="tentarLogin()" class="w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-black transition-all">ENTRAR</button>
         </div>
     </div>
 
-    <aside id="main-sidebar" class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col hidden">
-        <div class="text-2xl font-black italic text-slate-800 mb-10 tracking-tighter">TRIPLAST <span class="text-blue-600">PRO</span></div>
-        
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col hidden h-full">
+        <div class="text-3xl font-black italic text-slate-900 mb-10 tracking-tighter">TRIPLAST</div>
         <nav class="space-y-2 flex-1">
-            <button onclick="showView('monitor')" id="nav-monitor" class="sidebar-btn active"><i class="fa-solid fa-gauge-high"></i> Painel Geral</button>
-            <button onclick="showView('ops')" id="nav-ops" class="sidebar-btn"><i class="fa-solid fa-file-contract"></i> Gestão de O.P</button>
-            <button onclick="showView('produtos')" id="nav-produtos" class="sidebar-btn"><i class="fa-solid fa-box-open"></i> Produtos</button>
-            <button onclick="showView('equipe')" id="nav-equipe" class="sidebar-btn"><i class="fa-solid fa-users-gear"></i> Equipe</button>
-            <button onclick="showView('graficos')" id="nav-graficos" class="sidebar-btn"><i class="fa-solid fa-chart-pie"></i> Relatórios</button>
+            <button onclick="nav('dashboard')" id="btn-dashboard" class="sidebar-btn active"><i class="fa-solid fa-layer-group"></i> Visão Geral</button>
+            <button onclick="nav('ops')" id="btn-ops" class="sidebar-btn"><i class="fa-solid fa-file-invoice"></i> Ordens (O.P)</button>
+            <button onclick="nav('produtos')" id="btn-produtos" class="sidebar-btn"><i class="fa-solid fa-box"></i> Produtos</button>
+            <button onclick="nav('equipe')" id="btn-equipe" class="sidebar-btn"><i class="fa-solid fa-users"></i> Equipe</button>
+            <button onclick="nav('graficos')" id="btn-graficos" class="sidebar-btn"><i class="fa-solid fa-chart-pie"></i> Relatórios</button>
         </nav>
-
-        <div class="pt-6 border-t border-slate-100">
-            <button onclick="location.reload()" class="sidebar-btn text-red-400 hover:bg-red-50 hover:text-red-600"><i class="fa-solid fa-power-off"></i> Sair do Sistema</button>
-        </div>
+        <button onclick="location.reload()" class="sidebar-btn text-red-500 hover:bg-red-50 hover:text-red-600 mt-auto"><i class="fa-solid fa-power-off"></i> Sair</button>
     </aside>
 
-    <main id="main-content" class="flex-1 overflow-y-auto p-8 hidden">
-        <header class="flex justify-between items-end mb-10">
+    <main id="main-content" class="flex-1 h-full relative hidden bg-slate-50">
+        
+        <header class="p-8 flex justify-between items-end">
             <div>
-                <h2 id="view-title" class="text-4xl font-black text-slate-800 tracking-tight uppercase">Painel Geral</h2>
-                <p id="view-subtitle" class="text-slate-400 font-bold text-xs uppercase tracking-widest">Status das injetoras em tempo real</p>
+                <h2 id="page-title" class="text-3xl font-black text-slate-800 uppercase">VISÃO GERAL</h2>
+                <div id="status-sys" class="text-[10px] font-bold text-green-600 uppercase flex items-center gap-2 mt-1"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Sistema Online</div>
             </div>
-            <div class="text-right">
-                <div id="clock" class="text-2xl font-black text-slate-700 tabular-nums italic">00:00:00</div>
-                <div id="db-status" class="text-[9px] font-black text-green-500 uppercase tracking-widest flex items-center gap-2 justify-end">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Sistema Online
-                </div>
-            </div>
+            <div id="clock" class="text-2xl font-black text-slate-300 font-mono">00:00</div>
         </header>
 
-        <div id="view-monitor" class="view-section active">
-             <div id="grid-maquinas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </div>
-
-        <div id="view-ops" class="view-section">
-            <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-200">
-                <h3 class="font-black text-slate-800 mb-6 uppercase">Nova Ordem de Produção</h3>
+        <div id="view-dashboard" class="view-section active px-8">
+            <div id="grid-admin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 </div>
         </div>
 
-        <div id="view-produtos" class="view-section">
+        <div id="view-ops" class="view-section px-8">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-6">
+                <h3 class="font-black text-lg mb-4 uppercase">Nova Ordem de Produção</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <select id="op-produto" onchange="autoPreencherOP()" class="p-3 bg-slate-100 rounded-xl font-bold outline-none"></select>
+                    <input type="number" id="op-qtd" placeholder="Quantidade" class="p-3 bg-slate-100 rounded-xl font-bold outline-none">
+                    <div id="op-info" class="p-3 bg-blue-50 text-blue-800 rounded-xl text-xs font-bold flex items-center justify-center hidden">Selecione um produto</div>
+                </div>
+                <button onclick="criarOP()" class="mt-4 w-full bg-slate-900 text-white p-3 rounded-xl font-bold">ABRIR ORDEM DE PRODUÇÃO</button>
             </div>
+            <div id="lista-ops" class="space-y-3"></div>
+        </div>
 
-        <div id="view-equipe" class="view-section">
+        <div id="view-produtos" class="view-section px-8">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-6">
+                <h3 class="font-black text-lg mb-4 uppercase">Cadastrar Produto</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <input id="prod-nome" placeholder="Nome" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
+                    <input id="prod-mat" placeholder="Material" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
+                    <input id="prod-peso" type="number" placeholder="Peso (g)" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
+                    <input id="prod-ciclo" type="number" placeholder="Ciclo (s)" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
+                    <input id="prod-cav" type="number" placeholder="Cavidades" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
+                    <input id="prod-cx" type="number" placeholder="Qtd Caixa" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
+                </div>
+                <button onclick="addProduto()" class="mt-4 w-full bg-blue-600 text-white p-3 rounded-xl font-bold">SALVAR PRODUTO</button>
             </div>
+            <div id="lista-produtos" class="bg-white rounded-3xl border border-slate-200 overflow-hidden"></div>
+        </div>
 
-        <div id="view-graficos" class="view-section">
+        <div id="view-equipe" class="view-section px-8">
+            <div class="flex gap-4 mb-6">
+                <input id="op-nome" placeholder="Nome do Operador" class="flex-1 p-4 bg-white border border-slate-200 rounded-xl font-bold outline-none">
+                <button onclick="addOperador()" class="bg-slate-900 text-white px-8 rounded-xl font-bold">ADICIONAR</button>
             </div>
+            <div id="lista-equipe" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
 
+        <div id="view-graficos" class="view-section px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-80">
+                    <h4 class="font-bold text-sm uppercase text-slate-400 mb-4">Produção por Máquina</h4>
+                    <canvas id="grafico-prod"></canvas>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-80">
+                    <h4 class="font-bold text-sm uppercase text-slate-400 mb-4">Índice de Refugo</h4>
+                    <canvas id="grafico-refugo"></canvas>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <script>
-        // --- CONFIGURAÇÃO SUPABASE ---
-        // IMPORTANTE: Insira aqui as suas chaves originais que estavam no outro arquivo
-        const SB_URL = 'SUA_URL_AQUI';
-        const SB_KEY = 'SUA_KEY_AQUI';
-        const sb = supabase.createClient(SB_URL, SB_KEY);
-
-        // VARIÁVEIS DE ESTADO
-        let maquinas = [];
-        let produtosGlobais = [];
-        let operadoresGlobais = [];
-        let historico = [];
-        let saveTimeout = null;
-
-        // --- SISTEMA DE LOGIN ---
-        function validaLogin() {
-            const pass = document.getElementById('pass-code').value;
-            if(pass === '123') { // Senha padrão
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-sidebar').classList.remove('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                carregarDadosIniciais();
-            } else {
-                alert("Senha incorreta!");
-            }
-        }
-
-        // --- CARREGAMENTO DE DADOS ---
-        async function carregarDadosIniciais() {
-            try {
-                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
-                if (data && data.conteudo) {
-                    const c = data.conteudo;
-                    maquinas = c.maquinas || [];
-                    produtosGlobais = c.produtos || [];
-                    operadoresGlobais = c.operadores || [];
-                    historico = c.historico || [];
+    <div id="maquina-kiosk" class="kiosk-mode hidden flex flex-col">
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-4xl font-black italic">TRIPLAST <span id="kiosk-maq-nome" class="text-blue-600"></span></h1>
+            <button onclick="location.reload()" class="bg-red-100 text-red-600 px-6 py-2 rounded-xl font-bold text-sm">SAIR</button>
+        </header>
+        
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-[40px] p-8 shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div>
+                    <span class="text-slate-400 font-bold uppercase text-xs tracking-widest">O.P ATIVA</span>
+                    <h2 id="kiosk-op" class="text-3xl font-black text-slate-800 mt-1 mb-6">AGUARDANDO...</h2>
                     
-                    renderMaquinas();
-                    popularSelectsOP();
-                }
-            } catch (err) {
-                console.error("Erro ao carregar:", err);
-            }
-        }
-
-        // --- RENDERIZAÇÃO DAS MÁQUINAS (DESIGN MODERNO) ---
-        function renderMaquinas() {
-            const grid = document.getElementById('grid-maquinas');
-            grid.innerHTML = maquinas.map((m, index) => {
-                const progresso = m.opativa ? Math.min(((m.produzido || 0) / (m.opativa.qtd || 1)) * 100, 100).toFixed(1) : 0;
-                const statusColor = m.status === 'rodando' ? 'text-green-500' : 'text-red-500';
-                
-                return `
-                <div class="glass p-6 rounded-[32px] shadow-sm border border-white hover:shadow-xl transition-all">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="font-black text-slate-800 text-xl tracking-tighter uppercase">${m.nome}</h3>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${m.opativa ? m.opativa.produto : 'SEM O.P ATIVA'}</p>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-slate-50 p-4 rounded-2xl">
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Meta</span>
+                            <span id="kiosk-meta" class="text-2xl font-black text-slate-800">0</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-current ${statusColor} animate-pulse"></span>
-                            <span class="text-[10px] font-black uppercase ${statusColor}">${m.status || 'PARADA'}</span>
+                        <div class="bg-slate-50 p-4 rounded-2xl">
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Realizado</span>
+                            <span id="kiosk-real" class="text-2xl font-black text-blue-600">0</span>
                         </div>
-                    </div>
-
-                    <div class="bg-slate-50 rounded-2xl p-4 mb-4">
-                        <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-2">
-                            <span>Progresso</span>
-                            <span>${progresso}%</span>
-                        </div>
-                        <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-blue-600 transition-all duration-500" style="width: ${progresso}%"></div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        <div class="bg-slate-800 text-white p-3 rounded-2xl text-center">
-                            <p class="text-[8px] font-bold opacity-50 uppercase">Produzido</p>
-                            <p class="text-xl font-black">${m.produzido || 0}</p>
-                        </div>
-                        <div class="bg-red-50 text-red-600 p-3 rounded-2xl text-center border border-red-100">
-                            <p class="text-[8px] font-bold opacity-70 uppercase">Refugo</p>
-                            <p class="text-xl font-black">${m.refugo || 0}</p>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button onclick="apontarProducao(${index})" class="flex-1 bg-blue-600 text-white p-3 rounded-xl font-bold text-xs">+ PRODUÇÃO</button>
-                        <button onclick="abrirConfigMaquina(${index})" class="w-12 bg-slate-100 text-slate-400 p-3 rounded-xl hover:bg-slate-800 hover:text-white transition-all">
-                            <i class="fa-solid fa-gear"></i>
-                        </button>
                     </div>
                 </div>
-                `;
+                
+                <div class="flex gap-2">
+                    <select id="kiosk-select-op" class="flex-1 bg-slate-100 rounded-xl p-4 font-bold outline-none"></select>
+                    <button onclick="iniciarOPMaquina()" class="bg-slate-900 text-white px-6 rounded-xl font-bold">INICIAR</button>
+                </div>
+            </div>
+
+            <div class="grid grid-rows-2 gap-6">
+                <button onclick="acaoMaquina('prod')" class="bg-blue-600 active:bg-blue-700 text-white rounded-[40px] flex flex-col items-center justify-center shadow-lg shadow-blue-200 transition-all">
+                    <i class="fa-solid fa-plus text-4xl mb-2"></i>
+                    <span class="text-2xl font-black">PRODUÇÃO (+1)</span>
+                </button>
+                <div class="grid grid-cols-2 gap-6">
+                    <button onclick="acaoMaquina('refugo')" class="bg-red-500 active:bg-red-600 text-white rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-red-200">
+                        <i class="fa-solid fa-trash text-2xl mb-2"></i> REFUGO
+                    </button>
+                    <button onclick="acaoMaquina('parada')" id="btn-status-maq" class="bg-yellow-400 active:bg-yellow-500 text-yellow-900 rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-yellow-200">
+                        <i class="fa-solid fa-pause text-2xl mb-2"></i> PARAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONFIGURAÇÕES =================
+        const SB_URL = 'SUA_URL_AQUI'; // <--- COLOQUE A URL
+        const SB_KEY = 'SUA_KEY_AQUI'; // <--- COLOQUE A KEY
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+        
+        let DATA = { maquinas: [], produtos: [], operadores: [], ops: [], historico: [] };
+        let currentUser = null; // 'ADMIN' ou 0, 1, 2, 3 (indices das maquinas)
+        let saveTimer = null;
+
+        // INICIALIZAÇÃO
+        function init() {
+            // Garante 4 máquinas na estrutura
+            if(!DATA.maquinas || DATA.maquinas.length !== 4) {
+                DATA.maquinas = [
+                    { id: 0, nome: 'M1', status: 'parada', prod: 0, refugo: 0, op: null },
+                    { id: 1, nome: 'M2', status: 'parada', prod: 0, refugo: 0, op: null },
+                    { id: 2, nome: 'M3', status: 'parada', prod: 0, refugo: 0, op: null },
+                    { id: 3, nome: 'M4', status: 'parada', prod: 0, refugo: 0, op: null }
+                ];
+            }
+            setInterval(() => {
+                document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            }, 1000);
+        }
+
+        // ================= LOGIN =================
+        function tentarLogin() {
+            const pass = document.getElementById('pass-code').value.toUpperCase().trim();
+            const mapMaq = { 'M1': 0, 'M2': 1, 'M3': 2, 'M4': 3 };
+
+            if (pass === '2026') {
+                currentUser = 'ADMIN';
+                entrarNoSistema();
+            } else if (mapMaq.hasOwnProperty(pass)) {
+                currentUser = mapMaq[pass];
+                entrarModoMaquina();
+            } else {
+                alert('Senha inválida!');
+            }
+        }
+
+        async function entrarNoSistema() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('sidebar').classList.remove('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            await carregarDados();
+            renderTudo();
+        }
+
+        async function entrarModoMaquina() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('maquina-kiosk').classList.remove('hidden');
+            await carregarDados();
+            renderKiosk();
+        }
+
+        // ================= SUPABASE =================
+        async function carregarDados() {
+            try {
+                const { data } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                if (data && data.conteudo) {
+                    // Mescla garantindo que existam 4 máquinas
+                    DATA = { ...DATA, ...data.conteudo };
+                    if(DATA.maquinas.length < 4) init(); 
+                } else {
+                    init(); // Cria estrutura se não existir
+                }
+            } catch (e) { console.log('Offline ou erro:', e); init(); }
+        }
+
+        async function salvar() {
+            document.getElementById('status-sys').innerHTML = '<span class="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></span> Salvando...';
+            if (saveTimer) clearTimeout(saveTimer);
+            saveTimer = setTimeout(async () => {
+                await sb.from('sistema').update({ conteudo: DATA }).eq('id', 1);
+                document.getElementById('status-sys').innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> Salvo';
+            }, 1500);
+        }
+
+        // ================= RENDERIZADORES ADMIN =================
+        function nav(view) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + view).classList.add('active');
+            document.getElementById('btn-' + view).classList.add('active');
+            
+            const titulos = { 'dashboard': 'VISÃO GERAL', 'ops': 'ORDENS DE PRODUÇÃO', 'produtos': 'CATÁLOGO', 'equipe': 'OPERADORES', 'graficos': 'RELATÓRIOS' };
+            document.getElementById('page-title').innerText = titulos[view];
+            renderTudo();
+        }
+
+        function renderTudo() {
+            renderAdminGrid();
+            renderListaProdutos();
+            renderListaEquipe();
+            renderListaOPs();
+            renderSelects();
+            renderGraficos();
+        }
+
+        function renderAdminGrid() {
+            const container = document.getElementById('grid-admin');
+            container.innerHTML = DATA.maquinas.map(m => {
+                const statusColor = m.status === 'rodando' ? 'text-green-500' : (m.status === 'setup' ? 'text-blue-500' : 'text-red-500');
+                const borderStatus = m.status === 'rodando' ? 'border-green-500' : 'border-slate-200';
+                const opInfo = m.op ? `${m.op.produto} (${m.op.qtd})` : 'SEM O.P';
+                
+                return `
+                <div class="bg-white p-6 rounded-[32px] shadow-sm border-l-8 ${borderStatus} relative">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-black italic">M${m.id + 1}</h3>
+                        <span class="text-[10px] font-black uppercase ${statusColor} bg-slate-50 px-2 py-1 rounded-lg">${m.status}</span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-4">${opInfo}</p>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="bg-slate-100 rounded-xl p-2">
+                            <span class="block text-[10px] text-slate-400 uppercase font-bold">Prod</span>
+                            <span class="text-xl font-black text-slate-800">${m.prod}</span>
+                        </div>
+                        <div class="bg-red-50 rounded-xl p-2">
+                            <span class="block text-[10px] text-red-400 uppercase font-bold">Refugo</span>
+                            <span class="text-xl font-black text-red-500">${m.refugo}</span>
+                        </div>
+                    </div>
+                </div>`;
             }).join('');
         }
 
-        // --- FUNÇÕES DE SALVAMENTO ---
-        async function salvarGeral() {
-            const payload = {
-                maquinas, 
-                produtos: produtosGlobais, 
-                operadores: operadoresGlobais, 
-                historico,
-                lastUpdate: Date.now()
-            };
+        // ================= RENDERIZADORES MAQUINA (KIOSK) =================
+        function renderKiosk() {
+            if (currentUser === 'ADMIN') return;
+            const m = DATA.maquinas[currentUser];
             
-            const { error } = await sb.from('sistema').update({ conteudo: payload }).eq('id', 1);
-            if(!error) {
-                document.getElementById('db-status').innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> Sincronizado';
+            document.getElementById('kiosk-maq-nome').innerText = m.nome;
+            document.getElementById('kiosk-op').innerText = m.op ? m.op.produto : "AGUARDANDO O.P";
+            document.getElementById('kiosk-meta').innerText = m.op ? m.op.qtd : 0;
+            document.getElementById('kiosk-real').innerText = m.prod;
+
+            // Cores dos botões conforme status
+            const btnStatus = document.getElementById('btn-status-maq');
+            if (m.status === 'rodando') {
+                btnStatus.innerHTML = '<i class="fa-solid fa-pause text-2xl mb-2"></i> PARAR';
+                btnStatus.className = "bg-yellow-400 active:bg-yellow-500 text-yellow-900 rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-yellow-200";
+            } else {
+                btnStatus.innerHTML = '<i class="fa-solid fa-play text-2xl mb-2"></i> INICIAR';
+                btnStatus.className = "bg-green-500 active:bg-green-600 text-white rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-green-200";
             }
+
+            // Select de OPs disponíveis
+            const select = document.getElementById('kiosk-select-op');
+            select.innerHTML = '<option value="">Selecionar O.P...</option>' + 
+                DATA.ops.filter(o => o.status === 'aberta').map(o => `<option value="${o.id}">#${o.id} - ${o.produto}</option>`).join('');
         }
 
-        function agendarSalvamento() {
-            document.getElementById('db-status').innerHTML = '<span class="w-2 h-2 bg-yellow-500 rounded-full animate-bounce"></span> Salvando...';
-            if(saveTimeout) clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(salvarGeral, 2000);
+        // ================= AÇÕES =================
+        function addProduto() {
+            const p = {
+                id: Date.now(),
+                nome: document.getElementById('prod-nome').value,
+                material: document.getElementById('prod-mat').value,
+                peso: document.getElementById('prod-peso').value,
+                ciclo: document.getElementById('prod-ciclo').value,
+                cav: document.getElementById('prod-cav').value,
+                cx: document.getElementById('prod-cx').value
+            };
+            if(!p.nome) return alert('Nome obrigatório');
+            DATA.produtos.push(p);
+            salvar(); renderTudo();
+            document.querySelectorAll('#view-produtos input').forEach(i => i.value = '');
         }
 
-        // --- LOGICA DE APONTAMENTO ---
-        function apontarProducao(idx) {
-            if(!maquinas[idx].opativa) return alert("Inicie uma O.P nesta máquina primeiro!");
-            maquinas[idx].produzido = (maquinas[idx].produzido || 0) + 1;
-            renderMaquinas();
-            agendarSalvamento();
+        function addOperador() {
+            const nome = document.getElementById('op-nome').value;
+            if(nome) { DATA.operadores.push(nome); salvar(); renderTudo(); document.getElementById('op-nome').value = ''; }
         }
 
-        // --- INICIALIZADORES ---
-        function popularSelectsOP() {
-            const select = document.getElementById('op-produto');
-            if(select) {
-                select.innerHTML = '<option value="">SELECIONE UM PRODUTO...</option>' + 
-                produtosGlobais.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+        function criarOP() {
+            const op = {
+                id: Date.now().toString().slice(-6),
+                produto: document.getElementById('op-produto').value,
+                qtd: document.getElementById('op-qtd').value,
+                status: 'aberta',
+                criadaEm: new Date().toISOString()
+            };
+            if(!op.produto) return alert('Selecione um produto');
+            DATA.ops.push(op);
+            salvar(); renderTudo();
+            alert('Ordem criada! Disponível nas máquinas.');
+        }
+
+        function acaoMaquina(tipo) {
+            const m = DATA.maquinas[currentUser];
+            if (tipo === 'parada') {
+                m.status = m.status === 'rodando' ? 'parada' : 'rodando';
+            } else {
+                if (m.status !== 'rodando') return alert('Máquina parada! Inicie para produzir.');
+                if (!m.op) return alert('Sem O.P ativa!');
+                if (tipo === 'prod') m.prod++;
+                if (tipo === 'refugo') m.refugo++;
             }
+            salvar(); renderKiosk();
         }
 
-        // Relógio e Autoload
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('pt-br');
-        }, 1000);
+        function iniciarOPMaquina() {
+            const opId = document.getElementById('kiosk-select-op').value;
+            if (!opId) return;
+            const op = DATA.ops.find(o => o.id == opId);
+            const m = DATA.maquinas[currentUser];
+            
+            m.op = op;
+            m.prod = 0;
+            m.refugo = 0;
+            m.status = 'setup'; // Inicia em setup
+            salvar(); renderKiosk();
+        }
 
+        // ================= AUXILIARES =================
+        function renderListaProdutos() {
+            document.getElementById('lista-produtos').innerHTML = `<table class="w-full text-left text-sm"><thead class="bg-slate-50 uppercase text-xs text-slate-400"><tr><th class="p-4">Produto</th><th class="p-4">Info</th><th class="p-4">Ação</th></tr></thead><tbody>
+                ${DATA.produtos.map((p, i) => `<tr class="border-t border-slate-100"><td class="p-4 font-bold">${p.nome}<br><span class="text-xs text-blue-500">${p.material}</span></td><td class="p-4">${p.peso}g | ${p.ciclo}s</td><td class="p-4"><button onclick="DATA.produtos.splice(${i},1);salvar();renderTudo()" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}
+            </tbody></table>`;
+        }
+
+        function renderListaEquipe() {
+            document.getElementById('lista-equipe').innerHTML = DATA.operadores.map((op, i) => `
+                <div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
+                    <span class="font-bold">${op}</span>
+                    <button onclick="DATA.operadores.splice(${i},1);salvar();renderTudo()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                </div>`).join('');
+        }
+
+        function renderListaOPs() {
+            document.getElementById('lista-ops').innerHTML = DATA.ops.map(op => `
+                <div class="bg-white p-4 rounded-xl border-l-4 ${op.status==='aberta'?'border-blue-500':'border-slate-300'} shadow-sm flex justify-between">
+                    <div><span class="text-[10px] font-bold text-slate-400">#${op.id}</span><h4 class="font-bold">${op.produto}</h4></div>
+                    <div class="text-right"><span class="block font-black text-xl">${op.qtd}</span><span class="text-[10px] uppercase font-bold text-slate-400">${op.status}</span></div>
+                </div>`).join('');
+        }
+
+        function renderSelects() {
+            const html = '<option value="">Selecione...</option>' + DATA.produtos.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+            const sel = document.getElementById('op-produto');
+            if(sel) sel.innerHTML = html;
+        }
+
+        function autoPreencherOP() {
+            const nome = document.getElementById('op-produto').value;
+            const p = DATA.produtos.find(i => i.nome === nome);
+            const info = document.getElementById('op-info');
+            if(p) {
+                info.classList.remove('hidden');
+                info.innerText = `Peso: ${p.peso}g | Ciclo: ${p.ciclo}s | Cav: ${p.cav}`;
+            } else { info.classList.add('hidden'); }
+        }
+
+        // Gráficos (Simples para exemplo)
+        let chartProd = null;
+        function renderGraficos() {
+            if(chartProd) chartProd.destroy();
+            const ctx = document.getElementById('grafico-prod');
+            if(!ctx) return;
+            chartProd = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['M1', 'M2', 'M3', 'M4'],
+                    datasets: [{ label: 'Peças', data: DATA.maquinas.map(m => m.prod), backgroundColor: '#2563eb', borderRadius: 10 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
+            });
+        }
     </script>
 </body>
 </html>
-</body>
-</html>
-
