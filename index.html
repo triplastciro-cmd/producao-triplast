@@ -2,24 +2,50 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triplast 2.0 | Monitoramento Inteligente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Triplast Enterprise | Monitoramento Industrial</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
                     colors: {
-                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' },
-                        dark: { 800: '#1e293b', 900: '#0f172a' }
+                        brand: { 
+                            50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 
+                            600: '#0284c7', 800: '#075985', 900: '#0c4a6e' 
+                        },
+                        dark: {
+                            bg: '#0f172a', surface: '#1e293b', border: '#334155'
+                        },
+                        status: {
+                            ok: '#10b981', warn: '#f59e0b', error: '#ef4444', off: '#64748b'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
                     }
                 }
             }
@@ -27,572 +53,803 @@
     </script>
 
     <style>
-        /* Estilos Customizados & Animações */
-        body { background-color: #f3f4f6; overflow: hidden; }
-        
+        /* Reset & Base */
+        body {
+            background-color: #0f172a; /* Dark theme default */
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Classes */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
 
-        /* Sidebar Ativa */
-        .nav-item.active {
-            background: linear-gradient(90deg, #eff6ff 0%, #ffffff 100%);
-            border-left: 4px solid #2563eb;
-            color: #1e40af;
+        .glass-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+            outline: none;
         }
 
-        /* Status Máquina */
-        .maquina-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .maquina-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
-        
-        .status-produzindo { border-top: 4px solid #22c55e; }
-        .status-parada { border-top: 4px solid #ef4444; }
-        .status-setup { border-top: 4px solid #f59e0b; }
-        .status-offline { border-top: 4px solid #94a3b8; opacity: 0.8; }
+        /* Scrollbar Customizada */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Status Indicators */
+        .status-dot {
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* Grid de Máquinas Moderno */
+        .machine-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .machine-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.4);
+            border-color: rgba(14, 165, 233, 0.4);
+        }
 
         /* Loader */
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
+        .loader-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #0f172a; z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(14, 165, 233, 0.3);
+            border-radius: 50%;
+            border-top-color: #0ea5e9;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        /* Utilitários de Visibilidade */
+        .hidden-force { display: none !important; }
     </style>
 </head>
-<body class="text-slate-600 antialiased h-screen flex">
+<body class="antialiased h-screen flex flex-col">
 
-    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shadow-lg z-20 hidden md:flex">
-        <div>
-            <div class="p-6 flex items-center gap-3">
-                <div class="w-10 h-10 bg-brand-600 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-brand-500/50 shadow-lg">T</div>
-                <div>
-                    <h1 class="font-bold text-slate-800 text-lg leading-tight">Triplast <span class="text-brand-600">2.0</span></h1>
-                    <p class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Monitoramento</p>
-                </div>
-            </div>
-
-            <nav class="mt-6 px-4 space-y-2">
-                <button onclick="nav('painel')" id="nav-painel" class="nav-item active w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 rounded-r-full hover:bg-slate-50 transition-all">
-                    <i class="fa-solid fa-grid-2 text-lg w-6"></i> Visão Geral
-                </button>
-                <button onclick="nav('producao')" id="nav-producao" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 rounded-r-full hover:bg-slate-50 transition-all">
-                    <i class="fa-solid fa-clipboard-list text-lg w-6"></i> Ordens (O.P)
-                </button>
-                <button onclick="nav('graficos')" id="nav-graficos" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 rounded-r-full hover:bg-slate-50 transition-all">
-                    <i class="fa-solid fa-chart-pie text-lg w-6"></i> Indicadores
-                </button>
-                <button onclick="nav('config')" id="nav-config" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 rounded-r-full hover:bg-slate-50 transition-all">
-                    <i class="fa-solid fa-sliders text-lg w-6"></i> Ajustes
-                </button>
-            </nav>
+    <div id="loader" class="loader-overlay">
+        <div class="text-center">
+            <div class="spinner mb-4 mx-auto"></div>
+            <h2 class="text-brand-500 font-bold tracking-widest text-sm animate-pulse">CARREGANDO SISTEMA...</h2>
         </div>
+    </div>
 
-        <div class="p-4 border-t border-slate-100 bg-slate-50">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-bold text-slate-400 uppercase">Status do Sistema</span>
-                <span id="sync-status" class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            </div>
-            <p class="text-[10px] text-slate-400">Última sync: <span id="last-sync-time">Agora</span></p>
-        </div>
-    </aside>
-
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+    <section id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-dark-bg/90 backdrop-blur-sm"></div>
         
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-10">
-            <div class="flex items-center gap-4">
-                <button class="md:hidden text-slate-500 text-xl"><i class="fa-solid fa-bars"></i></button>
-                <h2 id="page-title" class="font-bold text-xl text-slate-800">Painel de Controle</h2>
+        <div class="relative glass-panel w-full max-w-md p-8 rounded-2xl shadow-2xl animate-slide-up mx-4">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-brand-600 rounded-xl mx-auto flex items-center justify-center shadow-lg shadow-brand-500/20 mb-4">
+                    <i class="fa-solid fa-industry text-3xl text-white"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-1">Triplast <span class="text-brand-500">System</span></h1>
+                <p class="text-slate-400 text-sm">Controle de Produção Avançado</p>
             </div>
 
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex bg-slate-100 rounded-lg p-1">
-                    <select id="turno-atual" onchange="mudarTurno()" class="bg-transparent text-xs font-bold text-slate-600 outline-none px-2 py-1">
-                        <option value="1">🌅 Manhã</option>
-                        <option value="2">☀️ Tarde</option>
-                        <option value="3">🌙 Noite</option>
-                    </select>
+            <div class="flex p-1 bg-dark-bg/50 rounded-lg mb-6">
+                <button onclick="mudarAbaLogin('operador')" id="tab-operador" class="flex-1 py-2 text-sm font-bold rounded-md transition-all bg-brand-600 text-white shadow">Operador</button>
+                <button onclick="mudarAbaLogin('admin')" id="tab-admin" class="flex-1 py-2 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white">Admin / Gestão</button>
+            </div>
+
+            <form id="form-login" onsubmit="realizarLogin(event)" class="space-y-4">
+                <div id="campo-admin" class="hidden">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Senha Mestra</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-slate-500"></i>
+                        <input type="password" id="admin-pass" class="glass-input w-full pl-10 pr-4 py-3 rounded-xl" placeholder="••••••••">
+                    </div>
                 </div>
 
-                <button onclick="togglePause()" id="btn-pause" class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 flex items-center justify-center transition-colors" title="Pausar Produção">
-                    <i class="fa-solid fa-pause text-xs"></i>
+                <div id="campo-operador">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Selecione a Máquina</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-microchip absolute left-3 top-3.5 text-slate-500"></i>
+                        <select id="login-maq-select" class="glass-input w-full pl-10 pr-4 py-3 rounded-xl appearance-none cursor-pointer">
+                            <option value="">Carregando máquinas...</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-500/25 transition-all transform active:scale-95 flex items-center justify-center gap-2 group">
+                    <span>Acessar Painel</span>
+                    <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
-                
-                <div class="h-8 w-[1px] bg-slate-200 mx-1"></div>
-
-                <div class="text-right">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Eficiência Global</p>
-                    <p id="header-oee" class="text-sm font-black text-brand-600 leading-none">0%</p>
-                </div>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto bg-slate-50 p-6 relative" id="main-content">
+            </form>
             
-            <div id="view-painel" class="view-section animate-fade-in space-y-6">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Máquinas Ativas</span>
-                        <h3 class="text-2xl font-black text-slate-800 mt-1" id="stat-maquinas-ativas">0/0</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Produção Hoje</span>
-                        <h3 class="text-2xl font-black text-blue-600 mt-1" id="stat-producao-total">0 un</h3>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Meta Turno</span>
-                        <h3 class="text-2xl font-black text-slate-800 mt-1" id="stat-meta-turno">0%</h3>
-                        <div class="w-full h-1 bg-slate-100 mt-2 rounded-full overflow-hidden"><div id="bar-meta" class="h-full bg-blue-500 w-0"></div></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Tempo Parado</span>
-                        <h3 class="text-2xl font-black text-red-500 mt-1" id="stat-paradas">0min</h3>
-                    </div>
+            <p class="mt-6 text-center text-[10px] text-slate-500 font-mono">
+                System Build v2.4.0 • Secure Connection
+            </p>
+        </div>
+    </section>
+
+    <div id="app-layout" class="hidden flex-1 flex overflow-hidden">
+        
+        <aside class="w-20 lg:w-64 bg-dark-surface border-r border-dark-border flex flex-col justify-between z-20 transition-all duration-300">
+            <div>
+                <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-dark-border">
+                    <i class="fa-solid fa-cube text-brand-500 text-2xl"></i>
+                    <span class="ml-3 font-bold text-xl tracking-tight hidden lg:block">Triplast</span>
                 </div>
 
-                <div id="grid-maquinas" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    </div>
-            </div>
-
-            <div id="view-producao" class="view-section hidden max-w-4xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-700">Nova Ordem de Produção</h3>
-                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Passo 1/1</span>
-                    </div>
-                    
-                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="label-input">Máquina</label>
-                                <select id="form-maq" class="input-modern"></select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="label-input">Nº O.P</label>
-                                    <input type="text" id="form-op" class="input-modern" placeholder="0000">
-                                </div>
-                                <div>
-                                    <label class="label-input">Meta (Qtd)</label>
-                                    <input type="number" id="form-meta" class="input-modern" placeholder="0">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="label-input">Cliente</label>
-                                <input type="text" id="form-cliente" class="input-modern" placeholder="Nome do Cliente">
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div>
-                                <label class="label-input">Produto</label>
-                                <select id="form-produto" class="input-modern bg-white">
-                                    <option value="">Selecione...</option>
-                                </select>
-                            </div>
-                            
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
-                                <p class="text-[10px] font-black uppercase text-slate-400">Detalhes Técnicos</p>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <input type="text" id="form-material" placeholder="Material" class="input-small">
-                                    <input type="text" id="form-pigmento" placeholder="Pigmento" class="input-small">
-                                </div>
-                                <select id="form-operador" class="input-small w-full"></select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-                        <button onclick="lancarOrdem()" class="bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center gap-2">
-                            <i class="fa-solid fa-rocket"></i> Lançar Produção
+                <nav class="mt-6 px-2 space-y-2">
+                    <div class="menu-admin hidden">
+                        <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 hidden lg:block">Gerenciamento</p>
+                        <button onclick="navegar('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                            <i class="fa-solid fa-grid-2 text-lg w-6 text-center"></i>
+                            <span class="hidden lg:block font-medium">Visão Geral</span>
+                        </button>
+                        <button onclick="navegar('config')" id="nav-config" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                            <i class="fa-solid fa-sliders text-lg w-6 text-center"></i>
+                            <span class="hidden lg:block font-medium">Configurações</span>
                         </button>
                     </div>
-                </div>
 
-                <div class="mt-8">
-                    <h3 class="font-bold text-slate-700 mb-4">Últimos Lançamentos</h3>
-                    <div id="lista-ops-recente" class="space-y-2"></div>
-                </div>
+                    <div class="menu-operador hidden">
+                         <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 hidden lg:block">Operacional</p>
+                        <button onclick="navegar('minha-maquina')" id="nav-minha-maquina" class="nav-item active w-full flex items-center gap-4 px-4 py-3 text-brand-400 bg-brand-500/10 rounded-xl transition-all border border-brand-500/20">
+                            <i class="fa-solid fa-robot text-lg w-6 text-center"></i>
+                            <span class="hidden lg:block font-bold">Minha Máquina</span>
+                        </button>
+                    </div>
+                </nav>
             </div>
 
-            <div id="view-graficos" class="view-section hidden">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96">
-                    <canvas id="mainChart"></canvas>
+            <div class="p-4 border-t border-dark-border">
+                <div class="flex items-center gap-3 p-2 rounded-xl bg-dark-bg/50 border border-dark-border/50">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-600 to-purple-600 flex items-center justify-center text-xs font-bold">
+                        <span id="user-avatar">OP</span>
+                    </div>
+                    <div class="hidden lg:block overflow-hidden">
+                        <p id="user-name" class="text-sm font-bold truncate">Usuário</p>
+                        <p id="user-role" class="text-[10px] text-slate-400 uppercase">Acesso Restrito</p>
+                    </div>
+                    <button onclick="logout()" class="ml-auto text-slate-500 hover:text-red-400 transition-colors">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
             </div>
+        </aside>
 
-            <div id="view-config" class="view-section hidden max-w-3xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 divide-y divide-slate-100">
-                    <div class="p-6">
-                        <h3 class="font-bold text-lg text-slate-800 mb-4">👨‍🔧 Operadores</h3>
-                        <div class="flex gap-2 mb-4">
-                            <input type="text" id="novo-op-nome" class="input-modern" placeholder="Nome do Operador">
-                            <button onclick="addOperador()" class="btn-secondary">Adicionar</button>
+        <main class="flex-1 flex flex-col relative overflow-hidden bg-dark-bg">
+            
+            <header class="h-16 border-b border-dark-border flex items-center justify-between px-6 bg-dark-surface/50 backdrop-blur z-10">
+                <h2 id="page-title" class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-regular fa-chart-bar text-brand-500"></i> Dashboard
+                </h2>
+                
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 bg-dark-bg px-3 py-1.5 rounded-full border border-dark-border">
+                        <div id="cloud-status" class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                        <span class="text-[10px] font-mono text-slate-400">SYNC ON</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative custom-scroll" id="main-content">
+                
+                <div id="view-dashboard" class="view-section space-y-6 hidden animate-fade-in">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="glass-panel p-5 rounded-xl border-l-4 border-brand-500">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Produção Hoje</span>
+                            <h3 class="text-2xl font-bold text-white mt-1" id="kpi-producao">0</h3>
                         </div>
-                        <div id="tags-operadores" class="flex flex-wrap gap-2"></div>
+                        <div class="glass-panel p-5 rounded-xl border-l-4 border-status-ok">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Eficiência Média</span>
+                            <h3 class="text-2xl font-bold text-status-ok mt-1" id="kpi-oee">0%</h3>
+                        </div>
+                        <div class="glass-panel p-5 rounded-xl border-l-4 border-status-warn">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Máquinas Paradas</span>
+                            <h3 class="text-2xl font-bold text-white mt-1" id="kpi-paradas">0</h3>
+                        </div>
+                        <div class="glass-panel p-5 rounded-xl border-l-4 border-purple-500">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Ordem Atual</span>
+                            <h3 class="text-lg font-bold text-white mt-1 truncate" id="kpi-op">Diversas</h3>
+                        </div>
                     </div>
 
-                    <div class="p-6">
-                        <h3 class="font-bold text-lg text-slate-800 mb-4">📦 Produtos</h3>
-                        <div class="flex gap-2 mb-4">
-                            <input type="text" id="novo-prod-nome" class="input-modern" placeholder="Nome do Produto">
-                            <button onclick="addProduto()" class="btn-secondary">Adicionar</button>
+                    <div class="flex justify-between items-center mt-8 mb-4">
+                        <h3 class="text-lg font-bold text-slate-200">Visão Geral do Parque</h3>
+                        <div class="flex gap-2">
+                             <span class="flex items-center gap-1 text-[10px] text-slate-400"><div class="w-2 h-2 bg-status-ok rounded-full"></div> Prod</span>
+                             <span class="flex items-center gap-1 text-[10px] text-slate-400"><div class="w-2 h-2 bg-status-error rounded-full"></div> Parada</span>
                         </div>
-                        <div id="tags-produtos" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    
+                    <div id="grid-maquinas-admin" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        </div>
+                </div>
+
+                <div id="view-minha-maquina" class="view-section hidden animate-fade-in max-w-4xl mx-auto">
+                    
+                    <div id="op-panel-card" class="glass-panel rounded-2xl border border-brand-500/30 overflow-hidden shadow-2xl shadow-black/50">
+                        <div class="bg-gradient-to-r from-dark-surface to-dark-bg p-6 border-b border-white/5 flex justify-between items-center">
+                            <div>
+                                <h1 class="text-3xl font-black text-white tracking-tight" id="op-maq-nome">MÁQUINA 01</h1>
+                                <p class="text-brand-400 text-sm font-bold flex items-center gap-2 mt-1">
+                                    <i class="fa-solid fa-user-gear"></i> <span id="op-operador-atual">Sem Operador</span>
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <div id="op-status-badge" class="px-4 py-1.5 rounded-full bg-status-off/20 text-status-off border border-status-off/30 font-bold uppercase text-sm tracking-wider mb-2 inline-block">
+                                    OFFLINE
+                                </div>
+                                <p class="text-[10px] text-slate-500 font-mono" id="op-last-update">Atualizado: --:--</p>
+                            </div>
+                        </div>
+
+                        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-2">Ordem de Produção (O.P)</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="input-op-numero" class="glass-input flex-1 px-4 py-3 rounded-lg font-mono text-lg" placeholder="00000">
+                                        <button onclick="carregarOP()" class="bg-brand-600 hover:bg-brand-500 text-white px-4 rounded-lg font-bold shadow-lg transition-all">
+                                            <i class="fa-solid fa-magnifying-glass"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-xs font-bold text-slate-400 uppercase block mb-2">Produto</label>
+                                        <select id="input-produto" class="glass-input w-full px-3 py-3 rounded-lg text-sm bg-dark-bg">
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-slate-400 uppercase block mb-2">Meta (Qtd)</label>
+                                        <input type="number" id="input-meta" class="glass-input w-full px-3 py-3 rounded-lg font-mono" placeholder="0">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3 pt-4">
+                                    <button onclick="mudarStatus('produzindo')" class="py-4 bg-green-600/20 hover:bg-green-600 hover:text-white text-green-500 border border-green-600/50 rounded-xl font-bold transition-all flex flex-col items-center gap-2 group">
+                                        <i class="fa-solid fa-play text-2xl group-hover:scale-110 transition-transform"></i> INICIAR
+                                    </button>
+                                    <button onclick="mudarStatus('parada')" class="py-4 bg-red-600/20 hover:bg-red-600 hover:text-white text-red-500 border border-red-600/50 rounded-xl font-bold transition-all flex flex-col items-center gap-2 group">
+                                        <i class="fa-solid fa-stop text-2xl group-hover:scale-110 transition-transform"></i> PARAR
+                                    </button>
+                                    <button onclick="mudarStatus('setup')" class="col-span-2 py-3 bg-yellow-600/20 hover:bg-yellow-600 hover:text-white text-yellow-500 border border-yellow-600/50 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-tools"></i> MODO SETUP / TROCA
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-dark-bg/50 rounded-xl p-6 border border-white/5 flex flex-col justify-center items-center relative">
+                                <div class="relative w-48 h-48">
+                                    <svg class="w-full h-full transform -rotate-90">
+                                        <circle cx="96" cy="96" r="88" stroke="#1e293b" stroke-width="12" fill="none"></circle>
+                                        <circle id="progress-ring" cx="96" cy="96" r="88" stroke="#0ea5e9" stroke-width="12" fill="none" stroke-dasharray="552" stroke-dashoffset="552" class="transition-all duration-1000 ease-out"></circle>
+                                    </svg>
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span class="text-4xl font-black text-white" id="op-percentual">0%</span>
+                                        <span class="text-xs text-slate-400 uppercase font-bold tracking-widest mt-1">Concluído</span>
+                                    </div>
+                                </div>
+
+                                <div class="w-full mt-8 grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-3xl font-mono font-bold text-white" id="op-produzido">0</p>
+                                        <p class="text-[10px] text-slate-500 uppercase font-bold">Produzido</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-3xl font-mono font-bold text-slate-400" id="op-meta-display">0</p>
+                                        <p class="text-[10px] text-slate-500 uppercase font-bold">Meta Total</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 w-full flex gap-2">
+                                     <button onclick="addProducao(-1)" class="w-12 h-12 bg-dark-surface rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition font-bold text-xl">-</button>
+                                     <button onclick="addProducao(1)" class="flex-1 h-12 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold shadow-lg shadow-brand-500/20 active:translate-y-1 transition-all">
+                                        +1 CICLO
+                                     </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
+                 <div id="view-config" class="view-section hidden animate-fade-in max-w-2xl mx-auto">
+                    <div class="glass-panel p-8 rounded-2xl">
+                        <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-database text-brand-500"></i> Dados do Sistema
+                        </h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-400 mb-2">Cadastrar Produtos (Separar por vírgula)</label>
+                                <textarea id="config-produtos" rows="4" class="glass-input w-full p-4 rounded-xl font-mono text-sm" placeholder="Garrafa 500ml, Tampa Azul, Pote 1kg..."></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-bold text-slate-400 mb-2">Operadores Autorizados</label>
+                                <textarea id="config-operadores" rows="4" class="glass-input w-full p-4 rounded-xl font-mono text-sm" placeholder="João Silva, Maria Souza..."></textarea>
+                            </div>
+
+                            <div class="pt-4 border-t border-white/10 flex justify-end gap-3">
+                                <button onclick="salvarConfiguracoes()" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
+                                    <i class="fa-solid fa-save"></i> Salvar Alterações
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 translate-y-24 transition-transform duration-300 z-[100] flex items-center gap-3 bg-dark-surface border border-slate-700 p-4 rounded-xl shadow-2xl">
+        <div id="toast-icon" class="w-8 h-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center">
+            <i class="fa-solid fa-check"></i>
         </div>
-    </main>
-
-    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 transform translate-y-40 transition-transform duration-300 z-50">
-        <i class="fa-solid fa-circle-check text-green-400"></i>
         <div>
-            <h4 class="font-bold text-sm">Sucesso</h4>
-            <p id="toast-msg" class="text-xs text-slate-400">Dados salvos com sucesso.</p>
+            <h4 id="toast-title" class="text-sm font-bold text-white">Sucesso</h4>
+            <p id="toast-msg" class="text-xs text-slate-400">Dados atualizados.</p>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURAÇÃO & ESTADO
-        // ==========================================
-        
-        // ⚠️ COLOQUE SUAS CHAVES AQUI
-        const SUPABASE_URL = 'SUA_URL_SUPABASE_AQUI'; 
-        const SUPABASE_KEY = 'SUA_CHAVE_ANON_AQUI'; // Use a ANON KEY, não a Service Role!
-        
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // Estado Global (Store)
-        let store = {
-            maquinas: Array(10).fill(null).map((_, i) => ({ 
-                id: i+1, nome: `Injetora ${i+1}`, status: 'parada', op_atual: null, eficiencia: 0 
-            })),
-            config: { operadores: [], produtos: [], cores: [] },
-            lastUpdate: 0
+        /**
+         * =================================================================
+         * 1. CONFIGURAÇÃO E DADOS INICIAIS
+         * =================================================================
+         * ATENÇÃO: Cole suas chaves do Supabase aqui conforme solicitado.
+         * Por segurança, em produção real, use RLS (Row Level Security).
+         */
+        const CONFIG = {
+            supabaseUrl: 'COLE_SUA_URL_SUPABASE_AQUI',
+            supabaseKey: 'COLE_SUA_CHAVE_ANON_AQUI',
+            adminPass: 'admin123', // Senha simples para o frontend (não é seguro para bancos reais, apenas visual)
+            refreshRate: 5000 // Polling de backup caso o realtime falhe
         };
 
-        // ==========================================
-        // 2. LÓGICA DE DADOS (CORE)
-        // ==========================================
-
-        async function init() {
-            renderLoader(true);
-            await carregarDados();
-            setInterval(salvarAutomatico, 60000); // Auto-save 1min
-            renderUI();
-            renderLoader(false);
+        // Inicializa Supabase
+        let sb;
+        try {
+            sb = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+        } catch (e) {
+            console.error("Erro ao iniciar Supabase. Verifique as chaves.", e);
         }
 
-        async function carregarDados() {
+        // Estado Global da Aplicação (Store)
+        const Store = {
+            usuario: null, // { tipo: 'admin' | 'operador', maquinaId: number, nome: string }
+            dados: {
+                maquinas: Array.from({length: 12}, (_, i) => ({
+                    id: i + 1,
+                    nome: `Injetora ${String(i + 1).padStart(2, '0')}`,
+                    status: 'offline', // offline, produzindo, parada, setup
+                    operador: null,
+                    op: { numero: '', produto: '', meta: 0, produzido: 0, inicio: null },
+                    log: []
+                })),
+                config: {
+                    produtos: ['Item Padrão A', 'Item Padrão B'],
+                    operadores: ['Operador 1', 'Operador 2']
+                },
+                lastUpdate: 0
+            },
+            unsavedChanges: false
+        };
+
+        // =================================================================
+        // 2. GERENCIAMENTO DE ESTADO E BD
+        // =================================================================
+
+        async function initSystem() {
+            // Verifica se tem chaves configuradas antes de tentar conectar
+            if(CONFIG.supabaseUrl.includes('COLE_SUA')) {
+                alert("⚠️ ATENÇÃO: Você precisa editar o código HTML e colocar sua URL e KEY do Supabase nas linhas 380-381 para o sistema funcionar.");
+                document.getElementById('loader').classList.add('hidden-force');
+                return;
+            }
+
+            await carregarDadosNuvem();
+            popularSelectsLogin();
+            
+            // Subscrever a mudanças em tempo real (Realtime)
+            sb.channel('public:sistema')
+              .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sistema' }, payload => {
+                  console.log("⚡ Update recebido via Realtime");
+                  if (payload.new && payload.new.conteudo) {
+                      // Se fui eu que salvei há pouco tempo (timestamp próximo), ignoro para evitar glitch visual
+                      if (payload.new.conteudo.lastUpdate > Store.dados.lastUpdate) {
+                          Store.dados = payload.new.conteudo;
+                          atualizarInterfaceGlobal();
+                      }
+                  }
+              })
+              .subscribe();
+
+            document.getElementById('loader').classList.add('opacity-0');
+            setTimeout(() => document.getElementById('loader').classList.add('hidden-force'), 500);
+        }
+
+        async function carregarDadosNuvem() {
             try {
                 const { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
-                if (error) throw error;
-                if (data && data.conteudo) {
-                    // Merge seguro dos dados
-                    store = { ...store, ...data.conteudo };
-                    console.log("Dados carregados:", store);
-                    atualizarTela();
+                
+                if (error) {
+                    console.warn("Tabela 'sistema' não encontrada ou vazia. Criando estrutura padrão...");
+                    // Tenta criar se não existir (primeiro uso)
+                    await sb.from('sistema').insert([{ id: 1, conteudo: Store.dados }]);
+                } else if (data) {
+                    // Merge seguro
+                    Store.dados = { ...Store.dados, ...data.conteudo };
+                    Store.dados.lastUpdate = Date.now(); // Sync local
                 }
-            } catch (e) {
-                console.error("Erro ao carregar:", e);
-                showToast("Erro ao conectar no servidor", true);
+            } catch (err) {
+                console.error("Falha de conexão:", err);
+                showToast("Modo Offline Ativado", "error");
             }
         }
 
-        // SEGURANÇA: Optimistic Locking (Verifica se alguém salvou antes)
-        async function salvarDados(force = false) {
-            document.getElementById('sync-status').classList.replace('bg-green-500', 'bg-yellow-500');
+        // Debounce para salvar (evita excesso de requests)
+        let saveTimeout;
+        function agendarSalvamento() {
+            Store.dados.lastUpdate = Date.now();
+            document.getElementById('cloud-status').classList.replace('bg-green-500', 'bg-yellow-500');
             
-            try {
-                // 1. Verificar timestamp no servidor antes de gravar
-                if (!force) {
-                    const { data: serverData } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
-                    if (serverData && serverData.conteudo.lastUpdate > store.lastUpdate) {
-                        if(!confirm("⚠️ ATENÇÃO: Alguém modificou os dados recentemente.\nSobrescrever pode causar perda de dados de outros usuários.\nDeseja recarregar os dados novos (Recomendado)?")) {
-                            // Se o usuário insistir em salvar por cima:
-                            store.lastUpdate = Date.now();
-                        } else {
-                            // Recarrega e cancela o save atual
-                            store = serverData.conteudo;
-                            atualizarTela();
-                            return;
-                        }
-                    }
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    await sb.from('sistema').update({ conteudo: Store.dados }).eq('id', 1);
+                    document.getElementById('cloud-status').classList.replace('bg-yellow-500', 'bg-green-500');
+                    // showToast("Sincronizado", "success");
+                } catch (e) {
+                    console.error("Erro ao salvar:", e);
+                    document.getElementById('cloud-status').classList.replace('bg-yellow-500', 'bg-red-500');
                 }
+            }, 1000); // Aguarda 1s de inatividade para salvar
+            
+            atualizarInterfaceGlobal(); // Atualiza UI imediatamente (Optimistic UI)
+        }
 
-                store.lastUpdate = Date.now();
-                
-                const { error } = await sb.from('sistema').update({
-                    conteudo: store
-                }).eq('id', 1);
+        // =================================================================
+        // 3. LÓGICA DE INTERFACE (UI)
+        // =================================================================
 
-                if (error) throw error;
-                
-                showToast("Dados sincronizados");
-                document.getElementById('last-sync-time').innerText = new Date().toLocaleTimeString();
-                document.getElementById('sync-status').classList.replace('bg-yellow-500', 'bg-green-500');
-
-            } catch (e) {
-                console.error(e);
-                showToast("Falha ao salvar!", true);
-                document.getElementById('sync-status').classList.replace('bg-yellow-500', 'bg-red-500');
+        function atualizarInterfaceGlobal() {
+            // Atualiza baseada na visão atual
+            if (Store.usuario?.tipo === 'admin') {
+                renderGridAdmin();
+                renderKPIs();
+            } else if (Store.usuario?.tipo === 'operador') {
+                renderPainelOperador();
             }
         }
 
-        function salvarAutomatico() {
-            salvarDados();
-        }
-
-        // ==========================================
-        // 3. INTERFACE (UI) & RENDERIZAÇÃO
-        // ==========================================
-
-        function nav(tela) {
-            // Remove active class
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            
-            // Activate
-            document.getElementById(`nav-${tela}`).classList.add('active');
-            document.getElementById(`view-${tela}`).classList.remove('hidden');
-            
-            // Titles
-            const titles = { 'painel': 'Visão Geral', 'producao': 'Gestão de O.P', 'graficos': 'Indicadores', 'config': 'Configurações' };
-            document.getElementById('page-title').innerText = titles[tela];
-
-            // Render specific
-            if(tela === 'painel') renderMaquinas();
-            if(tela === 'config') renderConfigTags();
-            if(tela === 'producao') renderFormSelects();
-        }
-
-        function renderMaquinas() {
-            const grid = document.getElementById('grid-maquinas');
+        // --- RENDERIZADOR ADMIN ---
+        function renderGridAdmin() {
+            const grid = document.getElementById('grid-maquinas-admin');
             grid.innerHTML = '';
 
-            let ativas = 0;
+            Store.dados.maquinas.forEach(m => {
+                // Cores dinâmicas baseadas no status
+                let corStatus = 'border-slate-600';
+                let bgStatus = 'bg-dark-surface';
+                let icon = 'fa-power-off';
+                
+                if(m.status === 'produzindo') { corStatus = 'border-status-ok'; icon = 'fa-gear fa-spin'; }
+                if(m.status === 'parada') { corStatus = 'border-status-error'; icon = 'fa-triangle-exclamation'; }
+                if(m.status === 'setup') { corStatus = 'border-status-warn'; icon = 'fa-tools'; }
 
-            store.maquinas.forEach(m => {
-                if(m.status === 'produzindo') ativas++;
-                
-                const statusColor = m.status === 'produzindo' ? 'text-green-600' : 'text-slate-400';
-                const borderClass = `status-${m.status || 'offline'}`;
-                
+                // Cálculo de progresso
+                const percent = m.op.meta > 0 ? Math.min(100, Math.round((m.op.produzido / m.op.meta) * 100)) : 0;
+
                 const card = document.createElement('div');
-                card.className = `maquina-card bg-white rounded-xl shadow-sm p-5 border border-slate-100 ${borderClass}`;
+                card.className = `machine-card glass-panel rounded-xl p-5 border-t-4 ${corStatus} relative overflow-hidden`;
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Máquina</span>
-                            <h4 class="font-black text-xl text-slate-700">#${m.id}</h4>
-                        </div>
-                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center cursor-pointer hover:bg-slate-200" onclick="editarMaquina(${m.id})">
-                            <i class="fa-solid fa-ellipsis-vertical text-slate-400"></i>
-                        </div>
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-bold text-lg text-white">${m.nome}</h4>
+                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase bg-white/5 border border-white/10 ${getTextColor(m.status)}">
+                            <i class="fa-solid ${icon} mr-1"></i> ${m.status}
+                        </span>
                     </div>
                     
-                    ${m.op_atual ? `
-                    <div class="bg-blue-50 rounded-lg p-3 mb-4">
-                        <div class="flex justify-between mb-1">
-                            <span class="text-[10px] font-bold text-blue-600">O.P ${m.op_atual.numero}</span>
-                            <span class="text-[10px] font-bold text-slate-500">${m.op_atual.cliente}</span>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span>O.P: <b class="text-white">${m.op.numero || '--'}</b></span>
+                            <span>Op: <b class="text-white">${m.operador || '--'}</b></span>
                         </div>
-                        <p class="font-bold text-sm text-slate-800 truncate">${m.op_atual.produto}</p>
-                        <div class="w-full bg-blue-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div class="bg-blue-600 h-full" style="width: ${calculaProgresso(m)}%"></div>
-                        </div>
-                    </div>
-                    ` : `
-                    <div class="bg-slate-50 rounded-lg p-3 mb-4 text-center border border-dashed border-slate-300">
-                        <span class="text-xs font-bold text-slate-400">Sem Programação</span>
-                    </div>
-                    `}
-
-                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] uppercase font-bold text-slate-400">Operador</span>
-                            <span class="text-xs font-bold text-slate-600">${m.op_atual ? m.op_atual.operador : '--'}</span>
-                        </div>
-                         <div class="flex flex-col text-right">
-                            <span class="text-[10px] uppercase font-bold text-slate-400">Status</span>
-                            <span class="text-xs font-black uppercase ${statusColor}">${m.status || 'Offline'}</span>
+                        
+                        <div class="bg-dark-bg rounded-lg p-2 border border-white/5">
+                             <div class="flex justify-between items-end mb-1">
+                                <span class="text-xs font-bold text-brand-400 truncate max-w-[120px]">${m.op.produto || 'Sem prod.'}</span>
+                                <span class="text-xs font-mono text-white">${m.op.produzido}/${m.op.meta}</span>
+                            </div>
+                            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                <div class="h-full bg-brand-500 transition-all duration-500" style="width: ${percent}%"></div>
+                            </div>
                         </div>
                     </div>
                 `;
                 grid.appendChild(card);
             });
-
-            document.getElementById('stat-maquinas-ativas').innerText = `${ativas}/${store.maquinas.length}`;
         }
 
-        function renderConfigTags() {
-            const divOps = document.getElementById('tags-operadores');
-            divOps.innerHTML = store.config.operadores.map(op => 
-                `<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold border border-slate-200 flex items-center gap-2">
-                    ${op} <button onclick="removeConfig('operadores', '${op}')" class="text-red-400 hover:text-red-600">&times;</button>
-                </span>`
-            ).join('');
-
-            const divProds = document.getElementById('tags-produtos');
-            divProds.innerHTML = store.config.produtos.map(p => 
-                `<span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-100 flex items-center gap-2">
-                    ${p} <button onclick="removeConfig('produtos', '${p}')" class="text-red-400 hover:text-red-600">&times;</button>
-                </span>`
-            ).join('');
-        }
-
-        function renderFormSelects() {
-            const selMaq = document.getElementById('form-maq');
-            selMaq.innerHTML = store.maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-
-            const selOp = document.getElementById('form-operador');
-            selOp.innerHTML = '<option value="">Operador...</option>' + store.config.operadores.map(op => `<option value="${op}">${op}</option>`).join('');
+        function renderKPIs() {
+            // Lógica simples de KPI
+            const totalProd = Store.dados.maquinas.reduce((acc, m) => acc + (parseInt(m.op.produzido)||0), 0);
+            const paradas = Store.dados.maquinas.filter(m => m.status === 'parada').length;
+            const produzindo = Store.dados.maquinas.filter(m => m.status === 'produzindo').length;
             
-            const selProd = document.getElementById('form-produto');
-            selProd.innerHTML = '<option value="">Selecione...</option>' + store.config.produtos.map(p => `<option value="${p}">${p}</option>`).join('');
+            // OEE Simulado (apenas exemplo lógico)
+            const oee = Store.dados.maquinas.length > 0 ? Math.round((produzindo / Store.dados.maquinas.length) * 100) : 0;
+
+            document.getElementById('kpi-producao').innerText = totalProd;
+            document.getElementById('kpi-paradas').innerText = paradas;
+            document.getElementById('kpi-oee').innerText = `${oee}%`;
         }
 
-        // ==========================================
-        // 4. AÇÕES (HANDLERS)
-        // ==========================================
+        // --- RENDERIZADOR OPERADOR ---
+        function renderPainelOperador() {
+            const m = Store.dados.maquinas.find(mq => mq.id == Store.usuario.maquinaId);
+            if (!m) return;
 
-        function lancarOrdem() {
-            const maqId = document.getElementById('form-maq').value;
-            const opData = {
-                numero: document.getElementById('form-op').value,
-                cliente: document.getElementById('form-cliente').value,
-                produto: document.getElementById('form-produto').value,
-                meta: document.getElementById('form-meta').value,
-                operador: document.getElementById('form-operador').value,
-                inicio: Date.now()
-            };
+            // Header
+            document.getElementById('op-maq-nome').innerText = m.nome;
+            document.getElementById('op-operador-atual').innerText = m.operador || 'Sem Operador';
+            
+            // Badge Status
+            const badge = document.getElementById('op-status-badge');
+            badge.className = `px-4 py-1.5 rounded-full font-bold uppercase text-sm tracking-wider mb-2 inline-block border ${getStatusClasses(m.status)}`;
+            badge.innerText = m.status;
 
-            if(!opData.numero || !opData.produto) return showToast("Preencha os dados obrigatórios", true);
+            // Inputs (só atualiza se não estiver focado para não atrapalhar digitação)
+            if(document.activeElement.id !== 'input-op-numero') document.getElementById('input-op-numero').value = m.op.numero;
+            if(document.activeElement.id !== 'input-meta') document.getElementById('input-meta').value = m.op.meta || '';
+            
+            // O select precisa ser preenchido antes
+            const selProd = document.getElementById('input-produto');
+            if (selProd.options.length <= 1) { // Popula se estiver vazio
+                 Store.dados.config.produtos.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p; opt.innerText = p;
+                    selProd.appendChild(opt);
+                 });
+            }
+            if(document.activeElement.id !== 'input-produto') selProd.value = m.op.produto;
 
-            const maqIndex = store.maquinas.findIndex(m => m.id == maqId);
-            if(maqIndex >= 0) {
-                store.maquinas[maqIndex].op_atual = opData;
-                store.maquinas[maqIndex].status = 'produzindo';
-                salvarDados();
-                showToast(`O.P ${opData.numero} iniciada na Maq ${maqId}`);
-                nav('painel');
+            // Gráfico e Números
+            const percent = m.op.meta > 0 ? Math.round((m.op.produzido / m.op.meta) * 100) : 0;
+            const offset = 552 - (552 * percent) / 100; // Cálculo do stroke-dashoffset do SVG
+            
+            document.getElementById('progress-ring').style.strokeDashoffset = offset;
+            document.getElementById('op-percentual').innerText = `${percent}%`;
+            document.getElementById('op-produzido').innerText = m.op.produzido;
+            document.getElementById('op-meta-display').innerText = m.op.meta;
+        }
+
+        // =================================================================
+        // 4. ACTIONS (AÇÕES DO USUÁRIO)
+        // =================================================================
+
+        // --- LOGIN ---
+        function mudarAbaLogin(tipo) {
+            document.getElementById('tab-admin').className = tipo === 'admin' 
+                ? 'flex-1 py-2 text-sm font-bold rounded-md transition-all bg-brand-600 text-white shadow' 
+                : 'flex-1 py-2 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white';
+            
+            document.getElementById('tab-operador').className = tipo === 'operador' 
+                ? 'flex-1 py-2 text-sm font-bold rounded-md transition-all bg-brand-600 text-white shadow' 
+                : 'flex-1 py-2 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white';
+
+            if(tipo === 'admin') {
+                document.getElementById('campo-admin').classList.remove('hidden');
+                document.getElementById('campo-operador').classList.add('hidden');
+            } else {
+                document.getElementById('campo-admin').classList.add('hidden');
+                document.getElementById('campo-operador').classList.remove('hidden');
             }
         }
 
-        function addOperador() {
-            const nome = document.getElementById('novo-op-nome').value;
-            if(nome) {
-                store.config.operadores.push(nome);
-                document.getElementById('novo-op-nome').value = '';
-                salvarDados();
-                renderConfigTags();
+        function popularSelectsLogin() {
+            const sel = document.getElementById('login-maq-select');
+            sel.innerHTML = '<option value="">Selecione sua Máquina...</option>';
+            Store.dados.maquinas.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.innerText = m.nome;
+                sel.appendChild(opt);
+            });
+        }
+
+        function realizarLogin(e) {
+            e.preventDefault();
+            const isAdmin = !document.getElementById('campo-admin').classList.contains('hidden');
+            
+            if (isAdmin) {
+                const pass = document.getElementById('admin-pass').value;
+                if (pass === CONFIG.adminPass) {
+                    Store.usuario = { tipo: 'admin', nome: 'Administrador' };
+                    entrarSistema();
+                } else {
+                    showToast("Senha incorreta!", "error");
+                }
+            } else {
+                const maqId = document.getElementById('login-maq-select').value;
+                if (maqId) {
+                    const maq = Store.dados.maquinas.find(m => m.id == maqId);
+                    Store.usuario = { tipo: 'operador', maquinaId: maqId, nome: maq.nome };
+                    entrarSistema();
+                } else {
+                    showToast("Selecione uma máquina", "warn");
+                }
             }
         }
 
-        function addProduto() {
-            const nome = document.getElementById('novo-prod-nome').value;
-            if(nome) {
-                store.config.produtos.push(nome);
-                document.getElementById('novo-prod-nome').value = '';
-                salvarDados();
-                renderConfigTags();
+        function entrarSistema() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-layout').classList.remove('hidden');
+            
+            document.getElementById('user-name').innerText = Store.usuario.nome;
+            document.getElementById('user-role').innerText = Store.usuario.tipo === 'admin' ? 'Gestor' : 'Operador';
+            document.getElementById('user-avatar').innerText = Store.usuario.tipo === 'admin' ? 'AD' : 'OP';
+
+            // Configura Menu Sidebar
+            if(Store.usuario.tipo === 'admin') {
+                document.querySelector('.menu-admin').classList.remove('hidden');
+                navegar('dashboard');
+                // Popula configs
+                document.getElementById('config-produtos').value = Store.dados.config.produtos.join(', ');
+                document.getElementById('config-operadores').value = Store.dados.config.operadores.join(', ');
+            } else {
+                document.querySelector('.menu-operador').classList.remove('hidden');
+                navegar('minha-maquina');
             }
         }
 
-        function removeConfig(tipo, valor) {
-            store.config[tipo] = store.config[tipo].filter(i => i !== valor);
-            salvarDados();
-            renderConfigTags();
+        function logout() {
+            location.reload(); // Simples refresh para logout
         }
 
-        function mudarTurno() {
-            // Lógica para mudar turno (apenas visual por enquanto)
-            showToast("Turno alterado");
-        }
-
-        function togglePause() {
-            // Exemplo de lógica global
-            const novoStatus = store.statusGlobal === 'pausado' ? 'ativo' : 'pausado';
-            store.statusGlobal = novoStatus;
-            showToast(`Produção ${novoStatus === 'pausado' ? 'Pausada' : 'Retomada'}`);
-        }
-
-        // Utilitários
-        function calculaProgresso(m) {
-            // Simulação: Progresso baseado em tempo ou qtd
-            return 50; 
-        }
-
-        function showToast(msg, isError = false) {
-            const t = document.getElementById('toast');
-            const icon = t.querySelector('i');
+        // --- NAVEGAÇÃO ---
+        function navegar(tela) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('text-brand-400', 'bg-brand-500/10', 'border', 'border-brand-500/20');
+                el.classList.add('text-slate-400');
+            });
             
-            document.getElementById('toast-msg').innerText = msg;
-            t.className = `fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 transition-transform duration-300 z-50 ${isError ? 'bg-red-500 text-white' : 'bg-slate-800 text-white'}`;
-            icon.className = isError ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-check text-green-400';
+            document.getElementById(`view-${tela}`).classList.remove('hidden');
+            document.getElementById(`nav-${tela}`).classList.add('text-brand-400', 'bg-brand-500/10', 'border', 'border-brand-500/20');
+            document.getElementById(`nav-${tela}`).classList.remove('text-slate-400');
             
-            t.style.transform = "translateY(0)";
-            setTimeout(() => t.style.transform = "translateY(150px)", 3000);
+            atualizarInterfaceGlobal();
         }
 
-        function atualizarTela() {
-            // Re-renderiza a tela ativa
-            const telaAtiva = document.querySelector('.nav-item.active').id.replace('nav-', '');
-            nav(telaAtiva);
-        }
-
-        function renderLoader(show) {
-            // Opcional: Implementar overlay de loading
-        }
-
-        // Inicializar
-        window.addEventListener('DOMContentLoaded', () => {
-            init();
-            nav('painel'); // Tela inicial
+        // --- OPERAÇÕES DA MÁQUINA ---
+        
+        // Disparado quando operador muda inputs
+        ['input-op-numero', 'input-produto', 'input-meta'].forEach(id => {
+             document.getElementById(id).addEventListener('change', (e) => {
+                 atualizarDadosMaquinaLocal(e.target);
+             });
         });
 
-    </script>
+        function atualizarDadosMaquinaLocal(element) {
+             const mIndex = Store.dados.maquinas.findIndex(m => m.id == Store.usuario.maquinaId);
+             if (mIndex < 0) return;
 
-    <style>
-        /* CSS Utilitário Extra */
-        .input-modern {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            background-color: #f8fafc;
-            font-weight: 600;
-            color: #334155;
-            outline: none;
-            transition: all 0.2s;
+             if (element.id === 'input-op-numero') Store.dados.maquinas[mIndex].op.numero = element.value;
+             if (element.id === 'input-produto') Store.dados.maquinas[mIndex].op.produto = element.value;
+             if (element.id === 'input-meta') Store.dados.maquinas[mIndex].op.meta = parseInt(element.value) || 0;
+             
+             agendarSalvamento();
         }
-        .input-modern:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+        function mudarStatus(novoStatus) {
+            const mIndex = Store.dados.maquinas.findIndex(m => m.id == Store.usuario.maquinaId);
+            if (mIndex >= 0) {
+                Store.dados.maquinas[mIndex].status = novoStatus;
+                
+                // Se iniciar produção e não tiver operador, pede pra selecionar (simplificado)
+                if (novoStatus === 'produzindo' && !Store.dados.maquinas[mIndex].operador) {
+                    const nome = prompt("Nome do Operador:"); // Em versão real, usar modal
+                    if(nome) Store.dados.maquinas[mIndex].operador = nome;
+                }
+                
+                agendarSalvamento();
+                showToast(`Status alterado para: ${novoStatus.toUpperCase()}`, "success");
+            }
+        }
+
+        function addProducao(qtd) {
+            const mIndex = Store.dados.maquinas.findIndex(m => m.id == Store.usuario.maquinaId);
+            if (mIndex >= 0) {
+                const atual = parseInt(Store.dados.maquinas[mIndex].op.produzido) || 0;
+                const novo = atual + qtd;
+                if (novo >= 0) {
+                    Store.dados.maquinas[mIndex].op.produzido = novo;
+                    agendarSalvamento();
+                }
+            }
+        }
+
+        // --- ADMIN CONFIGS ---
+        function salvarConfiguracoes() {
+            const prods = document.getElementById('config-produtos').value.split(',').map(s => s.trim()).filter(s => s);
+            const ops = document.getElementById('config-operadores').value.split(',').map(s => s.trim()).filter(s => s);
+            
+            Store.dados.config.produtos = prods;
+            Store.dados.config.operadores = ops;
+            
+            agendarSalvamento();
+            showToast("Configurações salvas!", "success");
+        }
+
+        // =================================================================
+        // 5. HELPER FUNCTIONS & VISUALS
+        // =================================================================
+
+        function getTextColor(status) {
+            switch(status) {
+                case 'produzindo': return 'text-status-ok bg-status-ok/10 border-status-ok/20';
+                case 'parada': return 'text-status-error bg-status-error/10 border-status-error/20';
+                case 'setup': return 'text-status-warn bg-status-warn/10 border-status-warn/20';
+                default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
+            }
+        }
         
-        .input-small {
-            width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12px;
+        function getStatusClasses(status) {
+             switch(status) {
+                case 'produzindo': return 'bg-green-500/20 text-green-400 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.2)]';
+                case 'parada': return 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]';
+                case 'setup': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+                default: return 'bg-slate-700/30 text-slate-400 border-slate-600';
+            }
         }
 
-        .label-input {
-            display: block; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            
+            document.getElementById('toast-msg').innerText = msg;
+            
+            if (type === 'error') {
+                icon.className = 'w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center';
+                icon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                title.innerText = 'Erro';
+            } else if (type === 'warn') {
+                 icon.className = 'w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center';
+                 icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                 title.innerText = 'Atenção';
+            } else {
+                icon.className = 'w-8 h-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center';
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+                title.innerText = 'Sucesso';
+            }
+
+            t.style.transform = "translateY(0)";
+            setTimeout(() => {
+                t.style.transform = "translateY(6rem)"; // Hide again
+            }, 3000);
         }
 
-        .btn-secondary {
-            background: #e2e8f0; color: #475569; font-weight: 700; padding: 0 16px; border-radius: 8px; font-size: 12px; transition: 0.2s;
-        }
-        .btn-secondary:hover { background: #cbd5e1; }
-    </style>
+        // Start
+        window.addEventListener('DOMContentLoaded', initSystem);
+
+    </script>
 </body>
 </html>
