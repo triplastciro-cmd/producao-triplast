@@ -2045,7 +2045,7 @@
     </script>
 
         <script>
-// === FUNÇÃO DE CÁLCULO (MATERIAL COM KG, PIGMENTO SÓ NÚMERO) ===
+// === FUNÇÃO DE CÁLCULO (FORMATO LIMPO: 2,2 SEM ZEROS EXTRAS) ===
 function calcularPrevisao() {
     try {
         // 1. PEGAR DADOS DA TELA
@@ -2069,7 +2069,7 @@ function calcularPrevisao() {
         // Material Total (em KG)
         let pesoTotalMaterial = (qtdMeta * pesoPecaGramas) / 1000;
 
-        // Pigmento (em KG, mas vamos mostrar só o número)
+        // Pigmento (em KG)
         let fator = (porcentagem > 0) ? (porcentagem / 100) : 0;
         let pesoPigmento = pesoTotalMaterial * fator;
 
@@ -2081,19 +2081,22 @@ function calcularPrevisao() {
         let m = Math.round((totalHoras - h) * 60);
         let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
 
-        // === EXIBIÇÃO CORRIGIDA ===
+        // === EXIBIÇÃO CORRIGIDA (SEM ZEROS EXTRAS) ===
         
         document.getElementById('out-tempo').innerText = textoTempo;
 
-        // MATERIAL: Mantém o "kg" e usa vírgula
+        // MATERIAL: Mantém o "kg" e 2 casas fixas (Padrão visual)
         // Ex: "25,00 kg"
         document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
 
-        // PIGMENTO: Tira o "kg" e deixa só o número com vírgula
-        // Ex: "0,500"
-        document.getElementById('out-pigmento').innerText = pesoPigmento.toFixed(3).replace('.', ',');
+        // PIGMENTO: Remove zeros à direita
+        // Truque: parseFloat remove os zeros extras (2.200 vira 2.2)
+        let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3)); 
+        
+        // Exibe trocando ponto por vírgula (Ex: "2,2")
+        document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
 
-        // Preenche inputs originais (Opcional)
+        // Preenche input original se existir
         let campoMatOriginal = document.getElementById('f-material-qtd');
         if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
 
@@ -2105,6 +2108,7 @@ function calcularPrevisao() {
         
 </body>
 </html>
+
 
 
 
