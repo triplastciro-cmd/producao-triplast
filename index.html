@@ -2076,42 +2076,53 @@ async function salvarGeral() {
 <script>
     // --- PARTE A: VARIÁVEIS E FUNÇÕES DOS PIGMENTOS ---
 
-    // Cria a lista se ela não existir
+    // 1. Cria a lista se ela não existir
     if(typeof pigmentosGlobais === 'undefined') {
         var pigmentosGlobais = []; 
     }
 
-    // Abre a janela
+    // 2. Abre a janela
     function abrirModalPigmentos() {
         renderizarListaGerenciaPigmentos();
         document.getElementById('modal-pigmentos').classList.remove('hidden');
     }
 
-    // Adiciona novo pigmento
+    // 3. ADICIONA NOVO PIGMENTO (Essa era a parte que faltava!)
     function adicionarNovoPigmento() {
         let nome = document.getElementById('novo-pigmento-nome').value;
         if(!nome) return alert("Digite um nome!");
         
+        // Garante que a lista existe
         if(!pigmentosGlobais) pigmentosGlobais = [];
+        
+        // Adiciona na lista
         pigmentosGlobais.push(nome);
         
+        // Limpa campo e SALVA
         document.getElementById('novo-pigmento-nome').value = "";
-        salvarGeral(); // Salva no banco
+        
+        // Tenta salvar usando a função principal do seu sistema
+        if(typeof salvarGeral === 'function') {
+            salvarGeral(); 
+        } else {
+            alert("Aviso: Função salvarGeral não encontrada, o pigmento não será salvo no banco.");
+        }
+
         renderizarListaGerenciaPigmentos(); // Atualiza lista da janela
         renderizarOpcoesPigmentos(); // Atualiza o menu da calculadora
     }
 
-    // Remove pigmento
+    // 4. Remove pigmento
     function removerPigmento(index) {
         if(confirm("Excluir este pigmento?")) {
             pigmentosGlobais.splice(index, 1);
-            salvarGeral();
+            if(typeof salvarGeral === 'function') salvarGeral();
             renderizarListaGerenciaPigmentos();
             renderizarOpcoesPigmentos();
         }
     }
 
-    // Desenha a lista dentro da janela (com lixeirinha)
+    // 5. Desenha a lista dentro da janela (com lixeirinha)
     function renderizarListaGerenciaPigmentos() {
         let html = "";
         if(!pigmentosGlobais) pigmentosGlobais = [];
@@ -2126,7 +2137,7 @@ async function salvarGeral() {
         document.getElementById('lista-pigmentos-gerenciar').innerHTML = html || "<p class='text-center text-gray-400'>Vazio</p>";
     }
 
-    // Preenche o Menu de Seleção na Calculadora
+    // 6. Preenche o Menu de Seleção na Calculadora
     function renderizarOpcoesPigmentos() {
         let select = document.getElementById('tec-pig-select');
         if(!select) return;
@@ -2143,7 +2154,7 @@ async function salvarGeral() {
         select.value = valorAtual;
     }
 
-    // Quando troca o select, roda o cálculo
+    // 7. Quando troca o select, roda o cálculo
     function aoSelecionarPigmento() {
         calcularPrevisao();
     }
@@ -2152,17 +2163,17 @@ async function salvarGeral() {
 
     function calcularPrevisao() {
         try {
-            // 1. Pega a Quantidade da OP (Lá de cima)
+            // Pega a Quantidade da OP (Lá de cima)
             let elQtd = document.getElementById('f-qtd');
             let qtdMeta = elQtd ? (parseFloat(elQtd.value) || 0) : 0;
         
-            // 2. Pega os dados da Calculadora Técnica
+            // Pega os dados da Calculadora Técnica
             let pesoPeca = parseFloat(document.getElementById('tec-peso').value) || 0; 
             let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;            
             let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
             let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
         
-            // 3. Se não tiver Quantidade ou Peso, limpa e sai
+            // Se não tiver Quantidade ou Peso, limpa e sai
             if (qtdMeta === 0 || pesoPeca === 0) {
                 if(document.getElementById('out-tempo')) document.getElementById('out-tempo').innerText = "-";
                 if(document.getElementById('out-material')) document.getElementById('out-material').innerText = "-";
@@ -2184,7 +2195,7 @@ async function salvarGeral() {
             // C) TEMPO -> (Qtd / Cav) * Ciclo
             let totalSegundos = (qtdMeta / cavidades) * ciclo;
             let h = Math.floor(totalSegundos / 3600);
-            let m = Math.round(((totalSegundos % 3600) / 60)); // Correção Minutos
+            let m = Math.round(((totalSegundos % 3600) / 60)); 
             let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
         
             // === EXIBIÇÃO ===
@@ -2206,11 +2217,14 @@ async function salvarGeral() {
             console.log("Erro no cálculo:", e);
         }
     }
+    
+    // Inicia a lista quando carrega a página
+    setTimeout(renderizarOpcoesPigmentos, 1000);
 </script>
-
 
 </body>
 </html>
+
 
 
 
