@@ -1166,64 +1166,47 @@
             }, 1000);
         }
 
-                // FUNÇÃO PARA SALVAR O PRODUTO COM TODOS OS DETALHES TÉCNICOS
-            async function salvarNovoProdutoCompleto() {
-                // 1. Captura os valores dos campos que criamos no HTML
-                const nome = document.getElementById('cad-nome-novo').value.trim();
-                const material = document.getElementById('cad-material').value;
-                const pigmento = document.getElementById('cad-pigmento-tipo').value;
-                const peso = document.getElementById('cad-peso').value;
-                const ciclo = document.getElementById('cad-ciclo').value;
-                const cavidades = document.getElementById('cad-cavidades').value;
-                const porcPigmento = document.getElementById('cad-pigmento-porc').value;
-                const saquinho = document.getElementById('cad-saquinho').value;
-                const qtdCx = document.getElementById('cad-cx').value;
-            
-                // 2. Validação simples: não deixa salvar sem nome
-                if (!nome) {
-                    alert("O nome do produto é obrigatório!");
-                    return;
-                }
-            
-                // 3. Monta o objeto para o Banco de Dados
-                // Importante: os nomes à esquerda (ex: peso_peca) devem ser iguais aos do seu Supabase
-                const dadosProduto = {
-                    nome: nome,
-                    material: material,
-                    pigmento: pigmento,
-                    peso_peca: parseFloat(peso) || 0,
-                    ciclo: parseFloat(ciclo) || 0,
-                    cavidades: parseInt(cavidades) || 0,
-                    porc_pigmento: porcPigmento,
-                    saquinho: saquinho,
-                    qtd_caixa: parseInt(qtdCx) || 0
-                };
-            
-                try {
-                    // Envia para a tabela 'produtos' do seu Supabase
-                    const { error } = await _supabase.from('produtos').insert([dadosProduto]);
-                    
-                    if (error) throw error;
-            
-                    // Se deu certo:
-                    alert("✅ Produto " + nome + " salvo com sucesso!");
-                    
-                    // Limpa o formulário
-                    limparCamposProduto();
-                    
-                    // Atualiza a lista de produtos global (se existir no seu código)
-                    if (typeof carregarProdutos === 'function') {
-                        await carregarProdutos();
-                    }
-                    
-                    // Atualiza a tabela visual na aba de produtos
-                    renderizarListaProdutosTecnica();
-            
-                } catch (err) {
-                    console.error("Erro completo:", err);
-                    alert("Erro ao salvar no banco. Verifique se a tabela 'produtos' tem essas colunas.");
-                }
-            }
+async function salvarNovoProdutoCompleto() {
+    const nome = document.getElementById('cad-nome-novo').value.trim();
+    const material = document.getElementById('cad-material').value;
+    const pigmento = document.getElementById('cad-pigmento-tipo').value;
+    const peso = document.getElementById('cad-peso').value;
+    const ciclo = document.getElementById('cad-ciclo').value;
+    const cavidades = document.getElementById('cad-cavidades').value;
+    const porcPigmento = document.getElementById('cad-pigmento-porc').value;
+    const saquinho = document.getElementById('cad-saquinho').value;
+    const qtdCx = document.getElementById('cad-cx').value;
+
+    if (!nome) return alert("Digite o nome do produto!");
+
+    const dadosProduto = {
+        nome,
+        material,
+        pigmento,
+        peso_peca: parseFloat(peso) || 0,
+        ciclo: parseFloat(ciclo) || 0,
+        cavidades: parseInt(cavidades) || 0,
+        porc_pigmento: porcPigmento,
+        saquinho,
+        qtd_caixa: parseInt(qtdCx) || 0
+    };
+
+    try {
+        // CORREÇÃO AQUI: Mudamos de _supabase para supabase
+        const { error } = await supabase.from('produtos').insert([dadosProduto]);
+        if (error) throw error;
+
+        alert("PRODUTO SALVO COM SUCESSO!");
+        limparCamposProduto();
+        
+        // Atualiza a lista global
+        await carregarBanco(); 
+        renderizarListaProdutosTecnica();
+    } catch (err) {
+        console.error("Erro ao salvar:", err);
+        alert("Erro ao salvar no banco. Verifique se a tabela 'produtos' existe.");
+    }
+}
             
             // Função auxiliar para limpar os campos após salvar
             function limparCamposProduto() {
@@ -1268,6 +1251,60 @@
     if(id === 'equipe') {
         renderOperadoresConfig(); 
     }
+}
+
+        function renderizarListaProdutosTecnica() {
+    const container = document.getElementById('lista-produtos-tecnica');
+    if (!container || !produtos) return;
+
+    if (produtos.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-center font-bold p-4">Nenhum produto cadastrado.</p>`;
+        return;
+    }
+
+    let html = `
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] text-slate-400 uppercase">
+                    <tr>
+                        <th class="p-3">Produto</th>
+                        <th class="p-3">Processo</th>
+                        <th class="p-3">Embalagem</th>
+                        <th class="p-3">Ação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+    `;
+
+    produtos.forEach(p => {
+        html += `
+            <tr class="hover:bg-slate-50">
+                <td class="p-3">
+                    <div class="font-bold text-slate-700">${p.nome}</div>
+                    <div class="text-[10px] text-blue-500 font-bold">${p.material || '-'}</div>
+                </td>
+                <td class="p-3 text-sm text-slate-600">
+                    ${p.peso_peca || 0}g | ${p.ciclo || 0}s | ${p.cavidades || 0} Cav.
+                </td>
+                <td class="p-3 text-sm text-slate-600">
+                    Cx: ${p.qtd_caixa || 0} | Saq: ${p.saquinho || '-'}
+                </td>
+                <td class="p-3 text-red-500 cursor-pointer" onclick="removerProdutoBD('${p.id}')">
+                    <i class="fas fa-trash"></i>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+function limparCamposProduto() {
+    ['cad-nome-novo', 'cad-material', 'cad-pigmento-tipo', 'cad-peso', 'cad-ciclo', 'cad-cavidades', 'cad-pigmento-porc', 'cad-saquinho', 'cad-cx'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = '';
+    });
 }
 
         function processarTurnoAuto() {
@@ -2204,5 +2241,6 @@
     
 </body>
 </html>
+
 
 
