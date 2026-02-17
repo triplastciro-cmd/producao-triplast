@@ -431,7 +431,62 @@
                 
                 <div id="container-filas" class="space-y-6"></div>
 
-                <div id="aba-produtos" class="aba-conteudo max-w-6xl mx-auto px-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold">
+                <tr>
+                    <th class="p-4">Produto</th>
+                    <th class="p-4 hidden md:table-cell">Detalhes Técnicos</th>
+                    <th class="p-4 hidden md:table-cell">Embalagem</th>
+                    <th class="p-4 text-right">Ação</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-produtos-lista" class="divide-y divide-slate-100 text-sm text-slate-700">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b pb-4 gap-4">
+                        <h2 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> HISTÓRICO</h2>
+                        <div class="flex flex-wrap gap-2">
+                            <input type="text" id="busca-historico-op" placeholder="🔍 Buscar Nº O.P" oninput="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500">
+                            <input type="date" id="busca-historico-data" onchange="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500 text-slate-600">
+                            <button onclick="limparBuscaHistorico()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg font-bold text-xs transition-colors"><i class="fa-solid fa-xmark"></i> Limpar</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-blue-50 text-blue-800 text-xs uppercase sticky top-0">
+                                <tr>
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Máquina</th>
+                                    <th class="p-3">O.P</th>
+                                    <th class="p-3">Cliente</th>
+                                    <th class="p-3">Produto</th>
+                                    <th class="p-3">Qtd Feita</th>
+                                    <th class="p-3 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
+                    <h2 class="text-2xl font-black mb-8 border-b pb-4">👷 GERENCIAR OPERADORES</h2>
+                    <div class="flex gap-4 mb-8">
+                        <input type="text" id="novo-operador" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Operador...">
+                        <button onclick="gerenciarOperador('add')" class="bg-green-600 hover:bg-green-500 text-white px-8 rounded-xl font-black text-2xl shadow-md transition-colors">+</button>
+                    </div>
+                    <div id="lista-operadores-config" class="flex flex-wrap gap-3"></div>
+                </div>
+            </div>
+        </div>
+
+    <div id="aba-produtos" class="aba-conteudo max-w-6xl mx-auto px-4">
     <div class="mb-6 text-center">
         <h2 class="text-2xl font-black text-slate-800 uppercase">Catálogo de Produtos</h2>
         <p class="text-slate-500 text-sm">Cadastro Técnico Completo</p>
@@ -491,62 +546,7 @@
             </div>
         </div>
     </div>
-
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold">
-                <tr>
-                    <th class="p-4">Produto</th>
-                    <th class="p-4 hidden md:table-cell">Detalhes Técnicos</th>
-                    <th class="p-4 hidden md:table-cell">Embalagem</th>
-                    <th class="p-4 text-right">Ação</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-produtos-lista" class="divide-y divide-slate-100 text-sm text-slate-700">
-                </tbody>
-        </table>
-    </div>
-</div>
-
-                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b pb-4 gap-4">
-                        <h2 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> HISTÓRICO</h2>
-                        <div class="flex flex-wrap gap-2">
-                            <input type="text" id="busca-historico-op" placeholder="🔍 Buscar Nº O.P" oninput="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500">
-                            <input type="date" id="busca-historico-data" onchange="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500 text-slate-600">
-                            <button onclick="limparBuscaHistorico()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg font-bold text-xs transition-colors"><i class="fa-solid fa-xmark"></i> Limpar</button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-blue-50 text-blue-800 text-xs uppercase sticky top-0">
-                                <tr>
-                                    <th class="p-3">Data</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3">Máquina</th>
-                                    <th class="p-3">O.P</th>
-                                    <th class="p-3">Cliente</th>
-                                    <th class="p-3">Produto</th>
-                                    <th class="p-3">Qtd Feita</th>
-                                    <th class="p-3 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
-                    <h2 class="text-2xl font-black mb-8 border-b pb-4">👷 GERENCIAR OPERADORES</h2>
-                    <div class="flex gap-4 mb-8">
-                        <input type="text" id="novo-operador" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Operador...">
-                        <button onclick="gerenciarOperador('add')" class="bg-green-600 hover:bg-green-500 text-white px-8 rounded-xl font-black text-2xl shadow-md transition-colors">+</button>
-                    </div>
-                    <div id="lista-operadores-config" class="flex flex-wrap gap-3"></div>
-                </div>
-            </div>
-        </div>
-
+    
         <div id="aba-graficos" class="aba-conteudo px-4">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
@@ -652,9 +652,9 @@
         // VARIÁVEIS GLOBAIS
         let maquinas = [];
         let historico = [];
-        let coresGlobais = ["Natural", "Preto", "Branco"];
-        let operadoresGlobais = ["João", "Maria", "José"]; 
-        let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; 
+        let coresGlobais = [];
+        let operadoresGlobais = []; 
+        let produtosGlobais = [];
         
         let dadosMensais = { tempoProducaoTotal: 0, tempoHoraExtraTotal: 0 };
         const META_HORAS_MENSAL = 1628 * 3600; 
@@ -2159,5 +2159,6 @@ function excluirProduto(index) {
     
 </body>
 </html>
+
 
 
