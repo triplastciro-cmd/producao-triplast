@@ -372,7 +372,7 @@
                         </div>
                          <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"> class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
                     </div>
 
@@ -393,6 +393,43 @@
                         </div>
                     </div>
 
+                    <div class="bg-gray-100 p-4 rounded-xl border border-gray-300 mb-4 mt-2">
+    <h4 class="text-slate-700 font-black mb-3 text-sm uppercase"><i class="fas fa-calculator"></i> Calculadora de Produção</h4>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+            <label class="text-[10px] font-bold text-slate-500">PESO PEÇA (g)</label>
+            <input type="number" id="calc-peso" class="w-full p-2 bg-white border rounded-lg font-bold text-sm" placeholder="Ex: 20" oninput="calcularPrevisao()">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500">CICLO (seg)</label>
+            <input type="number" id="calc-ciclo" class="w-full p-2 bg-white border rounded-lg font-bold text-sm" placeholder="Ex: 20" oninput="calcularPrevisao()">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500">CAVIDADES</label>
+            <input type="number" id="calc-cavidades" class="w-full p-2 bg-white border rounded-lg font-bold text-sm" placeholder="Ex: 4" value="1" oninput="calcularPrevisao()">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500">% PIGMENTO</label>
+            <input type="number" id="calc-pigmento-porc" class="w-full p-2 bg-white border rounded-lg font-bold text-sm" placeholder="Ex: 2" value="2" oninput="calcularPrevisao()">
+        </div>
+    </div>
+
+    <div class="mt-3 pt-3 border-t border-gray-300 grid grid-cols-3 gap-2 text-center">
+        <div class="bg-white p-2 rounded shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo Estimado</span>
+            <strong id="res-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
+        </div>
+        <div class="bg-white p-2 rounded shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Material Total</span>
+            <strong id="res-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
+        </div>
+        <div class="bg-white p-2 rounded shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Pigmento Nec.</span>
+            <strong id="res-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
+        </div>
+    </div>
+</div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <div class="md:col-span-2 flex items-center">
                             <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
@@ -1995,6 +2032,48 @@
         window.addEventListener('beforeunload', () => { salvarGeral(); }); 
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
+
+        // === FUNÇÃO DE CÁLCULO DE PRODUÇÃO (NOVA) ===
+function calcularPrevisao() {
+    // Pega a quantidade do campo que já existe no seu site (f-qtd)
+    let metaPeças = parseFloat(document.getElementById('f-qtd').value) || 0;
+    
+    // Pega os dados da nova calculadora
+    let pesoPeca = parseFloat(document.getElementById('calc-peso').value) || 0;       
+    let ciclo = parseFloat(document.getElementById('calc-ciclo').value) || 0;           
+    let cavidades = parseFloat(document.getElementById('calc-cavidades').value) || 1;   
+    let porcPigmento = parseFloat(document.getElementById('calc-pigmento-porc').value) || 0; 
+
+    if (metaPeças === 0 || pesoPeca === 0 || ciclo === 0) {
+        return; // Fica quieto se não tiver dados
+    }
+
+    // 1. Material (kg): (Peças * Peso) / 1000
+    let totalMaterialKg = (metaPeças * pesoPeca) / 1000;
+
+    // 2. Pigmento (kg): Material * %
+    let totalPigmentoKg = totalMaterialKg * (porcPigmento / 100);
+
+    // 3. Tempo: (Peças * Ciclo) / Cavidades
+    // Primeiro achamos quantos ciclos totais são necessários
+    let ciclosTotais = metaPeças / cavidades;
+    let segundosTotais = ciclosTotais * ciclo;
+    let horasTotais = segundosTotais / 3600;
+
+    // Formatar horas bonitinho
+    let h = Math.floor(horasTotais);
+    let m = Math.round((horasTotais - h) * 60);
+    
+    // Atualiza os quadradinhos brancos com o resultado
+    document.getElementById('res-tempo').innerText = h + "h " + m + "m";
+    document.getElementById('res-material').innerText = totalMaterialKg.toFixed(2) + " kg";
+    document.getElementById('res-pigmento').innerText = totalPigmentoKg.toFixed(3) + " kg";
+
+    // Opcional: Já preenche o campo de "Qtd Material" do formulário original se quiser
+    document.getElementById('f-material-qtd').value = totalMaterialKg.toFixed(2) + " kg";
+}
+        
     </script>
 </body>
 </html>
+
