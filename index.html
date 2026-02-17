@@ -341,11 +341,11 @@
         </header>
 
         <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex flex-wrap gap-2 justify-center">
-    <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
-    <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
-    <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
-    <button onclick="trocarAba('produtos')" id="btn-produtos" class="tab-btn shadow-md">📦 PRODUTOS</button>
-    <button onclick="trocarAba('equipe')" id="btn-equipe" class="tab-btn shadow-md">👷 EQUIPE</button>
+    <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md whitespace-nowrap">🖥️ PAINEL</button>
+    <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md whitespace-nowrap">📋 GESTÃO O.P</button>
+    <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md whitespace-nowrap">📊 GRÁFICOS</button>
+    <button onclick="trocarAba('produtos')" id="btn-produtos" class="tab-btn shadow-md whitespace-nowrap">📦 PRODUTOS</button>
+    <button onclick="trocarAba('equipe')" id="btn-equipe" class="tab-btn shadow-md whitespace-nowrap">👷 EQUIPE</button>
 </nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
@@ -543,11 +543,11 @@
         </div>
 
         <div class="flex gap-3 p-2 bg-slate-50 rounded-3xl border-2 border-slate-100 mb-10">
-            <input type="text" id="novo-operador" class="flex-1 bg-transparent p-4 font-bold text-slate-700 outline-none" placeholder="Nome do Operador...">
-            <button onclick="gerenciarOperador('add')" class="bg-blue-600 hover:bg-blue-500 text-white px-8 rounded-2xl font-black shadow-lg">ADICIONAR</button>
+            <input type="text" id="novo-operador-input" class="flex-1 bg-transparent p-4 font-bold text-slate-700 outline-none" placeholder="Nome do Operador...">
+            <button onclick="adicionarNovoOperador()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 rounded-2xl font-black shadow-lg">ADICIONAR</button>
         </div>
 
-        <div id="lista-operadores-config" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="lista-operadores-moderna" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             </div>
     </div>
 </div>
@@ -2071,8 +2071,9 @@
     </script>
 
     <script>
-        function renderOperadoresConfig() {
-    const container = document.getElementById('lista-operadores-config');
+        // 1. Função para Renderizar a lista de operadores com botão de lixeira
+function renderOperadoresConfig() {
+    const container = document.getElementById('lista-operadores-moderna');
     if (!container) return;
 
     container.innerHTML = config.operadores.map((nome, index) => `
@@ -2090,19 +2091,44 @@
     `).join('');
 }
 
-// Função para remover o operador
-async function removerOperador(index) {
-    if (confirm(`Deseja remover o operador ${config.operadores[index]}?`)) {
-        config.operadores.splice(index, 1);
-        await salvarConfig(); // Garante que salva no Supabase/LocalStorage
-        renderOperadoresConfig();
-        popularSelectsOperadores(); // Atualiza os selects da Ficha Técnica
+// 2. Função para Adicionar Operador
+async function adicionarNovoOperador() {
+    const input = document.getElementById('novo-operador-input');
+    const nome = input.value.trim();
+    
+    if (nome) {
+        config.operadores.push(nome);
+        input.value = '';
+        await salvarConfig(); // Salva no Supabase
+        renderOperadoresConfig(); // Atualiza a lista na tela
+        popularSelectsOperadores(); // Atualiza os menus de escolha
+        mostrarToast("OPERADOR ADICIONADO!");
     }
 }
+
+// 3. Função para Remover Operador
+async function removerOperador(index) {
+    if (confirm(`Remover ${config.operadores[index]} da equipe?`)) {
+        config.operadores.splice(index, 1);
+        await salvarConfig();
+        renderOperadoresConfig();
+        popularSelectsOperadores();
+        mostrarToast("OPERADOR REMOVIDO", "red");
+    }
+}
+
+// Garanta que ao trocar de aba, a lista seja carregada
+const originalTrocarAba = trocarAba;
+trocarAba = function(id) {
+    originalTrocarAba(id);
+    if (id === 'equipe') renderOperadoresConfig();
+    if (id === 'produtos') renderProdutos(); // Se sua função de listar produtos tiver esse nome
+};
     </script>
     
 </body>
 </html>
+
 
 
 
