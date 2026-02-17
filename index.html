@@ -2054,111 +2054,54 @@ async function salvarGeral() {
         carregarBanco();
     </script>
 
-    <script>
-        function calcularPrevisao() {
-            try {
-                // 1. Pega a Quantidade da OP (Lá de cima)
-                let elQtd = document.getElementById('f-qtd');
-                let qtdMeta = elQtd ? (parseFloat(elQtd.value) || 0) : 0;
-        
-                // 2. Pega os dados da Calculadora Técnica
-                let pesoPeca = parseFloat(document.getElementById('tec-peso').value) || 0; 
-                let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
-                let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
-                let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
-        
-                // 3. Se não tiver Quantidade ou Peso, limpa e sai
-                if (qtdMeta === 0 || pesoPeca === 0) {
-                    if(document.getElementById('out-tempo')) document.getElementById('out-tempo').innerText = "-";
-                    if(document.getElementById('out-material')) document.getElementById('out-material').innerText = "-";
-                    if(document.getElementById('out-pigmento')) document.getElementById('out-pigmento').innerText = "-";
-                    return; 
-                }
-        
-                // === CÁLCULOS ===
-        
-                // A) MATERIAL (kg) -> (Qtd * Peso) / 1000
-                let pesoTotalMaterial = (qtdMeta * pesoPeca) / 1000;
-        
-                // B) PIGMENTO (kg) -> Material * (Porcentagem / 100)
-                let pesoPigmento = 0;
-                if (porcentagem > 0) {
-                    pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
-                }
-        
-                // C) TEMPO -> (Qtd / Cav) * Ciclo
-                let totalSegundos = (qtdMeta / cavidades) * ciclo;
-                let h = Math.floor(totalSegundos / 3600);
-                let m = Math.round(((totalSegundos / 3600) - h) * 60);
-                let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
-        
-                // === EXIBIÇÃO ===
-                
-                if(document.getElementById('out-tempo')) 
-                    document.getElementById('out-tempo').innerText = textoTempo;
-        
-                // Material: Com "kg" (Ex: 25,00 kg)
-                if(document.getElementById('out-material'))
-                    document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
-        
-                // Pigmento: SÓ O NÚMERO (Ex: 0,5)
-                if(document.getElementById('out-pigmento')) {
-                    let pigLimpo = parseFloat(pesoPigmento.toFixed(3));
-                    document.getElementById('out-pigmento').innerText = pigLimpo.toString().replace('.', ',');
-                }
-        
-            } catch (e) {
-                console.log("Erro no cálculo:", e);
-            }
-        }
-</script>
-
-            <div id="modal-pigmentos" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md m-4 overflow-hidden animate-fade-in-up">
-                <div class="bg-slate-800 p-4 flex justify-between items-center">
-                    <h3 class="text-white font-bold"><i class="fas fa-palette mr-2"></i>Gerenciar Pigmentos</h3>
-                    <button onclick="document.getElementById('modal-pigmentos').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-                </div>
-                <div class="p-6">
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="novo-pigmento-nome" placeholder="Nome do Pigmento (Ex: Azul Royal)" class="flex-1 p-3 border rounded-lg">
-                        <button onclick="adicionarNovoPigmento()" class="bg-blue-600 text-white px-4 rounded-lg font-bold hover:bg-blue-700">+</button>
-                    </div>
-                    <div class="max-h-60 overflow-y-auto">
-                        <ul id="lista-pigmentos-gerenciar" class="space-y-2">
-                            </ul>
-                    </div>
-                </div>
+    <div id="modal-pigmentos" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md m-4 overflow-hidden animate-fade-in-up">
+        <div class="bg-slate-800 p-4 flex justify-between items-center">
+            <h3 class="text-white font-bold"><i class="fas fa-palette mr-2"></i>Gerenciar Pigmentos</h3>
+            <button onclick="document.getElementById('modal-pigmentos').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="p-6">
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="novo-pigmento-nome" placeholder="Nome do Pigmento (Ex: Azul Royal)" class="flex-1 p-3 border rounded-lg">
+                <button onclick="adicionarNovoPigmento()" class="bg-blue-600 text-white px-4 rounded-lg font-bold hover:bg-blue-700">+</button>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+                <ul id="lista-pigmentos-gerenciar" class="space-y-2">
+                    </ul>
             </div>
         </div>
+    </div>
+</div>
 
 <script>
-    // --- VARIÁVEIS GLOBAIS ---
-    // Se já existirem lá em cima, não precisa repetir, mas se der erro, deixe aqui.
-    // O importante é o código abaixo:
+    // --- PARTE A: VARIÁVEIS E FUNÇÕES DOS PIGMENTOS ---
 
-    // --- FUNÇÕES DE PIGMENTOS ---
+    // Cria a lista se ela não existir
+    if(typeof pigmentosGlobais === 'undefined') {
+        var pigmentosGlobais = []; 
+    }
 
+    // Abre a janela
     function abrirModalPigmentos() {
         renderizarListaGerenciaPigmentos();
         document.getElementById('modal-pigmentos').classList.remove('hidden');
     }
 
+    // Adiciona novo pigmento
     function adicionarNovoPigmento() {
         let nome = document.getElementById('novo-pigmento-nome').value;
         if(!nome) return alert("Digite um nome!");
         
-        // Adiciona na lista (garante que a lista existe)
-        if(typeof pigmentosGlobais === 'undefined') pigmentosGlobais = [];
-        
+        if(!pigmentosGlobais) pigmentosGlobais = [];
         pigmentosGlobais.push(nome);
         
         document.getElementById('novo-pigmento-nome').value = "";
-        salvarGeral(); 
-        renderizarListaGerenciaPigmentos();
-        renderizarOpcoesPigmentos();
+        salvarGeral(); // Salva no banco
+        renderizarListaGerenciaPigmentos(); // Atualiza lista da janela
+        renderizarOpcoesPigmentos(); // Atualiza o menu da calculadora
     }
 
+    // Remove pigmento
     function removerPigmento(index) {
         if(confirm("Excluir este pigmento?")) {
             pigmentosGlobais.splice(index, 1);
@@ -2168,85 +2111,106 @@ async function salvarGeral() {
         }
     }
 
+    // Desenha a lista dentro da janela (com lixeirinha)
     function renderizarListaGerenciaPigmentos() {
         let html = "";
-        // Garante que a lista existe
-        if(typeof pigmentosGlobais === 'undefined') pigmentosGlobais = [];
-
+        if(!pigmentosGlobais) pigmentosGlobais = [];
+        
         pigmentosGlobais.forEach((pig, index) => {
             html += `
                 <li class="flex justify-between items-center bg-slate-50 p-3 rounded border">
                     <span class="font-bold text-slate-700">${pig}</span>
                     <button onclick="removerPigmento(${index})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
-                </li>
-            `;
+                </li>`;
         });
-        document.getElementById('lista-pigmentos-gerenciar').innerHTML = html || "<p class='text-center text-gray-400'>Vazio.</p>";
+        document.getElementById('lista-pigmentos-gerenciar').innerHTML = html || "<p class='text-center text-gray-400'>Vazio</p>";
     }
 
+    // Preenche o Menu de Seleção na Calculadora
     function renderizarOpcoesPigmentos() {
         let select = document.getElementById('tec-pig-select');
         if(!select) return;
         
         let valorAtual = select.value; 
-        
-        // Garante que a lista existe
-        if(typeof pigmentosGlobais === 'undefined') pigmentosGlobais = [];
-
         let html = `<option value="0">Sem Pigmento</option>`;
-        pigmentosGlobais.forEach(pig => {
-            html += `<option value="${pig}">${pig}</option>`;
-        });
         
+        if(pigmentosGlobais) {
+            pigmentosGlobais.forEach(pig => {
+                html += `<option value="${pig}">${pig}</option>`;
+            });
+        }
         select.innerHTML = html;
         select.value = valorAtual;
     }
 
+    // Quando troca o select, roda o cálculo
     function aoSelecionarPigmento() {
         calcularPrevisao();
     }
 
-    // --- CÁLCULO ATUALIZADO ---
+    // --- PARTE B: O CÁLCULO MATEMÁTICO ---
+
     function calcularPrevisao() {
         try {
+            // 1. Pega a Quantidade da OP (Lá de cima)
             let elQtd = document.getElementById('f-qtd');
             let qtdMeta = elQtd ? (parseFloat(elQtd.value) || 0) : 0;
-            
+        
+            // 2. Pega os dados da Calculadora Técnica
             let pesoPeca = parseFloat(document.getElementById('tec-peso').value) || 0; 
-            let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
+            let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;            
             let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
             let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
-
+        
+            // 3. Se não tiver Quantidade ou Peso, limpa e sai
             if (qtdMeta === 0 || pesoPeca === 0) {
                 if(document.getElementById('out-tempo')) document.getElementById('out-tempo').innerText = "-";
                 if(document.getElementById('out-material')) document.getElementById('out-material').innerText = "-";
                 if(document.getElementById('out-pigmento')) document.getElementById('out-pigmento').innerText = "-";
-                return;
+                return; 
             }
-
+        
+            // === CÁLCULOS ===
+        
+            // A) MATERIAL (kg) -> (Qtd * Peso) / 1000
             let pesoTotalMaterial = (qtdMeta * pesoPeca) / 1000;
+        
+            // B) PIGMENTO (kg) -> Material * (Porcentagem / 100)
             let pesoPigmento = 0;
             if (porcentagem > 0) {
                 pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
             }
-            
-            let totalCiclos = qtdMeta / cavidades;
-            let totalSegundos = totalCiclos * ciclo;
+        
+            // C) TEMPO -> (Qtd / Cav) * Ciclo
+            let totalSegundos = (qtdMeta / cavidades) * ciclo;
             let h = Math.floor(totalSegundos / 3600);
-            let m = Math.round(((totalSegundos / 3600) - h) * 60);
+            let m = Math.round(((totalSegundos % 3600) / 60)); // Correção Minutos
             let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
-
-            if(document.getElementById('out-tempo')) document.getElementById('out-tempo').innerText = textoTempo;
-            if(document.getElementById('out-material')) document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        
+            // === EXIBIÇÃO ===
+            
+            if(document.getElementById('out-tempo')) 
+                document.getElementById('out-tempo').innerText = textoTempo;
+        
+            // Material: Com "kg" (Ex: 25,00 kg)
+            if(document.getElementById('out-material'))
+                document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        
+            // Pigmento: SÓ O NÚMERO (Ex: 0,5)
             if(document.getElementById('out-pigmento')) {
                 let pigLimpo = parseFloat(pesoPigmento.toFixed(3));
                 document.getElementById('out-pigmento').innerText = pigLimpo.toString().replace('.', ',');
             }
-
-        } catch (e) { console.log(e); }
+        
+        } catch (e) {
+            console.log("Erro no cálculo:", e);
+        }
     }
 </script>
+
+
 </body>
 </html>
+
 
 
