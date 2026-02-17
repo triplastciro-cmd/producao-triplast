@@ -372,63 +372,10 @@
                         </div>
                          <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="Quantidade Total" class="w-full p-3 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold text-lg">
                         </div>
                     </div>
 
-                                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-2 shadow-sm">
-                <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
-                    <i class="fas fa-calculator text-blue-600"></i>
-                    <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo Técnico</h4>
-                </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
-                        <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
-                        <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
-                        <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
-                    </div>
-                    
-                    <div class="flex gap-1">
-                        <div class="flex-1">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">PIGMENTO</label>
-                            <select id="tec-pig-select" onchange="aoSelecionarPigmento()" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700">
-                                <option value="0">Sem Pigmento</option>
-                                </select>
-                        </div>
-                        <div class="w-20">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">%</label>
-                            <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="%" value="0" oninput="calcularPrevisao()">
-                        </div>
-                        <div class="pt-6">
-                            <button onclick="abrirModalPigmentos()" class="bg-slate-200 text-slate-600 p-2 rounded-lg hover:bg-slate-300 transition"><i class="fas fa-cog"></i></button>
-                        </div>
-                    </div>
-                </div>
-            
-                <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo</span>
-                        <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Material</span>
-                        <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Pigmento</span>
-                        <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                </div>
-            </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
@@ -637,7 +584,6 @@
         // VARIÁVEIS GLOBAIS
         let maquinas = [];
         let historico = [];
-        let pigmentosGlobais = []; // Nova lista de pigmentos
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let operadoresGlobais = ["João", "Maria", "José"]; 
         let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; 
@@ -749,42 +695,31 @@
         // ==========================================================
         
         // Função principal de carregamento inicial
-        // === FUNÇÃO CARREGAR BANCO (CORRIGIDA E COM PIGMENTOS) ===
-async function carregarBanco() {
-    try {
-        const { data, error } = await sb.from('sistema').select('*').eq('id', 1);
-        if (error) throw error;
+        async function carregarBanco() {
+            const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
+            if (data) {
+                aplicarDadosDoServidor(data.conteudo);
+                iniciarRelogio();
+                
+                // Iniciar o Loop de Sincronização (Polling)
+                setInterval(sincronizarComServidor, 3000); // Verifica a cada 3 segundos
 
-        if (data && data.length > 0) {
-            const conteudo = data[0].conteudo;
-            
-            // Carrega o pigmento na memória antes de aplicar o resto
-            if (conteudo.pigmentos) {
-                pigmentosGlobais = conteudo.pigmentos;
+                document.getElementById('loading-spinner').style.display = 'none';
+                document.getElementById('loading-action').classList.remove('hidden');
+                document.getElementById('loading-action').classList.add('flex');
             }
-
-            // CHAMA A FUNÇÃO QUE SEU CÓDIGO JÁ TEM
-            aplicarDadosDoServidor(conteudo);
-            
-            // Garante que o menu de pigmentos seja desenhado
-            if (typeof renderizarOpcoesPigmentos === 'function') {
-                renderizarOpcoesPigmentos();
-            }
-
-            console.log("Dados carregados e aplicados.");
         }
-        
-        // ESCONDE A TELA DE CARREGAMENTO (IGUAL AO ORIGINAL)
-        document.getElementById('tela-carregamento').style.display = 'none';
-    } catch (err) {
-        console.error("Erro ao carregar:", err);
-        // Tira a tela de carregamento mesmo se der erro para não travar o site
-        document.getElementById('tela-carregamento').style.display = 'none';
-    }
-}
 
+        function aplicarDadosDoServidor(conteudo) {
+            maquinas = conteudo.maquinas;
+            coresGlobais = conteudo.cores || coresGlobais;
+            operadoresGlobais = conteudo.operadores || operadoresGlobais;
+            if (conteudo.produtos) produtosGlobais = conteudo.produtos;
+            historico = conteudo.historico || []; 
+            if(conteudo.dadosMensais) dadosMensais = conteudo.dadosMensais;
+            if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra; 
             
-             // Atualiza timestamp local para saber se estamos atualizados
+            // Atualiza timestamp local para saber se estamos atualizados
             dadosLocaisLastUpdate = conteudo.lastUpdateTimestamp || 0;
 
             sanitizarDados();
@@ -2037,23 +1972,23 @@ async function carregarBanco() {
         }
 
         async function salvarGeral() { 
-    await sb.from('sistema').update({ 
-        conteudo: { 
-            maquinas, 
-            cores: coresGlobais, 
-            operadores: operadoresGlobais, 
-            produtos: produtosGlobais, 
-            pigmentos: pigmentosGlobais, // <--- ADICIONE ESTA LINHA
-            historico, 
-            dadosMensais, 
-            modoHoraExtra, 
-            lastUpdateTimestamp: Date.now() 
-        } 
-    }).eq('id', 1);
-    
-    dadosLocaisLastUpdate = Date.now();
-    showToast("DADOS SALVOS");
-}
+            await sb.from('sistema').update({ 
+                conteudo: { 
+                    maquinas, 
+                    cores: coresGlobais, 
+                    operadores: operadoresGlobais, 
+                    produtos: produtosGlobais, 
+                    historico, 
+                    dadosMensais, 
+                    modoHoraExtra, 
+                    lastUpdateTimestamp: Date.now() 
+                } 
+            }).eq('id', 1); // SALVA TUDO
+            
+            // ATUALIZA TIMESTAMP LOCAL PARA EVITAR AUTO-REFRESH NO PRÓPRIO DISPOSITIVO QUE SALVOU
+            dadosLocaisLastUpdate = Date.now();
+            showToast("DADOS SALVOS");
+        }
 
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
         
@@ -2062,125 +1997,145 @@ async function carregarBanco() {
         carregarBanco();
     </script>
 
-    <div id="modal-pigmentos" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md m-4 overflow-hidden">
-        <div class="bg-slate-800 p-4 flex justify-between items-center">
-            <h3 class="text-white font-bold">Gerenciar Pigmentos</h3>
-            <button onclick="document.getElementById('modal-pigmentos').classList.add('hidden')" class="text-slate-400 hover:text-white">X</button>
+    <div class="max-w-4xl mx-auto mt-6 p-6 bg-white rounded-2xl shadow-lg border border-slate-200">
+    <div class="flex items-center gap-3 mb-6 border-b pb-4">
+        <div class="bg-blue-600 text-white p-2 rounded-lg">
+            <i class="fas fa-calculator text-xl"></i>
         </div>
-        <div class="p-6">
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="novo-pigmento-nome" placeholder="Nome (Ex: Azul)" class="flex-1 p-3 border rounded-lg">
-                <button onclick="adicionarNovoPigmento()" class="bg-blue-600 text-white px-4 rounded-lg font-bold">+</button>
+        <div>
+            <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Calculadora Técnica</h3>
+            <p class="text-xs text-slate-500 font-bold">Previsão de Tempo, Material e Pigmento</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="space-y-2">
+            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider">Peso da Peça (g)</label>
+            <div class="relative">
+                <input type="number" id="tec-peso" oninput="calcularPrevisao()" placeholder="0.00" 
+                    class="w-full bg-slate-50 border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 focus:ring-0 outline-none font-bold text-slate-700 transition-all">
+                <span class="absolute right-3 top-3 text-slate-400 font-bold">g</span>
             </div>
-            <ul id="lista-pigmentos-gerenciar" class="space-y-2 max-h-60 overflow-y-auto">
-                </ul>
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider">Ciclo (segundos)</label>
+            <div class="relative">
+                <input type="number" id="tec-ciclo" oninput="calcularPrevisao()" placeholder="0" 
+                    class="w-full bg-slate-50 border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 focus:ring-0 outline-none font-bold text-slate-700 transition-all">
+                <span class="absolute right-3 top-3 text-slate-400 font-bold">s</span>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider">Nº Cavidades</label>
+            <input type="number" id="tec-cav" value="1" oninput="calcularPrevisao()" 
+                class="w-full bg-slate-50 border-2 border-slate-200 p-3 rounded-xl focus:border-blue-500 focus:ring-0 outline-none font-bold text-slate-700 transition-all">
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider">% Pigmento</label>
+            <div class="relative">
+                <input type="number" id="tec-pig-porc" oninput="calcularPrevisao()" placeholder="0.0" 
+                    class="w-full bg-slate-50 border-2 border-slate-200 p-3 rounded-xl focus:border-orange-500 focus:ring-0 outline-none font-bold text-slate-700 transition-all">
+                <span class="absolute right-3 top-3 text-slate-400 font-bold">%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        <div class="bg-blue-50 border-2 border-blue-100 p-4 rounded-2xl flex items-center gap-4">
+            <div class="bg-blue-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div>
+                <span class="block text-[10px] font-black text-blue-400 uppercase tracking-widest">Tempo Estimado</span>
+                <span id="out-tempo" class="text-2xl font-black text-blue-700">-</span>
+            </div>
+        </div>
+
+        <div class="bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl flex items-center gap-4">
+            <div class="bg-slate-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div>
+                <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Matéria-Prima</span>
+                <span id="out-material" class="text-2xl font-black text-slate-800">-</span>
+            </div>
+        </div>
+
+        <div class="bg-orange-50 border-2 border-orange-100 p-4 rounded-2xl flex items-center gap-4">
+            <div class="bg-orange-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+                <i class="fas fa-fill-drip"></i>
+            </div>
+            <div>
+                <span class="block text-[10px] font-black text-orange-400 uppercase tracking-widest">Pigmento (kg)</span>
+                <span id="out-pigmento" class="text-2xl font-black text-orange-700">-</span>
+            </div>
         </div>
     </div>
 </div>
 
-    <script>
+<script>
+function calcularPrevisao() {
+    try {
+        // 1. Busca a quantidade da OP (ID f-qtd do seu sistema)
+        const elQtd = document.getElementById('f-qtd');
+        const qtdMeta = elQtd ? (parseFloat(elQtd.value) || 0) : 0;
 
-// --- FUNÇÕES ---
-function abrirModalPigmentos() {
-    renderizarListaGerenciaPigmentos();
-    document.getElementById('modal-pigmentos').classList.remove('hidden');
-}
+        // 2. Busca os valores da calculadora técnica
+        const pesoPeca   = parseFloat(document.getElementById('tec-peso').value) || 0; 
+        const ciclo      = parseFloat(document.getElementById('tec-ciclo').value) || 0;            
+        const cavidades  = parseFloat(document.getElementById('tec-cav').value) || 1;   
+        const porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
-function adicionarNovoPigmento() {
-    let nome = document.getElementById('novo-pigmento-nome').value;
-    if(!nome) return alert("Digite um nome!");
-    
-    pigmentosGlobais.push(nome);
-    document.getElementById('novo-pigmento-nome').value = "";
-    
-    salvarGeral(); // Tenta salvar
-    renderizarListaGerenciaPigmentos();
-    renderizarOpcoesPigmentos();
-}
+        // 3. Validação básica
+        if (qtdMeta === 0 || pesoPeca === 0) {
+            document.getElementById('out-tempo').innerText = "-";
+            document.getElementById('out-material').innerText = "-";
+            document.getElementById('out-pigmento').innerText = "-";
+            return; 
+        }
 
-function removerPigmento(index) {
-    if(confirm("Excluir?")) {
-        pigmentosGlobais.splice(index, 1);
-        salvarGeral();
-        renderizarListaGerenciaPigmentos();
-        renderizarOpcoesPigmentos();
+        // --- CONTAS MATEMÁTICAS ---
+        
+        // A) Material Total (kg)
+        const pesoTotalMaterial = (qtdMeta * pesoPeca) / 1000;
+
+        // B) Pigmento (kg)
+        const pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
+
+        // C) Tempo Estimado (Total de ciclos x tempo do ciclo)
+        const totalSegundos = (qtdMeta / cavidades) * ciclo;
+        const h = Math.floor(totalSegundos / 3600);
+        const m = Math.round((totalSegundos % 3600) / 60);
+        const textoTempo = (ciclo > 0) ? h + "h " + m + "m" : "-";
+
+        // --- ATUALIZAÇÃO DA TELA ---
+        
+        // Tempo: Exemplo "12h 30m"
+        document.getElementById('out-tempo').innerText = textoTempo;
+
+        // Material: Exemplo "250,50 kg"
+        document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+
+        // Pigmento: Exemplo "2,505" (3 casas decimais para precisão)
+        document.getElementById('out-pigmento').innerText = pesoPigmento.toFixed(3).replace('.', ',');
+
+    } catch (err) {
+        console.error("Erro no cálculo da calculadora técnica:", err);
     }
 }
 
-function renderizarListaGerenciaPigmentos() {
-    let html = "";
-    pigmentosGlobais.forEach((pig, index) => {
-        html += `<li class="flex justify-between bg-slate-50 p-3 rounded border">
-                    <b>${pig}</b>
-                    <button onclick="removerPigmento(${index})" class="text-red-500">Excluir</button>
-                 </li>`;
-    });
-    document.getElementById('lista-pigmentos-gerenciar').innerHTML = html || "Vazio";
-}
-
-function renderizarOpcoesPigmentos() {
-    let select = document.getElementById('tec-pig-select');
-    if(!select) return;
-    let atual = select.value;
-    
-    let html = `<option value="0">Sem Pigmento</option>`;
-    pigmentosGlobais.forEach(pig => {
-        html += `<option value="${pig}">${pig}</option>`;
-    });
-    
-    select.innerHTML = html;
-    select.value = atual;
-}
-
-function aoSelecionarPigmento() {
-    calcularPrevisao();
-}
-
-// === FUNÇÃO QUE DESENHA AS MÁQUINAS (QUE ESTAVA FALTANDO) ===
-function renderizarMaquinas() {
-    const grid = document.getElementById('grid-maquinas'); // Verifica se sua div tem esse ID
-    if (!grid) return; // Se não achar a div, não faz nada
-    
-    grid.innerHTML = ''; // Limpa a tela antes de desenhar
-
-    maquinas.forEach((maq, index) => {
-        // Cria o cartão da máquina
-        const card = document.createElement('div');
-        card.className = `p-4 rounded-xl shadow-sm border-l-4 ${maq.status === 'PARADA' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-white'}`;
-        
-        card.innerHTML = `
-            <div class="flex justify-between items-start">
-                <div>
-                    <h3 class="font-bold text-lg text-slate-700">${maq.nome}</h3>
-                    <p class="text-xs text-slate-500 uppercase font-bold mt-1">${maq.operador || 'Sem Operador'}</p>
-                </div>
-                <span class="text-xs font-bold px-2 py-1 rounded ${maq.status === 'PARADA' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
-                    ${maq.status}
-                </span>
-            </div>
-            <div class="mt-3">
-                <p class="text-sm text-slate-600"><strong>Produto:</strong> ${maq.produto || '-'}</p>
-                <p class="text-sm text-slate-600"><strong>Meta:</strong> ${maq.meta || 0}</p>
-            </div>
-        `;
-        
-        grid.appendChild(card);
-    });
-}
-        
-    </script>
+// Pequeno ajuste: Se você digitar a quantidade da OP, a calculadora atualiza sozinha
+document.addEventListener('DOMContentLoaded', function() {
+    const inputQtdOP = document.getElementById('f-qtd');
+    if(inputQtdOP) {
+        inputQtdOP.addEventListener('input', calcularPrevisao);
+    }
+});
+</script>
     
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
 
