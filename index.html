@@ -341,12 +341,12 @@
         </header>
 
         <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex flex-wrap gap-2 justify-center">
-            <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md whitespace-nowrap">🖥️ PAINEL</button>
-            <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md whitespace-nowrap">📋 GESTÃO O.P</button>
-            <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md whitespace-nowrap">📊 GRÁFICOS</button>
-            <button onclick="trocarAba('produtos')" id="btn-produtos" class="tab-btn shadow-md whitespace-nowrap">📦 PRODUTOS</button>
-            <button onclick="trocarAba('equipe')" id="btn-equipe" class="tab-btn shadow-md whitespace-nowrap">👷 EQUIPE</button>
-        </nav>
+    <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
+    <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
+    <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
+    <button onclick="trocarAba('produtos')" id="btn-produtos" class="tab-btn shadow-md">📦 PRODUTOS</button>
+    <button onclick="trocarAba('equipe')" id="btn-equipe" class="tab-btn shadow-md">👷 EQUIPE</button>
+</nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
             <div id="grid-maquinas"></div>
@@ -461,47 +461,94 @@
         </div>
     </div>
 </div>
-                <div id="aba-produtos" class="aba-conteudo px-4">
-    <div class="max-w-6xl mx-auto">
-        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 mb-8">
-            <h2 class="text-xl font-black mb-6 text-slate-700 uppercase italic">📦 Cadastro de Produtos</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">Nome do Produto</label>
-                    <input type="text" id="cad-nome" placeholder="Ex: Pote 250ml" class="w-full p-3 bg-slate-50 border rounded-xl font-bold">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">Peso (g)</label>
-                    <input type="number" id="cad-peso" step="0.001" class="w-full p-3 bg-slate-50 border rounded-xl font-bold text-blue-600">
-                </div>
-                <button onclick="salvarNovoProduto()" class="bg-blue-700 text-white py-3 rounded-xl font-black uppercase mt-6">Salvar Produto</button>
+                <div id="aba-produtos" class="aba-conteudo max-w-7xl mx-auto px-4">
+    <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 mb-8">
+        <h2 class="text-2xl font-black text-slate-800 mb-6 flex items-center gap-3">
+            <i class="fas fa-boxes-stacked text-blue-600"></i> ENGENHARIA DE PRODUTOS
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Nome do Produto</label>
+                <input type="text" id="cad-nome" placeholder="Ex: Pote 250ml" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Material (Resina)</label>
+                <input type="text" id="cad-material" placeholder="Ex: PP" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Pigmento (Tipo)</label>
+                <input type="text" id="cad-pig-tipo" placeholder="Ex: Master" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Peso Peça (g)</label>
+                <input type="number" id="cad-peso" step="0.001" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-blue-600">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Ciclo (Seg)</label>
+                <input type="number" id="cad-ciclo" step="0.1" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-blue-600">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Cavidades</label>
+                <input type="number" id="cad-cav" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase">% Pigmento</label>
+                <input type="number" id="cad-pig-porc" step="0.01" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-orange-500">
+            </div>
+
+            <div class="md:col-span-1">
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Saquinho</label>
+                <input type="text" id="cad-saquinho" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+            </div>
+            <div class="md:col-span-1">
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Qtd por Caixa</label>
+                <input type="number" id="cad-cx" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+            </div>
+
+            <div class="md:col-span-2 flex items-end">
+                <button onclick="salvarNovoProduto()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase shadow-lg transition-all">
+                    <i class="fas fa-save mr-2"></i> SALVAR NO BANCO DE DADOS
+                </button>
             </div>
         </div>
-        
-        <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-slate-800 text-white text-xs uppercase">
-                    <tr>
-                        <th class="p-4">Produto</th>
-                        <th class="p-4 text-right">Ação</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-produtos-lista" class="divide-y divide-slate-100"></tbody>
-            </table>
-        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+        <table class="w-full text-left">
+            <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest">
+                <tr>
+                    <th class="p-4">Produto / Especificações</th>
+                    <th class="p-4">Processo (Peso/Ciclo)</th>
+                    <th class="p-4">Embalagem</th>
+                    <th class="p-4 text-right">Ação</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-produtos-lista" class="divide-y divide-slate-100"></tbody>
+        </table>
     </div>
 </div>
 
-<div id="aba-equipe" class="aba-conteudo px-4">
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
-            <h2 class="text-2xl font-black mb-8 border-b pb-4 text-slate-700">👷 EQUIPE DE PRODUÇÃO</h2>
-            <div class="flex gap-4 mb-8">
-                <input type="text" id="novo-operador" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Operador...">
-                <button onclick="gerenciarOperador('add')" class="bg-green-600 hover:bg-green-500 text-white px-8 rounded-xl font-black text-2xl shadow-md">+</button>
+<div id="aba-equipe" class="aba-conteudo max-w-4xl mx-auto px-4">
+    <div class="bg-white p-8 rounded-[40px] shadow-2xl border border-slate-100 mt-10">
+        <div class="flex items-center gap-4 mb-8">
+            <div class="bg-green-100 p-4 rounded-2xl text-green-600 text-2xl">
+                <i class="fa-solid fa-users-gear"></i>
             </div>
-            <div id="lista-operadores-config" class="flex flex-wrap gap-3"></div>
+            <div>
+                <h2 class="text-2xl font-black text-slate-800 uppercase">Gestão de Equipe</h2>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Operadores Ativos</p>
+            </div>
         </div>
+
+        <div class="flex gap-3 p-2 bg-slate-50 rounded-3xl border-2 border-slate-100 mb-10">
+            <input type="text" id="novo-operador" class="flex-1 bg-transparent p-4 font-bold text-slate-700 outline-none" placeholder="Nome do Operador...">
+            <button onclick="gerenciarOperador('add')" class="bg-blue-600 hover:bg-blue-500 text-white px-8 rounded-2xl font-black shadow-lg">ADICIONAR</button>
+        </div>
+
+        <div id="lista-operadores-config" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
     </div>
 </div>
 
@@ -2022,8 +2069,41 @@
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
     </script>
+
+    <script>
+        function renderOperadoresConfig() {
+    const container = document.getElementById('lista-operadores-config');
+    if (!container) return;
+
+    container.innerHTML = config.operadores.map((nome, index) => `
+        <div class="flex justify-between items-center p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-black text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all">
+                    ${nome.charAt(0).toUpperCase()}
+                </div>
+                <span class="font-bold text-slate-700">${nome}</span>
+            </div>
+            <button onclick="removerOperador(${index})" class="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// Função para remover o operador
+async function removerOperador(index) {
+    if (confirm(`Deseja remover o operador ${config.operadores[index]}?`)) {
+        config.operadores.splice(index, 1);
+        await salvarConfig(); // Garante que salva no Supabase/LocalStorage
+        renderOperadoresConfig();
+        popularSelectsOperadores(); // Atualiza os selects da Ficha Técnica
+    }
+}
+    </script>
+    
 </body>
 </html>
+
 
 
 
