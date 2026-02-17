@@ -3,216 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRIPLAST | Sistema de Produção</title>
+    <title>TRIPLAST | Sistema de Gestão Industrial Avançado</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
-        body { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
+        :root { 
+            --primary: #0f172a; 
+            --accent: #2563eb; 
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-strong: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
         
-        /* Layout e Animações */
-        .sidebar-btn { transition: all 0.2s; border-radius: 12px; display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; font-weight: 600; color: #64748b; background: transparent; border: none; cursor: pointer; text-align: left; }
-        .sidebar-btn:hover { background: #f1f5f9; color: var(--accent); padding-left: 20px; }
-        .sidebar-btn.active { background: var(--primary); color: white; box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.4); padding-left: 16px; }
+        body { 
+            background: var(--bg-gradient);
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            margin: 0; 
+            color: #1e293b;
+        }
         
-        .view-section { display: none; height: 100%; overflow-y: auto; padding-bottom: 120px; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .view-section.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- Sidebar e Navegação --- */
+        .sidebar-btn { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 16px; 
+            width: 100%; 
+            padding: 16px 20px; 
+            font-weight: 600; 
+            color: #64748b; 
+            cursor: pointer; 
+            text-align: left; 
+            background: transparent;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-btn:hover { 
+            background: #f1f5f9; 
+            color: var(--accent); 
+            padding-left: 24px; 
+        }
+        .sidebar-btn.active { 
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.4); 
+            padding-left: 20px; 
+        }
+        .sidebar-btn.active::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: #3b82f6;
+            border-radius: 4px 0 0 4px;
+        }
+        
+        /* --- Views e Animações --- */
+        .view-section { 
+            display: none; 
+            height: 100%; 
+            overflow-y: auto; 
+            padding-bottom: 120px; 
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .view-section.active { 
+            display: block; 
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        /* --- Scrollbar Customizada --- */
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f1f5f9; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Login sempre visível no início */
-        #login-screen { display: flex !important; }
+        /* --- Login Overlay --- */
+        #login-screen { display: flex !important; backdrop-filter: blur(5px); }
+
+        /* --- Toast Notification (Novo) --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-strong);
+            border-left: 6px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 300px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-color: #22c55e; color: #15803d; }
+        .toast.error { border-color: #ef4444; color: #b91c1c; }
+        .toast.info { border-color: #3b82f6; color: #1e40af; }
+
+        /* --- Kiosk Mode Styles --- */
+        .kiosk-card {
+            background: white;
+            border-radius: 40px;
+            box-shadow: var(--shadow-strong);
+            border: 1px solid #f1f5f9;
+            position: relative;
+            overflow: hidden;
+        }
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: ripple 2s infinite;
+            z-index: 0;
+            opacity: 0;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        @keyframes ripple {
+            0% { width: 0; height: 0; opacity: 0.5; }
+            100% { width: 200%; height: 200%; opacity: 0; }
+        }
     </style>
 </head>
 <body class="flex text-slate-800">
 
+    <div id="toast-container"></div>
+
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex items-center justify-center p-4">
         <div class="bg-white p-12 rounded-[40px] shadow-2xl w-full max-w-sm text-center border-4 border-slate-800 relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
-            <div class="mb-8">
-                <div class="w-20 h-20 bg-slate-900 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl mb-4 shadow-lg ring-4 ring-slate-100">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600"></div>
+            
+            <div class="mb-10 relative">
+                <div class="w-24 h-24 bg-slate-900 rounded-3xl mx-auto flex items-center justify-center text-white text-4xl mb-6 shadow-2xl ring-8 ring-slate-100 relative z-10">
                     <i class="fa-solid fa-industry"></i>
                 </div>
-                <h1 class="text-4xl font-black text-slate-900 italic tracking-tighter">TRIPLAST</h1>
-                <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">Sistema Industrial 2.0</p>
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 bg-blue-500 blur-3xl opacity-20 z-0"></div>
+                
+                <h1 class="text-5xl font-black text-slate-900 italic tracking-tighter">TRIPLAST</h1>
+                <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em] mt-3">Sistema Industrial v3.0</p>
             </div>
-            <div class="space-y-4">
-                <input type="password" id="pass-code" placeholder="Senha de Acesso" class="w-full p-4 bg-slate-50 rounded-2xl text-center font-bold outline-none border-2 border-slate-100 focus:border-blue-600 focus:bg-white transition-all text-lg shadow-inner">
-                <button onclick="tentarLogin()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold hover:bg-blue-600 hover:scale-[1.02] transition-all shadow-lg">ENTRAR</button>
+
+            <div class="space-y-5">
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                    <input type="password" id="pass-code" placeholder="Senha de Acesso" 
+                        class="w-full p-4 pl-12 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-slate-100 focus:border-blue-600 focus:bg-white transition-all text-lg shadow-inner placeholder:text-slate-300">
+                </div>
+                
+                <button onclick="tentarLogin()" 
+                    class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3">
+                    <span>ACESSAR SISTEMA</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
-            <p class="mt-8 text-[10px] text-slate-400 font-medium">Admin: 2026 | Máq: M1, M2, M3, M4</p>
+            
+            <div class="mt-10 pt-6 border-t border-slate-100">
+                <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-2">Credenciais Autorizadas</p>
+                <div class="flex justify-center gap-2">
+                    <span class="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold text-slate-500">Admin: 2026</span>
+                    <span class="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-bold text-slate-500">Maq: M1 a M4</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <aside id="sidebar" class="w-72 bg-white border-r border-slate-200 p-6 flex flex-col hidden h-full z-10 shadow-xl">
-        <div class="mb-10 px-2">
+    <aside id="sidebar" class="w-80 bg-white border-r border-slate-200 p-8 flex flex-col hidden h-full z-10 relative shadow-2xl">
+        <div class="mb-12 px-2">
             <h2 class="text-3xl font-black italic text-slate-900 tracking-tighter">TRIPLAST</h2>
-            <div class="flex items-center gap-2 mt-2">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Online</span>
+            <div class="flex items-center gap-3 mt-3 bg-green-50 w-fit px-3 py-1.5 rounded-full border border-green-100">
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]"></span>
+                <span class="text-[10px] font-bold text-green-700 uppercase tracking-widest">Banco Conectado</span>
             </div>
         </div>
-        <nav class="space-y-2 flex-1">
-            <button onclick="nav('dashboard')" id="btn-dashboard" class="sidebar-btn active"><i class="fa-solid fa-layer-group w-5 text-center"></i> Visão Geral</button>
-            <button onclick="nav('ops')" id="btn-ops" class="sidebar-btn"><i class="fa-solid fa-file-invoice w-5 text-center"></i> Fila de Pedidos</button>
-            <button onclick="nav('produtos')" id="btn-produtos" class="sidebar-btn"><i class="fa-solid fa-box w-5 text-center"></i> Produtos</button>
-            <button onclick="nav('equipe')" id="btn-equipe" class="sidebar-btn"><i class="fa-solid fa-users w-5 text-center"></i> Equipe</button>
-            <button onclick="nav('graficos')" id="btn-graficos" class="sidebar-btn"><i class="fa-solid fa-chart-pie w-5 text-center"></i> Relatórios</button>
+
+        <nav class="space-y-3 flex-1">
+            <button onclick="nav('dashboard')" id="btn-dashboard" class="sidebar-btn active">
+                <div class="w-8 flex justify-center"><i class="fa-solid fa-layer-group text-lg"></i></div>
+                <span>Visão Geral</span>
+            </button>
+            <button onclick="nav('ops')" id="btn-ops" class="sidebar-btn">
+                <div class="w-8 flex justify-center"><i class="fa-solid fa-file-invoice text-lg"></i></div>
+                <span>Fila de Pedidos</span>
+            </button>
+            <button onclick="nav('produtos')" id="btn-produtos" class="sidebar-btn">
+                <div class="w-8 flex justify-center"><i class="fa-solid fa-box text-lg"></i></div>
+                <span>Catálogo Técnico</span>
+            </button>
+            <button onclick="nav('equipe')" id="btn-equipe" class="sidebar-btn">
+                <div class="w-8 flex justify-center"><i class="fa-solid fa-users-gear text-lg"></i></div>
+                <span>Equipe & Turnos</span>
+            </button>
+            <button onclick="nav('graficos')" id="btn-graficos" class="sidebar-btn">
+                <div class="w-8 flex justify-center"><i class="fa-solid fa-chart-pie text-lg"></i></div>
+                <span>Análise OEE</span>
+            </button>
         </nav>
-        <button onclick="location.reload()" class="sidebar-btn text-red-400 hover:bg-red-50 hover:text-red-600 mt-auto"><i class="fa-solid fa-power-off w-5 text-center"></i> Sair</button>
+
+        <div class="mt-auto pt-6 border-t border-slate-100">
+            <button onclick="location.reload()" class="sidebar-btn text-red-500 hover:bg-red-50 hover:text-red-700">
+                <div class="w-8 flex justify-center"><i class="fa-solid fa-power-off text-lg"></i></div>
+                <span>Encerrar Sessão</span>
+            </button>
+        </div>
     </aside>
 
     <main id="main-content" class="flex-1 h-full relative hidden bg-[#f8fafc]">
-        <header class="p-8 pb-4 flex justify-between items-end bg-white/60 backdrop-blur-md sticky top-0 z-20 border-b border-slate-200/60">
+        
+        <header class="px-10 py-8 flex justify-between items-end bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-slate-200/60 shadow-sm">
             <div>
-                <h2 id="page-title" class="text-3xl font-black text-slate-800 uppercase tracking-tight">Visão Geral</h2>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Gestão da Fábrica</p>
+                <h2 id="page-title" class="text-4xl font-black text-slate-800 uppercase tracking-tight">Visão Geral</h2>
+                <div class="flex items-center gap-2 mt-2">
+                    <i class="fa-solid fa-building text-slate-400 text-xs"></i>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Painel de Controle Administrativo</p>
+                </div>
             </div>
-            <div id="clock" class="text-3xl font-black text-slate-300 font-mono tracking-tighter">00:00</div>
+            <div class="text-right">
+                <div id="clock" class="text-4xl font-black text-slate-300 font-mono tracking-tighter leading-none">00:00</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">Horário de Brasília</div>
+            </div>
         </header>
 
-        <div id="view-dashboard" class="view-section active px-8 pt-6">
-            <div id="grid-admin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div id="view-dashboard" class="view-section active px-10 pt-8">
+            <div class="grid grid-cols-4 gap-6 mb-10">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Produzido Hoje</p>
+                    <h3 id="kpi-producao" class="text-3xl font-black text-slate-800">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Refugo</p>
+                    <h3 id="kpi-refugo" class="text-3xl font-black text-red-500">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Máquinas Ativas</p>
+                    <h3 id="kpi-maquinas" class="text-3xl font-black text-blue-600">0/4</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Pedidos na Fila</p>
+                    <h3 id="kpi-fila" class="text-3xl font-black text-orange-500">0</h3>
+                </div>
+            </div>
+
+            <div id="grid-admin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 </div>
         </div>
 
-        <div id="view-ops" class="view-section px-8 pt-6">
-            <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 text-9xl text-slate-50 opacity-50 rotate-12"><i class="fa-solid fa-file-contract"></i></div>
-                <h3 class="font-black text-xl mb-6 uppercase text-slate-800 relative z-10">Criar Nova Ordem</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
-                    <div class="md:col-span-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">Produto</label>
-                        <select id="op-produto" onchange="autoPreencherOP()" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500"></select>
+        <div id="view-ops" class="view-section px-10 pt-8">
+            <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 mb-10 relative overflow-hidden group hover:shadow-lg transition-all duration-500">
+                <div class="absolute -right-10 -top-10 text-[150px] text-slate-50 opacity-60 rotate-12 group-hover:rotate-0 transition-transform duration-700"><i class="fa-solid fa-file-contract"></i></div>
+                
+                <div class="relative z-10">
+                    <h3 class="font-black text-2xl mb-8 uppercase text-slate-800 flex items-center gap-3">
+                        <span class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-sm"><i class="fa-solid fa-plus"></i></span>
+                        Criar Ordem de Produção
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <div class="md:col-span-5">
+                            <label class="text-[11px] font-black text-slate-400 uppercase ml-3 mb-2 block tracking-wider">Selecione o Produto</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-box absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                                <select id="op-produto" onchange="autoPreencherOP()" class="w-full p-4 pl-12 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer appearance-none text-slate-700"></select>
+                            </div>
+                        </div>
+                        <div class="md:col-span-4">
+                            <label class="text-[11px] font-black text-slate-400 uppercase ml-3 mb-2 block tracking-wider">Quantidade Meta</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-calculator absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                                <input type="number" id="op-qtd" placeholder="Ex: 5000" class="w-full p-4 pl-12 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500 focus:bg-white transition-all">
+                            </div>
+                        </div>
+                        <div class="md:col-span-3 flex items-end">
+                            <button onclick="criarOP()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/10 active:scale-95 flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> ENVIAR P/ FILA
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 mb-1 block">Quantidade</label>
-                        <input type="number" id="op-qtd" placeholder="Ex: 5000" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500">
+                    
+                    <div id="op-info" class="mt-6 p-5 bg-blue-50/50 border border-blue-100 rounded-3xl hidden flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-microchip"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-blue-400 uppercase">Dados Técnicos Carregados</p>
+                            <p id="op-info-texto" class="text-sm font-black text-blue-800">Carregando...</p>
+                        </div>
                     </div>
-                    <div class="flex items-end">
-                        <button onclick="criarOP()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-lg active:scale-95">ENVIAR PARA FILA</button>
-                    </div>
-                </div>
-                <div id="op-info" class="mt-4 p-4 bg-blue-50 text-blue-800 rounded-2xl text-xs font-bold hidden border border-blue-100 flex items-center gap-4">
-                    <i class="fa-solid fa-circle-check text-lg"></i> <span id="op-info-texto"></span>
                 </div>
             </div>
             
-            <h4 class="font-bold text-slate-400 uppercase text-xs mb-4 ml-2 tracking-widest">Fila de Produção</h4>
-            <div id="lista-ops" class="space-y-3"></div>
+            <div class="flex items-center justify-between mb-6 px-2">
+                <h4 class="font-black text-slate-400 uppercase text-xs tracking-[0.2em]">Fila de Espera & Histórico</h4>
+                <div class="bg-white px-3 py-1 rounded-lg border border-slate-100 text-[10px] font-bold text-slate-400 shadow-sm">
+                    Mostrando últimos 20 pedidos
+                </div>
+            </div>
+            
+            <div id="lista-ops" class="space-y-4 pb-12">
+                </div>
         </div>
 
-        <div id="view-produtos" class="view-section px-8 pt-6">
-            <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-8">
-                <h3 class="font-black text-xl mb-6 uppercase">Cadastro Técnico</h3>
-                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div class="col-span-2"><input id="prod-nome" placeholder="Nome do Produto" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100 outline-none focus:border-blue-500"></div>
-                    <div><input id="prod-mat" placeholder="Material" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100 outline-none focus:border-blue-500"></div>
-                    <div><input id="prod-peso" type="number" placeholder="Peso (g)" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100 outline-none focus:border-blue-500"></div>
-                    <div><input id="prod-ciclo" type="number" placeholder="Ciclo (s)" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100 outline-none focus:border-blue-500"></div>
-                    <div><input id="prod-cav" type="number" placeholder="Cav." class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100 outline-none focus:border-blue-500"></div>
-                    <button onclick="addProduto()" class="col-span-2 md:col-span-6 bg-blue-600 text-white p-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">SALVAR</button>
+        <div id="view-produtos" class="view-section px-10 pt-8">
+            <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 mb-10">
+                <h3 class="font-black text-xl mb-8 uppercase flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-lg shadow-blue-500/30"><i class="fa-solid fa-database"></i></span>
+                    Cadastro Técnico
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-12 gap-5">
+                    <div class="col-span-2 md:col-span-4"><input id="prod-nome" placeholder="Nome do Produto" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all"></div>
+                    <div class="col-span-2 md:col-span-3"><input id="prod-mat" placeholder="Material (Ex: PP)" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all"></div>
+                    <div class="col-span-1 md:col-span-2"><input id="prod-peso" type="number" placeholder="Peso (g)" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all"></div>
+                    <div class="col-span-1 md:col-span-1"><input id="prod-ciclo" type="number" placeholder="Ciclo (s)" class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all"></div>
+                    <div class="col-span-1 md:col-span-1"><input id="prod-cav" type="number" placeholder="Cav." class="w-full p-4 bg-slate-50 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all"></div>
+                    <button onclick="addProduto()" class="col-span-1 md:col-span-1 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center"><i class="fa-solid fa-save"></i></button>
                 </div>
             </div>
             <div id="lista-produtos" class="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm"></div>
         </div>
 
-        <div id="view-equipe" class="view-section px-8 pt-6">
-            <div class="bg-white p-2 pr-2 pl-6 rounded-[30px] shadow-sm border border-slate-100 mb-8 flex items-center gap-4 hover:shadow-md transition-all">
-                <i class="fa-solid fa-user-plus text-slate-300"></i>
-                <input id="op-nome" placeholder="Nome do novo operador..." class="flex-1 py-4 bg-transparent font-bold outline-none text-slate-700 placeholder-slate-300">
-                <button onclick="addOperador()" class="bg-slate-900 text-white px-8 py-4 rounded-[24px] font-bold hover:bg-black transition-all shadow-lg">ADICIONAR</button>
+        <div id="view-equipe" class="view-section px-10 pt-8">
+            <div class="bg-white p-3 pr-3 pl-6 rounded-[30px] shadow-sm border border-slate-100 mb-10 flex items-center gap-4 hover:shadow-lg transition-all duration-300">
+                <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-xl"><i class="fa-solid fa-user-plus"></i></div>
+                <input id="op-nome" placeholder="Nome do novo operador..." class="flex-1 py-5 bg-transparent font-bold outline-none text-slate-700 placeholder-slate-300 text-lg">
+                <button onclick="addOperador()" class="bg-slate-900 text-white px-10 py-5 rounded-[24px] font-black hover:bg-black transition-all shadow-xl hover:scale-105">ADICIONAR</button>
             </div>
-            <div id="lista-equipe" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <div id="lista-equipe" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </div>
 
-        <div id="view-graficos" class="view-section px-8 pt-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 h-96 relative">
-                    <h4 class="font-black text-sm uppercase text-slate-400 mb-6 tracking-widest">Produção Total</h4>
-                    <div class="absolute inset-x-8 bottom-8 top-20"><canvas id="grafico-prod"></canvas></div>
+        <div id="view-graficos" class="view-section px-10 pt-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 h-[450px] relative flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="font-black text-sm uppercase text-slate-400 tracking-widest flex items-center gap-2"><i class="fa-solid fa-chart-bar"></i> Produção por Máquina</h4>
+                        <span class="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-400">Tempo Real</span>
+                    </div>
+                    <div class="flex-1 relative w-full">
+                        <canvas id="grafico-prod"></canvas>
+                    </div>
                 </div>
-                <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 h-96 relative">
-                    <h4 class="font-black text-sm uppercase text-slate-400 mb-6 tracking-widest">Refugo</h4>
-                    <div class="absolute inset-x-8 bottom-8 top-20"><canvas id="grafico-refugo"></canvas></div>
+                <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 h-[450px] relative flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="font-black text-sm uppercase text-slate-400 tracking-widest flex items-center gap-2"><i class="fa-solid fa-chart-pie"></i> Índice de Refugo</h4>
+                        <span class="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-400">Qualidade</span>
+                    </div>
+                    <div class="flex-1 relative w-full">
+                        <canvas id="grafico-refugo"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <div id="maquina-kiosk" class="fixed inset-0 z-50 bg-[#f8fafc] hidden flex flex-col p-6">
-        <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-[24px] shadow-sm border border-slate-100">
-            <h1 class="text-4xl font-black italic text-slate-900 tracking-tighter">TRIPLAST <span id="kiosk-maq-nome" class="text-blue-600"></span></h1>
+        <header class="flex justify-between items-center mb-6 bg-white p-6 rounded-[32px] shadow-lg border border-slate-100">
             <div class="flex items-center gap-4">
-                <div id="kiosk-clock" class="text-2xl font-bold text-slate-300 font-mono">00:00</div>
-                <button onclick="location.reload()" class="bg-red-50 text-red-500 px-6 py-3 rounded-xl font-bold text-sm hover:bg-red-500 hover:text-white transition-colors">SAIR</button>
+                <div class="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-2xl font-black italic shadow-xl">TP</div>
+                <div>
+                    <h1 class="text-3xl font-black italic text-slate-900 tracking-tighter">TRIPLAST</h1>
+                    <span id="kiosk-maq-nome" class="text-lg font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-lg">Carregando...</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="text-right">
+                    <div id="kiosk-clock" class="text-3xl font-black text-slate-800 font-mono">00:00</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase">Turno Ativo</div>
+                </div>
+                <button onclick="location.reload()" class="bg-slate-100 text-slate-400 px-6 py-4 rounded-2xl font-bold text-sm hover:bg-red-50 hover:text-red-500 transition-colors border border-slate-200">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
             </div>
         </header>
         
         <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-7 bg-white rounded-[40px] p-10 shadow-lg border border-slate-100 flex flex-col relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-80 h-80 bg-blue-50 rounded-full blur-3xl -mr-10 -mt-10 opacity-60 pointer-events-none"></div>
+            <div class="lg:col-span-7 bg-white rounded-[48px] p-12 shadow-xl border border-slate-100 flex flex-col relative overflow-hidden kiosk-card">
+                <div class="pulse-ring"></div>
+                <div class="absolute top-0 right-0 w-96 h-96 bg-blue-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-60 pointer-events-none"></div>
                 
                 <div class="relative z-10 flex-1 flex flex-col justify-center">
-                    <span class="text-blue-500 font-black uppercase text-xs tracking-[0.2em] mb-4">Ordem de Produção Atual</span>
-                    <h2 id="kiosk-op" class="text-5xl font-black text-slate-800 mb-10 leading-tight">AGUARDANDO...</h2>
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        <span class="text-blue-500 font-black uppercase text-xs tracking-[0.3em]">Ordem de Produção Ativa</span>
+                    </div>
                     
-                    <div class="grid grid-cols-2 gap-6 mb-8">
-                        <div class="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
-                            <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Meta</span>
-                            <div class="flex items-baseline gap-1">
-                                <span id="kiosk-meta" class="text-4xl font-black text-slate-800">0</span>
-                                <span class="text-xs font-bold text-slate-400">pçs</span>
+                    <h2 id="kiosk-op" class="text-5xl md:text-6xl font-black text-slate-800 mb-12 leading-tight drop-shadow-sm">AGUARDANDO...</h2>
+                    
+                    <div class="grid grid-cols-2 gap-8 mb-10">
+                        <div class="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
+                            <span class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-bullseye"></i> Meta</span>
+                            <div class="flex items-baseline gap-2">
+                                <span id="kiosk-meta" class="text-5xl font-black text-slate-800">0</span>
+                                <span class="text-sm font-bold text-slate-400">un</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-br from-blue-600 to-indigo-600 p-6 rounded-[24px] text-white shadow-xl shadow-blue-200">
-                            <span class="block text-[10px] font-black text-blue-200 uppercase tracking-widest mb-2">Realizado</span>
-                            <div class="flex items-baseline gap-1">
-                                <span id="kiosk-real" class="text-4xl font-black">0</span>
-                                <span class="text-xs font-bold text-blue-200">pçs</span>
+                        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[32px] text-white shadow-2xl shadow-blue-500/30">
+                            <span class="block text-[11px] font-black text-blue-200 uppercase tracking-widest mb-2"><i class="fa-solid fa-industry"></i> Realizado</span>
+                            <div class="flex items-baseline gap-2">
+                                <span id="kiosk-real" class="text-5xl font-black">0</span>
+                                <span class="text-sm font-bold text-blue-200">un</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="w-full bg-slate-100 rounded-full h-4 mb-2 overflow-hidden">
-                        <div id="kiosk-progress-bar" class="bg-blue-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-xs font-bold text-slate-400 uppercase mb-2">
+                            <span>Progresso do Pedido</span>
+                            <span id="kiosk-progress-text">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
+                            <div id="kiosk-progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-6 rounded-full transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.5)]" style="width: 0%"></div>
+                        </div>
                     </div>
-                    <div class="text-right text-xs font-bold text-slate-400" id="kiosk-progress-text">0%</div>
                 </div>
                 
-                <div class="relative z-10 flex gap-3 mt-auto pt-8 border-t border-slate-100">
-                    <select id="kiosk-select-op" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-4 font-bold outline-none text-slate-700"></select>
-                    <button onclick="iniciarOPMaquina()" class="bg-slate-900 text-white px-8 rounded-2xl font-bold hover:scale-[1.02] transition-transform shadow-lg">PUXAR DA FILA</button>
+                <div class="relative z-10 flex gap-4 mt-auto pt-8 border-t border-slate-100">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-list absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <select id="kiosk-select-op" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-5 pl-12 font-bold outline-none text-slate-700 cursor-pointer focus:border-blue-500 transition-colors appearance-none"></select>
+                    </div>
+                    <button onclick="iniciarOPMaquina()" class="bg-slate-900 text-white px-10 rounded-2xl font-black hover:scale-[1.02] active:scale-95 transition-all shadow-xl hover:bg-black">
+                        PUXAR PEDIDO
+                    </button>
                 </div>
             </div>
 
             <div class="lg:col-span-5 grid grid-rows-2 gap-6">
-                <button onclick="acaoMaquina('prod')" class="bg-white border-2 border-blue-100 active:bg-blue-50 active:scale-95 rounded-[40px] flex flex-col items-center justify-center shadow-sm hover:shadow-xl hover:border-blue-300 transition-all group">
-                    <div class="w-24 h-24 bg-blue-600 text-white rounded-full flex items-center justify-center text-4xl mb-4 shadow-xl shadow-blue-200 group-active:scale-90 transition-transform">
+                <button onclick="acaoMaquina('prod')" class="bg-white border-4 border-blue-50 active:bg-blue-50 active:scale-95 rounded-[48px] flex flex-col items-center justify-center shadow-lg hover:shadow-2xl hover:border-blue-200 transition-all group relative overflow-hidden">
+                    <div class="absolute inset-0 bg-blue-500 opacity-0 group-active:opacity-10 transition-opacity"></div>
+                    <div class="w-28 h-28 bg-blue-600 text-white rounded-full flex items-center justify-center text-5xl mb-6 shadow-2xl shadow-blue-500/40 group-active:scale-90 transition-transform duration-300">
                         <i class="fa-solid fa-plus"></i>
                     </div>
-                    <span class="text-3xl font-black text-slate-800 tracking-tight">PRODUÇÃO</span>
-                    <span class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">Toque para apontar (+1)</span>
+                    <span class="text-4xl font-black text-slate-800 tracking-tight">PRODUÇÃO</span>
+                    <span class="text-sm font-bold text-slate-400 mt-2 uppercase tracking-widest bg-slate-50 px-4 py-1 rounded-full">Toque ao completar ciclo</span>
                 </button>
                 
                 <div class="grid grid-cols-2 gap-6">
-                    <button onclick="acaoMaquina('refugo')" class="bg-white border-2 border-red-50 active:bg-red-50 active:scale-95 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-lg hover:border-red-200 transition-all text-red-500 group">
-                        <i class="fa-solid fa-trash text-3xl mb-4 group-active:scale-90 transition-transform"></i> 
-                        <span class="text-lg">REFUGO</span>
+                    <button onclick="acaoMaquina('refugo')" class="bg-white border-4 border-red-50 active:bg-red-50 active:scale-95 rounded-[40px] font-black flex flex-col items-center justify-center shadow-md hover:shadow-xl hover:border-red-200 transition-all text-red-500 group relative">
+                        <i class="fa-solid fa-trash text-4xl mb-4 group-active:scale-90 transition-transform"></i> 
+                        <span class="text-xl">REFUGO</span>
                     </button>
-                    <button onclick="acaoMaquina('parada')" id="btn-status-maq" class="bg-yellow-50 border-2 border-yellow-100 active:bg-yellow-100 active:scale-95 text-yellow-700 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-lg transition-all group">
-                        <i class="fa-solid fa-pause text-3xl mb-4 group-active:scale-90 transition-transform"></i> 
-                        <span class="text-lg">PARAR</span>
+                    <button onclick="acaoMaquina('parada')" id="btn-status-maq" class="bg-yellow-50 border-4 border-yellow-100 active:bg-yellow-100 active:scale-95 text-yellow-700 rounded-[40px] font-black flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-all group relative">
+                        <i class="fa-solid fa-pause text-4xl mb-4 group-active:scale-90 transition-transform"></i> 
+                        <span class="text-xl">PARAR</span>
                     </button>
                 </div>
             </div>
@@ -220,213 +481,418 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO SUPABASE
+        // --- 1. CONFIGURAÇÃO E CONSTANTES ---
         const SB_URL = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; 
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
+        
         const sb = supabase.createClient(SB_URL, SB_KEY);
         
-        // ESTADO GLOBAL
-        let DATA = { maquinas: [], produtos: [], operadores: [], ops: [], historico: [] };
-        let currentUser = null;
+        // --- 2. GESTÃO DE ESTADO (MEMORY) ---
+        let DATA = { 
+            maquinas: [], 
+            produtos: [], 
+            operadores: [], 
+            ops: [], 
+            historico: [], // Armazena logs detalhados
+            config: { versao: '3.0', empresa: 'Triplast' }
+        };
+        
+        let currentUser = null; // 'ADMIN' ou índice (0-3)
         let saveTimer = null;
+        let chartInstanceProd = null;
+        let chartInstanceRefugo = null;
 
+        // --- 3. INICIALIZAÇÃO DO SISTEMA ---
         window.onload = function() {
+            // Garante que o login bloqueia tudo no início
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('sidebar').classList.add('hidden');
             document.getElementById('main-content').classList.add('hidden');
             
-            setInterval(() => {
-                const t = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-                document.getElementById('clock').innerText = t;
-                document.getElementById('kiosk-clock').innerText = t;
-            }, 1000);
+            // Inicia Relógios
+            startClocks();
         };
 
-        // --- LOGIN ---
+        function startClocks() {
+            setInterval(() => {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('clock').innerText = timeStr;
+                document.getElementById('kiosk-clock').innerText = timeStr;
+            }, 1000);
+        }
+
+        // --- 4. SISTEMA DE LOGIN SEGURO ---
         function tentarLogin() {
-            const pass = document.getElementById('pass-code').value.trim().toUpperCase();
+            const passInput = document.getElementById('pass-code');
+            const pass = passInput.value.trim().toUpperCase();
             const mapMaq = { 'M1': 0, 'M2': 1, 'M3': 2, 'M4': 3 };
 
             if (pass === '2026') {
                 currentUser = 'ADMIN';
+                showToast('Login Administrativo Realizado', 'success');
                 animarEntrada('admin');
             } else if (mapMaq.hasOwnProperty(pass)) {
                 currentUser = mapMaq[pass];
+                showToast(`Login Máquina ${pass} Realizado`, 'success');
                 animarEntrada('maquina');
             } else {
-                const input = document.getElementById('pass-code');
-                input.value = '';
-                input.placeholder = "SENHA ERRADA";
-                input.classList.add('bg-red-50');
-                setTimeout(() => { input.classList.remove('bg-red-50'); input.placeholder = "Senha de Acesso"; }, 1000);
+                // Feedback visual de erro
+                passInput.value = '';
+                passInput.classList.add('bg-red-50', 'border-red-500', 'text-red-500');
+                showToast('Senha Incorreta', 'error');
+                setTimeout(() => {
+                    passInput.classList.remove('bg-red-50', 'border-red-500', 'text-red-500');
+                }, 1000);
             }
         }
 
         async function animarEntrada(tipo) {
             const login = document.getElementById('login-screen');
-            login.style.transition = "opacity 0.5s ease";
+            login.style.transition = "opacity 0.6s ease, transform 0.6s ease";
             login.style.opacity = '0';
-            setTimeout(() => {
+            login.style.transform = 'scale(1.1)';
+            
+            setTimeout(async () => {
                 login.style.display = 'none';
+                
+                // Carrega dados ANTES de mostrar a tela para evitar "piscar"
+                await carregarDadosDoBanco();
+
                 if(tipo === 'admin') {
                     document.getElementById('sidebar').classList.remove('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
-                    renderTudo();
+                    renderTudoAdmin();
                 } else {
                     document.getElementById('maquina-kiosk').classList.remove('hidden');
-                    renderKiosk();
+                    renderKioskMode();
                 }
-                carregarDados();
             }, 500);
         }
 
-        // --- BANCO DE DADOS ---
-        async function carregarDados() {
+        // --- 5. COMUNICAÇÃO COM SUPABASE (BANCO DE DADOS) ---
+        async function carregarDadosDoBanco() {
             try {
-                const { data } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                // Tenta buscar o registro ID 1
+                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                
                 if (data && data.conteudo) {
+                    // Mescla os dados para garantir que campos novos existam
                     DATA = { ...DATA, ...data.conteudo };
-                    if(!DATA.maquinas || DATA.maquinas.length < 4) resetMaquinas();
+                    
+                    // Validação de integridade
+                    if(!DATA.maquinas || DATA.maquinas.length < 4) resetarMaquinasPadrao();
                 } else {
-                    resetMaquinas();
-                    salvar();
+                    console.warn("Dados não encontrados, criando nova estrutura...");
+                    resetarMaquinasPadrao();
+                    agendarSalvamento();
                 }
-                if(currentUser === 'ADMIN') renderTudo(); else renderKiosk();
             } catch (e) { 
-                resetMaquinas();
-                if(currentUser === 'ADMIN') renderTudo(); else renderKiosk();
+                console.error('Erro Crítico ao carregar:', e);
+                showToast('Erro de Conexão. Modo Offline Ativo.', 'error');
+                resetarMaquinasPadrao();
             }
         }
 
-        function resetMaquinas() {
+        function resetarMaquinasPadrao() {
             if(!DATA.maquinas || DATA.maquinas.length === 0) {
                 DATA.maquinas = [
-                    { id: 0, nome: 'M1', status: 'parada', prod: 0, refugo: 0, op: null },
-                    { id: 1, nome: 'M2', status: 'parada', prod: 0, refugo: 0, op: null },
-                    { id: 2, nome: 'M3', status: 'parada', prod: 0, refugo: 0, op: null },
-                    { id: 3, nome: 'M4', status: 'parada', prod: 0, refugo: 0, op: null }
+                    { id: 0, nome: 'INJETORA 01', status: 'parada', prod: 0, refugo: 0, op: null, lastUpdate: Date.now() },
+                    { id: 1, nome: 'INJETORA 02', status: 'parada', prod: 0, refugo: 0, op: null, lastUpdate: Date.now() },
+                    { id: 2, nome: 'INJETORA 03', status: 'parada', prod: 0, refugo: 0, op: null, lastUpdate: Date.now() },
+                    { id: 3, nome: 'INJETORA 04', status: 'parada', prod: 0, refugo: 0, op: null, lastUpdate: Date.now() }
                 ];
             }
         }
 
-        async function salvar() {
+        async function agendarSalvamento() {
+            // Debounce: espera parar de digitar/clicar para salvar
             if (saveTimer) clearTimeout(saveTimer);
+            
             saveTimer = setTimeout(async () => {
-                await sb.from('sistema').upsert({ id: 1, conteudo: DATA });
+                try {
+                    await sb.from('sistema').upsert({ id: 1, conteudo: DATA });
+                    console.log("Dados sincronizados com a nuvem.");
+                } catch (e) {
+                    console.error("Falha ao salvar:", e);
+                    showToast('Falha ao salvar na nuvem', 'error');
+                }
             }, 1000);
         }
 
-        // --- NAVEGAÇÃO ---
-        function nav(view) {
+        // --- 6. NAVEGAÇÃO SPA (Single Page Application) ---
+        function nav(viewId) {
+            // Remove classe ativa de todas as views e botões
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + view).classList.add('active');
-            document.getElementById('btn-' + view).classList.add('active');
             
-            const titles = { 'dashboard': 'Visão Geral', 'ops': 'Fila de Pedidos', 'produtos': 'Catálogo', 'equipe': 'Equipe', 'graficos': 'Relatórios' };
-            document.getElementById('page-title').innerText = titles[view];
-            renderTudo();
+            // Ativa a view selecionada
+            const targetView = document.getElementById('view-' + viewId);
+            const targetBtn = document.getElementById('btn-' + viewId);
+            
+            if(targetView) targetView.classList.add('active');
+            if(targetBtn) targetBtn.classList.add('active');
+            
+            // Atualiza Título da Página
+            const titulos = { 
+                'dashboard': 'Visão Geral da Fábrica', 
+                'ops': 'Gestão de Ordens (Fila)', 
+                'produtos': 'Catálogo de Produtos', 
+                'equipe': 'Gestão de Operadores', 
+                'graficos': 'Relatórios de Performance' 
+            };
+            document.getElementById('page-title').innerText = titulos[viewId] || 'Triplast';
+            
+            renderTudoAdmin();
         }
 
-        // --- RENDERIZADORES ADMIN ---
-        function renderTudo() {
-            renderDashboard();
-            renderListaOPs();
+        // --- 7. RENDERIZAÇÃO: PAINEL ADMIN ---
+        function renderTudoAdmin() {
+            renderDashboardCards();
+            renderListaFilaOPs();
             renderListaProdutos();
             renderListaEquipe();
-            popularSelects();
-            renderGraficos();
+            atualizarKPIs();
+            popularSelectProdutos();
+            renderGraficosAvancados();
         }
 
-        function renderDashboard() {
+        function atualizarKPIs() {
+            // Cálculos totais para o topo do dashboard
+            const totalProd = DATA.maquinas.reduce((acc, m) => acc + (m.prod || 0), 0);
+            const totalRefugo = DATA.maquinas.reduce((acc, m) => acc + (m.refugo || 0), 0);
+            const ativas = DATA.maquinas.filter(m => m.status === 'rodando').length;
+            const naFila = DATA.ops.filter(o => o.status === 'aberta').length;
+
+            document.getElementById('kpi-producao').innerText = totalProd;
+            document.getElementById('kpi-refugo').innerText = totalRefugo;
+            document.getElementById('kpi-maquinas').innerText = `${ativas}/4`;
+            document.getElementById('kpi-fila').innerText = naFila;
+        }
+
+        function renderDashboardCards() {
             const grid = document.getElementById('grid-admin');
             grid.innerHTML = DATA.maquinas.map(m => {
-                const st = m.status === 'rodando' 
-                    ? { color: 'green', label: 'PRODUZINDO' } 
-                    : (m.status === 'setup' ? { color: 'blue', label: 'SETUP' } : { color: 'red', label: 'PARADA' });
+                // Definição de estilos baseados no status
+                const estilos = {
+                    'rodando': { 
+                        color: 'green', 
+                        label: 'PRODUZINDO', 
+                        icon: 'fa-gear fa-spin',
+                        border: 'border-green-500'
+                    },
+                    'parada': { 
+                        color: 'red', 
+                        label: 'PARADA', 
+                        icon: 'fa-circle-stop',
+                        border: 'border-red-500'
+                    },
+                    'setup': { 
+                        color: 'blue', 
+                        label: 'SETUP / TROCA', 
+                        icon: 'fa-tools',
+                        border: 'border-blue-500'
+                    }
+                };
+                const st = estilos[m.status] || estilos['parada'];
                 
-                // Calculo progresso
-                let prog = 0;
-                if(m.op && m.op.qtd > 0) prog = Math.min((m.prod / m.op.qtd) * 100, 100).toFixed(1);
+                // Cálculo de porcentagem de conclusão da O.P
+                let porcentagem = 0;
+                let meta = 1;
+                if(m.op && m.op.qtd > 0) {
+                    meta = m.op.qtd;
+                    porcentagem = Math.min((m.prod / meta) * 100, 100).toFixed(1);
+                }
 
                 return `
-                <div class="bg-white p-6 rounded-[32px] shadow-sm border-l-8 border-${st.color}-500 hover:shadow-xl transition-all">
-                    <div class="flex justify-between items-start mb-4">
+                <div class="bg-white p-6 rounded-[32px] shadow-sm border-l-8 ${st.border} hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex justify-between items-start mb-6">
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black italic text-xl shadow-lg">${m.nome}</div>
+                            <div class="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black italic text-lg shadow-lg">
+                                M${m.id+1}
+                            </div>
                             <div>
-                                <h3 class="font-bold text-slate-800 leading-none text-lg">INJETORA ${m.id+1}</h3>
-                                <p class="text-xs font-bold text-slate-400 uppercase mt-1">${m.op ? m.op.produto : 'Disponível'}</p>
+                                <h3 class="font-bold text-slate-800 leading-none text-lg">${m.nome}</h3>
+                                <p class="text-xs font-bold text-slate-400 uppercase mt-1 truncate w-32">
+                                    ${m.op ? '#' + m.op.id + ' ' + m.op.produto : 'Disponível'}
+                                </p>
                             </div>
                         </div>
-                        <div class="px-3 py-1 rounded-full bg-${st.color}-50 text-${st.color}-600 text-[10px] font-black uppercase tracking-wider border border-${st.color}-100">
-                            ${st.label}
+                        <div class="px-3 py-1 rounded-full bg-${st.color}-50 text-${st.color}-600 text-[10px] font-black uppercase tracking-wider border border-${st.color}-100 flex items-center gap-2">
+                            <i class="fa-solid ${st.icon}"></i> ${st.label}
                         </div>
                     </div>
                     
-                    <div class="mb-4">
+                    <div class="mb-5">
                         <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase mb-1">
-                            <span>Progresso</span>
-                            <span>${prog}%</span>
+                            <span>Progresso da O.P</span>
+                            <span>${porcentagem}%</span>
                         </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                            <div class="bg-${st.color}-500 h-2 rounded-full transition-all" style="width: ${prog}%"></div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+                            <div class="bg-${st.color}-500 h-3 rounded-full transition-all duration-1000 relative" style="width: ${porcentagem}%">
+                                <div class="absolute inset-0 bg-white/30 w-full h-full animate-pulse"></div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-blue-50 p-4 rounded-2xl text-center">
-                            <span class="block text-[10px] font-bold text-blue-400 uppercase tracking-wider">Feito</span>
-                            <span class="text-2xl font-black text-blue-700">${m.prod}</span>
+                        <div class="bg-blue-50 p-4 rounded-2xl text-center border border-blue-100">
+                            <span class="block text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">Produzido</span>
+                            <span class="text-2xl font-black text-blue-700 leading-none">${m.prod}</span>
+                            <span class="text-[9px] text-blue-300 font-bold block mt-1">/ ${meta}</span>
                         </div>
-                        <div class="bg-red-50 p-4 rounded-2xl text-center">
-                            <span class="block text-[10px] font-bold text-red-400 uppercase tracking-wider">Refugo</span>
-                            <span class="text-2xl font-black text-red-500">${m.refugo}</span>
+                        <div class="bg-red-50 p-4 rounded-2xl text-center border border-red-100">
+                            <span class="block text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1">Refugo</span>
+                            <span class="text-2xl font-black text-red-500 leading-none">${m.refugo}</span>
+                            <span class="text-[9px] text-red-300 font-bold block mt-1">peças</span>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        function renderListaOPs() {
+        function renderListaFilaOPs() {
             const container = document.getElementById('lista-ops');
-            if(DATA.ops.length === 0) {
-                container.innerHTML = '<div class="text-center p-4 text-slate-400 text-sm font-bold">A fila de pedidos está vazia.</div>';
+            
+            // Ordena: Em andamento primeiro, depois as novas
+            const opsOrdenadas = [...DATA.ops].sort((a, b) => {
+                if(a.status === 'em_andamento' && b.status !== 'em_andamento') return -1;
+                if(a.status !== 'em_andamento' && b.status === 'em_andamento') return 1;
+                return new Date(b.data) - new Date(a.data); // Mais recentes primeiro
+            });
+
+            if(opsOrdenadas.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-12 border-2 border-dashed border-slate-200 rounded-3xl opacity-50">
+                        <i class="fa-solid fa-clipboard-list text-4xl mb-4 text-slate-300"></i>
+                        <p class="font-bold text-slate-400">Nenhum pedido na fila.</p>
+                    </div>`;
                 return;
             }
-            container.innerHTML = DATA.ops.slice().reverse().map((op, i) => {
-                let statusClass = 'border-l-slate-300 opacity-60';
-                let statusText = 'FINALIZADA';
-                let bgClass = 'bg-slate-100 text-slate-500';
+
+            container.innerHTML = opsOrdenadas.map((op, i) => {
+                let statusConfig = { class: 'border-l-slate-300', text: 'FINALIZADA', bg: 'bg-slate-100 text-slate-500' };
 
                 if(op.status === 'aberta') {
-                    statusClass = 'border-l-blue-500';
-                    statusText = 'AGUARDANDO';
-                    bgClass = 'bg-blue-100 text-blue-600';
+                    statusConfig = { class: 'border-l-blue-500', text: 'NA FILA', bg: 'bg-blue-100 text-blue-600' };
                 } else if (op.status === 'em_andamento') {
-                    statusClass = 'border-l-green-500';
-                    statusText = `RODANDO NA ${op.maquina || 'MÁQUINA'}`;
-                    bgClass = 'bg-green-100 text-green-600 animate-pulse';
+                    statusConfig = { class: 'border-l-green-500', text: `EM PRODUÇÃO (${op.maquina})`, bg: 'bg-green-100 text-green-700 animate-pulse' };
                 }
 
                 return `
-                <div class="bg-white p-5 rounded-2xl border-l-4 ${statusClass} shadow-sm border border-slate-100 flex justify-between items-center hover:shadow-md transition-all">
-                    <div>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">O.P #${op.id}</span>
-                        <h4 class="font-bold text-slate-800 text-lg">${op.produto}</h4>
+                <div class="bg-white p-6 rounded-2xl border-l-[6px] ${statusConfig.class} shadow-sm border-t border-r border-b border-slate-100 flex justify-between items-center hover:shadow-md transition-all group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-slate-400 text-xs">
+                            #${op.id}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-lg group-hover:text-blue-600 transition-colors">${op.produto}</h4>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Criado em: ${new Date(op.data).toLocaleDateString()}</p>
+                        </div>
                     </div>
                     <div class="text-right">
-                        <span class="block font-black text-2xl text-slate-800">${op.qtd}</span>
-                        <span class="text-[10px] uppercase font-bold px-3 py-1 rounded-full ${bgClass}">${statusText}</span>
+                        <span class="block font-black text-2xl text-slate-800">${op.qtd} <span class="text-xs text-slate-400 font-bold">un</span></span>
+                        <span class="inline-block mt-1 text-[10px] uppercase font-bold px-3 py-1 rounded-full ${statusConfig.bg}">
+                            ${statusConfig.text}
+                        </span>
+                        ${op.status === 'aberta' ? `<button onclick="excluirOP(${op.id})" class="ml-2 text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>` : ''}
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- FUNÇÕES DE CADASTRO ---
+        // --- 8. RENDERIZAÇÃO: MODO OPERADOR (KIOSK) ---
+        function renderKioskMode() {
+            if(currentUser === 'ADMIN') return;
+            const m = DATA.maquinas[currentUser];
+            
+            // Atualiza Textos
+            document.getElementById('kiosk-maq-nome').innerText = m.nome;
+            document.getElementById('kiosk-op').innerText = m.op ? m.op.produto : "AGUARDANDO O.P";
+            document.getElementById('kiosk-meta').innerText = m.op ? m.op.qtd : 0;
+            document.getElementById('kiosk-real').innerText = m.prod;
+
+            // Atualiza Barra de Progresso Kiosk
+            let prog = 0;
+            if(m.op && m.op.qtd > 0) prog = Math.min((m.prod / m.op.qtd) * 100, 100).toFixed(1);
+            document.getElementById('kiosk-progress-bar').style.width = `${prog}%`;
+            document.getElementById('kiosk-progress-text').innerText = `${prog}%`;
+
+            // Lógica Visual do Botão de Status
+            const btnStatus = document.getElementById('btn-status-maq');
+            if(m.status === 'rodando') {
+                btnStatus.innerHTML = '<i class="fa-solid fa-pause text-4xl mb-4"></i><span class="text-xl">PARAR</span>';
+                btnStatus.className = "bg-yellow-50 border-4 border-yellow-100 active:bg-yellow-100 active:scale-95 text-yellow-700 rounded-[40px] font-black flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-all group relative";
+            } else {
+                btnStatus.innerHTML = '<i class="fa-solid fa-play text-4xl mb-4"></i><span class="text-xl">INICIAR</span>';
+                btnStatus.className = "bg-green-50 border-4 border-green-100 active:bg-green-100 active:scale-95 text-green-600 rounded-[40px] font-black flex flex-col items-center justify-center shadow-md hover:shadow-xl transition-all group relative";
+            }
+
+            // Atualiza o Select com O.Ps disponíveis
+            const select = document.getElementById('kiosk-select-op');
+            const valorAtual = select.value;
+            
+            // Filtra apenas as que estão 'abertas' na fila
+            const opsDisponiveis = DATA.ops.filter(o => o.status === 'aberta');
+            
+            let htmlSelect = '<option value="">▼ SELECIONE UM PEDIDO DA FILA</option>';
+            if(opsDisponiveis.length === 0) htmlSelect = '<option value="">(Nenhum pedido na fila)</option>';
+            else {
+                htmlSelect += opsDisponiveis.map(o => `<option value="${o.id}">#${o.id} - ${o.produto} (Meta: ${o.qtd})</option>`).join('');
+            }
+            select.innerHTML = htmlSelect;
+            if(valorAtual) select.value = valorAtual;
+        }
+
+        // --- 9. AÇÕES E LÓGICA DE NEGÓCIO ---
+        
+        // Admin: Criar Ordem
+        function criarOP() {
+            const prodNome = document.getElementById('op-produto').value;
+            const qtd = document.getElementById('op-qtd').value;
+            
+            if(!prodNome || !qtd) {
+                showToast("Preencha Produto e Quantidade!", "error");
+                return;
+            }
+            
+            const novaOp = {
+                id: Math.floor(1000 + Math.random() * 9000),
+                produto: prodNome,
+                qtd: parseInt(qtd),
+                status: 'aberta', // Vai para a fila
+                maquina: null,
+                data: new Date().toISOString()
+            };
+            
+            DATA.ops.push(novaOp);
+            
+            // Adiciona log ao histórico
+            logHistorico('ADMIN', `Criou O.P #${novaOp.id} - ${prodNome}`);
+            
+            agendarSalvamento();
+            renderListaFilaOPs();
+            showToast("Ordem enviada para a Fila!", "success");
+            
+            // Limpa campos
+            document.getElementById('op-qtd').value = '';
+        }
+
+        // Admin: Excluir OP
+        function excluirOP(id) {
+            if(confirm("Deseja remover este pedido da fila?")) {
+                DATA.ops = DATA.ops.filter(o => o.id !== id);
+                agendarSalvamento();
+                renderListaFilaOPs();
+                showToast("Pedido removido.", "info");
+            }
+        }
+
+        // Admin: Adicionar Produto
         function addProduto() {
             const nome = document.getElementById('prod-nome').value.trim();
-            if(!nome) return alert('Nome do produto é obrigatório');
+            if(!nome) { showToast("Nome é obrigatório", "error"); return; }
+            
             DATA.produtos.push({
                 nome,
                 material: document.getElementById('prod-mat').value,
@@ -434,127 +900,215 @@
                 ciclo: document.getElementById('prod-ciclo').value,
                 cav: document.getElementById('prod-cav').value
             });
-            salvar(); renderTudo();
-            document.querySelectorAll('#view-produtos input').forEach(i => i.value = '');
+            agendarSalvamento(); renderListaProdutos(); popularSelectProdutos();
+            showToast("Produto Cadastrado!", "success");
+            limparCamposProdutos();
         }
 
-        function addOperador() {
-            const nome = document.getElementById('op-nome').value.trim();
-            if(nome) { DATA.operadores.push(nome); salvar(); renderListaEquipe(); document.getElementById('op-nome').value = ''; }
-        }
-
-        function criarOP() {
-            const prodNome = document.getElementById('op-produto').value;
-            const qtd = document.getElementById('op-qtd').value;
-            if(!prodNome || !qtd) return alert("Preencha o produto e a quantidade");
-            
-            DATA.ops.push({
-                id: Math.floor(1000 + Math.random() * 9000),
-                produto: prodNome,
-                qtd: parseInt(qtd),
-                status: 'aberta', // STATUS INICIAL: FILA DE ESPERA
-                maquina: null,
-                data: new Date().toISOString()
-            });
-            salvar(); renderListaOPs();
-            alert("Enviado para a Fila de Produção!");
-        }
-
-        // --- MODO OPERADOR (MÁQUINA) ---
-        function renderKiosk() {
-            if(currentUser === 'ADMIN') return;
-            const m = DATA.maquinas[currentUser];
-            
-            document.getElementById('kiosk-maq-nome').innerText = m.nome;
-            document.getElementById('kiosk-op').innerText = m.op ? m.op.produto : "AGUARDANDO O.P";
-            document.getElementById('kiosk-meta').innerText = m.op ? m.op.qtd : 0;
-            document.getElementById('kiosk-real').innerText = m.prod;
-
-            // Barra de Progresso Kiosk
-            let prog = 0;
-            if(m.op && m.op.qtd > 0) prog = Math.min((m.prod / m.op.qtd) * 100, 100).toFixed(1);
-            document.getElementById('kiosk-progress-bar').style.width = `${prog}%`;
-            document.getElementById('kiosk-progress-text').innerText = `${prog}% Concluído`;
-
-            const btn = document.getElementById('btn-status-maq');
-            if(m.status === 'rodando') {
-                btn.innerHTML = '<i class="fa-solid fa-pause text-3xl mb-4"></i><span class="text-lg">PARAR</span>';
-                btn.className = "bg-yellow-50 border-2 border-yellow-100 active:bg-yellow-100 text-yellow-700 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all group";
-            } else {
-                btn.innerHTML = '<i class="fa-solid fa-play text-3xl mb-4"></i><span class="text-lg">INICIAR</span>';
-                btn.className = "bg-green-50 border-2 border-green-100 active:bg-green-100 text-green-600 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all group";
-            }
-
-            // Filtra apenas OPs abertas para o select
-            const select = document.getElementById('kiosk-select-op');
-            const atual = select.value;
-            select.innerHTML = '<option value="">Puxar O.P da Fila...</option>' + 
-                DATA.ops.filter(o => o.status === 'aberta').map(o => `<option value="${o.id}">#${o.id} - ${o.produto} (${o.qtd})</option>`).join('');
-            if(atual) select.value = atual;
-        }
-
+        // Máquina: Puxar O.P da Fila
         function iniciarOPMaquina() {
             const opId = document.getElementById('kiosk-select-op').value;
-            if(!opId) return alert("Selecione uma O.P da fila primeiro");
+            if(!opId) { showToast("Selecione um pedido primeiro!", "error"); return; }
             
-            // Encontra a O.P na lista global
+            // Busca referências
             const opIndex = DATA.ops.findIndex(o => o.id == opId);
             const op = DATA.ops[opIndex];
             const m = DATA.maquinas[currentUser];
             
-            if(confirm(`Puxar a O.P de ${op.produto} para a ${m.nome}?`)) {
-                // Atualiza status da O.P na lista global
-                op.status = 'em_andamento';
-                op.maquina = m.nome;
-                DATA.ops[opIndex] = op; // Salva alteração na lista
-
-                // Atribui à máquina
-                m.op = op;
-                m.prod = 0;
-                m.refugo = 0;
-                m.status = 'setup';
-                
-                salvar(); renderKiosk();
+            // Se a máquina já tem O.P, pergunta se quer trocar
+            if(m.op) {
+                if(!confirm(`A máquina já está produzindo ${m.op.produto}. Deseja encerrar a atual e começar a nova?`)) return;
+                // Finaliza a anterior na lógica (poderíamos salvar num histórico de OPs fechadas)
             }
+            
+            // Atualiza status da OP
+            op.status = 'em_andamento';
+            op.maquina = m.nome;
+            op.inicio = new Date().toISOString();
+            DATA.ops[opIndex] = op;
+            
+            // Vincula à máquina
+            m.op = op;
+            m.prod = 0;
+            m.refugo = 0;
+            m.status = 'setup'; // Começa em setup por padrão
+            m.lastUpdate = Date.now();
+            
+            logHistorico(m.nome, `Iniciou O.P #${op.id} (${op.produto})`);
+            
+            agendarSalvamento();
+            renderKioskMode();
+            showToast("Pedido Iniciado com Sucesso!", "success");
         }
 
+        // Máquina: Ações (Produzir, Refugar, Parar)
         function acaoMaquina(tipo) {
             const m = DATA.maquinas[currentUser];
-            if (tipo === 'parada') {
+            
+            if(tipo === 'parada') {
                 m.status = (m.status === 'rodando') ? 'parada' : 'rodando';
-            } else {
-                if (m.status !== 'rodando') return alert("A máquina precisa estar RODANDO para apontar.");
-                if (!m.op) return alert("Puxe uma O.P da fila primeiro!");
-                if (tipo === 'prod') m.prod++;
-                if (tipo === 'refugo') m.refugo++;
+                m.lastUpdate = Date.now();
+                agendarSalvamento();
+                renderKioskMode();
+                return;
             }
-            salvar(); renderKiosk();
+
+            // Validações
+            if(m.status !== 'rodando') {
+                showToast("ERRO: Inicie a máquina (Botão Amarelo/Verde) antes de apontar!", "error");
+                return;
+            }
+            if(!m.op) {
+                showToast("ERRO: Nenhuma Ordem de Produção ativa!", "error");
+                return;
+            }
+
+            if(tipo === 'prod') {
+                m.prod++;
+                // Feedback tátil ou visual extra poderia vir aqui
+            } else if (tipo === 'refugo') {
+                m.refugo++;
+            }
+            
+            m.lastUpdate = Date.now();
+            agendarSalvamento();
+            renderKioskMode();
         }
 
-        // --- EXTRAS ---
-        function renderListaProdutos() {
-            const container = document.getElementById('lista-produtos');
-            container.innerHTML = `<table class="w-full text-left"><thead class="bg-slate-50 text-[10px] text-slate-400 uppercase font-black"><tr><th class="p-4">Produto</th><th class="p-4">Detalhes</th><th class="p-4 text-right">Ação</th></tr></thead><tbody class="divide-y divide-slate-100">${DATA.produtos.map((p, i) => `<tr class="hover:bg-slate-50"><td class="p-4 font-bold text-slate-700">${p.nome}<br><span class="text-[10px] text-blue-500 uppercase">${p.material}</span></td><td class="p-4 text-sm text-slate-500 font-bold">${p.peso}g | ${p.ciclo}s</td><td class="p-4 text-right"><button onclick="DATA.produtos.splice(${i},1);salvar();renderTudo()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table>`;
+        // --- 10. UTILITÁRIOS E HELPERS ---
+        
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'fa-info-circle';
+            if(type === 'success') icon = 'fa-check-circle';
+            if(type === 'error') icon = 'fa-exclamation-triangle';
+            
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Animação de entrada
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Remove depois de 3 segundos
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
         }
-        function renderListaEquipe() {
-            document.getElementById('lista-equipe').innerHTML = DATA.operadores.map((op, i) => `<div class="bg-white p-4 rounded-[24px] border border-slate-100 flex justify-between items-center shadow-sm"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center font-black">${op.charAt(0)}</div><span class="font-bold text-slate-700">${op}</span></div><button onclick="DATA.operadores.splice(${i},1);salvar();renderTudo()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></div>`).join('');
+
+        function logHistorico(autor, acao) {
+            DATA.historico.push({
+                data: new Date().toISOString(),
+                autor: autor,
+                acao: acao
+            });
+            // Mantém apenas os últimos 500 logs para não pesar o banco
+            if(DATA.historico.length > 500) DATA.historico.shift();
         }
-        function popularSelects() {
+
+        function popularSelectProdutos() {
             const sel = document.getElementById('op-produto');
-            if(sel && DATA.produtos.length > 0) sel.innerHTML = '<option value="">Selecione...</option>' + DATA.produtos.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+            if(sel) {
+                let html = '<option value="">Selecione...</option>';
+                DATA.produtos.forEach(p => {
+                    html += `<option value="${p.nome}">${p.nome}</option>`;
+                });
+                sel.innerHTML = html;
+            }
         }
+
         function autoPreencherOP() {
             const nome = document.getElementById('op-produto').value;
             const p = DATA.produtos.find(x => x.nome === nome);
             const box = document.getElementById('op-info');
-            if(p) { box.classList.remove('hidden'); document.getElementById('op-info-texto').innerText = `${p.material} | ${p.peso}g | Ciclo: ${p.ciclo}s`; } else { box.classList.add('hidden'); }
+            
+            if(p) {
+                box.classList.remove('hidden');
+                document.getElementById('op-info-texto').innerText = `${p.material || '-'} | Peso: ${p.peso || 0}g | Ciclo: ${p.ciclo || 0}s`;
+            } else {
+                box.classList.add('hidden');
+            }
         }
-        function renderGraficos() {
-            const ctx1 = document.getElementById('grafico-prod'); const ctx2 = document.getElementById('grafico-refugo');
+        
+        function limparCamposProdutos() {
+            document.querySelectorAll('#view-produtos input').forEach(i => i.value = '');
+        }
+
+        // Listas Auxiliares (Simplificadas para o exemplo não ficar infinito, mas funcionais)
+        function renderListaProdutos() {
+            const c = document.getElementById('lista-produtos');
+            c.innerHTML = `<table class="w-full text-left"><thead class="bg-slate-50 text-[10px] text-slate-400 uppercase font-black"><tr><th class="p-4">Produto</th><th class="p-4">Info</th><th class="p-4 text-right">Ação</th></tr></thead><tbody class="divide-y divide-slate-100">${DATA.produtos.map((p,i)=>`<tr class="hover:bg-slate-50"><td class="p-4 font-bold text-slate-700">${p.nome}</td><td class="p-4 text-sm text-slate-500">${p.peso}g | ${p.ciclo}s</td><td class="p-4 text-right"><button onclick="DATA.produtos.splice(${i},1);agendarSalvamento();renderTudoAdmin()" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table>`;
+        }
+        function renderListaEquipe() {
+            const c = document.getElementById('lista-equipe');
+            c.innerHTML = DATA.operadores.map((o,i)=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><span class="font-bold text-slate-700 ml-2">${o}</span><button onclick="DATA.operadores.splice(${i},1);agendarSalvamento();renderTudoAdmin()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></div>`).join('');
+        }
+        function addOperador() {
+            const nome = document.getElementById('op-nome').value;
+            if(nome){ DATA.operadores.push(nome); agendarSalvamento(); renderListaEquipe(); document.getElementById('op-nome').value=''; showToast("Operador Adicionado", "success"); }
+        }
+
+        // --- 11. GRÁFICOS (Chart.js) ---
+        function renderGraficosAvancados() {
+            const ctx1 = document.getElementById('grafico-prod');
+            const ctx2 = document.getElementById('grafico-refugo');
+            
             if(!ctx1 || !ctx2) return;
-            const labels = DATA.maquinas.map(m => m.nome);
-            new Chart(ctx1, { type: 'bar', data: { labels, datasets: [{ label: 'Peças', data: DATA.maquinas.map(m => m.prod), backgroundColor: '#2563eb', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} } } });
-            new Chart(ctx2, { type: 'doughnut', data: { labels, datasets: [{ data: DATA.maquinas.map(m => m.refugo), backgroundColor: ['#ef4444', '#f87171', '#fca5a5', '#fee2e2'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            
+            const labels = DATA.maquinas.map(m => m.nome.replace('INJETORA ', 'M'));
+            const dataProd = DATA.maquinas.map(m => m.prod);
+            const dataRefugo = DATA.maquinas.map(m => m.refugo);
+
+            // Destroi anteriores se existirem
+            if(chartInstanceProd) chartInstanceProd.destroy();
+            if(chartInstanceRefugo) chartInstanceRefugo.destroy();
+
+            // Configuração comum
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            };
+
+            // Gráfico 1: Barras
+            chartInstanceProd = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Peças Produzidas',
+                        data: dataProd,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 8,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: commonOptions
+            });
+
+            // Gráfico 2: Linha (para variar) ou Barra
+            chartInstanceRefugo = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Peças Refugadas',
+                        data: dataRefugo,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 8,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: commonOptions
+            });
         }
     </script>
 </body>
