@@ -340,13 +340,12 @@
             </div>
         </header>
 
-        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex flex-wrap gap-2 justify-center">
-        <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md whitespace-nowrap">🖥️ PAINEL</button>
-        <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md whitespace-nowrap">📋 GESTÃO O.P</button>
-        <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md whitespace-nowrap">📊 GRÁFICOS</button>
-        <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md whitespace-nowrap">📝 RESUMO</button>
-        <button onclick="trocarAba('operadores')" id="btn-operadores" class="tab-btn shadow-md whitespace-nowrap">👷 OPERADORES</button>
-    </nav>
+        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto justify-center">
+            <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
+            <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
+            <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
+            <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
+        </nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
             <div id="grid-maquinas"></div>
@@ -373,54 +372,10 @@
                         </div>
                          <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" class="w-full p-2 border rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500" placeholder="Digite a Qtd Total">
+                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
                     </div>
 
-                <div class="col-span-full mb-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner overflow-hidden">
-                    <div class="bg-white px-4 py-2 border-b border-slate-200 flex items-center justify-between">
-                        <h3 class="font-bold text-slate-700 text-xs uppercase flex items-center gap-2">
-                            <i class="fas fa-calculator text-blue-500"></i> Calculadora de Produção
-                        </h3>
-                        <span class="text-[10px] font-black text-slate-400 uppercase">Previsão Automática</span>
-                    </div>
-                    <div class="p-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Peso Peça (g)</label>
-                                <input type="number" id="tec-peso" oninput="calcularPrevisao()" placeholder="0.00" class="w-full p-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Ciclo (Seg)</label>
-                                <input type="number" id="tec-ciclo" oninput="calcularPrevisao()" placeholder="0.0" class="w-full p-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Cavidades</label>
-                                <input type="number" id="tec-cav" value="1" oninput="calcularPrevisao()" class="w-full p-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">% Pigmento</label>
-                                <input type="number" id="tec-pig-porc" oninput="calcularPrevisao()" placeholder="0.0" class="w-full p-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-orange-500">
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="bg-blue-600 rounded-lg p-2 text-center shadow-md">
-                                <span class="block text-[8px] text-blue-200 font-bold uppercase">Tempo</span>
-                                <span id="out-tempo" class="block text-lg font-black text-white leading-tight">-</span>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-lg p-2 text-center">
-                                <span class="block text-[8px] text-slate-400 font-bold uppercase">Material</span>
-                                <span id="out-material" class="block text-lg font-black text-slate-700 leading-tight">-</span>
-                            </div>
-                            <div class="bg-orange-500 rounded-lg p-2 text-center shadow-md">
-                                <span class="block text-[8px] text-orange-200 font-bold uppercase">Pigmento (kg)</span>
-                                <span id="out-pigmento" class="block text-lg font-black text-white leading-tight">-</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
@@ -465,38 +420,6 @@
                             <input type="text" id="f-saco" placeholder="Ex: 40x60" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
                         </div>
                     </div>
-
-                    <div id="aba-operadores" class="aba-conteudo max-w-4xl mx-auto px-4">
-    
-                    <div class="mb-8 text-center">
-                        <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">Equipe de Produção</h2>
-                        <p class="text-slate-500 text-sm">Gerencie quem pode ser selecionado nas máquinas</p>
-                    </div>
-                
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row gap-4 items-end">
-                        <div class="flex-1 w-full">
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nome do Novo Operador</label>
-                            <input type="text" id="novo-operador-nome" placeholder="Ex: João da Silva" 
-                                class="w-full p-3 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all">
-                        </div>
-                        <button onclick="adicionarOperador()" 
-                            class="w-full md:w-auto px-8 py-3.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-black uppercase tracking-wider shadow-lg shadow-green-200 transition-all active:scale-95">
-                            <i class="fas fa-plus mr-2"></i> Adicionar
-                        </button>
-                    </div>
-                
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-                            <h3 class="font-bold text-slate-700 uppercase text-sm">
-                                <i class="fas fa-users text-blue-500 mr-2"></i> Operadores Cadastrados
-                            </h3>
-                            <span class="text-xs bg-blue-100 text-blue-700 py-1 px-2 rounded-lg font-bold">Ativos</span>
-                        </div>
-                        
-                        <ul id="lista-operadores" class="divide-y divide-slate-100 p-0 m-0">
-                            </ul>
-                    </div>
-                </div>
                     
                     <div class="mb-4">
                         <label class="text-[10px] font-bold text-slate-400 uppercase">Operador Responsável</label>
@@ -545,7 +468,17 @@
                     </div>
                 </div>
 
-            
+                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
+                    <h2 class="text-2xl font-black mb-8 border-b pb-4">👷 GERENCIAR OPERADORES</h2>
+                    <div class="flex gap-4 mb-8">
+                        <input type="text" id="novo-operador" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Operador...">
+                        <button onclick="gerenciarOperador('add')" class="bg-green-600 hover:bg-green-500 text-white px-8 rounded-xl font-black text-2xl shadow-md transition-colors">+</button>
+                    </div>
+                    <div id="lista-operadores-config" class="flex flex-wrap gap-3"></div>
+                </div>
+            </div>
+        </div>
+
         <div id="aba-graficos" class="aba-conteudo px-4">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center col-span-1 lg:col-span-2">
@@ -1147,44 +1080,15 @@
         }
 
         function trocarAba(id) {
-    // 1. Esconde todas as abas e remove a classe ativa dos botões
-    document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-
-    // 2. Ativa a aba e o botão que foi clicado (se existirem)
-    const aba = document.getElementById('aba-' + id);
-    const btn = document.getElementById('btn-' + id);
-    if(aba) aba.classList.add('aba-ativa');
-    if(btn) btn.classList.add('active');
-    
-    // 3. Executa as funções específicas de cada aba
-    if(id === 'graficos') { 
-        atualizarResumoGlobalNumeros(); 
-        iniciarGraficos(); 
-    }
-    
-    if(id === 'apontamento') { 
-        renderApontamento(); 
-    }
-    
-    if(id === 'lista') { 
-        renderListaOPs(); 
-        renderHistorico(); 
-        renderProdutosConfig();
-        // renderOperadoresConfig(); // <- Comentei aqui pq agora tem aba própria, mas pode descomentar se quiser manter nos dois
-    }
-
-    // === NOVA ABA OPERADORES ===
-    if(id === 'operadores') {
-        // Se a sua função de renderizar ainda se chama renderOperadoresConfig, use ela:
-        if(typeof renderOperadoresConfig === 'function') {
-            renderOperadoresConfig(); 
-        } else {
-            // Caso tenha mudado o nome, ajuste aqui
-            console.log("Função de renderizar operadores não encontrada");
+            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('aba-' + id).classList.add('aba-ativa');
+            document.getElementById('btn-' + id).classList.add('active');
+            
+            if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+            if(id === 'apontamento') { renderApontamento(); }
+            if(id === 'lista') { renderListaOPs(); renderHistorico(); renderOperadoresConfig(); renderProdutosConfig(); }
         }
-    }
-}
 
         function processarTurnoAuto() {
             if (manualOverride) return;
@@ -2090,38 +1994,8 @@
         
         window.addEventListener('beforeunload', () => { salvarGeral(); }); 
         setInterval(() => { salvarGeral(); }, 60000); 
-        carregarBanco();    
+        carregarBanco();
     </script>
-
-<script>
-// === LÓGICA DA CALCULADORA ===
-function calcularPrevisao() {
-    try {
-        const qtd = parseFloat(document.getElementById('f-qtd').value) || 0;
-        const peso = parseFloat(document.getElementById('tec-peso').value) || 0;
-        const ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;
-        const cav = parseFloat(document.getElementById('tec-cav').value) || 1;
-        const perc = parseFloat(document.getElementById('tec-pig-porc').value) || 0;
-
-        if (qtd <= 0 || peso <= 0) {
-            ['out-tempo', 'out-material', 'out-pigmento'].forEach(id => document.getElementById(id).innerText = "-");
-            return;
-        }
-
-        const matTotal = (qtd * peso) / 1000;
-        const pigTotal = matTotal * (perc / 100);
-        const segundos = (qtd / cav) * ciclo;
-        const h = Math.floor(segundos / 3600);
-        const m = Math.round((segundos % 3600) / 60);
-
-        document.getElementById('out-tempo').innerText = ciclo > 0 ? `${h}h ${m}m` : "-";
-        document.getElementById('out-material').innerText = matTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " kg";
-        document.getElementById('out-pigmento').innerText = pigTotal.toLocaleString('pt-BR', {minimumFractionDigits: 3});
-    } catch (e) { console.error(e); }
-}
-</script>
-    
 </body>
 </html>
-
 
