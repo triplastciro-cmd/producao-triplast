@@ -2045,21 +2045,18 @@
     </script>
 
         <script>
-// === FUNÇÃO DE CÁLCULO (AJUSTADA: EXEMPLO 1250 Pçs / 20g / 25kg / 2%) ===
+// === FUNÇÃO DE CÁLCULO (MATERIAL COM KG, PIGMENTO SÓ NÚMERO) ===
 function calcularPrevisao() {
     try {
-        // 1. PEGAR OS VALORES DA TELA
+        // 1. PEGAR DADOS DA TELA
         let elQtd = document.getElementById('f-qtd');
-        let qtdMeta = elQtd ? parseFloat(elQtd.value) : 0; // Ex: 1250 peças
+        let qtdMeta = elQtd ? parseFloat(elQtd.value) : 0; 
 
-        // Peso da Peça unitária (Digitado em GRAMAS na tela)
-        let pesoPecaGramas = parseFloat(document.getElementById('tec-peso').value) || 0; // Ex: 20g      
-        
+        let pesoPecaGramas = parseFloat(document.getElementById('tec-peso').value) || 0; 
         let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
         let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
-        let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; // Ex: 2%
+        let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
-        // Se faltar dados principais, limpa e sai
         if (!qtdMeta || !pesoPecaGramas) {
             document.getElementById('out-tempo').innerText = "-";
             document.getElementById('out-material').innerText = "-";
@@ -2067,20 +2064,16 @@ function calcularPrevisao() {
             return;
         }
 
-        // === CÁLCULO 1: MATERIAL TOTAL (Baseado na Meta) ===
-        // O cliente quer 1250 peças de 20g.
-        // Conta: 1250 * 20 = 25.000 gramas -> dividiu por 1000 -> 25 kg.
-        let pesoTotalMaterialKg = (qtdMeta * pesoPecaGramas) / 1000;
-
-        // === CÁLCULO 2: PIGMENTO (Baseado no Material Total) ===
-        // Temos 25kg de material e queremos 2% de pigmento.
-        // Conta: 25 * 0.02 = 0.5 kg.
+        // === CÁLCULOS ===
         
-        // Tratamento inteligente: Se o usuário digitar "2", dividimos por 100. Se digitar "0.02", usamos direto.
-        let fator = (porcentagem > 1) ? (porcentagem / 100) : porcentagem;
-        let pesoPigmentoKg = pesoTotalMaterialKg * fator;
+        // Material Total (em KG)
+        let pesoTotalMaterial = (qtdMeta * pesoPecaGramas) / 1000;
 
-        // === CÁLCULO 3: TEMPO ===
+        // Pigmento (em KG, mas vamos mostrar só o número)
+        let fator = (porcentagem > 0) ? (porcentagem / 100) : 0;
+        let pesoPigmento = pesoTotalMaterial * fator;
+
+        // Tempo
         let totalCiclos = qtdMeta / cavidades;
         let totalSegundos = totalCiclos * ciclo;
         let totalHoras = totalSegundos / 3600;
@@ -2088,33 +2081,31 @@ function calcularPrevisao() {
         let m = Math.round((totalHoras - h) * 60);
         let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
 
-        // === EXIBIÇÃO NA TELA ===
+        // === EXIBIÇÃO CORRIGIDA ===
+        
         document.getElementById('out-tempo').innerText = textoTempo;
 
-        // Exibe Material (Ex: 25.00 kg)
-        document.getElementById('out-material').innerText = pesoTotalMaterialKg.toFixed(2) + " kg";
+        // MATERIAL: Mantém o "kg" e usa vírgula
+        // Ex: "25,00 kg"
+        document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
 
-        // Exibe Pigmento (Ex: 500 g ou 0.500 kg)
-        // Se for menor que 1kg (ex: 0.5), mostra em gramas (500g)
-        if (pesoPigmentoKg < 1) {
-            let valorGramas = pesoPigmentoKg * 1000;
-            document.getElementById('out-pigmento').innerText = valorGramas.toFixed(0) + " g";
-        } else {
-            document.getElementById('out-pigmento').innerText = pesoPigmentoKg.toFixed(3) + " kg";
-        }
+        // PIGMENTO: Tira o "kg" e deixa só o número com vírgula
+        // Ex: "0,500"
+        document.getElementById('out-pigmento').innerText = pesoPigmento.toFixed(3).replace('.', ',');
 
-        // Opcional: Já preenche o campo de Material do formulário pra adiantar
+        // Preenche inputs originais (Opcional)
         let campoMatOriginal = document.getElementById('f-material-qtd');
-        if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterialKg.toFixed(2) + " kg";
+        if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
 
-    } catch (erro) {
-        console.log("Calculando...", erro);
+    } catch (e) {
+        console.log(e);
     }
 }
 </script>
         
 </body>
 </html>
+
 
 
 
