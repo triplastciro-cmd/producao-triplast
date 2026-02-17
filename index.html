@@ -340,144 +340,142 @@
             </div>
         </header>
 
-        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto justify-center">
-            <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
-            <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
-            <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
-            <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
+        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex flex-wrap gap-2 justify-center">
+            <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md whitespace-nowrap">🖥️ PAINEL</button>
+            <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md whitespace-nowrap">📋 GESTÃO O.P</button>
+            <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md whitespace-nowrap">📊 GRÁFICOS</button>
+            <button onclick="trocarAba('produtos')" id="btn-produtos" class="tab-btn shadow-md whitespace-nowrap">📦 PRODUTOS</button>
+            <button onclick="trocarAba('equipe')" id="btn-equipe" class="tab-btn shadow-md whitespace-nowrap">👷 EQUIPE</button>
         </nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
             <div id="grid-maquinas"></div>
         </div>
 
-        <div id="aba-lista" class="aba-conteudo px-4">
-            <div class="max-w-7xl mx-auto grid grid-cols-1 gap-8">
-                
-                <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
-                    <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Máquina</label>
-                            <select id="f-maquina" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Nº O.P</label>
-                            <input type="text" id="f-op" placeholder="Ex: 12345" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
-                            <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
-                            <select id="f-produto" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                                <option value="">-- Selecione Produto --</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
-                            <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
-                            <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <div class="md:col-span-2 flex items-center">
-                            <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Cód. Pigmento</label>
-                            <input type="text" id="f-pigmento" placeholder="Cód..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Porcentagem (%)</label>
-                            <input type="text" id="f-porcentagem" placeholder="Ex: 2%" class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
-                        <div class="md:col-span-2 flex items-center">
-                            <label class="text-xs font-black text-orange-600 uppercase mr-2"><i class="fa-solid fa-box-open"></i> EMBALAGEM:</label>
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Caixa</label>
-                            <input type="text" id="f-caixa" placeholder="Ex: CX Padrão" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Saco Plástico</label>
-                            <input type="text" id="f-saco" placeholder="Ex: 40x60" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Operador Responsável</label>
-                        <select id="f-operador" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
-                    </div>
-
-                    <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 hover:shadow-blue-500/30 transition-all active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR FICHA NA PRODUÇÃO</button>
+        <<div id="aba-lista" class="aba-conteudo px-4">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 gap-8">
+        
+        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+            <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Máquina</label>
+                    <select id="f-maquina" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
                 </div>
-                
-                <div id="container-filas" class="space-y-6"></div>
-
-                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8 border border-slate-100">
-                    <h2 class="text-2xl font-black mb-8 border-b pb-4 text-slate-700">📦 GERENCIAR CATÁLOGO DE PRODUTOS</h2>
-                    <div class="flex gap-4 mb-8">
-                        <input type="text" id="novo-produto-catalog" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Produto...">
-                        <button onclick="gerenciarProdutoCatalog('add')" class="bg-blue-600 hover:bg-blue-500 text-white px-8 rounded-xl font-black text-2xl shadow-md transition-colors">+</button>
-                    </div>
-                    <div id="lista-produtos-config" class="flex flex-wrap gap-3"></div>
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Nº O.P</label>
+                    <input type="text" id="f-op" placeholder="Ex: 12345" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                 </div>
-
-                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b pb-4 gap-4">
-                        <h2 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> HISTÓRICO</h2>
-                        <div class="flex flex-wrap gap-2">
-                            <input type="text" id="busca-historico-op" placeholder="🔍 Buscar Nº O.P" oninput="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500">
-                            <input type="date" id="busca-historico-data" onchange="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none focus:border-blue-500 text-slate-600">
-                            <button onclick="limparBuscaHistorico()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg font-bold text-xs transition-colors"><i class="fa-solid fa-xmark"></i> Limpar</button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto max-h-96 overflow-y-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-blue-50 text-blue-800 text-xs uppercase sticky top-0">
-                                <tr>
-                                    <th class="p-3">Data</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3">Máquina</th>
-                                    <th class="p-3">O.P</th>
-                                    <th class="p-3">Cliente</th>
-                                    <th class="p-3">Produto</th>
-                                    <th class="p-3">Qtd Feita</th>
-                                    <th class="p-3 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
-                        </table>
-                    </div>
+                 <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
+                    <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                 </div>
-
-                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
-                    <h2 class="text-2xl font-black mb-8 border-b pb-4">👷 GERENCIAR OPERADORES</h2>
-                    <div class="flex gap-4 mb-8">
-                        <input type="text" id="novo-operador" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Operador...">
-                        <button onclick="gerenciarOperador('add')" class="bg-green-600 hover:bg-green-500 text-white px-8 rounded-xl font-black text-2xl shadow-md transition-colors">+</button>
-                    </div>
-                    <div id="lista-operadores-config" class="flex flex-wrap gap-3"></div>
+                 <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
+                    <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                 </div>
             </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
+                    <select id="f-produto" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        <option value="">-- Selecione Produto --</option>
+                    </select>
+                </div>
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
+                    <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700">
+                </div>
+                 <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
+                    <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <div class="md:col-span-2 flex items-center">
+                    <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
+                </div>
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Cód. Pigmento</label>
+                    <input type="text" id="f-pigmento" placeholder="Cód..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
+                </div>
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Porcentagem (%)</label>
+                    <input type="text" id="f-porcentagem" placeholder="Ex: 2%" class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
+                <div class="md:col-span-2 flex items-center">
+                    <label class="text-xs font-black text-orange-600 uppercase mr-2"><i class="fa-solid fa-box-open"></i> EMBALAGEM:</label>
+                </div>
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Caixa</label>
+                    <input type="text" id="f-caixa" placeholder="Ex: CX Padrão" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
+                </div>
+                <div class="md:col-span-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Saco Plástico</label>
+                    <input type="text" id="f-saco" placeholder="Ex: 40x60" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Operador Responsável</label>
+                <select id="f-operador" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold"></select>
+            </div>
+
+            <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 transition-all active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR FICHA NA PRODUÇÃO</button>
         </div>
+        
+        <div id="container-filas" class="space-y-6"></div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
+            <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b pb-4 gap-4">
+                <h2 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-blue-600 mr-2"></i> HISTÓRICO</h2>
+                <div class="flex flex-wrap gap-2">
+                    <input type="text" id="busca-historico-op" placeholder="🔍 Buscar Nº O.P" oninput="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm outline-none">
+                    <input type="date" id="busca-historico-data" onchange="renderHistorico()" class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-sm text-slate-600">
+                    <button onclick="limparBuscaHistorico()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg font-bold text-xs">Limpar</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto max-h-96">
+                <table class="w-full text-left">
+                    <thead class="bg-blue-50 text-blue-800 text-xs uppercase sticky top-0">
+                        <tr>
+                            <th class="p-3">Data</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Máquina</th>
+                            <th class="p-3">O.P</th>
+                            <th class="p-3">Cliente</th>
+                            <th class="p-3">Produto</th>
+                            <th class="p-3">Qtd Feita</th>
+                            <th class="p-3 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-historico" class="text-sm font-bold text-slate-600"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+                <<div id="aba-produtos" class="aba-conteudo px-4">
+    </div>
+
+<div id="aba-equipe" class="aba-conteudo px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
+            <h2 class="text-2xl font-black mb-8 border-b pb-4">👷 GERENCIAR OPERADORES</h2>
+            <div class="flex gap-4 mb-8">
+                <input type="text" id="novo-operador" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Operador...">
+                <button onclick="gerenciarOperador('add')" class="bg-green-600 hover:bg-green-500 text-white px-8 rounded-xl font-black text-2xl shadow-md">+</button>
+            </div>
+            <div id="lista-operadores-config" class="flex flex-wrap gap-3"></div>
+        </div>
+    </div>
+</div>
 
         <div id="aba-graficos" class="aba-conteudo px-4">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1998,4 +1996,5 @@
     </script>
 </body>
 </html>
+
 
