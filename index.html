@@ -372,63 +372,10 @@
                         </div>
                          <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
                     </div>
 
-                                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-2 shadow-sm">
-                <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
-                    <i class="fas fa-calculator text-blue-600"></i>
-                    <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo Técnico</h4>
-                </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
-                        <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
-                        <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
-                        <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
-                    </div>
-                    
-                    <div class="flex gap-1">
-                        <div class="flex-1">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">PIGMENTO</label>
-                            <select id="tec-pig-select" onchange="aoSelecionarPigmento()" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700">
-                                <option value="0">Sem Pigmento</option>
-                                </select>
-                        </div>
-                        <div class="w-20">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">%</label>
-                            <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="%" value="0" oninput="calcularPrevisao()">
-                        </div>
-                        <div class="pt-6">
-                            <button onclick="abrirModalPigmentos()" class="bg-slate-200 text-slate-600 p-2 rounded-lg hover:bg-slate-300 transition"><i class="fas fa-cog"></i></button>
-                        </div>
-                    </div>
-                </div>
-            
-                <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo</span>
-                        <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Material</span>
-                        <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Pigmento</span>
-                        <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                </div>
-            </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
@@ -637,7 +584,6 @@
         // VARIÁVEIS GLOBAIS
         let maquinas = [];
         let historico = [];
-        let pigmentosGlobais = []; // Nova lista de pigmentos
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let operadoresGlobais = ["João", "Maria", "José"]; 
         let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; 
@@ -771,11 +717,7 @@
             if (conteudo.produtos) produtosGlobais = conteudo.produtos;
             historico = conteudo.historico || []; 
             if(conteudo.dadosMensais) dadosMensais = conteudo.dadosMensais;
-            if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra;
-            if(data.conteudo.pigmentos) {
-    pigmentosGlobais = data.conteudo.pigmentos;
-    renderizarOpcoesPigmentos();
-}
+            if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra; 
             
             // Atualiza timestamp local para saber se estamos atualizados
             dadosLocaisLastUpdate = conteudo.lastUpdateTimestamp || 0;
@@ -2030,23 +1972,23 @@
         }
 
         async function salvarGeral() { 
-    await sb.from('sistema').update({ 
-        conteudo: { 
-            maquinas, 
-            cores: coresGlobais, 
-            operadores: operadoresGlobais, 
-            produtos: produtosGlobais,
-            pigmentos: pigmentosGlobais, // <--- ADICIONE ESSA LINHA
-            historico, 
-            dadosMensais, 
-            modoHoraExtra, 
-            lastUpdateTimestamp: Date.now() 
-        } 
-    }).eq('id', 1);
-    
-    dadosLocaisLastUpdate = Date.now();
-    showToast("DADOS SALVOS");
-}
+            await sb.from('sistema').update({ 
+                conteudo: { 
+                    maquinas, 
+                    cores: coresGlobais, 
+                    operadores: operadoresGlobais, 
+                    produtos: produtosGlobais, 
+                    historico, 
+                    dadosMensais, 
+                    modoHoraExtra, 
+                    lastUpdateTimestamp: Date.now() 
+                } 
+            }).eq('id', 1); // SALVA TUDO
+            
+            // ATUALIZA TIMESTAMP LOCAL PARA EVITAR AUTO-REFRESH NO PRÓPRIO DISPOSITIVO QUE SALVOU
+            dadosLocaisLastUpdate = Date.now();
+            showToast("DADOS SALVOS");
+        }
 
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
         
@@ -2054,84 +1996,6 @@
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
     </script>
-
-    <div id="modal-pigmentos" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md m-4 overflow-hidden">
-        <div class="bg-slate-800 p-4 flex justify-between items-center">
-            <h3 class="text-white font-bold">Gerenciar Pigmentos</h3>
-            <button onclick="document.getElementById('modal-pigmentos').classList.add('hidden')" class="text-slate-400 hover:text-white">X</button>
-        </div>
-        <div class="p-6">
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="novo-pigmento-nome" placeholder="Nome (Ex: Azul)" class="flex-1 p-3 border rounded-lg">
-                <button onclick="adicionarNovoPigmento()" class="bg-blue-600 text-white px-4 rounded-lg font-bold">+</button>
-            </div>
-            <ul id="lista-pigmentos-gerenciar" class="space-y-2 max-h-60 overflow-y-auto">
-                </ul>
-        </div>
-    </div>
-</div>
-
-    <script>
-        // --- VARIÁVEL GLOBAL ---
-let pigmentosGlobais = [];
-
-// --- FUNÇÕES ---
-function abrirModalPigmentos() {
-    renderizarListaGerenciaPigmentos();
-    document.getElementById('modal-pigmentos').classList.remove('hidden');
-}
-
-function adicionarNovoPigmento() {
-    let nome = document.getElementById('novo-pigmento-nome').value;
-    if(!nome) return alert("Digite um nome!");
-    
-    pigmentosGlobais.push(nome);
-    document.getElementById('novo-pigmento-nome').value = "";
-    
-    salvarGeral(); // Tenta salvar
-    renderizarListaGerenciaPigmentos();
-    renderizarOpcoesPigmentos();
-}
-
-function removerPigmento(index) {
-    if(confirm("Excluir?")) {
-        pigmentosGlobais.splice(index, 1);
-        salvarGeral();
-        renderizarListaGerenciaPigmentos();
-        renderizarOpcoesPigmentos();
-    }
-}
-
-function renderizarListaGerenciaPigmentos() {
-    let html = "";
-    pigmentosGlobais.forEach((pig, index) => {
-        html += `<li class="flex justify-between bg-slate-50 p-3 rounded border">
-                    <b>${pig}</b>
-                    <button onclick="removerPigmento(${index})" class="text-red-500">Excluir</button>
-                 </li>`;
-    });
-    document.getElementById('lista-pigmentos-gerenciar').innerHTML = html || "Vazio";
-}
-
-function renderizarOpcoesPigmentos() {
-    let select = document.getElementById('tec-pig-select');
-    if(!select) return;
-    let atual = select.value;
-    
-    let html = `<option value="0">Sem Pigmento</option>`;
-    pigmentosGlobais.forEach(pig => {
-        html += `<option value="${pig}">${pig}</option>`;
-    });
-    
-    select.innerHTML = html;
-    select.value = atual;
-}
-
-function aoSelecionarPigmento() {
-    calcularPrevisao();
-}
-    </script>
-    
 </body>
 </html>
+
