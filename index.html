@@ -2115,8 +2115,6 @@ async function carregarBanco() {
 </div>
 
     <script>
-        // --- VARIÁVEL GLOBAL ---
-let pigmentosGlobais = [];
 
 // --- FUNÇÕES ---
 function abrirModalPigmentos() {
@@ -2173,10 +2171,44 @@ function renderizarOpcoesPigmentos() {
 function aoSelecionarPigmento() {
     calcularPrevisao();
 }
+
+// === FUNÇÃO QUE DESENHA AS MÁQUINAS (QUE ESTAVA FALTANDO) ===
+function renderizarMaquinas() {
+    const grid = document.getElementById('grid-maquinas'); // Verifica se sua div tem esse ID
+    if (!grid) return; // Se não achar a div, não faz nada
+    
+    grid.innerHTML = ''; // Limpa a tela antes de desenhar
+
+    maquinas.forEach((maq, index) => {
+        // Cria o cartão da máquina
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl shadow-sm border-l-4 ${maq.status === 'PARADA' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-white'}`;
+        
+        card.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-700">${maq.nome}</h3>
+                    <p class="text-xs text-slate-500 uppercase font-bold mt-1">${maq.operador || 'Sem Operador'}</p>
+                </div>
+                <span class="text-xs font-bold px-2 py-1 rounded ${maq.status === 'PARADA' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                    ${maq.status}
+                </span>
+            </div>
+            <div class="mt-3">
+                <p class="text-sm text-slate-600"><strong>Produto:</strong> ${maq.produto || '-'}</p>
+                <p class="text-sm text-slate-600"><strong>Meta:</strong> ${maq.meta || 0}</p>
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
+}
+        
     </script>
     
 </body>
 </html>
+
 
 
 
