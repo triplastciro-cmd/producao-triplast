@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast Enterprise | Monitoramento Industrial</title>
+    <title>Triplast Manager | v3.0 Enterprise</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -17,35 +18,35 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                        tech: ['Rajdhani', 'sans-serif'],
+                        mono: ['"Roboto Mono"', 'monospace'],
                     },
                     colors: {
-                        brand: { 
-                            50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 
-                            600: '#0284c7', 800: '#075985', 900: '#0c4a6e' 
+                        // Paleta Industrial Dark
+                        dark: { 
+                            950: '#020617', 900: '#0f172a', 800: '#1e293b', 
+                            700: '#334155', 600: '#475569', surface: '#111827'
                         },
-                        dark: {
-                            bg: '#0f172a', surface: '#1e293b', border: '#334155'
+                        brand: { 
+                            DEFAULT: '#3b82f6', glow: '#60a5fa', dark: '#1d4ed8' 
                         },
                         status: {
-                            ok: '#10b981', warn: '#f59e0b', error: '#ef4444', off: '#64748b'
+                            run: '#22c55e',   // Verde (Produzindo)
+                            stop: '#ef4444',  // Vermelho (Parada)
+                            setup: '#eab308', // Amarelo (Setup)
+                            wait: '#94a3b8'   // Cinza (Aguardando)
                         }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(59, 130, 246, 0.5)',
+                        'neon-green': '0 0 15px rgba(34, 197, 94, 0.4)',
+                        'neon-red': '0 0 15px rgba(239, 68, 68, 0.4)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                     },
                     animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'slide-up': 'slideUp 0.4s ease-out',
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                    },
-                    keyframes: {
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        }
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 3s linear infinite',
                     }
                 }
             }
@@ -53,802 +54,895 @@
     </script>
 
     <style>
-        /* Reset & Base */
+        /* Base */
         body {
-            background-color: #0f172a; /* Dark theme default */
-            color: #f1f5f9;
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(15, 23, 42, 1) 0px, transparent 50%);
+            color: #e2e8f0;
             overflow-x: hidden;
         }
 
-        /* Glassmorphism Classes */
+        /* Glassmorphism Panels */
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        .glass-input {
+        .glass-header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Inputs Modernos */
+        .input-tech {
             background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(148, 163, 184, 0.2);
+            border: 1px solid rgba(71, 85, 105, 0.5);
             color: white;
             transition: all 0.3s ease;
         }
-        .glass-input:focus {
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+        .input-tech:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
             outline: none;
+            background: rgba(15, 23, 42, 0.9);
         }
 
-        /* Scrollbar Customizada */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        /* Botões 3D Flat */
+        .btn-3d {
+            transition: all 0.1s;
+            position: relative;
+            top: 0;
+        }
+        .btn-3d:active {
+            top: 2px;
+            box-shadow: none !important;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Status Indicators */
-        .status-dot {
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        /* Grid de Máquinas Moderno */
-        .machine-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .machine-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.4);
-            border-color: rgba(14, 165, 233, 0.4);
-        }
-
         /* Loader */
-        .loader-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: #0f172a; z-index: 9999;
+        .loader-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #020617; z-index: 9999;
             display: flex; justify-content: center; align-items: center;
-            transition: opacity 0.5s;
+            flex-direction: column;
+            transition: opacity 0.5s ease-out;
         }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 3px solid rgba(14, 165, 233, 0.3);
-            border-radius: 50%;
-            border-top-color: #0ea5e9;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Utilitários de Visibilidade */
-        .hidden-force { display: none !important; }
+        /* Classes Utilitárias de Estado */
+        .status-badge {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .text-glow { text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+        /* Grids Customizados */
+        .machine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Notificação */
+        #toast-container {
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 100;
+            transform: translateY(150%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #toast-container.active { transform: translateY(0); }
     </style>
 </head>
-<body class="antialiased h-screen flex flex-col">
+<body class="h-screen flex flex-col antialiased selection:bg-brand-dark selection:text-white">
 
-    <div id="loader" class="loader-overlay">
-        <div class="text-center">
-            <div class="spinner mb-4 mx-auto"></div>
-            <h2 class="text-brand-500 font-bold tracking-widest text-sm animate-pulse">CARREGANDO SISTEMA...</h2>
+    <div id="loader" class="loader-wrapper">
+        <div class="relative w-24 h-24 mb-6">
+            <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-t-brand-DEFAULT border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
         </div>
+        <h2 class="text-2xl font-tech font-bold text-white tracking-widest uppercase">Triplast<span class="text-brand-DEFAULT">System</span></h2>
+        <p class="text-slate-500 text-sm font-mono mt-2" id="loader-msg">Conectando ao banco de dados...</p>
     </div>
 
-    <section id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80')] bg-cover bg-center">
-        <div class="absolute inset-0 bg-dark-bg/90 backdrop-blur-sm"></div>
-        
-        <div class="relative glass-panel w-full max-w-md p-8 rounded-2xl shadow-2xl animate-slide-up mx-4">
+    <section id="screen-login" class="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
+            <i class="fa-solid fa-gear absolute top-10 left-10 text-9xl animate-spin-slow text-slate-700"></i>
+            <i class="fa-solid fa-microchip absolute bottom-10 right-10 text-9xl text-slate-700"></i>
+        </div>
+
+        <div class="w-full max-w-lg glass-panel rounded-2xl p-8 z-10 shadow-glass border-t border-white/10">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-brand-600 rounded-xl mx-auto flex items-center justify-center shadow-lg shadow-brand-500/20 mb-4">
-                    <i class="fa-solid fa-industry text-3xl text-white"></i>
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 mb-4 shadow-neon">
+                    <i class="fa-solid fa-cube text-3xl text-white"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-white mb-1">Triplast <span class="text-brand-500">System</span></h1>
-                <p class="text-slate-400 text-sm">Controle de Produção Avançado</p>
+                <h1 class="text-3xl font-bold text-white font-tech">Acesso ao Sistema</h1>
+                <p class="text-slate-400 text-sm">Controle e Monitoramento de Produção</p>
             </div>
 
-            <div class="flex p-1 bg-dark-bg/50 rounded-lg mb-6">
-                <button onclick="mudarAbaLogin('operador')" id="tab-operador" class="flex-1 py-2 text-sm font-bold rounded-md transition-all bg-brand-600 text-white shadow">Operador</button>
-                <button onclick="mudarAbaLogin('admin')" id="tab-admin" class="flex-1 py-2 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white">Admin / Gestão</button>
+            <div class="grid grid-cols-2 gap-2 bg-dark-900/50 p-1.5 rounded-xl mb-6">
+                <button onclick="toggleLoginMode('operador')" id="btn-mode-operador" class="py-2.5 rounded-lg text-sm font-bold transition-all bg-brand-600 text-white shadow-lg">
+                    <i class="fa-solid fa-user-hard-hat mr-2"></i> Operador
+                </button>
+                <button onclick="toggleLoginMode('admin')" id="btn-mode-admin" class="py-2.5 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-user-tie mr-2"></i> Admin
+                </button>
             </div>
 
-            <form id="form-login" onsubmit="realizarLogin(event)" class="space-y-4">
-                <div id="campo-admin" class="hidden">
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Senha Mestra</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-slate-500"></i>
-                        <input type="password" id="admin-pass" class="glass-input w-full pl-10 pr-4 py-3 rounded-xl" placeholder="••••••••">
+            <form onsubmit="handleLogin(event)" class="space-y-5">
+                <div id="login-fields-operador" class="space-y-4 animate-fade-in">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Selecione a Máquina</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-robot absolute left-4 top-3.5 text-slate-500"></i>
+                            <select id="login-machine-select" class="input-tech w-full pl-11 pr-4 py-3 rounded-xl appearance-none cursor-pointer">
+                                <option value="">Carregando lista...</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-slate-500 pointer-events-none"></i>
+                        </div>
                     </div>
                 </div>
 
-                <div id="campo-operador">
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Selecione a Máquina</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-microchip absolute left-3 top-3.5 text-slate-500"></i>
-                        <select id="login-maq-select" class="glass-input w-full pl-10 pr-4 py-3 rounded-xl appearance-none cursor-pointer">
-                            <option value="">Carregando máquinas...</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-500 pointer-events-none"></i>
+                <div id="login-fields-admin" class="space-y-4 hidden animate-fade-in">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Senha de Administração</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-500"></i>
+                            <input type="password" id="login-admin-pass" placeholder="••••••••" class="input-tech w-full pl-11 pr-4 py-3 rounded-xl font-mono">
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-2 text-right">Esqueceu? Contate o suporte TI.</p>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-500/25 transition-all transform active:scale-95 flex items-center justify-center gap-2 group">
-                    <span>Acessar Painel</span>
+                <button type="submit" class="w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-900/50 transition-all transform active:scale-95 btn-3d flex items-center justify-center gap-2 group">
+                    <span>Entrar no Painel</span>
                     <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </form>
             
-            <p class="mt-6 text-center text-[10px] text-slate-500 font-mono">
-                System Build v2.4.0 • Secure Connection
-            </p>
+            <div class="mt-6 pt-6 border-t border-white/5 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div id="db-status-dot" class="w-2 h-2 rounded-full bg-slate-500"></div>
+                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Banco de Dados</span>
+                </div>
+                <span class="text-[10px] text-slate-600 font-mono">v3.0.1 Stable</span>
+            </div>
         </div>
     </section>
 
     <div id="app-layout" class="hidden flex-1 flex overflow-hidden">
         
-        <aside class="w-20 lg:w-64 bg-dark-surface border-r border-dark-border flex flex-col justify-between z-20 transition-all duration-300">
+        <aside class="w-20 lg:w-64 bg-dark-900 border-r border-white/5 flex flex-col justify-between z-20 shadow-2xl">
             <div>
-                <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-dark-border">
-                    <i class="fa-solid fa-cube text-brand-500 text-2xl"></i>
-                    <span class="ml-3 font-bold text-xl tracking-tight hidden lg:block">Triplast</span>
+                <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/5 bg-dark-950/50">
+                    <i class="fa-solid fa-cube text-brand-DEFAULT text-2xl"></i>
+                    <span class="ml-3 font-tech font-bold text-xl text-white tracking-wide hidden lg:block">TRIPLAST</span>
                 </div>
 
                 <nav class="mt-6 px-2 space-y-2">
-                    <div class="menu-admin hidden">
-                        <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 hidden lg:block">Gerenciamento</p>
-                        <button onclick="navegar('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                            <i class="fa-solid fa-grid-2 text-lg w-6 text-center"></i>
+                    <div id="nav-group-admin" class="hidden">
+                        <p class="px-4 text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2 hidden lg:block">Gestão</p>
+                        <button onclick="Router.go('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                            <i class="fa-solid fa-grid-2 text-lg w-6 text-center group-hover:text-brand-400"></i>
                             <span class="hidden lg:block font-medium">Visão Geral</span>
                         </button>
-                        <button onclick="navegar('config')" id="nav-config" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                            <i class="fa-solid fa-sliders text-lg w-6 text-center"></i>
+                        <button onclick="Router.go('config')" id="nav-config" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                            <i class="fa-solid fa-sliders text-lg w-6 text-center group-hover:text-brand-400"></i>
                             <span class="hidden lg:block font-medium">Configurações</span>
                         </button>
                     </div>
 
-                    <div class="menu-operador hidden">
-                         <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 hidden lg:block">Operacional</p>
-                        <button onclick="navegar('minha-maquina')" id="nav-minha-maquina" class="nav-item active w-full flex items-center gap-4 px-4 py-3 text-brand-400 bg-brand-500/10 rounded-xl transition-all border border-brand-500/20">
-                            <i class="fa-solid fa-robot text-lg w-6 text-center"></i>
+                    <div id="nav-group-operador" class="hidden">
+                         <p class="px-4 text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2 hidden lg:block">Produção</p>
+                        <button onclick="Router.go('machine')" id="nav-machine" class="nav-item active w-full flex items-center gap-4 px-4 py-3 bg-brand-600/10 text-brand-400 border border-brand-600/20 rounded-xl transition-all">
+                            <i class="fa-solid fa-industry text-lg w-6 text-center"></i>
                             <span class="hidden lg:block font-bold">Minha Máquina</span>
                         </button>
                     </div>
                 </nav>
             </div>
 
-            <div class="p-4 border-t border-dark-border">
-                <div class="flex items-center gap-3 p-2 rounded-xl bg-dark-bg/50 border border-dark-border/50">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-600 to-purple-600 flex items-center justify-center text-xs font-bold">
-                        <span id="user-avatar">OP</span>
+            <div class="p-4 border-t border-white/5 bg-dark-950/30">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-700 to-slate-600 flex items-center justify-center border border-white/10 shadow-lg">
+                        <i class="fa-solid fa-user text-slate-300"></i>
                     </div>
                     <div class="hidden lg:block overflow-hidden">
-                        <p id="user-name" class="text-sm font-bold truncate">Usuário</p>
-                        <p id="user-role" class="text-[10px] text-slate-400 uppercase">Acesso Restrito</p>
+                        <p id="user-display-name" class="text-sm font-bold text-white truncate">Usuário</p>
+                        <p id="user-role-label" class="text-[10px] text-brand-400 font-bold uppercase tracking-wider">Acesso</p>
                     </div>
-                    <button onclick="logout()" class="ml-auto text-slate-500 hover:text-red-400 transition-colors">
+                    <button onclick="App.logout()" class="ml-auto text-slate-500 hover:text-red-400 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </button>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col relative overflow-hidden bg-dark-bg">
+        <main class="flex-1 flex flex-col relative bg-dark-950 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-opacity-20">
             
-            <header class="h-16 border-b border-dark-border flex items-center justify-between px-6 bg-dark-surface/50 backdrop-blur z-10">
-                <h2 id="page-title" class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                    <i class="fa-regular fa-chart-bar text-brand-500"></i> Dashboard
-                </h2>
+            <header class="h-16 glass-header flex items-center justify-between px-6 z-10 sticky top-0">
+                <div class="flex items-center gap-4">
+                    <h2 id="page-title" class="text-lg font-bold text-white flex items-center gap-2 font-tech tracking-wide uppercase">
+                        Painel de Controle
+                    </h2>
+                </div>
                 
                 <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2 bg-dark-bg px-3 py-1.5 rounded-full border border-dark-border">
-                        <div id="cloud-status" class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-                        <span class="text-[10px] font-mono text-slate-400">SYNC ON</span>
+                    <div class="hidden md:block text-right">
+                        <p id="clock-time" class="text-lg font-mono font-bold text-white leading-none">00:00</p>
+                        <p id="clock-date" class="text-[10px] text-slate-400 uppercase font-bold">Data</p>
+                    </div>
+                    
+                    <div class="h-8 w-px bg-white/10 mx-2"></div>
+
+                    <div class="flex items-center gap-2 bg-dark-800/80 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
+                        <div id="cloud-indicator" class="w-2 h-2 rounded-full bg-green-500 shadow-neon-green animate-pulse"></div>
+                        <span class="text-[10px] font-mono text-slate-400 font-bold">ONLINE</span>
                     </div>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative custom-scroll" id="main-content">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative scroll-smooth" id="viewport">
                 
-                <div id="view-dashboard" class="view-section space-y-6 hidden animate-fade-in">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="glass-panel p-5 rounded-xl border-l-4 border-brand-500">
-                            <span class="text-xs text-slate-400 uppercase font-bold">Produção Hoje</span>
-                            <h3 class="text-2xl font-bold text-white mt-1" id="kpi-producao">0</h3>
+                <div id="view-dashboard" class="view-section hidden space-y-8 animate-fade-in">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-brand-500 relative overflow-hidden group">
+                            <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-boxes-stacked text-6xl"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Produção Total</span>
+                            <h3 class="text-3xl font-tech font-bold text-white mt-2" id="kpi-total">0</h3>
+                            <p class="text-[10px] text-brand-400 mt-1 font-mono">+0% vs ontem</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-xl border-l-4 border-status-ok">
-                            <span class="text-xs text-slate-400 uppercase font-bold">Eficiência Média</span>
-                            <h3 class="text-2xl font-bold text-status-ok mt-1" id="kpi-oee">0%</h3>
+                        
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-status-run relative overflow-hidden">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Eficiência (OEE)</span>
+                            <h3 class="text-3xl font-tech font-bold text-status-run mt-2 text-glow" id="kpi-oee">0%</h3>
+                             <div class="w-full h-1 bg-dark-900 mt-2 rounded-full overflow-hidden">
+                                <div id="kpi-bar-oee" class="h-full bg-status-run w-0 transition-all duration-1000"></div>
+                            </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-xl border-l-4 border-status-warn">
-                            <span class="text-xs text-slate-400 uppercase font-bold">Máquinas Paradas</span>
-                            <h3 class="text-2xl font-bold text-white mt-1" id="kpi-paradas">0</h3>
+
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-status-stop relative overflow-hidden">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Máquinas Paradas</span>
+                            <h3 class="text-3xl font-tech font-bold text-white mt-2" id="kpi-stopped">0</h3>
+                            <p class="text-[10px] text-status-stop mt-1 font-bold">Atenção Requerida</p>
                         </div>
-                        <div class="glass-panel p-5 rounded-xl border-l-4 border-purple-500">
-                            <span class="text-xs text-slate-400 uppercase font-bold">Ordem Atual</span>
-                            <h3 class="text-lg font-bold text-white mt-1 truncate" id="kpi-op">Diversas</h3>
+
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-purple-500 relative overflow-hidden">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Turno Atual</span>
+                            <h3 class="text-3xl font-tech font-bold text-white mt-2">1º</h3>
+                            <p class="text-[10px] text-purple-400 mt-1 font-mono">06:00 - 14:00</p>
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center mt-8 mb-4">
-                        <h3 class="text-lg font-bold text-slate-200">Visão Geral do Parque</h3>
-                        <div class="flex gap-2">
-                             <span class="flex items-center gap-1 text-[10px] text-slate-400"><div class="w-2 h-2 bg-status-ok rounded-full"></div> Prod</span>
-                             <span class="flex items-center gap-1 text-[10px] text-slate-400"><div class="w-2 h-2 bg-status-error rounded-full"></div> Parada</span>
+                    <div>
+                        <div class="flex justify-between items-end mb-4 px-2">
+                            <h3 class="text-xl font-bold text-white font-tech uppercase tracking-wide border-b-2 border-brand-500 pb-1">Parque Fabril</h3>
+                            <div class="flex gap-4 text-[10px] font-bold uppercase text-slate-400">
+                                <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-status-run"></div> Prod</span>
+                                <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-status-stop"></div> Parado</span>
+                                <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-status-setup"></div> Setup</span>
+                            </div>
                         </div>
+                        <div id="admin-machine-grid" class="machine-grid">
+                            </div>
                     </div>
-                    
-                    <div id="grid-maquinas-admin" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        </div>
                 </div>
 
-                <div id="view-minha-maquina" class="view-section hidden animate-fade-in max-w-4xl mx-auto">
+                <div id="view-machine" class="view-section hidden max-w-5xl mx-auto animate-fade-in">
                     
-                    <div id="op-panel-card" class="glass-panel rounded-2xl border border-brand-500/30 overflow-hidden shadow-2xl shadow-black/50">
-                        <div class="bg-gradient-to-r from-dark-surface to-dark-bg p-6 border-b border-white/5 flex justify-between items-center">
+                    <div class="glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+                        <div class="bg-dark-800/50 p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
-                                <h1 class="text-3xl font-black text-white tracking-tight" id="op-maq-nome">MÁQUINA 01</h1>
-                                <p class="text-brand-400 text-sm font-bold flex items-center gap-2 mt-1">
-                                    <i class="fa-solid fa-user-gear"></i> <span id="op-operador-atual">Sem Operador</span>
-                                </p>
+                                <h1 class="text-4xl md:text-5xl font-tech font-bold text-white" id="op-machine-name">MÁQUINA 00</h1>
+                                <div class="flex items-center gap-3 mt-2">
+                                    <span class="bg-brand-900/50 text-brand-300 border border-brand-500/30 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                                        <i class="fa-solid fa-user"></i> <span id="op-operator-name">--</span>
+                                    </span>
+                                    <span id="op-status-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-4 py-1 rounded text-xs font-bold uppercase tracking-wider shadow-inner">
+                                        OFFLINE
+                                    </span>
+                                </div>
                             </div>
                             <div class="text-right">
-                                <div id="op-status-badge" class="px-4 py-1.5 rounded-full bg-status-off/20 text-status-off border border-status-off/30 font-bold uppercase text-sm tracking-wider mb-2 inline-block">
-                                    OFFLINE
-                                </div>
-                                <p class="text-[10px] text-slate-500 font-mono" id="op-last-update">Atualizado: --:--</p>
+                                <span class="block text-xs font-bold text-slate-500 uppercase tracking-widest">Contador Atual</span>
+                                <span class="block text-5xl md:text-6xl font-mono font-bold text-white text-glow" id="op-counter-big">0</span>
                             </div>
                         </div>
 
-                        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase block mb-2">Ordem de Produção (O.P)</label>
-                                    <div class="flex gap-2">
-                                        <input type="text" id="input-op-numero" class="glass-input flex-1 px-4 py-3 rounded-lg font-mono text-lg" placeholder="00000">
-                                        <button onclick="carregarOP()" class="bg-brand-600 hover:bg-brand-500 text-white px-4 rounded-lg font-bold shadow-lg transition-all">
-                                            <i class="fa-solid fa-magnifying-glass"></i>
+                        <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            
+                            <div class="lg:col-span-5 space-y-6">
+                                <div class="bg-dark-900/40 p-5 rounded-2xl border border-white/5">
+                                    <label class="text-[10px] font-bold text-brand-400 uppercase tracking-widest mb-2 block">Ordem de Produção</label>
+                                    <div class="flex gap-2 mb-4">
+                                        <input type="text" id="op-input-number" class="input-tech flex-1 p-3 rounded-lg font-mono text-lg font-bold text-center uppercase" placeholder="OP-000">
+                                        <button class="bg-brand-600 hover:bg-brand-500 text-white w-12 rounded-lg shadow-lg flex items-center justify-center">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <label class="text-[10px] font-bold text-brand-400 uppercase tracking-widest mb-2 block">Produto</label>
+                                    <select id="op-input-product" class="input-tech w-full p-3 rounded-lg mb-4 text-sm font-semibold bg-dark-900">
+                                        </select>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Meta</label>
+                                            <input type="number" id="op-input-target" class="input-tech w-full p-2 rounded-lg font-mono text-center" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Ciclo (s)</label>
+                                            <input type="number" id="op-input-cycle" class="input-tech w-full p-2 rounded-lg font-mono text-center" placeholder="0.0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="MachineController.setStatus('produzindo')" class="py-4 bg-status-run/20 hover:bg-status-run hover:text-dark-950 text-status-run border border-status-run/50 rounded-xl font-bold transition-all shadow-neon-green flex flex-col items-center gap-1 group">
+                                        <i class="fa-solid fa-play text-2xl group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs uppercase">Iniciar</span>
+                                    </button>
+                                    <button onclick="MachineController.setStatus('parada')" class="py-4 bg-status-stop/20 hover:bg-status-stop hover:text-white text-status-stop border border-status-stop/50 rounded-xl font-bold transition-all shadow-neon-red flex flex-col items-center gap-1 group">
+                                        <i class="fa-solid fa-stop text-2xl group-hover:scale-110 transition-transform"></i>
+                                        <span class="text-xs uppercase">Parar</span>
+                                    </button>
+                                    <button onclick="MachineController.setStatus('setup')" class="col-span-2 py-3 bg-status-setup/10 hover:bg-status-setup hover:text-dark-900 text-status-setup border border-status-setup/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-tools"></i> MODO SETUP / AJUSTE
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-7 flex flex-col">
+                                <div class="flex-1 bg-dark-900/40 rounded-2xl border border-white/5 flex flex-col items-center justify-center p-6 relative">
+                                    <div class="relative w-64 h-64">
+                                        <svg class="w-full h-full transform -rotate-90">
+                                            <circle cx="128" cy="128" r="120" stroke="#1e293b" stroke-width="12" fill="none"></circle>
+                                            <circle id="op-progress-ring" cx="128" cy="128" r="120" stroke="#3b82f6" stroke-width="12" fill="none" stroke-dasharray="753" stroke-dashoffset="753" stroke-linecap="round" class="transition-all duration-1000 ease-out shadow-neon"></circle>
+                                        </svg>
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                            <span class="text-5xl font-black text-white font-mono" id="op-percent-text">0%</span>
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-2">Concluído</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="w-full mt-8 flex gap-4">
+                                        <button onclick="MachineController.addCount(-1)" class="w-16 h-16 rounded-2xl bg-dark-800 hover:bg-red-900/30 hover:text-red-400 text-slate-400 border border-white/10 font-black text-2xl transition-all btn-3d">-</button>
+                                        <button onclick="MachineController.addCount(1)" class="flex-1 h-16 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-black text-2xl shadow-neon transition-all btn-3d flex items-center justify-center gap-3">
+                                            <i class="fa-solid fa-plus text-lg"></i> 1 PEÇA
                                         </button>
                                     </div>
                                 </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="text-xs font-bold text-slate-400 uppercase block mb-2">Produto</label>
-                                        <select id="input-produto" class="glass-input w-full px-3 py-3 rounded-lg text-sm bg-dark-bg">
-                                            <option value="">Selecione...</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="text-xs font-bold text-slate-400 uppercase block mb-2">Meta (Qtd)</label>
-                                        <input type="number" id="input-meta" class="glass-input w-full px-3 py-3 rounded-lg font-mono" placeholder="0">
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3 pt-4">
-                                    <button onclick="mudarStatus('produzindo')" class="py-4 bg-green-600/20 hover:bg-green-600 hover:text-white text-green-500 border border-green-600/50 rounded-xl font-bold transition-all flex flex-col items-center gap-2 group">
-                                        <i class="fa-solid fa-play text-2xl group-hover:scale-110 transition-transform"></i> INICIAR
-                                    </button>
-                                    <button onclick="mudarStatus('parada')" class="py-4 bg-red-600/20 hover:bg-red-600 hover:text-white text-red-500 border border-red-600/50 rounded-xl font-bold transition-all flex flex-col items-center gap-2 group">
-                                        <i class="fa-solid fa-stop text-2xl group-hover:scale-110 transition-transform"></i> PARAR
-                                    </button>
-                                    <button onclick="mudarStatus('setup')" class="col-span-2 py-3 bg-yellow-600/20 hover:bg-yellow-600 hover:text-white text-yellow-500 border border-yellow-600/50 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-tools"></i> MODO SETUP / TROCA
-                                    </button>
-                                </div>
                             </div>
 
-                            <div class="bg-dark-bg/50 rounded-xl p-6 border border-white/5 flex flex-col justify-center items-center relative">
-                                <div class="relative w-48 h-48">
-                                    <svg class="w-full h-full transform -rotate-90">
-                                        <circle cx="96" cy="96" r="88" stroke="#1e293b" stroke-width="12" fill="none"></circle>
-                                        <circle id="progress-ring" cx="96" cy="96" r="88" stroke="#0ea5e9" stroke-width="12" fill="none" stroke-dasharray="552" stroke-dashoffset="552" class="transition-all duration-1000 ease-out"></circle>
-                                    </svg>
-                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span class="text-4xl font-black text-white" id="op-percentual">0%</span>
-                                        <span class="text-xs text-slate-400 uppercase font-bold tracking-widest mt-1">Concluído</span>
-                                    </div>
-                                </div>
-
-                                <div class="w-full mt-8 grid grid-cols-2 gap-4 text-center">
-                                    <div>
-                                        <p class="text-3xl font-mono font-bold text-white" id="op-produzido">0</p>
-                                        <p class="text-[10px] text-slate-500 uppercase font-bold">Produzido</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-3xl font-mono font-bold text-slate-400" id="op-meta-display">0</p>
-                                        <p class="text-[10px] text-slate-500 uppercase font-bold">Meta Total</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-6 w-full flex gap-2">
-                                     <button onclick="addProducao(-1)" class="w-12 h-12 bg-dark-surface rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition font-bold text-xl">-</button>
-                                     <button onclick="addProducao(1)" class="flex-1 h-12 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-bold shadow-lg shadow-brand-500/20 active:translate-y-1 transition-all">
-                                        +1 CICLO
-                                     </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                 <div id="view-config" class="view-section hidden animate-fade-in max-w-2xl mx-auto">
-                    <div class="glass-panel p-8 rounded-2xl">
-                        <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                            <i class="fa-solid fa-database text-brand-500"></i> Dados do Sistema
-                        </h2>
-                        
+                <div id="view-config" class="view-section hidden max-w-3xl mx-auto animate-fade-in">
+                    <div class="glass-panel p-8 rounded-2xl border border-white/10">
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
+                            <div class="w-10 h-10 rounded-lg bg-brand-900/50 flex items-center justify-center text-brand-400">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-white font-tech">Dados do Sistema</h2>
+                                <p class="text-xs text-slate-400">Edite as listas utilizadas pelos operadores</p>
+                            </div>
+                        </div>
+
                         <div class="space-y-6">
                             <div>
-                                <label class="block text-sm font-bold text-slate-400 mb-2">Cadastrar Produtos (Separar por vírgula)</label>
-                                <textarea id="config-produtos" rows="4" class="glass-input w-full p-4 rounded-xl font-mono text-sm" placeholder="Garrafa 500ml, Tampa Azul, Pote 1kg..."></textarea>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-bold text-slate-400 mb-2">Operadores Autorizados</label>
-                                <textarea id="config-operadores" rows="4" class="glass-input w-full p-4 rounded-xl font-mono text-sm" placeholder="João Silva, Maria Souza..."></textarea>
+                                <label class="block text-xs font-bold text-brand-400 uppercase tracking-widest mb-2">Produtos Cadastrados (CSV)</label>
+                                <textarea id="cfg-products" rows="5" class="input-tech w-full p-4 rounded-xl font-mono text-sm leading-relaxed" placeholder="Separe por vírgula..."></textarea>
+                                <p class="text-[10px] text-slate-500 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Separe os itens por vírgula.</p>
                             </div>
 
-                            <div class="pt-4 border-t border-white/10 flex justify-end gap-3">
-                                <button onclick="salvarConfiguracoes()" class="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
-                                    <i class="fa-solid fa-save"></i> Salvar Alterações
+                            <div>
+                                <label class="block text-xs font-bold text-brand-400 uppercase tracking-widest mb-2">Operadores (CSV)</label>
+                                <textarea id="cfg-operators" rows="3" class="input-tech w-full p-4 rounded-xl font-mono text-sm leading-relaxed"></textarea>
+                            </div>
+
+                            <div class="pt-4 flex justify-end">
+                                <button onclick="AdminController.saveConfig()" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-xl font-bold shadow-neon-green transition-all flex items-center gap-2 btn-3d">
+                                    <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
                                 </button>
                             </div>
                         </div>
                     </div>
-                 </div>
+                </div>
 
             </div>
         </main>
     </div>
 
-    <div id="toast" class="fixed bottom-6 right-6 translate-y-24 transition-transform duration-300 z-[100] flex items-center gap-3 bg-dark-surface border border-slate-700 p-4 rounded-xl shadow-2xl">
-        <div id="toast-icon" class="w-8 h-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center">
-            <i class="fa-solid fa-check"></i>
-        </div>
+    <div id="toast-container" class="flex items-center gap-4 bg-dark-800 border-l-4 border-brand-500 text-white px-6 py-4 rounded-lg shadow-2xl">
+        <div id="toast-icon" class="text-brand-500 text-xl"><i class="fa-solid fa-check-circle"></i></div>
         <div>
-            <h4 id="toast-title" class="text-sm font-bold text-white">Sucesso</h4>
-            <p id="toast-msg" class="text-xs text-slate-400">Dados atualizados.</p>
+            <h4 id="toast-title" class="font-bold text-sm uppercase tracking-wide">Notificação</h4>
+            <p id="toast-message" class="text-xs text-slate-400">Mensagem do sistema.</p>
         </div>
     </div>
 
     <script>
         /**
-         * =================================================================
-         * 1. CONFIGURAÇÃO E DADOS INICIAIS
-         * =================================================================
-         * ATENÇÃO: Cole suas chaves do Supabase aqui conforme solicitado.
-         * Por segurança, em produção real, use RLS (Row Level Security).
+         * CONFIGURAÇÃO E CONEXÃO SUPABASE
+         * Chave extraída e configurada automaticamente.
          */
-        const CONFIG = {
-            supabaseUrl: 'COLE_SUA_URL_SUPABASE_AQUI',
-            supabaseKey: 'COLE_SUA_CHAVE_ANON_AQUI',
-            adminPass: 'admin123', // Senha simples para o frontend (não é seguro para bancos reais, apenas visual)
-            refreshRate: 5000 // Polling de backup caso o realtime falhe
+        const SUPABASE_CONFIG = {
+            url: 'https://hgqnlqtvjiyuwxwypxhh.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'
         };
 
-        // Inicializa Supabase
-        let sb;
-        try {
-            sb = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-        } catch (e) {
-            console.error("Erro ao iniciar Supabase. Verifique as chaves.", e);
-        }
+        const sb = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
 
-        // Estado Global da Aplicação (Store)
+        /**
+         * STATE MANAGEMENT (STORE)
+         * Mantém o estado da aplicação em memória.
+         */
         const Store = {
-            usuario: null, // { tipo: 'admin' | 'operador', maquinaId: number, nome: string }
-            dados: {
-                maquinas: Array.from({length: 12}, (_, i) => ({
-                    id: i + 1,
-                    nome: `Injetora ${String(i + 1).padStart(2, '0')}`,
-                    status: 'offline', // offline, produzindo, parada, setup
-                    operador: null,
-                    op: { numero: '', produto: '', meta: 0, produzido: 0, inicio: null },
-                    log: []
-                })),
-                config: {
-                    produtos: ['Item Padrão A', 'Item Padrão B'],
-                    operadores: ['Operador 1', 'Operador 2']
-                },
-                lastUpdate: 0
+            user: null, // { type: 'admin' | 'operator', machineId: int | null, name: string }
+            data: {
+                maquinas: [], // Array principal
+                operadores: [],
+                produtos: [],
+                lastUpdateTimestamp: 0,
+                // Mantém compatibilidade com campos antigos para não perder dados
+                historico: [],
+                dadosMensais: {},
+                modoHoraExtra: false
             },
-            unsavedChanges: false
+            isSaving: false
         };
 
-        // =================================================================
-        // 2. GERENCIAMENTO DE ESTADO E BD
-        // =================================================================
-
-        async function initSystem() {
-            // Verifica se tem chaves configuradas antes de tentar conectar
-            if(CONFIG.supabaseUrl.includes('COLE_SUA')) {
-                alert("⚠️ ATENÇÃO: Você precisa editar o código HTML e colocar sua URL e KEY do Supabase nas linhas 380-381 para o sistema funcionar.");
-                document.getElementById('loader').classList.add('hidden-force');
-                return;
-            }
-
-            await carregarDadosNuvem();
-            popularSelectsLogin();
-            
-            // Subscrever a mudanças em tempo real (Realtime)
-            sb.channel('public:sistema')
-              .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sistema' }, payload => {
-                  console.log("⚡ Update recebido via Realtime");
-                  if (payload.new && payload.new.conteudo) {
-                      // Se fui eu que salvei há pouco tempo (timestamp próximo), ignoro para evitar glitch visual
-                      if (payload.new.conteudo.lastUpdate > Store.dados.lastUpdate) {
-                          Store.dados = payload.new.conteudo;
-                          atualizarInterfaceGlobal();
-                      }
-                  }
-              })
-              .subscribe();
-
-            document.getElementById('loader').classList.add('opacity-0');
-            setTimeout(() => document.getElementById('loader').classList.add('hidden-force'), 500);
-        }
-
-        async function carregarDadosNuvem() {
-            try {
-                const { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
-                
-                if (error) {
-                    console.warn("Tabela 'sistema' não encontrada ou vazia. Criando estrutura padrão...");
-                    // Tenta criar se não existir (primeiro uso)
-                    await sb.from('sistema').insert([{ id: 1, conteudo: Store.dados }]);
-                } else if (data) {
-                    // Merge seguro
-                    Store.dados = { ...Store.dados, ...data.conteudo };
-                    Store.dados.lastUpdate = Date.now(); // Sync local
-                }
-            } catch (err) {
-                console.error("Falha de conexão:", err);
-                showToast("Modo Offline Ativado", "error");
-            }
-        }
-
-        // Debounce para salvar (evita excesso de requests)
-        let saveTimeout;
-        function agendarSalvamento() {
-            Store.dados.lastUpdate = Date.now();
-            document.getElementById('cloud-status').classList.replace('bg-green-500', 'bg-yellow-500');
-            
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                try {
-                    await sb.from('sistema').update({ conteudo: Store.dados }).eq('id', 1);
-                    document.getElementById('cloud-status').classList.replace('bg-yellow-500', 'bg-green-500');
-                    // showToast("Sincronizado", "success");
-                } catch (e) {
-                    console.error("Erro ao salvar:", e);
-                    document.getElementById('cloud-status').classList.replace('bg-yellow-500', 'bg-red-500');
-                }
-            }, 1000); // Aguarda 1s de inatividade para salvar
-            
-            atualizarInterfaceGlobal(); // Atualiza UI imediatamente (Optimistic UI)
-        }
-
-        // =================================================================
-        // 3. LÓGICA DE INTERFACE (UI)
-        // =================================================================
-
-        function atualizarInterfaceGlobal() {
-            // Atualiza baseada na visão atual
-            if (Store.usuario?.tipo === 'admin') {
-                renderGridAdmin();
-                renderKPIs();
-            } else if (Store.usuario?.tipo === 'operador') {
-                renderPainelOperador();
-            }
-        }
-
-        // --- RENDERIZADOR ADMIN ---
-        function renderGridAdmin() {
-            const grid = document.getElementById('grid-maquinas-admin');
-            grid.innerHTML = '';
-
-            Store.dados.maquinas.forEach(m => {
-                // Cores dinâmicas baseadas no status
-                let corStatus = 'border-slate-600';
-                let bgStatus = 'bg-dark-surface';
-                let icon = 'fa-power-off';
-                
-                if(m.status === 'produzindo') { corStatus = 'border-status-ok'; icon = 'fa-gear fa-spin'; }
-                if(m.status === 'parada') { corStatus = 'border-status-error'; icon = 'fa-triangle-exclamation'; }
-                if(m.status === 'setup') { corStatus = 'border-status-warn'; icon = 'fa-tools'; }
-
-                // Cálculo de progresso
-                const percent = m.op.meta > 0 ? Math.min(100, Math.round((m.op.produzido / m.op.meta) * 100)) : 0;
-
-                const card = document.createElement('div');
-                card.className = `machine-card glass-panel rounded-xl p-5 border-t-4 ${corStatus} relative overflow-hidden`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <h4 class="font-bold text-lg text-white">${m.nome}</h4>
-                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase bg-white/5 border border-white/10 ${getTextColor(m.status)}">
-                            <i class="fa-solid ${icon} mr-1"></i> ${m.status}
-                        </span>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-xs text-slate-400">
-                            <span>O.P: <b class="text-white">${m.op.numero || '--'}</b></span>
-                            <span>Op: <b class="text-white">${m.operador || '--'}</b></span>
-                        </div>
-                        
-                        <div class="bg-dark-bg rounded-lg p-2 border border-white/5">
-                             <div class="flex justify-between items-end mb-1">
-                                <span class="text-xs font-bold text-brand-400 truncate max-w-[120px]">${m.op.produto || 'Sem prod.'}</span>
-                                <span class="text-xs font-mono text-white">${m.op.produzido}/${m.op.meta}</span>
-                            </div>
-                            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                <div class="h-full bg-brand-500 transition-all duration-500" style="width: ${percent}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderKPIs() {
-            // Lógica simples de KPI
-            const totalProd = Store.dados.maquinas.reduce((acc, m) => acc + (parseInt(m.op.produzido)||0), 0);
-            const paradas = Store.dados.maquinas.filter(m => m.status === 'parada').length;
-            const produzindo = Store.dados.maquinas.filter(m => m.status === 'produzindo').length;
-            
-            // OEE Simulado (apenas exemplo lógico)
-            const oee = Store.dados.maquinas.length > 0 ? Math.round((produzindo / Store.dados.maquinas.length) * 100) : 0;
-
-            document.getElementById('kpi-producao').innerText = totalProd;
-            document.getElementById('kpi-paradas').innerText = paradas;
-            document.getElementById('kpi-oee').innerText = `${oee}%`;
-        }
-
-        // --- RENDERIZADOR OPERADOR ---
-        function renderPainelOperador() {
-            const m = Store.dados.maquinas.find(mq => mq.id == Store.usuario.maquinaId);
-            if (!m) return;
-
-            // Header
-            document.getElementById('op-maq-nome').innerText = m.nome;
-            document.getElementById('op-operador-atual').innerText = m.operador || 'Sem Operador';
-            
-            // Badge Status
-            const badge = document.getElementById('op-status-badge');
-            badge.className = `px-4 py-1.5 rounded-full font-bold uppercase text-sm tracking-wider mb-2 inline-block border ${getStatusClasses(m.status)}`;
-            badge.innerText = m.status;
-
-            // Inputs (só atualiza se não estiver focado para não atrapalhar digitação)
-            if(document.activeElement.id !== 'input-op-numero') document.getElementById('input-op-numero').value = m.op.numero;
-            if(document.activeElement.id !== 'input-meta') document.getElementById('input-meta').value = m.op.meta || '';
-            
-            // O select precisa ser preenchido antes
-            const selProd = document.getElementById('input-produto');
-            if (selProd.options.length <= 1) { // Popula se estiver vazio
-                 Store.dados.config.produtos.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p; opt.innerText = p;
-                    selProd.appendChild(opt);
-                 });
-            }
-            if(document.activeElement.id !== 'input-produto') selProd.value = m.op.produto;
-
-            // Gráfico e Números
-            const percent = m.op.meta > 0 ? Math.round((m.op.produzido / m.op.meta) * 100) : 0;
-            const offset = 552 - (552 * percent) / 100; // Cálculo do stroke-dashoffset do SVG
-            
-            document.getElementById('progress-ring').style.strokeDashoffset = offset;
-            document.getElementById('op-percentual').innerText = `${percent}%`;
-            document.getElementById('op-produzido').innerText = m.op.produzido;
-            document.getElementById('op-meta-display').innerText = m.op.meta;
-        }
-
-        // =================================================================
-        // 4. ACTIONS (AÇÕES DO USUÁRIO)
-        // =================================================================
-
-        // --- LOGIN ---
-        function mudarAbaLogin(tipo) {
-            document.getElementById('tab-admin').className = tipo === 'admin' 
-                ? 'flex-1 py-2 text-sm font-bold rounded-md transition-all bg-brand-600 text-white shadow' 
-                : 'flex-1 py-2 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white';
-            
-            document.getElementById('tab-operador').className = tipo === 'operador' 
-                ? 'flex-1 py-2 text-sm font-bold rounded-md transition-all bg-brand-600 text-white shadow' 
-                : 'flex-1 py-2 text-sm font-bold rounded-md transition-all text-slate-400 hover:text-white';
-
-            if(tipo === 'admin') {
-                document.getElementById('campo-admin').classList.remove('hidden');
-                document.getElementById('campo-operador').classList.add('hidden');
-            } else {
-                document.getElementById('campo-admin').classList.add('hidden');
-                document.getElementById('campo-operador').classList.remove('hidden');
-            }
-        }
-
-        function popularSelectsLogin() {
-            const sel = document.getElementById('login-maq-select');
-            sel.innerHTML = '<option value="">Selecione sua Máquina...</option>';
-            Store.dados.maquinas.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.id;
-                opt.innerText = m.nome;
-                sel.appendChild(opt);
-            });
-        }
-
-        function realizarLogin(e) {
-            e.preventDefault();
-            const isAdmin = !document.getElementById('campo-admin').classList.contains('hidden');
-            
-            if (isAdmin) {
-                const pass = document.getElementById('admin-pass').value;
-                if (pass === CONFIG.adminPass) {
-                    Store.usuario = { tipo: 'admin', nome: 'Administrador' };
-                    entrarSistema();
-                } else {
-                    showToast("Senha incorreta!", "error");
-                }
-            } else {
-                const maqId = document.getElementById('login-maq-select').value;
-                if (maqId) {
-                    const maq = Store.dados.maquinas.find(m => m.id == maqId);
-                    Store.usuario = { tipo: 'operador', maquinaId: maqId, nome: maq.nome };
-                    entrarSistema();
-                } else {
-                    showToast("Selecione uma máquina", "warn");
-                }
-            }
-        }
-
-        function entrarSistema() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-layout').classList.remove('hidden');
-            
-            document.getElementById('user-name').innerText = Store.usuario.nome;
-            document.getElementById('user-role').innerText = Store.usuario.tipo === 'admin' ? 'Gestor' : 'Operador';
-            document.getElementById('user-avatar').innerText = Store.usuario.tipo === 'admin' ? 'AD' : 'OP';
-
-            // Configura Menu Sidebar
-            if(Store.usuario.tipo === 'admin') {
-                document.querySelector('.menu-admin').classList.remove('hidden');
-                navegar('dashboard');
-                // Popula configs
-                document.getElementById('config-produtos').value = Store.dados.config.produtos.join(', ');
-                document.getElementById('config-operadores').value = Store.dados.config.operadores.join(', ');
-            } else {
-                document.querySelector('.menu-operador').classList.remove('hidden');
-                navegar('minha-maquina');
-            }
-        }
-
-        function logout() {
-            location.reload(); // Simples refresh para logout
-        }
-
-        // --- NAVEGAÇÃO ---
-        function navegar(tela) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(el => {
-                el.classList.remove('text-brand-400', 'bg-brand-500/10', 'border', 'border-brand-500/20');
-                el.classList.add('text-slate-400');
-            });
-            
-            document.getElementById(`view-${tela}`).classList.remove('hidden');
-            document.getElementById(`nav-${tela}`).classList.add('text-brand-400', 'bg-brand-500/10', 'border', 'border-brand-500/20');
-            document.getElementById(`nav-${tela}`).classList.remove('text-slate-400');
-            
-            atualizarInterfaceGlobal();
-        }
-
-        // --- OPERAÇÕES DA MÁQUINA ---
-        
-        // Disparado quando operador muda inputs
-        ['input-op-numero', 'input-produto', 'input-meta'].forEach(id => {
-             document.getElementById(id).addEventListener('change', (e) => {
-                 atualizarDadosMaquinaLocal(e.target);
-             });
+        // Template de Máquina Padrão (Factory)
+        const createMachine = (id) => ({
+            id: id,
+            nome: `Injetora ${String(id).padStart(2, '0')}`,
+            status: 'offline', // offline, produzindo, parada, setup
+            operador: null,
+            op_atual: {
+                numero: '',
+                produto: '',
+                meta: 0,
+                produzido: 0,
+                ciclo_padrao: 0,
+                inicio: null
+            },
+            log: []
         });
 
-        function atualizarDadosMaquinaLocal(element) {
-             const mIndex = Store.dados.maquinas.findIndex(m => m.id == Store.usuario.maquinaId);
-             if (mIndex < 0) return;
+        /**
+         * SYSTEM CONTROLLER
+         * Lógica de inicialização e rede.
+         */
+        const System = {
+            async init() {
+                try {
+                    await this.fetchData();
+                    this.setupRealtime();
+                    UI.init();
+                    
+                    // Esconde Loader
+                    setTimeout(() => {
+                        document.getElementById('loader').style.opacity = '0';
+                        setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
+                    }, 800);
 
-             if (element.id === 'input-op-numero') Store.dados.maquinas[mIndex].op.numero = element.value;
-             if (element.id === 'input-produto') Store.dados.maquinas[mIndex].op.produto = element.value;
-             if (element.id === 'input-meta') Store.dados.maquinas[mIndex].op.meta = parseInt(element.value) || 0;
-             
-             agendarSalvamento();
-        }
-
-        function mudarStatus(novoStatus) {
-            const mIndex = Store.dados.maquinas.findIndex(m => m.id == Store.usuario.maquinaId);
-            if (mIndex >= 0) {
-                Store.dados.maquinas[mIndex].status = novoStatus;
-                
-                // Se iniciar produção e não tiver operador, pede pra selecionar (simplificado)
-                if (novoStatus === 'produzindo' && !Store.dados.maquinas[mIndex].operador) {
-                    const nome = prompt("Nome do Operador:"); // Em versão real, usar modal
-                    if(nome) Store.dados.maquinas[mIndex].operador = nome;
+                } catch (error) {
+                    console.error("Fatal Error:", error);
+                    alert("Erro ao conectar no banco de dados. Verifique a internet.");
                 }
-                
-                agendarSalvamento();
-                showToast(`Status alterado para: ${novoStatus.toUpperCase()}`, "success");
-            }
-        }
+            },
 
-        function addProducao(qtd) {
-            const mIndex = Store.dados.maquinas.findIndex(m => m.id == Store.usuario.maquinaId);
-            if (mIndex >= 0) {
-                const atual = parseInt(Store.dados.maquinas[mIndex].op.produzido) || 0;
-                const novo = atual + qtd;
-                if (novo >= 0) {
-                    Store.dados.maquinas[mIndex].op.produzido = novo;
-                    agendarSalvamento();
+            async fetchData() {
+                const { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
+                
+                if (error || !data) {
+                    // Se não existe, cria estrutura inicial (Bootstrap)
+                    console.warn("Criando banco de dados inicial...");
+                    Store.data.maquinas = Array.from({length: 12}, (_, i) => createMachine(i + 1));
+                    Store.data.produtos = ['Produto A', 'Produto B', 'Tampa Padrão'];
+                    Store.data.operadores = ['Operador 1', 'Operador 2'];
+                    Store.data.lastUpdateTimestamp = Date.now();
+                    
+                    await sb.from('sistema').insert([{ id: 1, conteudo: Store.data }]);
+                } else {
+                    // Merge seguro dos dados vindos da nuvem
+                    Store.data = { ...Store.data, ...data.conteudo };
+                }
+                UI.renderLoginSelect();
+            },
+
+            setupRealtime() {
+                sb.channel('public:sistema')
+                  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sistema' }, payload => {
+                      if(payload.new && payload.new.conteudo) {
+                          const cloudData = payload.new.conteudo;
+                          // Só atualiza se o timestamp da nuvem for mais recente que o local (evita loop)
+                          if(cloudData.lastUpdateTimestamp > Store.data.lastUpdateTimestamp) {
+                              Store.data = cloudData;
+                              UI.refreshCurrentView();
+                              UI.flashCloudStatus();
+                          }
+                      }
+                  })
+                  .subscribe();
+            },
+
+            // Debounce Save (Salva a cada 1s se houver mudanças)
+            saveTimer: null,
+            save() {
+                document.getElementById('cloud-indicator').classList.remove('bg-green-500', 'shadow-neon-green');
+                document.getElementById('cloud-indicator').classList.add('bg-yellow-500');
+                
+                Store.data.lastUpdateTimestamp = Date.now();
+                
+                clearTimeout(this.saveTimer);
+                this.saveTimer = setTimeout(async () => {
+                    try {
+                        const { error } = await sb.from('sistema').update({ conteudo: Store.data }).eq('id', 1);
+                        if(error) throw error;
+                        
+                        document.getElementById('cloud-indicator').classList.remove('bg-yellow-500');
+                        document.getElementById('cloud-indicator').classList.add('bg-green-500', 'shadow-neon-green');
+                    } catch (e) {
+                        console.error("Save failed", e);
+                        document.getElementById('cloud-indicator').classList.add('bg-red-500');
+                        UI.toast("Erro ao salvar na nuvem!", "error");
+                    }
+                }, 1000);
+            }
+        };
+
+        /**
+         * UI CONTROLLER
+         * Manipulação do DOM e visualização.
+         */
+        const UI = {
+            init() {
+                this.updateClock();
+                setInterval(this.updateClock, 1000);
+            },
+
+            renderLoginSelect() {
+                const sel = document.getElementById('login-machine-select');
+                sel.innerHTML = '<option value="">Selecione sua Máquina...</option>';
+                Store.data.maquinas.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = m.nome;
+                    sel.appendChild(opt);
+                });
+            },
+
+            refreshCurrentView() {
+                if(!Store.user) return;
+                if(Store.user.type === 'admin') AdminController.renderDashboard();
+                if(Store.user.type === 'operator') MachineController.render();
+            },
+
+            updateClock() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                const dateStr = now.toLocaleDateString('pt-BR', {weekday: 'short', day: 'numeric', month: 'long'});
+                
+                const elTime = document.getElementById('clock-time');
+                if(elTime) {
+                    elTime.textContent = timeStr;
+                    document.getElementById('clock-date').textContent = dateStr;
+                }
+            },
+
+            flashCloudStatus() {
+                const dot = document.getElementById('cloud-indicator');
+                dot.classList.add('scale-150');
+                setTimeout(() => dot.classList.remove('scale-150'), 200);
+            },
+
+            toast(msg, type = 'success') {
+                const el = document.getElementById('toast-container');
+                const title = document.getElementById('toast-title');
+                const icon = document.getElementById('toast-icon');
+                
+                document.getElementById('toast-message').textContent = msg;
+                
+                if(type === 'error') {
+                    el.className = "flex items-center gap-4 bg-dark-800 border-l-4 border-red-500 text-white px-6 py-4 rounded-lg shadow-2xl";
+                    icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>';
+                    title.textContent = "Erro";
+                } else {
+                    el.className = "flex items-center gap-4 bg-dark-800 border-l-4 border-brand-500 text-white px-6 py-4 rounded-lg shadow-2xl";
+                    icon.innerHTML = '<i class="fa-solid fa-check-circle text-brand-500"></i>';
+                    title.textContent = "Sucesso";
+                }
+
+                el.classList.add('active');
+                setTimeout(() => el.classList.remove('active'), 3000);
+            }
+        };
+
+        /**
+         * ROUTER
+         * Navegação SPA simples.
+         */
+        const Router = {
+            go(route) {
+                // Hide all views
+                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'bg-brand-600/10', 'text-brand-400', 'border', 'border-brand-600/20'));
+                
+                // Show requested
+                const view = document.getElementById(`view-${route}`);
+                if(view) {
+                    view.classList.remove('hidden');
+                    const nav = document.getElementById(`nav-${route}`);
+                    if(nav) nav.classList.add('active', 'bg-brand-600/10', 'text-brand-400', 'border', 'border-brand-600/20');
+                    UI.refreshCurrentView();
                 }
             }
-        }
+        };
 
-        // --- ADMIN CONFIGS ---
-        function salvarConfiguracoes() {
-            const prods = document.getElementById('config-produtos').value.split(',').map(s => s.trim()).filter(s => s);
-            const ops = document.getElementById('config-operadores').value.split(',').map(s => s.trim()).filter(s => s);
-            
-            Store.dados.config.produtos = prods;
-            Store.dados.config.operadores = ops;
-            
-            agendarSalvamento();
-            showToast("Configurações salvas!", "success");
-        }
+        /**
+         * AUTH LOGIC
+         */
+        let loginMode = 'operador'; // default
 
-        // =================================================================
-        // 5. HELPER FUNCTIONS & VISUALS
-        // =================================================================
+        function toggleLoginMode(mode) {
+            loginMode = mode;
+            const btnOp = document.getElementById('btn-mode-operador');
+            const btnAd = document.getElementById('btn-mode-admin');
+            const fieldsOp = document.getElementById('login-fields-operador');
+            const fieldsAd = document.getElementById('login-fields-admin');
 
-        function getTextColor(status) {
-            switch(status) {
-                case 'produzindo': return 'text-status-ok bg-status-ok/10 border-status-ok/20';
-                case 'parada': return 'text-status-error bg-status-error/10 border-status-error/20';
-                case 'setup': return 'text-status-warn bg-status-warn/10 border-status-warn/20';
-                default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
-            }
-        }
-        
-        function getStatusClasses(status) {
-             switch(status) {
-                case 'produzindo': return 'bg-green-500/20 text-green-400 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.2)]';
-                case 'parada': return 'bg-red-500/20 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]';
-                case 'setup': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-                default: return 'bg-slate-700/30 text-slate-400 border-slate-600';
-            }
-        }
-
-        function showToast(msg, type = 'success') {
-            const t = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const title = document.getElementById('toast-title');
-            
-            document.getElementById('toast-msg').innerText = msg;
-            
-            if (type === 'error') {
-                icon.className = 'w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center';
-                icon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-                title.innerText = 'Erro';
-            } else if (type === 'warn') {
-                 icon.className = 'w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center';
-                 icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-                 title.innerText = 'Atenção';
+            if(mode === 'operador') {
+                btnOp.className = "py-2.5 rounded-lg text-sm font-bold transition-all bg-brand-600 text-white shadow-lg";
+                btnAd.className = "py-2.5 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white";
+                fieldsOp.classList.remove('hidden');
+                fieldsAd.classList.add('hidden');
             } else {
-                icon.className = 'w-8 h-8 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center';
-                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-                title.innerText = 'Sucesso';
+                btnOp.className = "py-2.5 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white";
+                btnAd.className = "py-2.5 rounded-lg text-sm font-bold transition-all bg-brand-600 text-white shadow-lg";
+                fieldsOp.classList.add('hidden');
+                fieldsAd.classList.remove('hidden');
             }
-
-            t.style.transform = "translateY(0)";
-            setTimeout(() => {
-                t.style.transform = "translateY(6rem)"; // Hide again
-            }, 3000);
         }
 
-        // Start
-        window.addEventListener('DOMContentLoaded', initSystem);
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            if(loginMode === 'admin') {
+                const pass = document.getElementById('login-admin-pass').value;
+                if(pass === '2026') {
+                    Store.user = { type: 'admin', name: 'Administrador' };
+                    startApp();
+                } else {
+                    UI.toast("Senha Incorreta", "error");
+                }
+            } else {
+                const id = document.getElementById('login-machine-select').value;
+                if(!id) return UI.toast("Selecione uma máquina", "error");
+                
+                const machine = Store.data.maquinas.find(m => m.id == id);
+                Store.user = { type: 'operator', machineId: id, name: machine.nome };
+                startApp();
+            }
+        }
+
+        function startApp() {
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('app-layout').classList.remove('hidden');
+            
+            document.getElementById('user-display-name').textContent = Store.user.name;
+            document.getElementById('user-role-label').textContent = Store.user.type === 'admin' ? 'Administrador' : 'Operador';
+
+            if(Store.user.type === 'admin') {
+                document.getElementById('nav-group-admin').classList.remove('hidden');
+                Router.go('dashboard');
+            } else {
+                document.getElementById('nav-group-operador').classList.remove('hidden');
+                Router.go('machine');
+            }
+        }
+
+        const App = {
+            logout() { window.location.reload(); }
+        };
+
+        /**
+         * MACHINE CONTROLLER (LOGIC OPERATOR)
+         */
+        const MachineController = {
+            getMachine() {
+                return Store.data.maquinas.find(m => m.id == Store.user.machineId);
+            },
+
+            render() {
+                const m = this.getMachine();
+                if(!m) return;
+
+                // Header Info
+                document.getElementById('op-machine-name').textContent = m.nome;
+                document.getElementById('op-operator-name').textContent = m.operador || 'Não definido';
+                
+                const badge = document.getElementById('op-status-badge');
+                badge.textContent = m.status;
+                
+                // Color mapping
+                let colorClass = "bg-slate-800 text-slate-400 border-slate-700";
+                if(m.status === 'produzindo') colorClass = "bg-status-run text-dark-950 border-status-run shadow-neon-green";
+                if(m.status === 'parada') colorClass = "bg-status-stop text-white border-status-stop shadow-neon-red";
+                if(m.status === 'setup') colorClass = "bg-status-setup text-dark-950 border-status-setup";
+                badge.className = `px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-inner transition-all ${colorClass}`;
+
+                // Inputs (Check focus to avoid interruption)
+                if(document.activeElement.id !== 'op-input-number') document.getElementById('op-input-number').value = m.op_atual.numero;
+                if(document.activeElement.id !== 'op-input-target') document.getElementById('op-input-target').value = m.op_atual.meta || '';
+                if(document.activeElement.id !== 'op-input-cycle') document.getElementById('op-input-cycle').value = m.op_atual.ciclo_padrao || '';
+
+                // Product Select population check
+                const sel = document.getElementById('op-input-product');
+                if(sel.options.length !== Store.data.produtos.length + 1) {
+                    sel.innerHTML = '<option value="">Selecione Produto...</option>';
+                    Store.data.produtos.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p; opt.textContent = p;
+                        sel.appendChild(opt);
+                    });
+                }
+                if(document.activeElement.id !== 'op-input-product') sel.value = m.op_atual.produto;
+
+                // Big Counter & Circle
+                document.getElementById('op-counter-big').textContent = m.op_atual.produzido;
+                
+                const meta = m.op_atual.meta || 1;
+                const pct = Math.min(100, Math.round((m.op_atual.produzido / meta) * 100));
+                document.getElementById('op-percent-text').textContent = pct + '%';
+                
+                // SVG Circle calculation (circumference ~ 753)
+                const offset = 753 - (753 * pct) / 100;
+                document.getElementById('op-progress-ring').style.strokeDashoffset = offset;
+                document.getElementById('op-progress-ring').style.stroke = 
+                    m.status === 'produzindo' ? '#22c55e' : 
+                    m.status === 'parada' ? '#ef4444' : '#3b82f6';
+            },
+
+            setStatus(status) {
+                const m = this.getMachine();
+                m.status = status;
+                
+                // Auto-set Operator Name if missing
+                if(!m.operador) {
+                    const name = prompt("Nome do Operador:");
+                    if(name) m.operador = name;
+                }
+                
+                System.save();
+                this.render();
+                UI.toast(`Status: ${status.toUpperCase()}`);
+            },
+
+            addCount(qtd) {
+                const m = this.getMachine();
+                const novo = (parseInt(m.op_atual.produzido) || 0) + qtd;
+                if(novo >= 0) {
+                    m.op_atual.produzido = novo;
+                    System.save();
+                    this.render();
+                }
+            }
+        };
+
+        // Bind Inputs
+        ['op-input-number', 'op-input-product', 'op-input-target', 'op-input-cycle'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.addEventListener('change', (e) => {
+                    const m = MachineController.getMachine();
+                    if(!m) return;
+                    
+                    if(id === 'op-input-number') m.op_atual.numero = e.target.value;
+                    if(id === 'op-input-product') m.op_atual.produto = e.target.value;
+                    if(id === 'op-input-target') m.op_atual.meta = parseInt(e.target.value) || 0;
+                    if(id === 'op-input-cycle') m.op_atual.ciclo_padrao = parseFloat(e.target.value) || 0;
+                    
+                    System.save();
+                    MachineController.render();
+                });
+            }
+        });
+
+        /**
+         * ADMIN CONTROLLER
+         */
+        const AdminController = {
+            renderDashboard() {
+                // KPIs
+                let total = 0, paradas = 0, produzindo = 0;
+                const totalMaq = Store.data.maquinas.length;
+
+                const grid = document.getElementById('admin-machine-grid');
+                grid.innerHTML = '';
+
+                Store.data.maquinas.forEach(m => {
+                    total += (parseInt(m.op_atual.produzido) || 0);
+                    if(m.status === 'parada') paradas++;
+                    if(m.status === 'produzindo') produzindo++;
+
+                    // Create Card
+                    const meta = m.op_atual.meta || 1;
+                    const pct = Math.round((m.op_atual.produzido / meta) * 100);
+                    
+                    let statusColor = 'text-slate-400';
+                    let borderClass = 'border-slate-700';
+                    let icon = 'fa-power-off';
+
+                    if(m.status === 'produzindo') { statusColor = 'text-status-run'; borderClass = 'border-status-run'; icon = 'fa-gear fa-spin'; }
+                    if(m.status === 'parada') { statusColor = 'text-status-stop'; borderClass = 'border-status-stop'; icon = 'fa-triangle-exclamation'; }
+                    if(m.status === 'setup') { statusColor = 'text-status-setup'; borderClass = 'border-status-setup'; icon = 'fa-tools'; }
+
+                    const card = document.createElement('div');
+                    card.className = `glass-panel rounded-xl p-4 border-t-2 ${borderClass} hover:translate-y-[-2px] transition-transform duration-300`;
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-bold text-white font-tech text-lg">${m.nome}</h4>
+                            <i class="fa-solid ${icon} ${statusColor}"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs text-slate-400">
+                                <span>${m.op_atual.produto || 'Sem Produto'}</span>
+                                <span class="font-mono text-white">${m.op_atual.produzido}/${m.op_atual.meta}</span>
+                            </div>
+                            <div class="w-full bg-dark-900 h-1.5 rounded-full overflow-hidden">
+                                <div class="h-full ${statusColor === 'text-status-run' ? 'bg-status-run' : 'bg-slate-500'} transition-all" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-[10px] uppercase font-bold text-slate-500">${m.operador || 'Livre'}</span>
+                                <span class="text-[10px] font-bold uppercase ${statusColor}">${m.status}</span>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                document.getElementById('kpi-total').textContent = total;
+                document.getElementById('kpi-stopped').textContent = paradas;
+                
+                const oee = totalMaq > 0 ? Math.round((produzindo/totalMaq)*100) : 0;
+                document.getElementById('kpi-oee').textContent = oee + '%';
+                document.getElementById('kpi-bar-oee').style.width = oee + '%';
+                
+                // Config load
+                document.getElementById('cfg-products').value = Store.data.produtos.join(', ');
+                document.getElementById('cfg-operators').value = Store.data.operadores.join(', ');
+            },
+
+            saveConfig() {
+                const prods = document.getElementById('cfg-products').value.split(',').map(s => s.trim()).filter(Boolean);
+                const ops = document.getElementById('cfg-operators').value.split(',').map(s => s.trim()).filter(Boolean);
+                
+                Store.data.produtos = prods;
+                Store.data.operadores = ops;
+                System.save();
+                UI.toast("Configurações atualizadas!");
+            }
+        };
+
+        // STARTUP
+        window.addEventListener('DOMContentLoaded', () => {
+            System.init();
+        });
 
     </script>
 </body>
