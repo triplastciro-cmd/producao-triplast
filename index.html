@@ -340,12 +340,12 @@
             </div>
         </header>
 
-        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex flex-wrap gap-2 md:gap-3 justify-center"
-        <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
-        <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
-        <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
-        <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
-    </nav>
+        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto justify-center">
+            <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
+            <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
+            <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
+            <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
+        </nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
             <div id="grid-maquinas"></div>
@@ -370,57 +370,10 @@
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
                             <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Quantidade da OP</label>
-                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="0" class="w-full p-3 bg-white border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold text-lg">
-                    </div>
-
-                        <div class="col-span-full mt-6 p-6 bg-slate-50 rounded-3xl border-2 border-slate-200 shadow-inner">
-    <div class="flex items-center gap-3 mb-6">
-        <div class="bg-slate-800 text-white p-2.5 rounded-xl shadow-md">
-            <i class="fas fa-calculator text-sm"></i>
-        </div>
-        <div>
-            <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest">Cálculos de Produção</h3>
-            <div class="h-1 w-12 bg-blue-500 rounded-full mt-1"></div>
-        </div>
-    </div>
-    
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="space-y-2">
-            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Peso Peça (g)</label>
-            <input type="number" id="tec-peso" oninput="calcularPrevisao()" placeholder="0.00" class="w-full p-3 bg-white border-2 border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all">
-        </div>
-        <div class="space-y-2">
-            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Ciclo (s)</label>
-            <input type="number" id="tec-ciclo" oninput="calcularPrevisao()" placeholder="0.0" class="w-full p-3 bg-white border-2 border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all">
-        </div>
-        <div class="space-y-2">
-            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Cavidades</label>
-            <input type="number" id="tec-cav" value="1" oninput="calcularPrevisao()" class="w-full p-3 bg-white border-2 border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all">
-        </div>
-        <div class="space-y-2">
-            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">% Pigmento</label>
-            <input type="number" id="tec-pig-porc" oninput="calcularPrevisao()" placeholder="0.0" class="w-full p-3 bg-white border-2 border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:border-orange-500 transition-all">
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-blue-600 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center text-center">
-            <span class="text-[10px] font-black text-blue-100 uppercase tracking-widest mb-1">Tempo Estimado</span>
-            <span id="out-tempo" class="text-3xl font-black text-white">-</span>
-        </div>
-        <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 flex flex-col items-center justify-center text-center">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Material (kg)</span>
-            <span id="out-material" class="text-3xl font-black text-slate-800">-</span>
-        </div>
-        <div class="bg-orange-500 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center text-center">
-            <span class="text-[10px] font-black text-orange-100 uppercase tracking-widest mb-1">Pigmento (kg)</span>
-            <span id="out-pigmento" class="text-3xl font-black text-white">-</span>
-        </div>
-    </div>
-</div>
-                        
+                         <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
+                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -2043,41 +1996,6 @@
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
     </script>
-
-    <script>
-        // Lógica da Calculadora
-function calcularPrevisao() {
-    try {
-        const qVal = document.getElementById('f-qtd') ? document.getElementById('f-qtd').value : 0;
-        const qtd = parseFloat(qVal) || 0;
-        const peso = parseFloat(document.getElementById('tec-peso').value) || 0;
-        const ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;
-        const cav = parseFloat(document.getElementById('tec-cav').value) || 1;
-        const perc = parseFloat(document.getElementById('tec-pig-porc').value) || 0;
-
-        if (qtd <= 0 || peso <= 0) {
-            document.getElementById('out-tempo').innerText = "-";
-            document.getElementById('out-material').innerText = "-";
-            document.getElementById('out-pigmento').innerText = "-";
-            return;
-        }
-
-        const matTotalKg = (qtd * peso) / 1000;
-        const pigKg = matTotalKg * (perc / 100);
-        const segundosTotais = (qtd / cav) * ciclo;
-        const h = Math.floor(segundosTotais / 3600);
-        const m = Math.round((segundosTotais % 3600) / 60);
-
-        document.getElementById('out-tempo').innerText = (ciclo > 0) ? h + "h " + m + "m" : "-";
-        document.getElementById('out-material').innerText = matTotalKg.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " kg";
-        document.getElementById('out-pigmento').innerText = pigKg.toLocaleString('pt-BR', {minimumFractionDigits: 3});
-    } catch (e) { console.log(e); }
-}
-    </script>
-    
 </body>
 </html>
-
-
-
 
