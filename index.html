@@ -467,49 +467,41 @@
             <i class="fas fa-boxes-stacked text-blue-600"></i> ENGENHARIA DE PRODUTOS
         </h2>
         
-        <<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="md:col-span-2">
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Nome do Produto</label>
-                <input type="text" id="cad-nome" placeholder="Ex: Pote 250ml" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
-            </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Material (Resina)</label>
-                <input type="text" id="cad-material" placeholder="Ex: PP" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
-            </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Pigmento (Tipo)</label>
-                <input type="text" id="cad-pigmento-tipo" placeholder="Ex: Master" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
-            </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Peso Peça (g)</label>
-                <input type="number" id="cad-peso" step="0.001" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-blue-600">
-            </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Ciclo (Seg)</label>
-                <input type="number" id="cad-ciclo" step="0.1" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-blue-600">
-            </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Cavidades</label>
-                <input type="number" id="cad-cavidades" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
-            </div>
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase">% Pigmento</label>
-                <input type="number" id="cad-pigmento-porc" step="0.01" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-orange-500">
-            </div>
-            <div class="md:col-span-1">
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Saquinho</label>
-                <input type="text" id="cad-saquinho" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
-            </div>
-            <div class="md:col-span-1">
-                <label class="block text-[10px] font-black text-slate-400 uppercase">Qtd por Caixa</label>
-                <input type="number" id="cad-cx" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
-            </div>
-            <div class="md:col-span-2 flex items-end">
-                <button onclick="salvarNovoProduto()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase shadow-lg transition-all">
-                    <i class="fas fa-save mr-2"></i> SALVAR NO BANCO DE DADOS
-                </button>
-            </div>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="md:col-span-2">
+        <label class="block text-[10px] font-black text-slate-400 uppercase">Nome do Produto</label>
+        <input type="text" id="cad-nome" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+    </div>
+    <div>
+        <label class="block text-[10px] font-black text-slate-400 uppercase">Material</label>
+        <input type="text" id="cad-material" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+    </div>
+    <div>
+        <label class="block text-[10px] font-black text-slate-400 uppercase">Tipo Pigmento</label>
+        <input type="text" id="cad-pigmento-tipo" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+    </div>
+    <div>
+        <label class="block text-[10px] font-black text-slate-400 uppercase">Peso (g)</label>
+        <input type="number" id="cad-peso" step="0.001" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+    </div>
+    <div>
+        <label class="block text-[10px] font-black text-slate-400 uppercase">Ciclo (s)</label>
+        <input type="number" id="cad-ciclo" step="0.1" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+    </div>
+    <div>
+        <label class="block text-[10px] font-black text-slate-400 uppercase">Cavidades</label>
+        <input type="number" id="cad-cavidades" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+    </div>
+    <div>
+        <label class="block text-[10px] font-black text-slate-400 uppercase">% Pigmento</label>
+        <input type="number" id="cad-pigmento-porc" step="0.01" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+    </div>
+    <div class="md:col-span-2 flex items-end">
+        <button onclick="salvarNovoProduto()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase shadow-lg">
+            <i class="fas fa-save mr-2"></i> SALVAR NO BANCO DE DADOS
+        </button>
+    </div>
+</div>
 
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
         <table class="w-full text-left">
@@ -1151,26 +1143,22 @@
         function trocarAba(id) {
     // Esconde todas as abas
     document.querySelectorAll('.aba-conteudo').forEach(a => {
-        a.style.display = 'none';
         a.classList.remove('aba-ativa');
     });
-    // Desativa todos os botões
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    
-    // Mostra a aba clicada
-    const abaAlvo = document.getElementById('aba-' + id);
-    const btnAlvo = document.getElementById('btn-' + id);
-    
-    if (abaAlvo) {
-        abaAlvo.style.display = 'block';
-        abaAlvo.classList.add('aba-ativa');
-    }
-    if (btnAlvo) btnAlvo.classList.add('active');
+    // Remove active de todos os botões
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+    });
 
-    // SE CLICAR EM EQUIPE, CHAMA A LISTA DE OPERADORES
-    if (id === 'equipe') {
-        renderOperadoresConfig();
-    }
+    // Ativa a aba e o botão correto
+    const aba = document.getElementById('aba-' + id);
+    const btn = document.getElementById('btn-' + id);
+    if (aba) aba.classList.add('aba-ativa');
+    if (btn) btn.classList.add('active');
+
+    // IMPORTANTE: Desenha as listas ao abrir a aba
+    if (id === 'equipe') renderOperadoresConfig();
+    if (id === 'produtos') renderProdutos();
 }
 
         function processarTurnoAuto() {
@@ -2083,13 +2071,18 @@
     <script>
         // 1. Função para Renderizar a lista de operadores com botão de lixeira
 function renderOperadoresConfig() {
-    const container = document.getElementById('lista-operadores-moderna');
+    const container = document.getElementById('lista-operadores-config');
     if (!container) return;
 
     container.innerHTML = config.operadores.map((nome, index) => `
-        <div class="flex justify-between items-center p-4 bg-white border-2 border-slate-100 rounded-2xl">
-            <span class="font-bold text-slate-700">${nome}</span>
-            <button onclick="removerOperador(${index})" class="text-red-500">
+        <div class="flex justify-between items-center p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-200 transition-all group">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-black text-blue-600">
+                    ${nome.charAt(0).toUpperCase()}
+                </div>
+                <span class="font-bold text-slate-700">${nome}</span>
+            </div>
+            <button onclick="removerOperador(${index})" class="p-2 text-red-400 hover:text-red-600">
                 <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>
@@ -2133,6 +2126,7 @@ trocarAba = function(id) {
     
 </body>
 </html>
+
 
 
 
