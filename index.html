@@ -411,7 +411,7 @@
         </div>
         <div>
             <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
-            <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
+            <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
         </div>
         <div>
             <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
@@ -2044,36 +2044,46 @@
         window.addEventListener('beforeunload', () => { salvarGeral(); }); 
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
-    </script>
-
-        // === PASSO 2: CÁLCULO INTELIGENTE (COLE NO FINAL DO ARQUIVO) ===
+    
+        <script>
 function calcularPrevisao() {
     try {
-        // 1. PEGAR DADOS DA TELA
+        // --- 1. PEGAR OS DADOS DA TELA ---
+        
+        // Pega a Quantidade (Meta) - Proteção contra erro
         let elQtd = document.getElementById('f-qtd');
-        let qtdMeta = elQtd ? parseFloat(elQtd.value) : 0; 
+        let qtdMeta = 0;
+        if (elQtd && elQtd.value) {
+            qtdMeta = parseFloat(elQtd.value);
+        }
 
+        // Pega os dados da calculadora técnica
         let pesoPecaGramas = parseFloat(document.getElementById('tec-peso').value) || 0; 
         let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
         let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
         
-        // Pega a porcentagem. Se estiver vazia, assume 0.
+        // Pega a porcentagem (se vazio = 0)
         let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
-        // Se faltar dados principais, zera tudo
+        // --- TRAVA DE SEGURANÇA ---
+        // Se não tiver quantidade ou peso, mostramos traço "-" e paramos o cálculo.
         if (!qtdMeta || !pesoPecaGramas) {
-            document.getElementById('out-tempo').innerText = "-";
-            document.getElementById('out-material').innerText = "-";
-            document.getElementById('out-pigmento').innerText = "-";
-            return;
+            if(document.getElementById('out-tempo')) document.getElementById('out-tempo').innerText = "-";
+            if(document.getElementById('out-material')) document.getElementById('out-material').innerText = "-";
+            if(document.getElementById('out-pigmento')) document.getElementById('out-pigmento').innerText = "-";
+            return; 
         }
 
-        // === CÁLCULOS ===
-        
-        // Material Total (KG) -> Quantidade * Peso Peça
+        // --- 2. CÁLCULOS (IGUAL AO SEU EXCEL) ---
+
+        // Material Total (KG)
+        // Fórmula: (Quantidade * Peso Peça) / 1000
+        // Ex: (1250 * 20) / 1000 = 25 kg
         let pesoTotalMaterial = (qtdMeta * pesoPecaGramas) / 1000;
 
-        // Pigmento -> Só calcula se a porcentagem for maior que 0
+        // Pigmento (KG)
+        // Fórmula: Peso Material * (Porcentagem / 100)
+        // Ex: 25 * (2 / 100) = 0.5 kg
         let pesoPigmento = 0;
         if (porcentagem > 0) {
             pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
@@ -2083,36 +2093,52 @@ function calcularPrevisao() {
         let totalCiclos = qtdMeta / cavidades;
         let totalSegundos = totalCiclos * ciclo;
         let totalHoras = totalSegundos / 3600;
+        
         let h = Math.floor(totalHoras);
         let m = Math.round((totalHoras - h) * 60);
         let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
 
-        // === EXIBIÇÃO ===
+        // --- 3. MOSTRAR NA TELA (COM FORMATAÇÃO BRASILEIRA) ---
         
-        document.getElementById('out-tempo').innerText = textoTempo;
+        // Tempo
+        if(document.getElementById('out-tempo')) {
+            document.getElementById('out-tempo').innerText = textoTempo;
+        }
 
-        // MATERIAL: Exibe "25,00 kg"
-        document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        // Material: Mostra com vírgula e "kg" (Ex: "25,00 kg")
+        if(document.getElementById('out-material')) {
+            document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        }
 
-        // PIGMENTO: Exibe "0,5" (Sem kg, sem zeros extras)
-        let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3));
-        document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
+        // Pigmento: Mostra SÓ O NÚMERO com vírgula (Ex: "0,5" ou "2,2")
+        // O parseFloat remove zeros extras (0.500 vira 0.5)
+        if(document.getElementById('out-pigmento')) {
+            let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3));
+            document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
+        }
 
-        // Preenche campos do formulário original
+        // --- 4. PREENCHER CAMPOS DO FORMULÁRIO (OPCIONAL) ---
+        // Isso joga o valor calculado para os inputs de texto que salvam no banco
         let campoMatOriginal = document.getElementById('f-material-qtd');
-        if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        if(campoMatOriginal) {
+            campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        }
         
-        // Só preenche a porcentagem se for maior que 0
         let campoPorcOriginal = document.getElementById('f-porcentagem');
-        if(campoPorcOriginal) campoPorcOriginal.value = (porcentagem > 0) ? porcentagem + "%" : "";
+        if(campoPorcOriginal) {
+            // Se tiver porcentagem, preenche "2%". Se for 0, deixa vazio.
+            campoPorcOriginal.value = (porcentagem > 0) ? porcentagem + "%" : "";
+        }
 
     } catch (e) {
-        console.log(e);
+        console.log("Erro no cálculo:", e);
     }
 }
+</script>
         
 </body>
 </html>
+
 
 
 
