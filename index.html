@@ -3,164 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRIPLAST | Sistema de Produção</title>
+    <title>TRIPLAST | Sistema Industrial</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
-        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
-        body { background: var(--bg); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
         
-        /* Sidebar e Layout */
-        .sidebar-btn { transition: 0.2s; border-radius: 8px; display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; font-weight: 600; color: #94a3b8; cursor: pointer; text-align: left; }
-        .sidebar-btn:hover { background: #e2e8f0; color: var(--primary); }
-        .sidebar-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3); }
+        :root { 
+            --primary: #0f172a; 
+            --accent: #2563eb; 
+            --bg: #f1f5f9; 
+        }
         
-        .view-section { display: none; height: 100%; overflow-y: auto; padding-bottom: 80px; animation: fadeIn 0.3s ease; }
+        body { 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+            margin: 0; 
+        }
+        
+        /* Sidebar e Navegação */
+        .sidebar-btn { 
+            transition: 0.2s; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            width: 100%; 
+            padding: 16px; 
+            font-weight: 600; 
+            color: #94a3b8; 
+            cursor: pointer; 
+            text-align: left; 
+            background: transparent;
+            border: none;
+        }
+        .sidebar-btn:hover { background: #f1f5f9; color: var(--primary); }
+        .sidebar-btn.active { background: var(--primary); color: white; box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.4); }
+        
+        /* Views e Animações */
+        .view-section { display: none; height: 100%; overflow-y: auto; padding-bottom: 100px; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Estilos Especiais */
-        .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .kiosk-mode { position: fixed; inset: 0; z-index: 50; background: #f1f5f9; padding: 20px; }
         
-        /* Scrollbar */
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Elementos Visuais */
+        .glass { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.6); 
+        }
+        
+        /* Scrollbar Customizada */
         ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Login Overlay */
+        #login-screen { display: flex; } /* Garante que começa visível */
     </style>
 </head>
 <body class="flex text-slate-800">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex items-center justify-center p-4">
-        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-sm text-center">
-            <h1 class="text-5xl font-black text-slate-900 mb-2 italic tracking-tighter">TRIPLAST</h1>
-            <p class="text-slate-400 font-bold mb-8 uppercase text-[10px] tracking-widest">Acesso Restrito</p>
-            <input type="password" id="pass-code" placeholder="Senha (Admin ou Máquina)" class="w-full p-4 bg-slate-100 rounded-xl text-center font-bold outline-none border-2 border-transparent focus:border-slate-900 transition-all text-xl mb-4">
-            <button onclick="tentarLogin()" class="w-full bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-black transition-all">ENTRAR</button>
+        <div class="bg-white p-12 rounded-[40px] shadow-2xl w-full max-w-sm text-center border-4 border-slate-800 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+            
+            <div class="mb-8">
+                <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl mb-4 shadow-lg">
+                    <i class="fa-solid fa-industry"></i>
+                </div>
+                <h1 class="text-4xl font-black text-slate-900 italic tracking-tighter">TRIPLAST</h1>
+                <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-2">Acesso Restrito v2.0</p>
+            </div>
+
+            <div class="space-y-4">
+                <input type="password" id="pass-code" placeholder="Senha de Acesso" 
+                    class="w-full p-4 bg-slate-50 rounded-2xl text-center font-bold outline-none border-2 border-slate-100 focus:border-blue-600 focus:bg-white transition-all text-lg placeholder:text-slate-300">
+                
+                <button onclick="tentarLogin()" 
+                    class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold hover:bg-blue-600 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+                    ACESSAR SISTEMA
+                </button>
+            </div>
+            
+            <p class="mt-8 text-[10px] text-slate-300">Admin: 2026 | Máquinas: M1, M2, M3, M4</p>
         </div>
     </div>
 
-    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 p-6 flex flex-col hidden h-full">
-        <div class="text-3xl font-black italic text-slate-900 mb-10 tracking-tighter">TRIPLAST</div>
+    <aside id="sidebar" class="w-72 bg-white border-r border-slate-200 p-6 flex flex-col hidden h-full z-10 relative shadow-xl">
+        <div class="mb-10 px-2">
+            <h2 class="text-3xl font-black italic text-slate-900 tracking-tighter">TRIPLAST</h2>
+            <div class="flex items-center gap-2 mt-2">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sistema Online</span>
+            </div>
+        </div>
+
         <nav class="space-y-2 flex-1">
-            <button onclick="nav('dashboard')" id="btn-dashboard" class="sidebar-btn active"><i class="fa-solid fa-layer-group"></i> Visão Geral</button>
-            <button onclick="nav('ops')" id="btn-ops" class="sidebar-btn"><i class="fa-solid fa-file-invoice"></i> Ordens (O.P)</button>
-            <button onclick="nav('produtos')" id="btn-produtos" class="sidebar-btn"><i class="fa-solid fa-box"></i> Produtos</button>
-            <button onclick="nav('equipe')" id="btn-equipe" class="sidebar-btn"><i class="fa-solid fa-users"></i> Equipe</button>
-            <button onclick="nav('graficos')" id="btn-graficos" class="sidebar-btn"><i class="fa-solid fa-chart-pie"></i> Relatórios</button>
+            <button onclick="nav('dashboard')" id="btn-dashboard" class="sidebar-btn active">
+                <i class="fa-solid fa-layer-group w-6"></i> Visão Geral
+            </button>
+            <button onclick="nav('ops')" id="btn-ops" class="sidebar-btn">
+                <i class="fa-solid fa-file-invoice w-6"></i> Ordens (O.P)
+            </button>
+            <button onclick="nav('produtos')" id="btn-produtos" class="sidebar-btn">
+                <i class="fa-solid fa-box w-6"></i> Produtos
+            </button>
+            <button onclick="nav('equipe')" id="btn-equipe" class="sidebar-btn">
+                <i class="fa-solid fa-users w-6"></i> Equipe
+            </button>
+            <button onclick="nav('graficos')" id="btn-graficos" class="sidebar-btn">
+                <i class="fa-solid fa-chart-pie w-6"></i> Relatórios
+            </button>
         </nav>
-        <button onclick="location.reload()" class="sidebar-btn text-red-500 hover:bg-red-50 hover:text-red-600 mt-auto"><i class="fa-solid fa-power-off"></i> Sair</button>
+
+        <button onclick="location.reload()" class="sidebar-btn text-red-500 hover:bg-red-50 hover:text-red-600 mt-auto">
+            <i class="fa-solid fa-power-off w-6"></i> Sair
+        </button>
     </aside>
 
-    <main id="main-content" class="flex-1 h-full relative hidden bg-slate-50">
+    <main id="main-content" class="flex-1 h-full relative hidden bg-[#f8fafc]">
         
-        <header class="p-8 flex justify-between items-end">
+        <header class="p-8 pb-4 flex justify-between items-end bg-white/50 backdrop-blur-sm sticky top-0 z-20 border-b border-slate-200/50">
             <div>
-                <h2 id="page-title" class="text-3xl font-black text-slate-800 uppercase">VISÃO GERAL</h2>
-                <div id="status-sys" class="text-[10px] font-bold text-green-600 uppercase flex items-center gap-2 mt-1"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Sistema Online</div>
+                <h2 id="page-title" class="text-3xl font-black text-slate-800 uppercase tracking-tight">Visão Geral</h2>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Gestão de Produção</p>
             </div>
-            <div id="clock" class="text-2xl font-black text-slate-300 font-mono">00:00</div>
+            <div id="clock" class="text-3xl font-black text-slate-200 font-mono tracking-tighter">00:00</div>
         </header>
 
-        <div id="view-dashboard" class="view-section active px-8">
-            <div id="grid-admin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div id="view-dashboard" class="view-section active px-8 pt-6">
+            <div id="grid-admin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 </div>
         </div>
 
-        <div id="view-ops" class="view-section px-8">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-6">
-                <h3 class="font-black text-lg mb-4 uppercase">Nova Ordem de Produção</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <select id="op-produto" onchange="autoPreencherOP()" class="p-3 bg-slate-100 rounded-xl font-bold outline-none"></select>
-                    <input type="number" id="op-qtd" placeholder="Quantidade" class="p-3 bg-slate-100 rounded-xl font-bold outline-none">
-                    <div id="op-info" class="p-3 bg-blue-50 text-blue-800 rounded-xl text-xs font-bold flex items-center justify-center hidden">Selecione um produto</div>
+        <div id="view-ops" class="view-section px-8 pt-6">
+            <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl text-slate-900"><i class="fa-solid fa-file-contract"></i></div>
+                <h3 class="font-black text-xl mb-6 uppercase text-slate-800">Nova Ordem de Produção</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Produto</label>
+                        <select id="op-produto" onchange="autoPreencherOP()" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500 transition-colors"></select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Quantidade</label>
+                        <input type="number" id="op-qtd" placeholder="0" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500">
+                    </div>
+                    <button onclick="criarOP()" class="bg-slate-900 text-white rounded-2xl font-bold hover:bg-black transition-all shadow-lg mt-5">GERAR O.P</button>
                 </div>
-                <button onclick="criarOP()" class="mt-4 w-full bg-slate-900 text-white p-3 rounded-xl font-bold">ABRIR ORDEM DE PRODUÇÃO</button>
+                
+                <div id="op-info" class="mt-4 p-4 bg-blue-50 text-blue-800 rounded-2xl text-xs font-bold hidden border border-blue-100 flex items-center gap-4">
+                    <i class="fa-solid fa-circle-info text-lg"></i>
+                    <span id="op-info-texto">Dados técnicos carregados</span>
+                </div>
             </div>
+            
+            <h4 class="font-bold text-slate-400 uppercase text-xs mb-4 ml-2">O.Ps Ativas</h4>
             <div id="lista-ops" class="space-y-3"></div>
         </div>
 
-        <div id="view-produtos" class="view-section px-8">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-6">
-                <h3 class="font-black text-lg mb-4 uppercase">Cadastrar Produto</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <input id="prod-nome" placeholder="Nome" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
-                    <input id="prod-mat" placeholder="Material" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
-                    <input id="prod-peso" type="number" placeholder="Peso (g)" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
-                    <input id="prod-ciclo" type="number" placeholder="Ciclo (s)" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
-                    <input id="prod-cav" type="number" placeholder="Cavidades" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
-                    <input id="prod-cx" type="number" placeholder="Qtd Caixa" class="p-3 bg-slate-100 rounded-xl font-bold text-sm">
+        <div id="view-produtos" class="view-section px-8 pt-6">
+            <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 mb-8">
+                <h3 class="font-black text-xl mb-6 uppercase">Cadastro de Produto</h3>
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div class="col-span-2"><input id="prod-nome" placeholder="Nome do Produto" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100"></div>
+                    <div><input id="prod-mat" placeholder="Material" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100"></div>
+                    <div><input id="prod-peso" type="number" placeholder="Peso (g)" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100"></div>
+                    <div><input id="prod-ciclo" type="number" placeholder="Ciclo (s)" class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100"></div>
+                    <div><input id="prod-cav" type="number" placeholder="Cav." class="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm border border-slate-100"></div>
+                    <button onclick="addProduto()" class="col-span-2 md:col-span-6 bg-blue-600 text-white p-3 rounded-xl font-bold hover:bg-blue-700 transition-colors">SALVAR NO CATÁLOGO</button>
                 </div>
-                <button onclick="addProduto()" class="mt-4 w-full bg-blue-600 text-white p-3 rounded-xl font-bold">SALVAR PRODUTO</button>
             </div>
-            <div id="lista-produtos" class="bg-white rounded-3xl border border-slate-200 overflow-hidden"></div>
+            <div id="lista-produtos" class="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm"></div>
         </div>
 
-        <div id="view-equipe" class="view-section px-8">
-            <div class="flex gap-4 mb-6">
-                <input id="op-nome" placeholder="Nome do Operador" class="flex-1 p-4 bg-white border border-slate-200 rounded-xl font-bold outline-none">
-                <button onclick="addOperador()" class="bg-slate-900 text-white px-8 rounded-xl font-bold">ADICIONAR</button>
+        <div id="view-equipe" class="view-section px-8 pt-6">
+            <div class="bg-white p-2 pr-2 pl-6 rounded-[30px] shadow-sm border border-slate-100 mb-8 flex items-center gap-4">
+                <i class="fa-solid fa-user-plus text-slate-300"></i>
+                <input id="op-nome" placeholder="Nome do novo operador..." class="flex-1 py-4 bg-transparent font-bold outline-none text-slate-700">
+                <button onclick="addOperador()" class="bg-slate-900 text-white px-8 py-4 rounded-[24px] font-bold hover:bg-black transition-all">ADICIONAR</button>
             </div>
-            <div id="lista-equipe" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            <div id="lista-equipe" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
-        <div id="view-graficos" class="view-section px-8">
+        <div id="view-graficos" class="view-section px-8 pt-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-80">
-                    <h4 class="font-bold text-sm uppercase text-slate-400 mb-4">Produção por Máquina</h4>
-                    <canvas id="grafico-prod"></canvas>
+                <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 h-96 relative">
+                    <h4 class="font-black text-sm uppercase text-slate-400 mb-6 tracking-widest">Produção por Máquina</h4>
+                    <div class="absolute inset-x-8 bottom-8 top-20">
+                        <canvas id="grafico-prod"></canvas>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-80">
-                    <h4 class="font-bold text-sm uppercase text-slate-400 mb-4">Índice de Refugo</h4>
-                    <canvas id="grafico-refugo"></canvas>
+                <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 h-96 relative">
+                    <h4 class="font-black text-sm uppercase text-slate-400 mb-6 tracking-widest">Índice de Refugo</h4>
+                    <div class="absolute inset-x-8 bottom-8 top-20">
+                        <canvas id="grafico-refugo"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="maquina-kiosk" class="kiosk-mode hidden flex flex-col">
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-4xl font-black italic">TRIPLAST <span id="kiosk-maq-nome" class="text-blue-600"></span></h1>
-            <button onclick="location.reload()" class="bg-red-100 text-red-600 px-6 py-2 rounded-xl font-bold text-sm">SAIR</button>
+    <div id="maquina-kiosk" class="fixed inset-0 z-50 bg-[#f8fafc] hidden flex flex-col p-6">
+        <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-[24px] shadow-sm border border-slate-100">
+            <h1 class="text-4xl font-black italic text-slate-900 tracking-tighter">TRIPLAST <span id="kiosk-maq-nome" class="text-blue-600"></span></h1>
+            <div class="flex items-center gap-4">
+                <div id="kiosk-clock" class="text-2xl font-bold text-slate-300 font-mono">00:00</div>
+                <button onclick="location.reload()" class="bg-red-50 text-red-500 px-6 py-3 rounded-xl font-bold text-sm hover:bg-red-100 transition-colors">SAIR</button>
+            </div>
         </header>
         
-        <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white rounded-[40px] p-8 shadow-sm border border-slate-200 flex flex-col justify-between">
-                <div>
-                    <span class="text-slate-400 font-bold uppercase text-xs tracking-widest">O.P ATIVA</span>
-                    <h2 id="kiosk-op" class="text-3xl font-black text-slate-800 mt-1 mb-6">AGUARDANDO...</h2>
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-7 bg-white rounded-[40px] p-10 shadow-lg border border-slate-100 flex flex-col relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-10 -mt-10 opacity-50"></div>
+                
+                <div class="relative z-10 flex-1 flex flex-col justify-center">
+                    <span class="text-blue-500 font-black uppercase text-xs tracking-[0.2em] mb-2">Ordem de Produção Atual</span>
+                    <h2 id="kiosk-op" class="text-5xl font-black text-slate-800 mb-10 leading-tight">AGUARDANDO...</h2>
                     
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-slate-50 p-4 rounded-2xl">
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Meta</span>
-                            <span id="kiosk-meta" class="text-2xl font-black text-slate-800">0</span>
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="bg-slate-50 p-6 rounded-[24px] border border-slate-100">
+                            <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Meta</span>
+                            <span id="kiosk-meta" class="text-4xl font-black text-slate-800">0</span>
+                            <span class="text-xs font-bold text-slate-400">pçs</span>
                         </div>
-                        <div class="bg-slate-50 p-4 rounded-2xl">
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Realizado</span>
-                            <span id="kiosk-real" class="text-2xl font-black text-blue-600">0</span>
+                        <div class="bg-blue-600 p-6 rounded-[24px] text-white shadow-lg shadow-blue-200">
+                            <span class="block text-[10px] font-black text-blue-200 uppercase tracking-widest mb-1">Realizado</span>
+                            <span id="kiosk-real" class="text-4xl font-black">0</span>
+                            <span class="text-xs font-bold text-blue-200">pçs</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="flex gap-2">
-                    <select id="kiosk-select-op" class="flex-1 bg-slate-100 rounded-xl p-4 font-bold outline-none"></select>
-                    <button onclick="iniciarOPMaquina()" class="bg-slate-900 text-white px-6 rounded-xl font-bold">INICIAR</button>
+                <div class="relative z-10 flex gap-3 mt-auto pt-8 border-t border-slate-100">
+                    <select id="kiosk-select-op" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-4 font-bold outline-none text-slate-700"></select>
+                    <button onclick="iniciarOPMaquina()" class="bg-slate-900 text-white px-8 rounded-2xl font-bold hover:scale-105 transition-transform">INICIAR O.P</button>
                 </div>
             </div>
 
-            <div class="grid grid-rows-2 gap-6">
-                <button onclick="acaoMaquina('prod')" class="bg-blue-600 active:bg-blue-700 text-white rounded-[40px] flex flex-col items-center justify-center shadow-lg shadow-blue-200 transition-all">
-                    <i class="fa-solid fa-plus text-4xl mb-2"></i>
-                    <span class="text-2xl font-black">PRODUÇÃO (+1)</span>
+            <div class="lg:col-span-5 grid grid-rows-2 gap-6">
+                <button onclick="acaoMaquina('prod')" class="bg-white border-2 border-blue-100 active:bg-blue-50 rounded-[40px] flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all group">
+                    <div class="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-200 group-active:scale-90 transition-transform">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <span class="text-3xl font-black text-slate-800">PRODUÇÃO (+1)</span>
+                    <span class="text-xs font-bold text-slate-400 mt-2 uppercase">Toque para apontar</span>
                 </button>
+                
                 <div class="grid grid-cols-2 gap-6">
-                    <button onclick="acaoMaquina('refugo')" class="bg-red-500 active:bg-red-600 text-white rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-red-200">
-                        <i class="fa-solid fa-trash text-2xl mb-2"></i> REFUGO
+                    <button onclick="acaoMaquina('refugo')" class="bg-white border-2 border-red-50 active:bg-red-50 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all text-red-500 group">
+                        <i class="fa-solid fa-trash text-3xl mb-4 group-active:scale-90 transition-transform"></i> 
+                        <span class="text-lg">REFUGO</span>
                     </button>
-                    <button onclick="acaoMaquina('parada')" id="btn-status-maq" class="bg-yellow-400 active:bg-yellow-500 text-yellow-900 rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-yellow-200">
-                        <i class="fa-solid fa-pause text-2xl mb-2"></i> PARAR
+                    <button onclick="acaoMaquina('parada')" id="btn-status-maq" class="bg-yellow-50 border-2 border-yellow-100 active:bg-yellow-100 text-yellow-700 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all group">
+                        <i class="fa-solid fa-pause text-3xl mb-4 group-active:scale-90 transition-transform"></i> 
+                        <span class="text-lg">PARAR</span>
                     </button>
                 </div>
             </div>
@@ -168,19 +277,103 @@
     </div>
 
     <script>
-        // ================= CONFIGURAÇÕES =================
-        const SB_URL = 'SUA_URL_AQUI'; // <--- COLOQUE A URL
-        const SB_KEY = 'SUA_KEY_AQUI'; // <--- COLOQUE A KEY
+        // CONFIGURAÇÕES DO SUPABASE (Usei suas credenciais)
+        // OBS: Completei a URL com o padrão do Supabase baseado no ID que você deu.
+        // Se der erro de conexão, verifique se a URL é exatamente essa.
+        const SB_URL = 'https://d7948bc4-8c20-4649-b64c-864a56edbe5a.supabase.co'; 
+        const SB_KEY = 'sb_publishable_RTl-ot-s8peIFt8XkR2PRA_1ObXyc4L'; 
+        
+        // Inicializa cliente
         const sb = supabase.createClient(SB_URL, SB_KEY);
         
+        // Estado Global
         let DATA = { maquinas: [], produtos: [], operadores: [], ops: [], historico: [] };
-        let currentUser = null; // 'ADMIN' ou 0, 1, 2, 3 (indices das maquinas)
+        let currentUser = null;
         let saveTimer = null;
 
-        // INICIALIZAÇÃO
-        function init() {
-            // Garante 4 máquinas na estrutura
-            if(!DATA.maquinas || DATA.maquinas.length !== 4) {
+        // Ao carregar a página
+        window.onload = function() {
+            // Garante que o login está visível e o resto oculto
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('sidebar').classList.add('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+            
+            // Relógio
+            setInterval(() => {
+                const time = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('clock').innerText = time;
+                document.getElementById('kiosk-clock').innerText = time;
+            }, 1000);
+        };
+
+        // ================= SISTEMA DE LOGIN =================
+        function tentarLogin() {
+            const pass = document.getElementById('pass-code').value.trim().toUpperCase();
+            const mapMaq = { 'M1': 0, 'M2': 1, 'M3': 2, 'M4': 3 };
+
+            if (pass === '2026') {
+                // Login Admin
+                currentUser = 'ADMIN';
+                animarEntrada('admin');
+            } else if (mapMaq.hasOwnProperty(pass)) {
+                // Login Máquina
+                currentUser = mapMaq[pass];
+                animarEntrada('maquina');
+            } else {
+                // Erro visual
+                const input = document.getElementById('pass-code');
+                input.classList.add('bg-red-50', 'border-red-500', 'text-red-500');
+                setTimeout(() => input.classList.remove('bg-red-50', 'border-red-500', 'text-red-500'), 1000);
+            }
+        }
+
+        async function animarEntrada(tipo) {
+            const login = document.getElementById('login-screen');
+            login.style.opacity = '0';
+            setTimeout(() => {
+                login.style.display = 'none';
+                if(tipo === 'admin') {
+                    document.getElementById('sidebar').classList.remove('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                    renderTudo();
+                } else {
+                    document.getElementById('maquina-kiosk').classList.remove('hidden');
+                    renderKiosk();
+                }
+                carregarDados(); // Puxa do Supabase
+            }, 500);
+        }
+
+        // ================= SUPABASE & DADOS =================
+        async function carregarDados() {
+            try {
+                // Tenta buscar ID 1 da tabela 'sistema'
+                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                
+                if (data && data.conteudo) {
+                    DATA = { ...DATA, ...data.conteudo };
+                    // Garante estrutura mínima se vier vazio
+                    if(!DATA.maquinas || DATA.maquinas.length < 4) resetMaquinas();
+                } else {
+                    // Se não existir, cria padrão
+                    console.log("Criando nova estrutura de dados...");
+                    resetMaquinas();
+                    salvar();
+                }
+                
+                if(currentUser === 'ADMIN') renderTudo();
+                else renderKiosk();
+                
+            } catch (e) { 
+                console.error('Erro conexão:', e);
+                // Fallback local se estiver offline
+                resetMaquinas();
+                if(currentUser === 'ADMIN') renderTudo();
+            }
+        }
+
+        function resetMaquinas() {
+            if(!DATA.maquinas || DATA.maquinas.length === 0) {
                 DATA.maquinas = [
                     { id: 0, nome: 'M1', status: 'parada', prod: 0, refugo: 0, op: null },
                     { id: 1, nome: 'M2', status: 'parada', prod: 0, refugo: 0, op: null },
@@ -188,107 +381,77 @@
                     { id: 3, nome: 'M4', status: 'parada', prod: 0, refugo: 0, op: null }
                 ];
             }
-            setInterval(() => {
-                document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-            }, 1000);
-        }
-
-        // ================= LOGIN =================
-        function tentarLogin() {
-            const pass = document.getElementById('pass-code').value.toUpperCase().trim();
-            const mapMaq = { 'M1': 0, 'M2': 1, 'M3': 2, 'M4': 3 };
-
-            if (pass === '2026') {
-                currentUser = 'ADMIN';
-                entrarNoSistema();
-            } else if (mapMaq.hasOwnProperty(pass)) {
-                currentUser = mapMaq[pass];
-                entrarModoMaquina();
-            } else {
-                alert('Senha inválida!');
-            }
-        }
-
-        async function entrarNoSistema() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('sidebar').classList.remove('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            await carregarDados();
-            renderTudo();
-        }
-
-        async function entrarModoMaquina() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('maquina-kiosk').classList.remove('hidden');
-            await carregarDados();
-            renderKiosk();
-        }
-
-        // ================= SUPABASE =================
-        async function carregarDados() {
-            try {
-                const { data } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
-                if (data && data.conteudo) {
-                    // Mescla garantindo que existam 4 máquinas
-                    DATA = { ...DATA, ...data.conteudo };
-                    if(DATA.maquinas.length < 4) init(); 
-                } else {
-                    init(); // Cria estrutura se não existir
-                }
-            } catch (e) { console.log('Offline ou erro:', e); init(); }
         }
 
         async function salvar() {
-            document.getElementById('status-sys').innerHTML = '<span class="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></span> Salvando...';
             if (saveTimer) clearTimeout(saveTimer);
             saveTimer = setTimeout(async () => {
                 await sb.from('sistema').update({ conteudo: DATA }).eq('id', 1);
-                document.getElementById('status-sys').innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> Salvo';
-            }, 1500);
+                // Se der erro de "Row not found", tenta Insert (primeira vez)
+                /* const { error } = await sb.from('sistema').upsert({ id: 1, conteudo: DATA });
+                */
+            }, 2000);
         }
 
-        // ================= RENDERIZADORES ADMIN =================
+        // ================= NAVEGAÇÃO ADMIN =================
         function nav(view) {
+            // Remove classes ativas
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
+            
+            // Ativa nova
             document.getElementById('view-' + view).classList.add('active');
             document.getElementById('btn-' + view).classList.add('active');
             
-            const titulos = { 'dashboard': 'VISÃO GERAL', 'ops': 'ORDENS DE PRODUÇÃO', 'produtos': 'CATÁLOGO', 'equipe': 'OPERADORES', 'graficos': 'RELATÓRIOS' };
+            // Atualiza Título
+            const titulos = { 'dashboard': 'Visão Geral', 'ops': 'Gestão de O.P', 'produtos': 'Catálogo', 'equipe': 'Equipe', 'graficos': 'Relatórios' };
             document.getElementById('page-title').innerText = titulos[view];
+            
             renderTudo();
         }
 
+        // ================= RENDERIZADORES (ADMIN) =================
         function renderTudo() {
-            renderAdminGrid();
+            renderDashboard();
+            renderListaOPs();
             renderListaProdutos();
             renderListaEquipe();
-            renderListaOPs();
-            renderSelects();
             renderGraficos();
+            popularSelects();
         }
 
-        function renderAdminGrid() {
-            const container = document.getElementById('grid-admin');
-            container.innerHTML = DATA.maquinas.map(m => {
-                const statusColor = m.status === 'rodando' ? 'text-green-500' : (m.status === 'setup' ? 'text-blue-500' : 'text-red-500');
-                const borderStatus = m.status === 'rodando' ? 'border-green-500' : 'border-slate-200';
-                const opInfo = m.op ? `${m.op.produto} (${m.op.qtd})` : 'SEM O.P';
+        function renderDashboard() {
+            const grid = document.getElementById('grid-admin');
+            grid.innerHTML = DATA.maquinas.map(m => {
+                const statusMap = {
+                    'rodando': { color: 'bg-green-500', text: 'text-green-500', label: 'PRODUZINDO' },
+                    'parada': { color: 'bg-red-500', text: 'text-red-500', label: 'PARADA' },
+                    'setup': { color: 'bg-blue-500', text: 'text-blue-500', label: 'SETUP' }
+                };
+                const st = statusMap[m.status] || statusMap['parada'];
                 
                 return `
-                <div class="bg-white p-6 rounded-[32px] shadow-sm border-l-8 ${borderStatus} relative">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-2xl font-black italic">M${m.id + 1}</h3>
-                        <span class="text-[10px] font-black uppercase ${statusColor} bg-slate-50 px-2 py-1 rounded-lg">${m.status}</span>
-                    </div>
-                    <p class="text-xs font-bold text-slate-400 uppercase mb-4">${opInfo}</p>
-                    <div class="grid grid-cols-2 gap-2 text-center">
-                        <div class="bg-slate-100 rounded-xl p-2">
-                            <span class="block text-[10px] text-slate-400 uppercase font-bold">Prod</span>
-                            <span class="text-xl font-black text-slate-800">${m.prod}</span>
+                <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 hover:shadow-lg transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black italic text-xl">${m.nome}</div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 leading-tight">INJETORA ${m.id+1}</h3>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">${m.op ? m.op.produto : 'Sem O.P'}</p>
+                            </div>
                         </div>
-                        <div class="bg-red-50 rounded-xl p-2">
-                            <span class="block text-[10px] text-red-400 uppercase font-bold">Refugo</span>
+                        <div class="px-2 py-1 rounded-lg bg-slate-50 border border-slate-100 ${st.text} text-[10px] font-black uppercase">
+                            ${st.label}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <div class="bg-blue-50 p-3 rounded-2xl text-center">
+                            <span class="block text-[10px] font-bold text-blue-400 uppercase">Produzido</span>
+                            <span class="text-xl font-black text-blue-700">${m.prod}</span>
+                        </div>
+                        <div class="bg-red-50 p-3 rounded-2xl text-center">
+                            <span class="block text-[10px] font-bold text-red-400 uppercase">Refugo</span>
                             <span class="text-xl font-black text-red-500">${m.refugo}</span>
                         </div>
                     </div>
@@ -296,9 +459,123 @@
             }).join('');
         }
 
-        // ================= RENDERIZADORES MAQUINA (KIOSK) =================
+        function renderListaProdutos() {
+            const container = document.getElementById('lista-produtos');
+            if(DATA.produtos.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">Nenhum produto cadastrado</div>';
+                return;
+            }
+            container.innerHTML = `
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-[10px] text-slate-400 uppercase font-black">
+                        <tr><th class="p-4">Produto</th><th class="p-4">Detalhes</th><th class="p-4 text-right">Ação</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${DATA.produtos.map((p, i) => `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4">
+                                <div class="font-bold text-slate-700">${p.nome}</div>
+                                <div class="text-[10px] font-bold text-blue-500 uppercase">${p.material}</div>
+                            </td>
+                            <td class="p-4 text-sm font-bold text-slate-500">
+                                ${p.peso}g | ${p.ciclo}s | ${p.cav} Cav.
+                            </td>
+                            <td class="p-4 text-right">
+                                <button onclick="removerItem('produtos', ${i})" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderListaEquipe() {
+            document.getElementById('lista-equipe').innerHTML = DATA.operadores.map((op, i) => `
+                <div class="bg-white p-4 rounded-[24px] border border-slate-100 flex justify-between items-center shadow-sm hover:border-blue-200 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center font-black">${op.charAt(0)}</div>
+                        <span class="font-bold text-slate-700">${op}</span>
+                    </div>
+                    <button onclick="removerItem('operadores', ${i})" class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>`).join('');
+        }
+
+        function renderListaOPs() {
+            const container = document.getElementById('lista-ops');
+            container.innerHTML = DATA.ops.slice().reverse().map((op, i) => {
+                const statusColor = op.status === 'aberta' ? 'border-l-blue-500' : 'border-l-slate-300 opacity-60';
+                return `
+                <div class="bg-white p-5 rounded-2xl border-l-4 ${statusColor} shadow-sm border border-slate-100 flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">O.P #${op.id}</span>
+                        <h4 class="font-bold text-slate-800 text-lg">${op.produto}</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-black text-2xl text-slate-800">${op.qtd}</span>
+                        <span class="text-[10px] uppercase font-bold text-slate-400">${op.status}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ================= FUNÇÕES DE CADASTRO =================
+        function addProduto() {
+            const nome = document.getElementById('prod-nome').value.trim();
+            if(!nome) return alert('Nome obrigatório');
+            
+            const novo = {
+                nome,
+                material: document.getElementById('prod-mat').value,
+                peso: document.getElementById('prod-peso').value,
+                ciclo: document.getElementById('prod-ciclo').value,
+                cav: document.getElementById('prod-cav').value,
+                cx: document.getElementById('prod-cx').value
+            };
+            
+            DATA.produtos.push(novo);
+            salvar(); renderTudo();
+            // Limpa campos
+            document.querySelectorAll('#view-produtos input').forEach(i => i.value = '');
+        }
+
+        function addOperador() {
+            const nome = document.getElementById('op-nome').value.trim();
+            if(nome) { 
+                DATA.operadores.push(nome); 
+                salvar(); renderListaEquipe(); 
+                document.getElementById('op-nome').value = ''; 
+            }
+        }
+
+        function criarOP() {
+            const prodNome = document.getElementById('op-produto').value;
+            const qtd = document.getElementById('op-qtd').value;
+            
+            if(!prodNome || !qtd) return alert("Preencha todos os campos");
+            
+            const novaOP = {
+                id: Math.floor(1000 + Math.random() * 9000), // ID curto de 4 digitos
+                produto: prodNome,
+                qtd: parseInt(qtd),
+                status: 'aberta',
+                data: new Date().toISOString()
+            };
+            
+            DATA.ops.push(novaOP);
+            salvar(); renderListaOPs();
+            alert("Ordem de Produção Gerada com Sucesso!");
+        }
+
+        function removerItem(lista, index) {
+            if(confirm("Deseja realmente remover este item?")) {
+                DATA[lista].splice(index, 1);
+                salvar(); renderTudo();
+            }
+        }
+
+        // ================= KIOSK / MÁQUINA =================
         function renderKiosk() {
-            if (currentUser === 'ADMIN') return;
+            if(currentUser === 'ADMIN') return;
             const m = DATA.maquinas[currentUser];
             
             document.getElementById('kiosk-maq-nome').innerText = m.nome;
@@ -306,136 +583,116 @@
             document.getElementById('kiosk-meta').innerText = m.op ? m.op.qtd : 0;
             document.getElementById('kiosk-real').innerText = m.prod;
 
-            // Cores dos botões conforme status
-            const btnStatus = document.getElementById('btn-status-maq');
-            if (m.status === 'rodando') {
-                btnStatus.innerHTML = '<i class="fa-solid fa-pause text-2xl mb-2"></i> PARAR';
-                btnStatus.className = "bg-yellow-400 active:bg-yellow-500 text-yellow-900 rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-yellow-200";
+            // Cores botões
+            const btn = document.getElementById('btn-status-maq');
+            if(m.status === 'rodando') {
+                btn.className = "bg-yellow-50 border-2 border-yellow-100 active:bg-yellow-100 text-yellow-700 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all group";
+                btn.innerHTML = '<i class="fa-solid fa-pause text-3xl mb-4"></i><span class="text-lg">PARAR</span>';
             } else {
-                btnStatus.innerHTML = '<i class="fa-solid fa-play text-2xl mb-2"></i> INICIAR';
-                btnStatus.className = "bg-green-500 active:bg-green-600 text-white rounded-[40px] font-black flex flex-col items-center justify-center shadow-lg shadow-green-200";
+                btn.className = "bg-green-50 border-2 border-green-100 active:bg-green-100 text-green-600 rounded-[40px] font-black flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-all group";
+                btn.innerHTML = '<i class="fa-solid fa-play text-3xl mb-4"></i><span class="text-lg">INICIAR</span>';
             }
 
-            // Select de OPs disponíveis
+            // Preenche Select de O.P (Apenas as abertas)
             const select = document.getElementById('kiosk-select-op');
-            select.innerHTML = '<option value="">Selecionar O.P...</option>' + 
+            // Salva seleção atual se houver
+            const valAtual = select.value;
+            select.innerHTML = '<option value="">Selecionar Nova O.P...</option>' + 
                 DATA.ops.filter(o => o.status === 'aberta').map(o => `<option value="${o.id}">#${o.id} - ${o.produto}</option>`).join('');
+            if(valAtual) select.value = valAtual;
         }
 
-        // ================= AÇÕES =================
-        function addProduto() {
-            const p = {
-                id: Date.now(),
-                nome: document.getElementById('prod-nome').value,
-                material: document.getElementById('prod-mat').value,
-                peso: document.getElementById('prod-peso').value,
-                ciclo: document.getElementById('prod-ciclo').value,
-                cav: document.getElementById('prod-cav').value,
-                cx: document.getElementById('prod-cx').value
-            };
-            if(!p.nome) return alert('Nome obrigatório');
-            DATA.produtos.push(p);
-            salvar(); renderTudo();
-            document.querySelectorAll('#view-produtos input').forEach(i => i.value = '');
-        }
-
-        function addOperador() {
-            const nome = document.getElementById('op-nome').value;
-            if(nome) { DATA.operadores.push(nome); salvar(); renderTudo(); document.getElementById('op-nome').value = ''; }
-        }
-
-        function criarOP() {
-            const op = {
-                id: Date.now().toString().slice(-6),
-                produto: document.getElementById('op-produto').value,
-                qtd: document.getElementById('op-qtd').value,
-                status: 'aberta',
-                criadaEm: new Date().toISOString()
-            };
-            if(!op.produto) return alert('Selecione um produto');
-            DATA.ops.push(op);
-            salvar(); renderTudo();
-            alert('Ordem criada! Disponível nas máquinas.');
+        function iniciarOPMaquina() {
+            const opId = document.getElementById('kiosk-select-op').value;
+            if(!opId) return alert("Selecione uma O.P na lista");
+            
+            const op = DATA.ops.find(o => o.id == opId);
+            const m = DATA.maquinas[currentUser];
+            
+            if(confirm(`Iniciar a produção de ${op.produto} na ${m.nome}? Isso zerará a contagem atual.`)) {
+                m.op = op;
+                m.prod = 0;
+                m.refugo = 0;
+                m.status = 'setup';
+                salvar(); renderKiosk();
+            }
         }
 
         function acaoMaquina(tipo) {
             const m = DATA.maquinas[currentUser];
+            
             if (tipo === 'parada') {
-                m.status = m.status === 'rodando' ? 'parada' : 'rodando';
+                m.status = (m.status === 'rodando') ? 'parada' : 'rodando';
             } else {
-                if (m.status !== 'rodando') return alert('Máquina parada! Inicie para produzir.');
-                if (!m.op) return alert('Sem O.P ativa!');
+                if (m.status !== 'rodando') return alert("A máquina precisa estar RODANDO para apontar produção.");
+                if (!m.op) return alert("Nenhuma O.P iniciada nesta máquina.");
+                
                 if (tipo === 'prod') m.prod++;
                 if (tipo === 'refugo') m.refugo++;
             }
             salvar(); renderKiosk();
         }
 
-        function iniciarOPMaquina() {
-            const opId = document.getElementById('kiosk-select-op').value;
-            if (!opId) return;
-            const op = DATA.ops.find(o => o.id == opId);
-            const m = DATA.maquinas[currentUser];
-            
-            m.op = op;
-            m.prod = 0;
-            m.refugo = 0;
-            m.status = 'setup'; // Inicia em setup
-            salvar(); renderKiosk();
-        }
-
-        // ================= AUXILIARES =================
-        function renderListaProdutos() {
-            document.getElementById('lista-produtos').innerHTML = `<table class="w-full text-left text-sm"><thead class="bg-slate-50 uppercase text-xs text-slate-400"><tr><th class="p-4">Produto</th><th class="p-4">Info</th><th class="p-4">Ação</th></tr></thead><tbody>
-                ${DATA.produtos.map((p, i) => `<tr class="border-t border-slate-100"><td class="p-4 font-bold">${p.nome}<br><span class="text-xs text-blue-500">${p.material}</span></td><td class="p-4">${p.peso}g | ${p.ciclo}s</td><td class="p-4"><button onclick="DATA.produtos.splice(${i},1);salvar();renderTudo()" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}
-            </tbody></table>`;
-        }
-
-        function renderListaEquipe() {
-            document.getElementById('lista-equipe').innerHTML = DATA.operadores.map((op, i) => `
-                <div class="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
-                    <span class="font-bold">${op}</span>
-                    <button onclick="DATA.operadores.splice(${i},1);salvar();renderTudo()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                </div>`).join('');
-        }
-
-        function renderListaOPs() {
-            document.getElementById('lista-ops').innerHTML = DATA.ops.map(op => `
-                <div class="bg-white p-4 rounded-xl border-l-4 ${op.status==='aberta'?'border-blue-500':'border-slate-300'} shadow-sm flex justify-between">
-                    <div><span class="text-[10px] font-bold text-slate-400">#${op.id}</span><h4 class="font-bold">${op.produto}</h4></div>
-                    <div class="text-right"><span class="block font-black text-xl">${op.qtd}</span><span class="text-[10px] uppercase font-bold text-slate-400">${op.status}</span></div>
-                </div>`).join('');
-        }
-
-        function renderSelects() {
-            const html = '<option value="">Selecione...</option>' + DATA.produtos.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+        // ================= UTILITÁRIOS E GRÁFICOS =================
+        function popularSelects() {
             const sel = document.getElementById('op-produto');
-            if(sel) sel.innerHTML = html;
+            if(sel && DATA.produtos.length > 0) {
+                sel.innerHTML = '<option value="">Selecione...</option>' + 
+                    DATA.produtos.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+            }
         }
 
         function autoPreencherOP() {
             const nome = document.getElementById('op-produto').value;
-            const p = DATA.produtos.find(i => i.nome === nome);
-            const info = document.getElementById('op-info');
+            const p = DATA.produtos.find(x => x.nome === nome);
+            const box = document.getElementById('op-info');
+            const txt = document.getElementById('op-info-texto');
+            
             if(p) {
-                info.classList.remove('hidden');
-                info.innerText = `Peso: ${p.peso}g | Ciclo: ${p.ciclo}s | Cav: ${p.cav}`;
-            } else { info.classList.add('hidden'); }
+                box.classList.remove('hidden');
+                txt.innerText = `${p.material} | ${p.peso}g | Ciclo: ${p.ciclo}s`;
+            } else {
+                box.classList.add('hidden');
+            }
         }
 
-        // Gráficos (Simples para exemplo)
-        let chartProd = null;
+        let chart1, chart2;
         function renderGraficos() {
-            if(chartProd) chartProd.destroy();
-            const ctx = document.getElementById('grafico-prod');
-            if(!ctx) return;
-            chartProd = new Chart(ctx, {
+            const ctx1 = document.getElementById('grafico-prod');
+            const ctx2 = document.getElementById('grafico-refugo');
+            if(!ctx1 || !ctx2) return;
+
+            const labels = DATA.maquinas.map(m => m.nome);
+            const prods = DATA.maquinas.map(m => m.prod);
+            const refugos = DATA.maquinas.map(m => m.refugo);
+
+            if(chart1) chart1.destroy();
+            if(chart2) chart2.destroy();
+
+            chart1 = new Chart(ctx1, {
                 type: 'bar',
                 data: {
-                    labels: ['M1', 'M2', 'M3', 'M4'],
-                    datasets: [{ label: 'Peças', data: DATA.maquinas.map(m => m.prod), backgroundColor: '#2563eb', borderRadius: 10 }]
+                    labels: labels,
+                    datasets: [{
+                        label: 'Peças Produzidas',
+                        data: prods,
+                        backgroundColor: '#2563eb',
+                        borderRadius: 8
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} } }
+            });
+
+            chart2 = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: refugos,
+                        backgroundColor: ['#ef4444', '#f87171', '#fca5a5', '#fecaca']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
     </script>
