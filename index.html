@@ -772,8 +772,10 @@
             historico = conteudo.historico || []; 
             if(conteudo.dadosMensais) dadosMensais = conteudo.dadosMensais;
             if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra;
-            if (data.conteudo.pigmentos) pigmentosGlobais = data.conteudo.pigmentos;
-            setTimeout(renderizarOpcoesPigmentos, 500); // Carrega a lista de pigmentos na tela
+            if(data.conteudo.pigmentos) {
+    pigmentosGlobais = data.conteudo.pigmentos;
+    renderizarOpcoesPigmentos();
+}
             
             // Atualiza timestamp local para saber se estamos atualizados
             dadosLocaisLastUpdate = conteudo.lastUpdateTimestamp || 0;
@@ -2027,15 +2029,14 @@
             saveTimeout = setTimeout(async () => { sanitizarDados(); await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000); 
         }
 
-        // === SUBSTITUA A SUA FUNÇÃO salvarGeral POR ESTA ===
-async function salvarGeral() { 
+        async function salvarGeral() { 
     await sb.from('sistema').update({ 
         conteudo: { 
             maquinas, 
             cores: coresGlobais, 
             operadores: operadoresGlobais, 
             produtos: produtosGlobais,
-            pigmentos: pigmentosGlobais, // <--- ADICIONADO AQUI
+            pigmentos: pigmentosGlobais, // <--- ADICIONE ESSA LINHA
             historico, 
             dadosMensais, 
             modoHoraExtra, 
@@ -2070,9 +2071,71 @@ async function salvarGeral() {
         </div>
     </div>
 </div>
+
+    <script>
+        // --- VARIÁVEL GLOBAL ---
+let pigmentosGlobais = [];
+
+// --- FUNÇÕES ---
+function abrirModalPigmentos() {
+    renderizarListaGerenciaPigmentos();
+    document.getElementById('modal-pigmentos').classList.remove('hidden');
+}
+
+function adicionarNovoPigmento() {
+    let nome = document.getElementById('novo-pigmento-nome').value;
+    if(!nome) return alert("Digite um nome!");
+    
+    pigmentosGlobais.push(nome);
+    document.getElementById('novo-pigmento-nome').value = "";
+    
+    salvarGeral(); // Tenta salvar
+    renderizarListaGerenciaPigmentos();
+    renderizarOpcoesPigmentos();
+}
+
+function removerPigmento(index) {
+    if(confirm("Excluir?")) {
+        pigmentosGlobais.splice(index, 1);
+        salvarGeral();
+        renderizarListaGerenciaPigmentos();
+        renderizarOpcoesPigmentos();
+    }
+}
+
+function renderizarListaGerenciaPigmentos() {
+    let html = "";
+    pigmentosGlobais.forEach((pig, index) => {
+        html += `<li class="flex justify-between bg-slate-50 p-3 rounded border">
+                    <b>${pig}</b>
+                    <button onclick="removerPigmento(${index})" class="text-red-500">Excluir</button>
+                 </li>`;
+    });
+    document.getElementById('lista-pigmentos-gerenciar').innerHTML = html || "Vazio";
+}
+
+function renderizarOpcoesPigmentos() {
+    let select = document.getElementById('tec-pig-select');
+    if(!select) return;
+    let atual = select.value;
+    
+    let html = `<option value="0">Sem Pigmento</option>`;
+    pigmentosGlobais.forEach(pig => {
+        html += `<option value="${pig}">${pig}</option>`;
+    });
+    
+    select.innerHTML = html;
+    select.value = atual;
+}
+
+function aoSelecionarPigmento() {
+    calcularPrevisao();
+}
+    </script>
     
 </body>
 </html>
+
 
 
 
