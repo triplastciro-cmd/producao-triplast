@@ -2045,18 +2045,21 @@
     </script>
 
         <script>
-// === FUNÇÃO DE CÁLCULO (FORMATO LIMPO: 2,2 SEM ZEROS EXTRAS) ===
+// === FUNÇÃO FINAL: MATERIAL (Base) e PIGMENTO (Calculado) ===
 function calcularPrevisao() {
     try {
-        // 1. PEGAR DADOS DA TELA
+        // --- 1. PEGAR OS DADOS DA TELA ---
         let elQtd = document.getElementById('f-qtd');
         let qtdMeta = elQtd ? parseFloat(elQtd.value) : 0; 
 
         let pesoPecaGramas = parseFloat(document.getElementById('tec-peso').value) || 0; 
         let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
         let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
+        
+        // Pega a porcentagem (Ex: 2). Se o campo estiver vazio, considera 0.
         let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
+        // Se não tiver meta ou peso da peça, zera os resultados
         if (!qtdMeta || !pesoPecaGramas) {
             document.getElementById('out-tempo').innerText = "-";
             document.getElementById('out-material').innerText = "-";
@@ -2064,16 +2067,19 @@ function calcularPrevisao() {
             return;
         }
 
-        // === CÁLCULOS ===
-        
-        // Material Total (em KG)
+        // --- 2. CÁLCULO DO MATERIAL (A BASE) ---
+        // Ex: 1250 peças * 20g = 25.000g = 25kg
+        // Esse valor NÃO muda se você mexer no pigmento. Ele é fixo pela peça.
         let pesoTotalMaterial = (qtdMeta * pesoPecaGramas) / 1000;
 
-        // Pigmento (em KG)
-        let fator = (porcentagem > 0) ? (porcentagem / 100) : 0;
+        // --- 3. CÁLCULO DO PIGMENTO (VARIÁVEL) ---
+        // AQUI ESTÁ A MÁGICA:
+        // Se a porcentagem for 0, o fator é 0, logo o resultado é 0.
+        // Se a porcentagem subir (ex: 2), a conta faz 25 * 0.02.
+        let fator = porcentagem / 100;
         let pesoPigmento = pesoTotalMaterial * fator;
 
-        // Tempo
+        // --- 4. CÁLCULO DO TEMPO ---
         let totalCiclos = qtdMeta / cavidades;
         let totalSegundos = totalCiclos * ciclo;
         let totalHoras = totalSegundos / 3600;
@@ -2081,24 +2087,28 @@ function calcularPrevisao() {
         let m = Math.round((totalHoras - h) * 60);
         let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
 
-        // === EXIBIÇÃO CORRIGIDA (SEM ZEROS EXTRAS) ===
+        // --- 5. MOSTRAR NA TELA (Sem zeros desnecessários) ---
         
         document.getElementById('out-tempo').innerText = textoTempo;
 
-        // MATERIAL: Mantém o "kg" e 2 casas fixas (Padrão visual)
-        // Ex: "25,00 kg"
+        // MATERIAL: Exibe com 2 casas e vírgula (Ex: "25,00 kg")
         document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
 
-        // PIGMENTO: Remove zeros à direita
-        // Truque: parseFloat remove os zeros extras (2.200 vira 2.2)
-        let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3)); 
+        // PIGMENTO: Exibe só o número, sem KG.
+        // O parseFloat remove zeros à direita (Ex: 0.500 vira 0.5)
+        let pigmentoFormatado = parseFloat(pesoPigmento.toFixed(3));
         
-        // Exibe trocando ponto por vírgula (Ex: "2,2")
-        document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
+        // Se o resultado for Zero, mostra "0"
+        // Se for 0.5, mostra "0,5"
+        document.getElementById('out-pigmento').innerText = pigmentoFormatado.toString().replace('.', ',');
 
-        // Preenche input original se existir
+        // --- 6. PREENCHER CAMPOS DO SISTEMA ---
+        // Joga os valores para os inputs de texto do formulário original
         let campoMatOriginal = document.getElementById('f-material-qtd');
         if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        
+        let campoPorcOriginal = document.getElementById('f-porcentagem');
+        if(campoPorcOriginal) campoPorcOriginal.value = porcentagem + "%";
 
     } catch (e) {
         console.log(e);
@@ -2108,6 +2118,7 @@ function calcularPrevisao() {
         
 </body>
 </html>
+
 
 
 
