@@ -340,12 +340,12 @@
             </div>
         </header>
 
-        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto justify-center">
-            <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
-            <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
-            <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
-            <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
-        </nav>
+        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex flex-wrap gap-2 justify-center">
+        <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md whitespace-nowrap">🖥️ PAINEL</button>
+        <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md whitespace-nowrap">📋 GESTÃO O.P</button>
+        <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md whitespace-nowrap">📊 GRÁFICOS</button>
+        <button onclick="trocarAba('produtos')" id="btn-produtos" class="tab-btn shadow-md whitespace-nowrap">📦 PRODUTOS</button>
+    </nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
             <div id="grid-maquinas"></div>
@@ -431,14 +431,82 @@
                 
                 <div id="container-filas" class="space-y-6"></div>
 
-                <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8 border border-slate-100">
-                    <h2 class="text-2xl font-black mb-8 border-b pb-4 text-slate-700">📦 GERENCIAR CATÁLOGO DE PRODUTOS</h2>
-                    <div class="flex gap-4 mb-8">
-                        <input type="text" id="novo-produto-catalog" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Produto...">
-                        <button onclick="gerenciarProdutoCatalog('add')" class="bg-blue-600 hover:bg-blue-500 text-white px-8 rounded-xl font-black text-2xl shadow-md transition-colors">+</button>
-                    </div>
-                    <div id="lista-produtos-config" class="flex flex-wrap gap-3"></div>
-                </div>
+                <div id="aba-produtos" class="aba-conteudo max-w-6xl mx-auto px-4">
+    <div class="mb-6 text-center">
+        <h2 class="text-2xl font-black text-slate-800 uppercase">Catálogo de Produtos</h2>
+        <p class="text-slate-500 text-sm">Cadastro Técnico Completo</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 mb-8">
+        <h3 class="font-bold text-slate-700 border-b pb-2 mb-4 flex items-center gap-2">
+            <i class="fas fa-cube text-blue-600"></i> Novo Produto
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Produto</label>
+                <input type="text" id="cad-nome" placeholder="Ex: Pote 250ml" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Material</label>
+                <input type="text" id="cad-material" placeholder="Ex: PS Cristal" list="lista-materiais-sugestao" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
+                <datalist id="lista-materiais-sugestao">
+                    <option value="PS Cristal"><option value="PP"><option value="PEAD"><option value="ABS">
+                </datalist>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Pigmento (Tipo)</label>
+                <input type="text" id="cad-pig-tipo" placeholder="Ex: Todos de PS" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Peso Peça (g)</label>
+                <input type="number" id="cad-peso" step="0.001" placeholder="0.047" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-blue-600 outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ciclo (Seg)</label>
+                <input type="number" id="cad-ciclo" step="0.1" placeholder="20.0" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-blue-600 outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cavidades</label>
+                <input type="number" id="cad-cav" placeholder="2" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-blue-600 outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">% Pigmento</label>
+                <input type="number" id="cad-pig-porc" step="0.01" placeholder="2.0" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-orange-500 outline-none focus:border-orange-500">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Saquinho</label>
+                <input type="text" id="cad-saquinho" placeholder="17x27" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Qtd Caixa</label>
+                <input type="number" id="cad-cx" placeholder="100" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500">
+            </div>
+            <div class="md:col-span-2 flex items-end">
+                <button onclick="salvarNovoProduto()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase shadow-lg shadow-blue-200 transition-all">
+                    <i class="fas fa-save mr-2"></i> Salvar Produto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold">
+                <tr>
+                    <th class="p-4">Produto</th>
+                    <th class="p-4 hidden md:table-cell">Detalhes Técnicos</th>
+                    <th class="p-4 hidden md:table-cell">Embalagem</th>
+                    <th class="p-4 text-right">Ação</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-produtos-lista" class="divide-y divide-slate-100 text-sm text-slate-700">
+                </tbody>
+        </table>
+    </div>
+</div>
 
                 <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
                     <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b pb-4 gap-4">
@@ -1080,15 +1148,29 @@
         }
 
         function trocarAba(id) {
-            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('aba-' + id).classList.add('aba-ativa');
-            document.getElementById('btn-' + id).classList.add('active');
-            
-            if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
-            if(id === 'apontamento') { renderApontamento(); }
-            if(id === 'lista') { renderListaOPs(); renderHistorico(); renderOperadoresConfig(); renderProdutosConfig(); }
-        }
+    // 1. Limpa tudo
+    document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+    // 2. Ativa a aba clicada
+    const aba = document.getElementById('aba-' + id);
+    const btn = document.getElementById('btn-' + id);
+    if(aba) aba.classList.add('aba-ativa');
+    if(btn) btn.classList.add('active');
+    
+    // 3. Carrega os dados específicos
+    if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+    if(id === 'apontamento') { renderApontamento(); }
+    if(id === 'lista') { renderListaOPs(); renderHistorico(); }
+    
+    // === NOVA ABA PRODUTOS ===
+    if(id === 'produtos') { renderizarTabelaProdutos(); }
+    
+    // === ABA OPERADORES ===
+    if(id === 'operadores') { 
+        if(typeof renderizarListaOperadores === 'function') renderizarListaOperadores();
+    }
+}
 
         function processarTurnoAuto() {
             if (manualOverride) return;
@@ -1996,6 +2078,86 @@
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
     </script>
+
+    <script>
+        // === LÓGICA DA ABA DE PRODUTOS ===
+
+function salvarNovoProduto() {
+    const nome = document.getElementById('cad-nome').value;
+    if(!nome) return alert("Digite o nome do produto!");
+
+    const novoProduto = {
+        id: Date.now(),
+        nome: nome,
+        material: document.getElementById('cad-material').value,
+        pigmentoTipo: document.getElementById('cad-pig-tipo').value,
+        peso: parseFloat(document.getElementById('cad-peso').value) || 0,
+        ciclo: parseFloat(document.getElementById('cad-ciclo').value) || 0,
+        cavidades: parseFloat(document.getElementById('cad-cav').value) || 1,
+        porcPigmento: parseFloat(document.getElementById('cad-pig-porc').value) || 0,
+        saquinho: document.getElementById('cad-saquinho').value,
+        qtdCaixa: parseFloat(document.getElementById('cad-cx').value) || 0
+    };
+
+    // Adiciona na lista global e salva
+    if(!produtosGlobais) produtosGlobais = [];
+    produtosGlobais.push(novoProduto);
+    
+    salvarAutomatico();
+    renderizarTabelaProdutos();
+    
+    // Limpa campos
+    document.getElementById('cad-nome').value = '';
+    document.getElementById('cad-peso').value = '';
+    alert("Produto cadastrado!");
+}
+
+function renderizarTabelaProdutos() {
+    const tbody = document.getElementById('tabela-produtos-lista');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+
+    if(!produtosGlobais) produtosGlobais = [];
+
+    produtosGlobais.forEach((p, index) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition-colors";
+        tr.innerHTML = `
+            <td class="p-4">
+                <div class="font-bold text-slate-800">${p.nome}</div>
+                <div class="text-xs text-slate-500">${p.material || '-'} | ${p.pigmentoTipo || '-'}</div>
+            </td>
+            <td class="p-4 hidden md:table-cell">
+                <div class="text-xs">
+                    <span class="font-bold text-blue-600">Peso:</span> ${p.peso}g <br>
+                    <span class="font-bold text-blue-600">Ciclo:</span> ${p.ciclo}s <br>
+                    <span class="font-bold text-orange-500">Pig:</span> ${p.porcPigmento}%
+                </div>
+            </td>
+            <td class="p-4 hidden md:table-cell text-xs">
+                Sac: <b>${p.saquinho || '-'}</b><br>
+                Cx: <b>${p.qtdCaixa || '-'}</b>
+            </td>
+            <td class="p-4 text-right">
+                <button onclick="excluirProduto(${index})" class="text-red-400 hover:text-red-600 font-bold text-xs uppercase">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function excluirProduto(index) {
+    if(confirm("Tem certeza?")) {
+        produtosGlobais.splice(index, 1);
+        salvarAutomatico();
+        renderizarTabelaProdutos();
+    }
+}
+    </script>
+    
 </body>
 </html>
+
 
