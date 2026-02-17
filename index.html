@@ -399,45 +399,47 @@
     </div>
 
     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-2 shadow-sm">
-        <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
-            <i class="fas fa-calculator text-blue-600"></i>
-            <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo Automático de Insumos</h4>
+    <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
+        <i class="fas fa-calculator text-blue-600"></i>
+        <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo de Insumos</h4>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
+            <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
         </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase">PESO PEÇA (g)</label>
-                <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
-                <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
-                <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-500 uppercase">% PIGMENTO</label>
-                <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 2" value="2" oninput="calcularPrevisao()">
-            </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
+            <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
         </div>
-
-        <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-            <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo Produção</span>
-                <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
-            </div>
-            <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                <span class="block text-[9px] text-slate-400 font-bold uppercase">Peso Material</span>
-                <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
-            </div>
-            <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                <span class="block text-[9px] text-slate-400 font-bold uppercase">Peso Pigmento</span>
-                <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
-            </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
+            <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">% PIGMENTO</label>
+            <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="0" value="0" oninput="calcularPrevisao()">
         </div>
     </div>
+
+    <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo Produção</span>
+            <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
+        </div>
+        
+        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Material Total</span>
+            <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
+        </div>
+        
+        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Qtd. Pigmento</span>
+            <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
+        </div>
+    </div>
+</div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
         <div class="md:col-span-2 flex items-center">
             <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
@@ -2044,11 +2046,10 @@
         carregarBanco();
     </script>
 
-        <script>
-// === FUNÇÃO FINAL: MATERIAL (Base) e PIGMENTO (Calculado) ===
+        // === PASSO 2: CÁLCULO INTELIGENTE (COLE NO FINAL DO ARQUIVO) ===
 function calcularPrevisao() {
     try {
-        // --- 1. PEGAR OS DADOS DA TELA ---
+        // 1. PEGAR DADOS DA TELA
         let elQtd = document.getElementById('f-qtd');
         let qtdMeta = elQtd ? parseFloat(elQtd.value) : 0; 
 
@@ -2056,10 +2057,10 @@ function calcularPrevisao() {
         let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
         let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
         
-        // Pega a porcentagem (Ex: 2). Se o campo estiver vazio, considera 0.
+        // Pega a porcentagem. Se estiver vazia, assume 0.
         let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
-        // Se não tiver meta ou peso da peça, zera os resultados
+        // Se faltar dados principais, zera tudo
         if (!qtdMeta || !pesoPecaGramas) {
             document.getElementById('out-tempo').innerText = "-";
             document.getElementById('out-material').innerText = "-";
@@ -2067,19 +2068,18 @@ function calcularPrevisao() {
             return;
         }
 
-        // --- 2. CÁLCULO DO MATERIAL (A BASE) ---
-        // Ex: 1250 peças * 20g = 25.000g = 25kg
-        // Esse valor NÃO muda se você mexer no pigmento. Ele é fixo pela peça.
+        // === CÁLCULOS ===
+        
+        // Material Total (KG) -> Quantidade * Peso Peça
         let pesoTotalMaterial = (qtdMeta * pesoPecaGramas) / 1000;
 
-        // --- 3. CÁLCULO DO PIGMENTO (VARIÁVEL) ---
-        // AQUI ESTÁ A MÁGICA:
-        // Se a porcentagem for 0, o fator é 0, logo o resultado é 0.
-        // Se a porcentagem subir (ex: 2), a conta faz 25 * 0.02.
-        let fator = porcentagem / 100;
-        let pesoPigmento = pesoTotalMaterial * fator;
+        // Pigmento -> Só calcula se a porcentagem for maior que 0
+        let pesoPigmento = 0;
+        if (porcentagem > 0) {
+            pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
+        }
 
-        // --- 4. CÁLCULO DO TEMPO ---
+        // Tempo
         let totalCiclos = qtdMeta / cavidades;
         let totalSegundos = totalCiclos * ciclo;
         let totalHoras = totalSegundos / 3600;
@@ -2087,37 +2087,33 @@ function calcularPrevisao() {
         let m = Math.round((totalHoras - h) * 60);
         let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
 
-        // --- 5. MOSTRAR NA TELA (Sem zeros desnecessários) ---
+        // === EXIBIÇÃO ===
         
         document.getElementById('out-tempo').innerText = textoTempo;
 
-        // MATERIAL: Exibe com 2 casas e vírgula (Ex: "25,00 kg")
+        // MATERIAL: Exibe "25,00 kg"
         document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
 
-        // PIGMENTO: Exibe só o número, sem KG.
-        // O parseFloat remove zeros à direita (Ex: 0.500 vira 0.5)
-        let pigmentoFormatado = parseFloat(pesoPigmento.toFixed(3));
-        
-        // Se o resultado for Zero, mostra "0"
-        // Se for 0.5, mostra "0,5"
-        document.getElementById('out-pigmento').innerText = pigmentoFormatado.toString().replace('.', ',');
+        // PIGMENTO: Exibe "0,5" (Sem kg, sem zeros extras)
+        let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3));
+        document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
 
-        // --- 6. PREENCHER CAMPOS DO SISTEMA ---
-        // Joga os valores para os inputs de texto do formulário original
+        // Preenche campos do formulário original
         let campoMatOriginal = document.getElementById('f-material-qtd');
         if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
         
+        // Só preenche a porcentagem se for maior que 0
         let campoPorcOriginal = document.getElementById('f-porcentagem');
-        if(campoPorcOriginal) campoPorcOriginal.value = porcentagem + "%";
+        if(campoPorcOriginal) campoPorcOriginal.value = (porcentagem > 0) ? porcentagem + "%" : "";
 
     } catch (e) {
         console.log(e);
     }
 }
-</script>
         
 </body>
 </html>
+
 
 
 
