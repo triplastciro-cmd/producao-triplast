@@ -461,13 +461,41 @@
         </div>
     </div>
 </div>
-                <<div id="aba-produtos" class="aba-conteudo px-4">
+                <div id="aba-produtos" class="aba-conteudo px-4">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 mb-8">
+            <h2 class="text-xl font-black mb-6 text-slate-700 uppercase italic">📦 Cadastro de Produtos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Nome do Produto</label>
+                    <input type="text" id="cad-nome" placeholder="Ex: Pote 250ml" class="w-full p-3 bg-slate-50 border rounded-xl font-bold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Peso (g)</label>
+                    <input type="number" id="cad-peso" step="0.001" class="w-full p-3 bg-slate-50 border rounded-xl font-bold text-blue-600">
+                </div>
+                <button onclick="salvarNovoProduto()" class="bg-blue-700 text-white py-3 rounded-xl font-black uppercase mt-6">Salvar Produto</button>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-slate-800 text-white text-xs uppercase">
+                    <tr>
+                        <th class="p-4">Produto</th>
+                        <th class="p-4 text-right">Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-produtos-lista" class="divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
     </div>
+</div>
 
 <div id="aba-equipe" class="aba-conteudo px-4">
     <div class="max-w-4xl mx-auto">
         <div class="bg-white p-8 rounded-3xl shadow-2xl mt-8">
-            <h2 class="text-2xl font-black mb-8 border-b pb-4">👷 GERENCIAR OPERADORES</h2>
+            <h2 class="text-2xl font-black mb-8 border-b pb-4 text-slate-700">👷 EQUIPE DE PRODUÇÃO</h2>
             <div class="flex gap-4 mb-8">
                 <input type="text" id="novo-operador" class="flex-1 p-4 bg-slate-50 border rounded-xl font-bold" placeholder="Nome do Operador...">
                 <button onclick="gerenciarOperador('add')" class="bg-green-600 hover:bg-green-500 text-white px-8 rounded-xl font-black text-2xl shadow-md">+</button>
@@ -1996,5 +2024,6 @@
     </script>
 </body>
 </html>
+
 
 
