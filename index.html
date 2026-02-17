@@ -94,42 +94,151 @@
     </main>
 
     <script>
-        // LOGIN SIMPLES PARA TESTE (PODE MUDAR DEPOIS)
+        // --- CONFIGURAÇÃO SUPABASE ---
+        // IMPORTANTE: Insira aqui as suas chaves originais que estavam no outro arquivo
+        const SB_URL = 'SUA_URL_AQUI';
+        const SB_KEY = 'SUA_KEY_AQUI';
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        // VARIÁVEIS DE ESTADO
+        let maquinas = [];
+        let produtosGlobais = [];
+        let operadoresGlobais = [];
+        let historico = [];
+        let saveTimeout = null;
+
+        // --- SISTEMA DE LOGIN ---
         function validaLogin() {
             const pass = document.getElementById('pass-code').value;
-            if(pass === '123') { // Defina sua senha aqui
-                document.getElementById('login-screen').classList.add('hidden');
+            if(pass === '123') { // Senha padrão
+                document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-sidebar').classList.remove('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
+                carregarDadosIniciais();
             } else {
-                alert("Senha Incorreta!");
+                alert("Senha incorreta!");
             }
         }
 
-        function showView(id) {
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById('view-' + id).classList.add('active');
-            document.getElementById('nav-' + id).classList.add('active');
-            
-            // Atualiza títulos
-            const titles = {
-                monitor: ['Painel Geral', 'Status das injetoras em tempo real'],
-                ops: ['Gestão de O.P', 'Controle de ordens e fichas técnicas'],
-                produtos: ['Catálogo de Produtos', 'Engenharia e especificações técnicas'],
-                equipe: ['Gestão de Equipe', 'Cadastro de operadores e turnos'],
-                graficos: ['Relatórios e Performance', 'Análise de OEE e Produtividade']
-            };
-            document.getElementById('view-title').innerText = titles[id][0];
-            document.getElementById('view-subtitle').innerText = titles[id][1];
+        // --- CARREGAMENTO DE DADOS ---
+        async function carregarDadosIniciais() {
+            try {
+                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                if (data && data.conteudo) {
+                    const c = data.conteudo;
+                    maquinas = c.maquinas || [];
+                    produtosGlobais = c.produtos || [];
+                    operadoresGlobais = c.operadores || [];
+                    historico = c.historico || [];
+                    
+                    renderMaquinas();
+                    popularSelectsOP();
+                }
+            } catch (err) {
+                console.error("Erro ao carregar:", err);
+            }
         }
 
-        // Relógio Realtime
+        // --- RENDERIZAÇÃO DAS MÁQUINAS (DESIGN MODERNO) ---
+        function renderMaquinas() {
+            const grid = document.getElementById('grid-maquinas');
+            grid.innerHTML = maquinas.map((m, index) => {
+                const progresso = m.opativa ? Math.min(((m.produzido || 0) / (m.opativa.qtd || 1)) * 100, 100).toFixed(1) : 0;
+                const statusColor = m.status === 'rodando' ? 'text-green-500' : 'text-red-500';
+                
+                return `
+                <div class="glass p-6 rounded-[32px] shadow-sm border border-white hover:shadow-xl transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-black text-slate-800 text-xl tracking-tighter uppercase">${m.nome}</h3>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${m.opativa ? m.opativa.produto : 'SEM O.P ATIVA'}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-current ${statusColor} animate-pulse"></span>
+                            <span class="text-[10px] font-black uppercase ${statusColor}">${m.status || 'PARADA'}</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-2xl p-4 mb-4">
+                        <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-2">
+                            <span>Progresso</span>
+                            <span>${progresso}%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-600 transition-all duration-500" style="width: ${progresso}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div class="bg-slate-800 text-white p-3 rounded-2xl text-center">
+                            <p class="text-[8px] font-bold opacity-50 uppercase">Produzido</p>
+                            <p class="text-xl font-black">${m.produzido || 0}</p>
+                        </div>
+                        <div class="bg-red-50 text-red-600 p-3 rounded-2xl text-center border border-red-100">
+                            <p class="text-[8px] font-bold opacity-70 uppercase">Refugo</p>
+                            <p class="text-xl font-black">${m.refugo || 0}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="apontarProducao(${index})" class="flex-1 bg-blue-600 text-white p-3 rounded-xl font-bold text-xs">+ PRODUÇÃO</button>
+                        <button onclick="abrirConfigMaquina(${index})" class="w-12 bg-slate-100 text-slate-400 p-3 rounded-xl hover:bg-slate-800 hover:text-white transition-all">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // --- FUNÇÕES DE SALVAMENTO ---
+        async function salvarGeral() {
+            const payload = {
+                maquinas, 
+                produtos: produtosGlobais, 
+                operadores: operadoresGlobais, 
+                historico,
+                lastUpdate: Date.now()
+            };
+            
+            const { error } = await sb.from('sistema').update({ conteudo: payload }).eq('id', 1);
+            if(!error) {
+                document.getElementById('db-status').innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full"></span> Sincronizado';
+            }
+        }
+
+        function agendarSalvamento() {
+            document.getElementById('db-status').innerHTML = '<span class="w-2 h-2 bg-yellow-500 rounded-full animate-bounce"></span> Salvando...';
+            if(saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(salvarGeral, 2000);
+        }
+
+        // --- LOGICA DE APONTAMENTO ---
+        function apontarProducao(idx) {
+            if(!maquinas[idx].opativa) return alert("Inicie uma O.P nesta máquina primeiro!");
+            maquinas[idx].produzido = (maquinas[idx].produzido || 0) + 1;
+            renderMaquinas();
+            agendarSalvamento();
+        }
+
+        // --- INICIALIZADORES ---
+        function popularSelectsOP() {
+            const select = document.getElementById('op-produto');
+            if(select) {
+                select.innerHTML = '<option value="">SELECIONE UM PRODUTO...</option>' + 
+                produtosGlobais.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+            }
+        }
+
+        // Relógio e Autoload
         setInterval(() => {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('pt-br');
         }, 1000);
+
     </script>
 </body>
 </html>
+</body>
+</html>
+
