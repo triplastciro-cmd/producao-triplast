@@ -749,20 +749,62 @@
         // ==========================================================
         
         // Função principal de carregamento inicial
-        async function carregarBanco() {
-            const { data } = await sb.from('sistema').select('*').eq('id', 1).single();
-            if (data) {
-                aplicarDadosDoServidor(data.conteudo);
-                iniciarRelogio();
-                
-                // Iniciar o Loop de Sincronização (Polling)
-                setInterval(sincronizarComServidor, 3000); // Verifica a cada 3 segundos
-
-                document.getElementById('loading-spinner').style.display = 'none';
-                document.getElementById('loading-action').classList.remove('hidden');
-                document.getElementById('loading-action').classList.add('flex');
-            }
+        // === FUNÇÃO CARREGAR BANCO (CORRIGIDA E COM PIGMENTOS) ===
+async function carregarBanco() {
+    try {
+        // 1. Busca os dados no Supabase
+        let { data, error } = await sb.from('sistema').select('*').eq('id', 1);
+        
+        if (error) {
+            console.error("Erro ao baixar do banco:", error);
+            return;
         }
+
+        // 2. Se vieram dados, aplica no sistema
+        if (data && data.length > 0) {
+            let conteudo = data[0].conteudo; // Pega o conteúdo salvo
+
+            // --- Carrega Máquinas ---
+            if (conteudo.maquinas) {
+                maquinas = conteudo.maquinas;
+                renderizarMaquinas();
+            }
+
+            // --- Carrega Produtos ---
+            if (conteudo.produtos) {
+                produtosGlobais = conteudo.produtos;
+                atualizarListaProdutos(); // Atualiza os selects de produtos
+            }
+
+            // --- Carrega Operadores ---
+            if (conteudo.operadores) {
+                operadoresGlobais = conteudo.operadores;
+            }
+
+            // --- Carrega Histórico ---
+            if (conteudo.historico) {
+                historico = conteudo.historico;
+                atualizarTabelaHistorico();
+            }
+
+            // --- CARREGA OS PIGMENTOS (AQUI ESTAVA O ERRO) ---
+            if (conteudo.pigmentos) {
+                pigmentosGlobais = conteudo.pigmentos;
+                // Espera um pouquinho para garantir que a tela carregou
+                setTimeout(() => {
+                    if(typeof renderizarOpcoesPigmentos === 'function') {
+                        renderizarOpcoesPigmentos();
+                    }
+                }, 500);
+            }
+            
+            console.log("Banco carregado com sucesso!");
+        }
+
+    } catch (e) {
+        console.error("Erro grave no carregarBanco:", e);
+    }
+}
 
         function aplicarDadosDoServidor(conteudo) {
             maquinas = conteudo.maquinas;
@@ -2135,6 +2177,7 @@ function aoSelecionarPigmento() {
     
 </body>
 </html>
+
 
 
 
