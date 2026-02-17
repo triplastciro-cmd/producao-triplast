@@ -1235,14 +1235,18 @@
             }
         
         function trocarAba(id) {
-    // Mantém sua lógica original de esconder/mostrar
+    // 1. Remove as classes ativas de todas as abas e botões
     document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+    // 2. Ativa a aba e o botão correto
+    const abaAlvo = document.getElementById('aba-' + id);
+    const btnAlvo = document.getElementById('btn-' + id);
     
-    document.getElementById('aba-' + id).classList.add('aba-ativa');
-    document.getElementById('btn-' + id).classList.add('active');
-    
-    // --- MANTÉM TODA SUA LÓGICA ORIGINAL ABAIXO ---
+    if (abaAlvo) abaAlvo.classList.add('aba-ativa');
+    if (btnAlvo) btnAlvo.classList.add('active');
+
+    // 3. Executa as funções específicas de cada aba (MANTENDO AS ORIGINAIS)
     if(id === 'graficos') { 
         atualizarResumoGlobalNumeros(); 
         iniciarGraficos(); 
@@ -1256,15 +1260,15 @@
         renderOperadoresConfig(); 
         renderProdutosConfig(); 
     }
-
-    // --- ADICIONA AS NOVAS REGRAS SEM APAGAR AS ANTERIORES ---
-    if (id === 'produtos') {
-        renderizarListaProdutosTecnica(); // Esta é a função nova que vamos usar
+    
+    // 4. Executa as funções das ABAS NOVAS
+    if(id === 'produtos') {
+        renderizarListaProdutosTecnica(); 
     }
-    if (id === 'equipe') {
-        renderOperadoresConfig(); // Reutiliza sua função de operadores na aba nova
+    if(id === 'equipe') {
+        renderOperadoresConfig(); 
     }
-}}
+}
 
         function processarTurnoAuto() {
             if (manualOverride) return;
@@ -2200,4 +2204,5 @@
     
 </body>
 </html>
+
 
