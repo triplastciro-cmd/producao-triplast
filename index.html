@@ -358,7 +358,9 @@
                     <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)</h2>
                     
                     <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
-    <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)</h2>
+    <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2">
+        <i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)
+    </h2>
     
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
         <div class="md:col-span-1">
@@ -369,13 +371,13 @@
             <label class="text-[10px] font-bold text-slate-400 uppercase">Nº O.P</label>
             <input type="text" id="f-op" placeholder="Ex: 12345" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
         </div>
-            <div class="md:col-span-1">
+        <div class="md:col-span-1">
             <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
             <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
         </div>
-            <div class="md:col-span-1">
+        <div class="md:col-span-1">
             <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all">
+            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="Ex: 5000" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all">
         </div>
     </div>
 
@@ -390,9 +392,9 @@
             <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
             <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
         </div>
-            <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
-            <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+        <div class="md:col-span-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material (Kg)</label>
+            <input type="text" id="f-material-qtd" placeholder="Automático..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
         </div>
     </div>
 
@@ -446,7 +448,7 @@
         </div>
         <div class="md:col-span-1">
             <label class="text-[10px] font-bold text-slate-400 uppercase">Porcentagem (%)</label>
-            <input type="text" id="f-porcentagem" placeholder="Ex: 2%" class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
+            <input type="text" id="f-porcentagem" placeholder="Automático..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
         </div>
     </div>
 
@@ -469,7 +471,9 @@
         <select id="f-operador" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
     </div>
 
-    <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 hover:shadow-blue-500/30 transition-all active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR FICHA NA PRODUÇÃO</button>
+    <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 hover:shadow-blue-500/30 transition-all active:scale-95">
+        <i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR FICHA NA PRODUÇÃO
+    </button>
 </div>
                 
                 <div id="container-filas" class="space-y-6"></div>
@@ -2038,21 +2042,22 @@
         window.addEventListener('beforeunload', () => { salvarGeral(); }); 
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
+    </script>
 
         <script>
-// === FUNÇÃO DE CÁLCULO INTELIGENTE (Versão Final) ===
+// === FUNÇÃO DE CÁLCULO DE INSUMOS (Versão Final) ===
 function calcularPrevisao() {
     try {
-        // 1. Coleta os dados dos campos
+        // 1. Pega os dados
         let elQtd = document.getElementById('f-qtd');
-        let qtdPecas = elQtd ? parseFloat(elQtd.value) : 0; // Quantidade (Meta)
+        let qtdPecas = elQtd ? parseFloat(elQtd.value) : 0; // Meta
 
         let pesoPecaGramas = parseFloat(document.getElementById('tec-peso').value) || 0;       
         let cicloSegundos = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
         let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
         let porcentagemPigmento = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
-        // Se faltar dados básicos, limpa os resultados
+        // Se faltar dados, limpa os campos de resultado
         if (!qtdPecas || !pesoPecaGramas) {
             document.getElementById('out-tempo').innerText = "-";
             document.getElementById('out-material').innerText = "-";
@@ -2061,42 +2066,41 @@ function calcularPrevisao() {
         }
 
         // === CÁLCULO 1: PESO TOTAL DO MATERIAL (KG) ===
-        // Fórmula: (Qtd Peças * Peso unitário) / 1000
+        // (Quantidade * Peso unitário) / 1000
         let pesoTotalMaterialKg = (qtdPecas * pesoPecaGramas) / 1000;
 
         // === CÁLCULO 2: PESO DO PIGMENTO (KG) ===
-        // A porcentagem incide sobre o PESO DO MATERIAL
+        // A porcentagem é calculada sobre o PESO DO MATERIAL
         let pesoTotalPigmentoKg = pesoTotalMaterialKg * (porcentagemPigmento / 100);
 
         // === CÁLCULO 3: TEMPO ESTIMADO ===
-        // Ciclos necessários = Peças / Cavidades
         let totalCiclos = qtdPecas / cavidades;
         let totalSegundos = totalCiclos * cicloSegundos;
         let totalHoras = totalSegundos / 3600;
 
-        // Formatação visual (Horas e Minutos)
+        // Formatação de Horas (00h 00m)
         let h = Math.floor(totalHoras);
         let m = Math.round((totalHoras - h) * 60);
         let textoTempo = (cicloSegundos > 0) ? `${h}h ${m}m` : "-";
 
-        // === ATUALIZAÇÃO DA TELA ===
+        // === EXIBIR RESULTADOS NA TELA ===
         document.getElementById('out-tempo').innerText = textoTempo;
         document.getElementById('out-material').innerText = pesoTotalMaterialKg.toFixed(2) + " kg";
         document.getElementById('out-pigmento').innerText = pesoTotalPigmentoKg.toFixed(3) + " kg";
 
-        // Opcional: Preenche automático os campos do formulário original para facilitar
+        // Preenche também os campos do formulário original para agilizar
         let campoMatOriginal = document.getElementById('f-material-qtd');
         if(campoMatOriginal) campoMatOriginal.value = pesoTotalMaterialKg.toFixed(2) + " kg";
         
         let campoPorcOriginal = document.getElementById('f-porcentagem');
         if(campoPorcOriginal) campoPorcOriginal.value = porcentagemPigmento + "%";
 
-    } catch (e) {
-        // Silencia erros para não atrapalhar o usuário
+    } catch (erro) {
+        console.log("Aguardando preenchimento completo...");
     }
 }
+</script>
         
-    </script>
 </body>
 </html>
 
