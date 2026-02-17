@@ -2237,10 +2237,163 @@ function limparCamposProduto() {
         painel.classList.add('hidden');
     }
 }
+
+    // =========================================================
+// 1. GESTÃO DE EQUIPE (OPERADORES)
+// =========================================================
+
+async function adicionarOperadorNovo() {
+    const input = document.getElementById('novo-operador-input-novo');
+    if (!input) return;
+    const nome = input.value.trim();
+
+    if (nome) {
+        // Usa o objeto 'config' que já existe no seu código original
+        if (!config.operadores) config.operadores = [];
+        
+        config.operadores.push(nome);
+        input.value = '';
+        
+        try {
+            await salvarConfig(); // Chama a sua função original para gravar no Supabase
+            renderOperadoresConfig(); // Atualiza a lista na tela
+            if (typeof popularSelectsOperadores === 'function') popularSelectsOperadores();
+            mostrarToast("OPERADOR ADICIONADO!");
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao salvar operador.");
+        }
+    } else {
+        alert("Digite o nome do operador");
+    }
+}
+
+function renderOperadoresConfig() {
+    const container = document.getElementById('lista-operadores-container');
+    if (!container || !config || !config.operadores) return;
+
+    container.innerHTML = config.operadores.map((nome, index) => `
+        <div class="flex items-center justify-between p-4 bg-white border-2 border-slate-100 rounded-2xl mb-2 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-black text-xs">
+                    ${nome.charAt(0).toUpperCase()}
+                </div>
+                <span class="font-bold text-slate-700">${nome}</span>
+            </div>
+            <button onclick="removerOperadorEquipe(${index})" class="w-10 h-10 flex items-center justify-center text-red-400 hover:bg-red-50 rounded-xl transition-colors">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+async function removerOperadorEquipe(index) {
+    if (confirm(`Remover ${config.operadores[index]} da equipe?`)) {
+        config.operadores.splice(index, 1);
+        await salvarConfig();
+        renderOperadoresConfig();
+        if (typeof popularSelectsOperadores === 'function') popularSelectsOperadores();
+        mostrarToast("REMOVIDO", "red");
+    }
+}
+
+// =========================================================
+// 2. GESTÃO DE PRODUTOS (ENGENHARIA)
+// =========================================================
+
+async function salvarNovoProdutoCompleto() {
+    const nome = document.getElementById('cad-nome-novo').value.trim();
+    if (!nome) return alert("O nome do produto é obrigatório!");
+
+    const dados = {
+        nome: nome,
+        material: document.getElementById('cad-material').value || "",
+        pigmento: document.getElementById('cad-pigmento-tipo').value || "",
+        peso_peca: parseFloat(document.getElementById('cad-peso').value) || 0,
+        ciclo: parseFloat(document.getElementById('cad-ciclo').value) || 0,
+        cavidades: parseInt(document.getElementById('cad-cavidades').value) || 0,
+        porc_pigmento: document.getElementById('cad-pigmento-porc').value || "0",
+        saquinho: document.getElementById('cad-saquinho').value || "",
+        qtd_caixa: parseInt(document.getElementById('cad-cx').value) || 0
+    };
+
+    try {
+        // 'supabase' é o nome da sua variável global de conexão
+        const { error } = await supabase.from('produtos').insert([dados]);
+        
+        if (error) {
+            console.error("Erro Supabase:", error);
+            alert("Erro no Banco: Verifique se a tabela 'produtos' existe no seu painel do Supabase.");
+            return;
+        }
+
+        mostrarToast("PRODUTO SALVO!");
+        limparCamposProduto();
+        
+        // carregarBanco() é a sua função original que puxa tudo do Supabase
+        await carregarBanco(); 
+        renderizarListaProdutosTecnica();
+    } catch (err) {
+        console.error("Erro Geral:", err);
+    }
+}
+
+function renderizarListaProdutosTecnica() {
+    const container = document.getElementById('lista-produtos-tecnica');
+    if (!container || !produtos) return;
+
+    if (produtos.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-center font-bold p-8">Nenhum produto no catálogo.</p>`;
+        return;
+    }
+
+    let html = `
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] text-slate-400 uppercase">
+                    <tr>
+                        <th class="p-3">Produto / Material</th>
+                        <th class="p-3">Processo (Peso/Ciclo)</th>
+                        <th class="p-3">Embalagem</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+    `;
+
+    produtos.forEach(p => {
+        html += `
+            <tr class="hover:bg-slate-50">
+                <td class="p-3">
+                    <div class="font-bold text-slate-700">${p.nome}</div>
+                    <div class="text-[10px] text-blue-500 font-bold uppercase">${p.material || '-'}</div>
+                </td>
+                <td class="p-3 text-sm text-slate-600 font-medium">
+                    ${p.peso_peca || 0}g | ${p.ciclo || 0}s | ${p.cavidades || 0} Cav.
+                </td>
+                <td class="p-3 text-sm text-slate-600 font-medium">
+                    Cx: ${p.qtd_caixa || 0} | Saq: ${p.saquinho || '-'}
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+function limparCamposProduto() {
+    const ids = ['cad-nome-novo', 'cad-material', 'cad-pigmento-tipo', 'cad-peso', 'cad-ciclo', 'cad-cavidades', 'cad-pigmento-porc', 'cad-saquinho', 'cad-cx'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = '';
+    });
+}
+        
     </script>
     
 </body>
 </html>
+
 
 
 
