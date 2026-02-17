@@ -220,48 +220,6 @@
                         <input type="number" id="edit-op-qtd" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
                     </div>
                 </div>
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-4 shadow-sm">
-    <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
-        <i class="fas fa-calculator text-blue-600"></i>
-        <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo de Insumos (Técnico)</h4>
-    </div>
-    
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
-            <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
-            <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
-            <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">% PIGMENTO</label>
-            <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="0" value="0" oninput="calcularPrevisao()">
-        </div>
-    </div>
-
-    <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-            <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo</span>
-            <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
-        </div>
-        
-        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-            <span class="block text-[9px] text-slate-400 font-bold uppercase">Material (kg)</span>
-            <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
-        </div>
-        
-        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-            <span class="block text-[9px] text-slate-400 font-bold uppercase">Pigmento (kg)</span>
-            <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
-        </div>
-    </div>
-</div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400">CLIENTE</label>
                     <input type="text" id="edit-op-cliente" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
@@ -414,10 +372,51 @@
                         </div>
                          <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                           <input type="number" id="f-qtd" oninput="calcularPrevisao()" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-2xl font-black text-blue-600 focus:ring-2 focus:ring-blue-500 transition-all placeholder-gray-300" placeholder="0">
+                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
                     </div>
 
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-2 shadow-sm">
+                <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
+                    <i class="fas fa-calculator text-blue-600"></i>
+                    <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo Técnico</h4>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
+                        <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
+                        <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
+                        <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">% PIGMENTO</label>
+                        <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="0" value="0" oninput="calcularPrevisao()">
+                    </div>
+                </div>
+            
+                <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo</span>
+                        <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
+                    </div>
+                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Material</span>
+                        <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
+                    </div>
+                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Pigmento</span>
+                        <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
+                    </div>
+                </div>
+            </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
@@ -1786,9 +1785,7 @@
                     if(m.status==="04-PRODUÇÃO") s.p++; 
                     else if(m.status.includes("BAIXA")) s.b++; 
                     else if(m.status.includes("SEM") || m.status.includes("PARADA PROGRAMADA")) s.sp++; 
-                    else if(!m.status.includes("FECHADA
-                                               
-                                               ")) s.s++; 
+                    else if(!m.status.includes("FECHADA")) s.s++; 
                 } 
             });
             
@@ -2041,97 +2038,65 @@
         carregarBanco();
     </script>
 
-        <script>
-// Função que roda toda vez que você digita um número
-function calcularPrevisao() {
-    try {
-        // 1. Tenta pegar a Quantidade da OP (campo principal lá de cima)
-        let elQtd = document.getElementById('f-qtd');
-        let qtdMeta = 0;
+    <script>
+        function calcularPrevisao() {
+            try {
+                // 1. Pega a Quantidade da OP (Lá de cima)
+                let elQtd = document.getElementById('f-qtd');
+                let qtdMeta = elQtd ? (parseFloat(elQtd.value) || 0) : 0;
         
-        // Se o campo existir e tiver número, usa ele. Se não, usa 0.
-        if (elQtd && elQtd.value) {
-            qtdMeta = parseFloat(elQtd.value);
-        }
-
-        // 2. Pega os valores da Calculadora Técnica
-        let pesoPeca = parseFloat(document.getElementById('tec-peso').value) || 0; 
-        let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
-        let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
-        let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
-
-        // 3. Verifica se tem o mínimo para calcular (Meta e Peso)
-        if (qtdMeta === 0 || pesoPeca === 0) {
-            // Se faltar dados, mostra tracinho "-"
-            document.getElementById('out-tempo').innerText = "-";
-            document.getElementById('out-material').innerText = "-";
-            document.getElementById('out-pigmento').innerText = "-";
-            return; 
-        }
-
-        // === FAZENDO AS CONTAS (IGUAL AO SEU EXCEL) ===
-
-        // A) MATERIAL TOTAL (kg)
-        // Conta: (Quantidade * Peso da Peça) / 1000
-        let pesoTotalMaterial = (qtdMeta * pesoPeca) / 1000;
-
-        // B) PIGMENTO (kg)
-        // Conta: Peso do Material * (Porcentagem / 100)
-        let pesoPigmento = 0;
-        if (porcentagem > 0) {
-            pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
-        }
-
-        // C) TEMPO ESTIMADO
-        // Conta: (Quantidade / Cavidades) * Ciclo
-        let totalCiclos = qtdMeta / cavidades;
-        let totalSegundos = totalCiclos * ciclo;
+                // 2. Pega os dados da Calculadora Técnica
+                let pesoPeca = parseFloat(document.getElementById('tec-peso').value) || 0; 
+                let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
+                let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
+                let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
         
-        // Transforma segundos em horas e minutos
-        let totalHoras = totalSegundos / 3600;
-        let h = Math.floor(totalHoras);
-        let m = Math.round((totalHoras - h) * 60);
-        let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
-
-        // === MOSTRANDO NA TELA ===
+                // 3. Se não tiver Quantidade ou Peso, limpa e sai
+                if (qtdMeta === 0 || pesoPeca === 0) {
+                    if(document.getElementById('out-tempo')) document.getElementById('out-tempo').innerText = "-";
+                    if(document.getElementById('out-material')) document.getElementById('out-material').innerText = "-";
+                    if(document.getElementById('out-pigmento')) document.getElementById('out-pigmento').innerText = "-";
+                    return; 
+                }
         
-        // Tempo
-        document.getElementById('out-tempo').innerText = textoTempo;
-
-        // Material (Ex: 25,00 kg)
-        document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
-
-        // Pigmento (Ex: 0,5) - A pedido, mostra só o número, sem "kg" escrito
-        // O parseFloat serve para cortar zeros extras (0.500 vira 0.5)
-        let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3));
-        document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
-
-        // === PREENCHIMENTO AUTOMÁTICO (OPCIONAL) ===
-        // Preenche os campos de texto do sistema original se eles existirem
+                // === CÁLCULOS ===
         
-        let campoMatOriginal = document.getElementById('f-material-qtd');
-        if(campoMatOriginal) {
-            campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+                // A) MATERIAL (kg) -> (Qtd * Peso) / 1000
+                let pesoTotalMaterial = (qtdMeta * pesoPeca) / 1000;
+        
+                // B) PIGMENTO (kg) -> Material * (Porcentagem / 100)
+                let pesoPigmento = 0;
+                if (porcentagem > 0) {
+                    pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
+                }
+        
+                // C) TEMPO -> (Qtd / Cav) * Ciclo
+                let totalSegundos = (qtdMeta / cavidades) * ciclo;
+                let h = Math.floor(totalSegundos / 3600);
+                let m = Math.round(((totalSegundos / 3600) - h) * 60);
+                let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
+        
+                // === EXIBIÇÃO ===
+                
+                if(document.getElementById('out-tempo')) 
+                    document.getElementById('out-tempo').innerText = textoTempo;
+        
+                // Material: Com "kg" (Ex: 25,00 kg)
+                if(document.getElementById('out-material'))
+                    document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
+        
+                // Pigmento: SÓ O NÚMERO (Ex: 0,5)
+                if(document.getElementById('out-pigmento')) {
+                    let pigLimpo = parseFloat(pesoPigmento.toFixed(3));
+                    document.getElementById('out-pigmento').innerText = pigLimpo.toString().replace('.', ',');
+                }
+        
+            } catch (e) {
+                console.log("Erro no cálculo:", e);
+            }
         }
-        
-        let campoPorcOriginal = document.getElementById('f-porcentagem');
-        if(campoPorcOriginal) {
-            // Se porcentagem for maior que 0, escreve "2%". Se for 0, deixa vazio.
-            campoPorcOriginal.value = (porcentagem > 0) ? porcentagem + "%" : "";
-        }
-
-    } catch (erro) {
-        console.error("Erro no cálculo:", erro);
-    }
-}
-
-// Garante que o cálculo rode ao carregar a página se já tiver números
-window.onload = function() {
-    calcularPrevisao();
-};
 </script>
     
 </body>
 </html>
-
 
