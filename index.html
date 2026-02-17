@@ -757,49 +757,34 @@ async function carregarBanco() {
 
         if (data && data.length > 0) {
             const conteudo = data[0].conteudo;
-
-            // Carrega os dados nas variáveis
-            if (conteudo.maquinas) maquinas = conteudo.maquinas;
-            if (conteudo.produtos) produtosGlobais = conteudo.produtos;
-            if (conteudo.operadores) operadoresGlobais = conteudo.operadores;
-            if (conteudo.historico) historico = conteudo.historico;
-            if (conteudo.pigmentos) pigmentosGlobais = conteudo.pigmentos;
-
-            // Executa as funções de desenho APENAS SE ELAS EXISTIREM
-            if (typeof renderizarCards === 'function') renderizarCards();
-            if (typeof atualizarSelectsProdutos === 'function') atualizarSelectsProdutos();
-            if (typeof atualizarTabelaHistorico === 'function') atualizarTabelaHistorico();
-            if (typeof renderizarOpcoesPigmentos === 'function') renderizarOpcoesPigmentos();
-            if (typeof atualizarResumoGlobalNumeros === 'function') atualizarResumoGlobalNumeros();
             
-            console.log("Dados aplicados com sucesso.");
+            // Carrega o pigmento na memória antes de aplicar o resto
+            if (conteudo.pigmentos) {
+                pigmentosGlobais = conteudo.pigmentos;
+            }
+
+            // CHAMA A FUNÇÃO QUE SEU CÓDIGO JÁ TEM
+            aplicarDadosDoServidor(conteudo);
+            
+            // Garante que o menu de pigmentos seja desenhado
+            if (typeof renderizarOpcoesPigmentos === 'function') {
+                renderizarOpcoesPigmentos();
+            }
+
+            console.log("Dados carregados e aplicados.");
         }
         
-        // FORÇA A SAÍDA DA TELA DE CARREGAMENTO
-        const telaCarga = document.getElementById('tela-carregamento');
-        if (telaCarga) telaCarga.style.display = 'none';
-
+        // ESCONDE A TELA DE CARREGAMENTO (IGUAL AO ORIGINAL)
+        document.getElementById('tela-carregamento').style.display = 'none';
     } catch (err) {
-        console.error("Erro ao carregar banco:", err);
-        // Mesmo com erro, tira a tela de carga para o usuário ver o site
-        const telaCarga = document.getElementById('tela-carregamento');
-        if (telaCarga) telaCarga.style.display = 'none';
+        console.error("Erro ao carregar:", err);
+        // Tira a tela de carregamento mesmo se der erro para não travar o site
+        document.getElementById('tela-carregamento').style.display = 'none';
     }
 }
-        function aplicarDadosDoServidor(conteudo) {
-            maquinas = conteudo.maquinas;
-            coresGlobais = conteudo.cores || coresGlobais;
-            operadoresGlobais = conteudo.operadores || operadoresGlobais;
-            if (conteudo.produtos) produtosGlobais = conteudo.produtos;
-            historico = conteudo.historico || []; 
-            if(conteudo.dadosMensais) dadosMensais = conteudo.dadosMensais;
-            if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra;
-            if(data.conteudo.pigmentos) {
-    pigmentosGlobais = data.conteudo.pigmentos;
-    renderizarOpcoesPigmentos();
-}
+
             
-            // Atualiza timestamp local para saber se estamos atualizados
+             // Atualiza timestamp local para saber se estamos atualizados
             dadosLocaisLastUpdate = conteudo.lastUpdateTimestamp || 0;
 
             sanitizarDados();
@@ -2057,8 +2042,8 @@ async function carregarBanco() {
             maquinas, 
             cores: coresGlobais, 
             operadores: operadoresGlobais, 
-            produtos: produtosGlobais,
-            pigmentos: pigmentosGlobais, // <--- ADICIONE ESSA LINHA
+            produtos: produtosGlobais, 
+            pigmentos: pigmentosGlobais, // <--- ADICIONE ESTA LINHA
             historico, 
             dadosMensais, 
             modoHoraExtra, 
@@ -2188,6 +2173,7 @@ function renderizarMaquinas() {
     
 </body>
 </html>
+
 
 
 
