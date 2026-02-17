@@ -752,51 +752,38 @@
         // === FUNÇÃO CARREGAR BANCO (CORRIGIDA E COM PIGMENTOS) ===
 async function carregarBanco() {
     try {
-        let { data, error } = await sb.from('sistema').select('*').eq('id', 1);
-        
-        if (error) {
-            console.error("Erro ao baixar do banco:", error);
-            return;
-        }
+        const { data, error } = await sb.from('sistema').select('*').eq('id', 1);
+        if (error) throw error;
 
         if (data && data.length > 0) {
-            let conteudo = data[0].conteudo;
+            const conteudo = data[0].conteudo;
 
-            // 1. Maquinas (No seu código a função chama renderizarCards)
-            if (conteudo.maquinas) {
-                maquinas = conteudo.maquinas;
-                if(typeof renderizarCards === 'function') renderizarCards();
-            }
+            // Carrega os dados nas variáveis
+            if (conteudo.maquinas) maquinas = conteudo.maquinas;
+            if (conteudo.produtos) produtosGlobais = conteudo.produtos;
+            if (conteudo.operadores) operadoresGlobais = conteudo.operadores;
+            if (conteudo.historico) historico = conteudo.historico;
+            if (conteudo.pigmentos) pigmentosGlobais = conteudo.pigmentos;
 
-            // 2. Produtos (No seu código a função chama atualizarSelectsProdutos)
-            if (conteudo.produtos) {
-                produtosGlobais = conteudo.produtos;
-                if(typeof atualizarSelectsProdutos === 'function') atualizarSelectsProdutos();
-            }
-
-            // 3. Operadores
-            if (conteudo.operadores) {
-                operadoresGlobais = conteudo.operadores;
-            }
-
-            // 4. Histórico
-            if (conteudo.historico) {
-                historico = conteudo.historico;
-                if(typeof atualizarTabelaHistorico === 'function') atualizarTabelaHistorico();
-            }
-
-            // 5. PIGMENTOS (O que adicionamos agora)
-            if (conteudo.pigmentos) {
-                pigmentosGlobais = conteudo.pigmentos;
-                setTimeout(() => {
-                    if(typeof renderizarOpcoesPigmentos === 'function') renderizarOpcoesPigmentos();
-                }, 500);
-            }
+            // Executa as funções de desenho APENAS SE ELAS EXISTIREM
+            if (typeof renderizarCards === 'function') renderizarCards();
+            if (typeof atualizarSelectsProdutos === 'function') atualizarSelectsProdutos();
+            if (typeof atualizarTabelaHistorico === 'function') atualizarTabelaHistorico();
+            if (typeof renderizarOpcoesPigmentos === 'function') renderizarOpcoesPigmentos();
+            if (typeof atualizarResumoGlobalNumeros === 'function') atualizarResumoGlobalNumeros();
             
-            console.log("Banco carregado com sucesso!");
+            console.log("Dados aplicados com sucesso.");
         }
-    } catch (e) {
-        console.error("Erro grave no carregarBanco:", e);
+        
+        // FORÇA A SAÍDA DA TELA DE CARREGAMENTO
+        const telaCarga = document.getElementById('tela-carregamento');
+        if (telaCarga) telaCarga.style.display = 'none';
+
+    } catch (err) {
+        console.error("Erro ao carregar banco:", err);
+        // Mesmo com erro, tira a tela de carga para o usuário ver o site
+        const telaCarga = document.getElementById('tela-carregamento');
+        if (telaCarga) telaCarga.style.display = 'none';
     }
 }
         function aplicarDadosDoServidor(conteudo) {
@@ -2201,6 +2188,7 @@ function renderizarMaquinas() {
     
 </body>
 </html>
+
 
 
 
