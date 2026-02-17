@@ -227,8 +227,29 @@
                 
                 <div>
                     <label class="text-[10px] font-bold text-slate-400">NOME DO PRODUTO / PEÇA</label>
-                    <select id="edit-op-produto" class="w-full p-2 bg-slate-50 border rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                    <select id="op-produto" onchange="vincularDadosDoProduto()" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </select>
+                </div>
+
+                <div id="info-tecnica-op" class="md:col-span-4 hidden bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mt-2">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <p class="text-[9px] font-black text-blue-400 uppercase">Peso Peça</p>
+                            <p id="info-peso" class="font-bold text-blue-800">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-blue-400 uppercase">Ciclo</p>
+                            <p id="info-ciclo" class="font-bold text-blue-800">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-blue-400 uppercase">Cavidades</p>
+                            <p id="info-cav" class="font-bold text-blue-800">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-blue-400 uppercase">Material</p>
+                            <p id="info-material" class="font-bold text-blue-800">-</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mt-2">
@@ -340,17 +361,83 @@
             </div>
         </header>
 
-        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex gap-3 overflow-x-auto justify-center">
-            <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
-            <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
-            <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
-            <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
-        </nav>
+        <nav id="nav-principal" class="max-w-7xl mx-auto mb-8 px-4 flex flex-wrap gap-2 justify-center">
+    <button onclick="trocarAba('painel')" id="btn-painel" class="tab-btn active shadow-md">🖥️ PAINEL</button>
+    <button onclick="trocarAba('lista')" id="btn-lista" class="tab-btn shadow-md">📋 GESTÃO O.P</button>
+    <button onclick="trocarAba('produtos')" id="btn-produtos" class="tab-btn shadow-md">📦 PRODUTOS</button>
+    <button onclick="trocarAba('equipe')" id="btn-equipe" class="tab-btn shadow-md">👷 EQUIPE</button>
+    <button onclick="trocarAba('graficos')" id="btn-graficos" class="tab-btn shadow-md">📊 GRÁFICOS</button>
+</nav>
 
         <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
             <div id="grid-maquinas"></div>
         </div>
 
+        <div id="aba-produtos" class="aba-conteudo max-w-7xl mx-auto px-4">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 mb-8">
+                <h2 class="text-2xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                    <i class="fas fa-boxes-stacked text-blue-600"></i> ENGENHARIA DE PRODUTOS
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Nome do Produto</label>
+                        <input type="text" id="cad-nome-novo" placeholder="Ex: Pote 250ml" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Material (Ex: PS Cristal)</label>
+                        <input type="text" id="cad-material" placeholder="Material..." class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Pigmento</label>
+                        <input type="text" id="cad-pigmento-tipo" placeholder="Tipo de pigmento..." class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Peso Peça (g)</label>
+                        <input type="number" id="cad-peso" step="0.001" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Ciclo (Seg)</label>
+                        <input type="number" id="cad-ciclo" step="0.1" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Cavidades</label>
+                        <input type="number" id="cad-cavidades" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">% Pigmento (Ex: 0.02)</label>
+                        <input type="number" id="cad-pigmento-porc" step="0.001" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Saquinho</label>
+                        <input type="text" id="cad-saquinho" placeholder="Ex: 17x27" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase">Qtd para Caixa</label>
+                        <input type="number" id="cad-cx" class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold">
+                    </div>
+                    <div class="md:col-span-2 flex items-end">
+                        <button onclick="salvarNovoProdutoCompleto()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase shadow-lg transition-all">
+                            <i class="fas fa-save mr-2"></i> SALVAR PRODUTO
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="lista-produtos-tecnica" class="bg-white rounded-3xl shadow-xl p-6 border border-slate-200">
+                </div>
+        </div>
+        
+        <div id="aba-equipe" class="aba-conteudo max-w-4xl mx-auto px-4">
+            <div class="bg-white p-8 rounded-[40px] shadow-2xl border border-slate-100">
+                <h2 class="text-2xl font-black text-slate-800 mb-6 uppercase">Gestão de Equipe</h2>
+                <div class="flex gap-3 p-2 bg-slate-50 rounded-3xl border-2 border-slate-100 mb-8">
+                    <input type="text" id="novo-operador-input-novo" class="flex-1 bg-transparent p-4 font-bold outline-none" placeholder="Nome do Operador...">
+                    <button onclick="adicionarOperadorNovo()" class="bg-blue-600 text-white px-8 rounded-2xl font-black">ADICIONAR</button>
+                </div>
+                <div id="lista-operadores-container" class="grid grid-cols-1 gap-3">
+                    </div>
+            </div>
+        </div>
+        
         <div id="aba-lista" class="aba-conteudo px-4">
             <div class="max-w-7xl mx-auto grid grid-cols-1 gap-8">
                 
@@ -1079,16 +1166,105 @@
             }, 1000);
         }
 
-        function trocarAba(id) {
-            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('aba-' + id).classList.add('aba-ativa');
-            document.getElementById('btn-' + id).classList.add('active');
+                // FUNÇÃO PARA SALVAR O PRODUTO COM TODOS OS DETALHES TÉCNICOS
+            async function salvarNovoProdutoCompleto() {
+                // 1. Captura os valores dos campos que criamos no HTML
+                const nome = document.getElementById('cad-nome-novo').value.trim();
+                const material = document.getElementById('cad-material').value;
+                const pigmento = document.getElementById('cad-pigmento-tipo').value;
+                const peso = document.getElementById('cad-peso').value;
+                const ciclo = document.getElementById('cad-ciclo').value;
+                const cavidades = document.getElementById('cad-cavidades').value;
+                const porcPigmento = document.getElementById('cad-pigmento-porc').value;
+                const saquinho = document.getElementById('cad-saquinho').value;
+                const qtdCx = document.getElementById('cad-cx').value;
             
-            if(id === 'graficos') { atualizarResumoGlobalNumeros(); iniciarGraficos(); }
-            if(id === 'apontamento') { renderApontamento(); }
-            if(id === 'lista') { renderListaOPs(); renderHistorico(); renderOperadoresConfig(); renderProdutosConfig(); }
-        }
+                // 2. Validação simples: não deixa salvar sem nome
+                if (!nome) {
+                    alert("O nome do produto é obrigatório!");
+                    return;
+                }
+            
+                // 3. Monta o objeto para o Banco de Dados
+                // Importante: os nomes à esquerda (ex: peso_peca) devem ser iguais aos do seu Supabase
+                const dadosProduto = {
+                    nome: nome,
+                    material: material,
+                    pigmento: pigmento,
+                    peso_peca: parseFloat(peso) || 0,
+                    ciclo: parseFloat(ciclo) || 0,
+                    cavidades: parseInt(cavidades) || 0,
+                    porc_pigmento: porcPigmento,
+                    saquinho: saquinho,
+                    qtd_caixa: parseInt(qtdCx) || 0
+                };
+            
+                try {
+                    // Envia para a tabela 'produtos' do seu Supabase
+                    const { error } = await _supabase.from('produtos').insert([dadosProduto]);
+                    
+                    if (error) throw error;
+            
+                    // Se deu certo:
+                    alert("✅ Produto " + nome + " salvo com sucesso!");
+                    
+                    // Limpa o formulário
+                    limparCamposProduto();
+                    
+                    // Atualiza a lista de produtos global (se existir no seu código)
+                    if (typeof carregarProdutos === 'function') {
+                        await carregarProdutos();
+                    }
+                    
+                    // Atualiza a tabela visual na aba de produtos
+                    renderizarListaProdutosTecnica();
+            
+                } catch (err) {
+                    console.error("Erro completo:", err);
+                    alert("Erro ao salvar no banco. Verifique se a tabela 'produtos' tem essas colunas.");
+                }
+            }
+            
+            // Função auxiliar para limpar os campos após salvar
+            function limparCamposProduto() {
+                const campos = ['cad-nome-novo', 'cad-material', 'cad-pigmento-tipo', 'cad-peso', 'cad-ciclo', 'cad-cavidades', 'cad-pigmento-porc', 'cad-saquinho', 'cad-cx'];
+                campos.forEach(id => {
+                    const elemento = document.getElementById(id);
+                    if(elemento) elemento.value = '';
+                });
+            }
+        
+        function trocarAba(id) {
+    // Mantém sua lógica original de esconder/mostrar
+    document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById('aba-' + id).classList.add('aba-ativa');
+    document.getElementById('btn-' + id).classList.add('active');
+    
+    // --- MANTÉM TODA SUA LÓGICA ORIGINAL ABAIXO ---
+    if(id === 'graficos') { 
+        atualizarResumoGlobalNumeros(); 
+        iniciarGraficos(); 
+    }
+    if(id === 'apontamento') { 
+        renderApontamento(); 
+    }
+    if(id === 'lista') { 
+        renderListaOPs(); 
+        renderHistorico(); 
+        renderOperadoresConfig(); 
+        renderProdutosConfig(); 
+    }
+
+    // --- ADICIONA AS NOVAS REGRAS SEM APAGAR AS ANTERIORES ---
+    if (id === 'produtos') {
+        renderizarListaProdutosTecnica(); // Esta é a função nova que vamos usar
+    }
+    if (id === 'equipe') {
+        renderOperadoresConfig(); // Reutiliza sua função de operadores na aba nova
+    }
+}}
 
         function processarTurnoAuto() {
             if (manualOverride) return;
@@ -1996,6 +2172,32 @@
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
     </script>
+
+    <script>
+        function vincularDadosDoProduto() {
+    const nomeSelecionado = document.getElementById('op-produto').value;
+    const painel = document.getElementById('info-tecnica-op');
+    
+    // Procura o produto no array que o sistema já carregou
+    const produto = produtos.find(p => p.nome === nomeSelecionado);
+
+    if (produto) {
+        // Mostra o painel
+        painel.classList.remove('hidden');
+        
+        // Preenche os dados
+        document.getElementById('info-peso').innerText = (produto.peso_peca || 0) + 'g';
+        document.getElementById('info-ciclo').innerText = (produto.ciclo || 0) + 's';
+        document.getElementById('info-cav').innerText = (produto.cavidades || 0);
+        document.getElementById('info-material').innerText = (produto.material || 'N/A');
+        
+        mostrarToast("Ficha técnica do produto carregada!");
+    } else {
+        painel.classList.add('hidden');
+    }
+}
+    </script>
+    
 </body>
 </html>
 
