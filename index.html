@@ -220,6 +220,48 @@
                         <input type="number" id="edit-op-qtd" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
                     </div>
                 </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-4 shadow-sm">
+    <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
+        <i class="fas fa-calculator text-blue-600"></i>
+        <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo de Insumos (Técnico)</h4>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
+            <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
+            <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
+            <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase">% PIGMENTO</label>
+            <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="0" value="0" oninput="calcularPrevisao()">
+        </div>
+    </div>
+
+    <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo</span>
+            <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
+        </div>
+        
+        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Material (kg)</span>
+            <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
+        </div>
+        
+        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
+            <span class="block text-[9px] text-slate-400 font-bold uppercase">Pigmento (kg)</span>
+            <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
+        </div>
+    </div>
+</div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400">CLIENTE</label>
                     <input type="text" id="edit-op-cliente" class="w-full p-2 bg-slate-50 border rounded-xl font-bold">
@@ -357,126 +399,77 @@
                 <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
                     <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)</h2>
                     
-                    <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
-    <h2 class="text-xl font-black mb-6 text-slate-700 flex items-center gap-2">
-        <i class="fa-solid fa-circle-plus text-blue-600"></i> CRIAR FICHA TÉCNICA (O.P)
-    </h2>
-    
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Máquina</label>
-            <select id="f-maquina" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Nº O.P</label>
-            <input type="text" id="f-op" placeholder="Ex: 12345" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
-            <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="Ex: 5000" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500 transition-all">
-        </div>
-    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Máquina</label>
+                            <select id="f-maquina" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Nº O.P</label>
+                            <input type="text" id="f-op" placeholder="Ex: 12345" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </div>
+                         <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
+                            <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </div>
+                         <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
+                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </div>
+                    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
-            <select id="f-produto" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                <option value="">-- Selecione Produto --</option>
-            </select>
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
-            <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material (Kg)</label>
-            <input type="text" id="f-material-qtd" placeholder="Automático..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-        </div>
-    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
+                            <select id="f-produto" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                                <option value="">-- Selecione Produto --</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
+                            <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </div>
+                         <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
+                            <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                        </div>
+                    </div>
 
-    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-2 shadow-sm">
-    <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
-        <i class="fas fa-calculator text-blue-600"></i>
-        <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo de Insumos</h4>
-    </div>
-    
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
-            <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
-            <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
-            <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
-        </div>
-        <div>
-            <label class="text-[10px] font-bold text-slate-500 uppercase">% PIGMENTO</label>
-            <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="0" value="0" oninput="calcularPrevisao()">
-        </div>
-    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <div class="md:col-span-2 flex items-center">
+                            <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Cód. Pigmento</label>
+                            <input type="text" id="f-pigmento" placeholder="Cód..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Porcentagem (%)</label>
+                            <input type="text" id="f-porcentagem" placeholder="Ex: 2%" class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
+                        </div>
+                    </div>
 
-    <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-            <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo Produção</span>
-            <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
-        </div>
-        
-        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-            <span class="block text-[9px] text-slate-400 font-bold uppercase">Material Total</span>
-            <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
-        </div>
-        
-        <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-            <span class="block text-[9px] text-slate-400 font-bold uppercase">Qtd. Pigmento</span>
-            <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
-        </div>
-    </div>
-</div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
-        <div class="md:col-span-2 flex items-center">
-            <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Cód. Pigmento</label>
-            <input type="text" id="f-pigmento" placeholder="Cód..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Porcentagem (%)</label>
-            <input type="text" id="f-porcentagem" placeholder="Automático..." class="w-full p-2 bg-white border border-blue-200 rounded-lg font-bold">
-        </div>
-    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
+                        <div class="md:col-span-2 flex items-center">
+                            <label class="text-xs font-black text-orange-600 uppercase mr-2"><i class="fa-solid fa-box-open"></i> EMBALAGEM:</label>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Caixa</label>
+                            <input type="text" id="f-caixa" placeholder="Ex: CX Padrão" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Saco Plástico</label>
+                            <input type="text" id="f-saco" placeholder="Ex: 40x60" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Operador Responsável</label>
+                        <select id="f-operador" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
+                    </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
-        <div class="md:col-span-2 flex items-center">
-            <label class="text-xs font-black text-orange-600 uppercase mr-2"><i class="fa-solid fa-box-open"></i> EMBALAGEM:</label>
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Caixa</label>
-            <input type="text" id="f-caixa" placeholder="Ex: CX Padrão" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
-        </div>
-        <div class="md:col-span-1">
-            <label class="text-[10px] font-bold text-slate-400 uppercase">Saco Plástico</label>
-            <input type="text" id="f-saco" placeholder="Ex: 40x60" class="w-full p-2 bg-white border border-orange-200 rounded-lg font-bold">
-        </div>
-    </div>
-    
-    <div class="mb-4">
-        <label class="text-[10px] font-bold text-slate-400 uppercase">Operador Responsável</label>
-        <select id="f-operador" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500"></select>
-    </div>
-
-    <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 hover:shadow-blue-500/30 transition-all active:scale-95">
-        <i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR FICHA NA PRODUÇÃO
-    </button>
-</div>
+                    <button onclick="adicionarFila()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase shadow-lg hover:bg-blue-500 hover:shadow-blue-500/30 transition-all active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> LANÇAR FICHA NA PRODUÇÃO</button>
+                </div>
                 
                 <div id="container-filas" class="space-y-6"></div>
 
@@ -1793,7 +1786,9 @@
                     if(m.status==="04-PRODUÇÃO") s.p++; 
                     else if(m.status.includes("BAIXA")) s.b++; 
                     else if(m.status.includes("SEM") || m.status.includes("PARADA PROGRAMADA")) s.sp++; 
-                    else if(!m.status.includes("FECHADA")) s.s++; 
+                    else if(!m.status.includes("FECHADA
+                                               
+                                               ")) s.s++; 
                 } 
             });
             
@@ -2044,81 +2039,76 @@
         window.addEventListener('beforeunload', () => { salvarGeral(); }); 
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
-    
+    </script>
+
         <script>
+// Função que roda toda vez que você digita um número
 function calcularPrevisao() {
     try {
-        // --- 1. PEGAR OS DADOS DA TELA ---
-        
-        // Pega a Quantidade (Meta) - Proteção contra erro
+        // 1. Tenta pegar a Quantidade da OP (campo principal lá de cima)
         let elQtd = document.getElementById('f-qtd');
         let qtdMeta = 0;
+        
+        // Se o campo existir e tiver número, usa ele. Se não, usa 0.
         if (elQtd && elQtd.value) {
             qtdMeta = parseFloat(elQtd.value);
         }
 
-        // Pega os dados da calculadora técnica
-        let pesoPecaGramas = parseFloat(document.getElementById('tec-peso').value) || 0; 
+        // 2. Pega os valores da Calculadora Técnica
+        let pesoPeca = parseFloat(document.getElementById('tec-peso').value) || 0; 
         let ciclo = parseFloat(document.getElementById('tec-ciclo').value) || 0;           
         let cavidades = parseFloat(document.getElementById('tec-cav').value) || 1;   
-        
-        // Pega a porcentagem (se vazio = 0)
         let porcentagem = parseFloat(document.getElementById('tec-pig-porc').value) || 0; 
 
-        // --- TRAVA DE SEGURANÇA ---
-        // Se não tiver quantidade ou peso, mostramos traço "-" e paramos o cálculo.
-        if (!qtdMeta || !pesoPecaGramas) {
-            if(document.getElementById('out-tempo')) document.getElementById('out-tempo').innerText = "-";
-            if(document.getElementById('out-material')) document.getElementById('out-material').innerText = "-";
-            if(document.getElementById('out-pigmento')) document.getElementById('out-pigmento').innerText = "-";
+        // 3. Verifica se tem o mínimo para calcular (Meta e Peso)
+        if (qtdMeta === 0 || pesoPeca === 0) {
+            // Se faltar dados, mostra tracinho "-"
+            document.getElementById('out-tempo').innerText = "-";
+            document.getElementById('out-material').innerText = "-";
+            document.getElementById('out-pigmento').innerText = "-";
             return; 
         }
 
-        // --- 2. CÁLCULOS (IGUAL AO SEU EXCEL) ---
+        // === FAZENDO AS CONTAS (IGUAL AO SEU EXCEL) ===
 
-        // Material Total (KG)
-        // Fórmula: (Quantidade * Peso Peça) / 1000
-        // Ex: (1250 * 20) / 1000 = 25 kg
-        let pesoTotalMaterial = (qtdMeta * pesoPecaGramas) / 1000;
+        // A) MATERIAL TOTAL (kg)
+        // Conta: (Quantidade * Peso da Peça) / 1000
+        let pesoTotalMaterial = (qtdMeta * pesoPeca) / 1000;
 
-        // Pigmento (KG)
-        // Fórmula: Peso Material * (Porcentagem / 100)
-        // Ex: 25 * (2 / 100) = 0.5 kg
+        // B) PIGMENTO (kg)
+        // Conta: Peso do Material * (Porcentagem / 100)
         let pesoPigmento = 0;
         if (porcentagem > 0) {
             pesoPigmento = pesoTotalMaterial * (porcentagem / 100);
         }
 
-        // Tempo
+        // C) TEMPO ESTIMADO
+        // Conta: (Quantidade / Cavidades) * Ciclo
         let totalCiclos = qtdMeta / cavidades;
         let totalSegundos = totalCiclos * ciclo;
-        let totalHoras = totalSegundos / 3600;
         
+        // Transforma segundos em horas e minutos
+        let totalHoras = totalSegundos / 3600;
         let h = Math.floor(totalHoras);
         let m = Math.round((totalHoras - h) * 60);
         let textoTempo = (ciclo > 0) ? `${h}h ${m}m` : "-";
 
-        // --- 3. MOSTRAR NA TELA (COM FORMATAÇÃO BRASILEIRA) ---
+        // === MOSTRANDO NA TELA ===
         
         // Tempo
-        if(document.getElementById('out-tempo')) {
-            document.getElementById('out-tempo').innerText = textoTempo;
-        }
+        document.getElementById('out-tempo').innerText = textoTempo;
 
-        // Material: Mostra com vírgula e "kg" (Ex: "25,00 kg")
-        if(document.getElementById('out-material')) {
-            document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
-        }
+        // Material (Ex: 25,00 kg)
+        document.getElementById('out-material').innerText = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
 
-        // Pigmento: Mostra SÓ O NÚMERO com vírgula (Ex: "0,5" ou "2,2")
-        // O parseFloat remove zeros extras (0.500 vira 0.5)
-        if(document.getElementById('out-pigmento')) {
-            let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3));
-            document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
-        }
+        // Pigmento (Ex: 0,5) - A pedido, mostra só o número, sem "kg" escrito
+        // O parseFloat serve para cortar zeros extras (0.500 vira 0.5)
+        let pigmentoLimpo = parseFloat(pesoPigmento.toFixed(3));
+        document.getElementById('out-pigmento').innerText = pigmentoLimpo.toString().replace('.', ',');
 
-        // --- 4. PREENCHER CAMPOS DO FORMULÁRIO (OPCIONAL) ---
-        // Isso joga o valor calculado para os inputs de texto que salvam no banco
+        // === PREENCHIMENTO AUTOMÁTICO (OPCIONAL) ===
+        // Preenche os campos de texto do sistema original se eles existirem
+        
         let campoMatOriginal = document.getElementById('f-material-qtd');
         if(campoMatOriginal) {
             campoMatOriginal.value = pesoTotalMaterial.toFixed(2).replace('.', ',') + " kg";
@@ -2126,23 +2116,21 @@ function calcularPrevisao() {
         
         let campoPorcOriginal = document.getElementById('f-porcentagem');
         if(campoPorcOriginal) {
-            // Se tiver porcentagem, preenche "2%". Se for 0, deixa vazio.
+            // Se porcentagem for maior que 0, escreve "2%". Se for 0, deixa vazio.
             campoPorcOriginal.value = (porcentagem > 0) ? porcentagem + "%" : "";
         }
 
-    } catch (e) {
-        console.log("Erro no cálculo:", e);
+    } catch (erro) {
+        console.error("Erro no cálculo:", erro);
     }
 }
+
+// Garante que o cálculo rode ao carregar a página se já tiver números
+window.onload = function() {
+    calcularPrevisao();
+};
 </script>
-        
+    
 </body>
 </html>
-
-
-
-
-
-
-
 
