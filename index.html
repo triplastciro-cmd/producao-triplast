@@ -1,789 +1,756 @@
 <!DOCTYPE html>
-<html lang="pt-br" class="dark">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast System | Production Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triplast - Sistema de Produção</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Inter:wght@300;400;600;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        tech: ['"Chakra Petch"', 'sans-serif'],
-                        mono: ['"Roboto Mono"', 'monospace'],
-                    },
-                    colors: {
-                        dark: { 950: '#050505', 900: '#0a0a0a', 800: '#121212', 700: '#1e1e1e', border: '#333333' },
-                        brand: { DEFAULT: '#2563eb', light: '#60a5fa', dark: '#1e40af' },
-                        status: { run: '#00d26a', stop: '#f8312f', setup: '#ffc107', off: '#6c757d' }
-                    },
-                    boxShadow: {
-                        'neon-blue': '0 0 10px rgba(37, 99, 235, 0.5)',
-                        'neon-green': '0 0 10px rgba(0, 210, 106, 0.5)',
-                        'neon-red': '0 0 10px rgba(248, 49, 47, 0.5)',
-                    }
-                }
-            }
-        }
-    </script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
     <style>
-        body {
-            background-color: #050505;
-            background-image: linear-gradient(rgba(10,10,10,0.95), rgba(10,10,10,0.95)), url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
-            color: #e5e5e5; overflow: hidden;
-        }
-        .glass-panel {
-            background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-        .input-tech {
-            background: rgba(10, 10, 10, 0.8); border: 1px solid #333; color: #fff;
-            font-family: 'Roboto Mono', monospace; transition: all 0.3s;
-        }
-        .input-tech:focus { border-color: #2563eb; box-shadow: 0 0 8px rgba(37, 99, 235, 0.4); outline: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         
-        /* Botões de Status Específicos */
-        .btn-status { transition: all 0.3s; filter: grayscale(0.8); opacity: 0.5; transform: scale(0.95); }
-        .btn-status:hover { filter: grayscale(0); opacity: 0.8; }
-        .btn-status.active { filter: grayscale(0); opacity: 1; transform: scale(1.05); box-shadow: 0 0 15px currentColor; border-color: white; }
+        body { 
+            background-color: #eef2f6; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 0;
+            color: #1f2937;
+        }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        /* --- VISUAL ORIGINAL (LOGIN E LAYOUT) --- */
+        .glass-login {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        .aba-conteudo { display: none; animation: fadeIn 0.3s; }
+        .aba-ativa { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Botões Laterais */
+        .nav-btn {
+            text-align: left; padding: 12px 16px; width: 100%;
+            border-radius: 8px; font-weight: 600; color: #4b5563;
+            transition: all 0.2s; margin-bottom: 4px; display: flex; items-center: center; gap: 10px;
+        }
+        .nav-btn:hover { background-color: #e0e7ff; color: #3730a3; }
+        .nav-btn.active { background-color: #4338ca; color: white; shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+
+        /* Status Máquina (Bolinhas e Botões) */
+        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .bg-produzindo { background-color: #10b981; }
+        .bg-parada { background-color: #ef4444; }
+        .bg-setup { background-color: #f59e0b; }
+        .bg-desligada { background-color: #9ca3af; }
+
+        /* Botões de Ação na Máquina */
+        .btn-acao { 
+            padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; 
+            transition: transform 0.1s; border: 2px solid transparent; opacity: 0.7;
+        }
+        .btn-acao:hover { transform: scale(1.05); opacity: 0.9; }
+        .btn-acao.selected { opacity: 1; border-color: #374151; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transform: scale(1.05); }
+
+        /* Tabela */
+        table th { text-align: left; padding: 12px; background: #f3f4f6; color: #6b7280; font-size: 0.75rem; text-transform: uppercase; font-weight: 800; }
+        table td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
     </style>
 </head>
-<body class="h-screen flex flex-col antialiased">
+<body class="h-screen overflow-hidden flex flex-col">
 
-    <div id="generic-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center">
-        <div class="glass-panel w-full max-w-md rounded-xl p-6 relative transform transition-all scale-100">
-            <h3 id="modal-title" class="font-tech font-bold text-white text-lg mb-4">Atenção</h3>
-            <div id="modal-body" class="text-slate-300 text-sm mb-6"></div>
-            <div class="flex justify-end gap-3">
-                <button onclick="document.getElementById('generic-modal').classList.add('hidden')" class="px-4 py-2 rounded text-slate-400 hover:text-white">Cancelar</button>
-                <button id="modal-confirm-btn" class="px-4 py-2 bg-brand-DEFAULT rounded text-white font-bold shadow-neon-blue">Confirmar</button>
+    <div id="tela-login" class="fixed inset-0 z-50 flex items-center justify-center bg-[#eef2f6]">
+        <div class="glass-login p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+            <div class="mb-6 flex justify-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-industry text-3xl text-white"></i>
+                </div>
             </div>
+            <h1 class="text-2xl font-black text-gray-800 mb-1">TRIPLAST</h1>
+            <p class="text-sm text-gray-500 mb-8 font-medium">Sistema Integrado de Produção</p>
+            
+            <form onsubmit="realizarLogin(event)" class="space-y-4">
+                <input type="password" id="senha-input" placeholder="Senha de Acesso" 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition font-bold text-center text-lg tracking-widest">
+                <button type="submit" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition transform active:scale-95">
+                    ENTRAR
+                </button>
+            </form>
+            <p class="mt-6 text-xs text-gray-400">© 2026 Triplast System v2.0</p>
         </div>
     </div>
 
-    <section id="screen-login" class="flex-1 flex items-center justify-center relative z-50 bg-dark-950">
-        <div class="w-full max-w-lg glass-panel rounded-2xl p-10 border border-white/10 text-center">
-            <h1 class="text-5xl font-bold text-white font-tech tracking-wide mb-2">TRIPLAST</h1>
-            <p class="text-brand-DEFAULT font-mono text-sm tracking-widest mb-8">SYSTEM ONLINE</p>
-            
-            <div class="grid grid-cols-2 gap-2 mb-6">
-                <button onclick="Auth.toggle('operador')" id="btn-mode-op" class="p-3 rounded bg-brand-DEFAULT text-white font-bold shadow-neon-blue">Operador</button>
-                <button onclick="Auth.toggle('admin')" id="btn-mode-adm" class="p-3 rounded bg-dark-800 text-slate-400 hover:text-white">Gerência</button>
+    <div id="sistema-principal" class="hidden flex-1 flex h-full">
+        
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col z-20 shadow-sm">
+            <div class="h-16 flex items-center px-6 border-b border-gray-100">
+                <i class="fa-solid fa-industry text-blue-600 mr-2"></i>
+                <span class="font-black text-xl tracking-tight text-gray-800">TRIPLAST</span>
             </div>
 
-            <form onsubmit="Auth.login(event)" class="space-y-4">
-                <div id="login-op-area">
-                    <select id="login-machine" class="input-tech w-full p-4 rounded-xl text-lg font-bold">
-                        <option value="">Carregando Máquinas...</option>
-                    </select>
-                </div>
-                <div id="login-adm-area" class="hidden">
-                    <input type="password" id="login-pass" placeholder="Senha Admin" class="input-tech w-full p-4 rounded-xl text-center tracking-widest text-lg">
-                </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-brand-dark to-brand-DEFAULT p-4 rounded-xl text-white font-bold uppercase tracking-widest shadow-neon-blue hover:brightness-110 transition-all">Acessar</button>
-            </form>
-        </div>
-    </section>
+            <nav class="flex-1 p-4 overflow-y-auto space-y-1">
+                <p class="text-xs font-bold text-gray-400 uppercase mb-2 mt-2 px-2">Monitoramento</p>
+                <button onclick="mudarAba('dashboard', this)" class="nav-btn active">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                </button>
 
-    <div id="app-layout" class="hidden flex-1 flex overflow-hidden bg-dark-950">
-        <aside class="w-72 bg-dark-900 border-r border-dark-border flex flex-col z-40">
-            <div class="h-20 flex items-center px-6 border-b border-dark-border">
-                <i class="fa-solid fa-industry text-brand-DEFAULT text-2xl mr-3 shadow-neon-blue rounded"></i>
-                <div>
-                    <h1 class="font-tech font-bold text-xl text-white">TRIPLAST</h1>
-                    <span class="text-[10px] text-slate-500 font-mono tracking-widest">CONTROL PANEL</span>
-                </div>
-            </div>
+                <p class="text-xs font-bold text-gray-400 uppercase mb-2 mt-6 px-2">Produção</p>
+                <button onclick="mudarAba('calculadora', this)" class="nav-btn">
+                    <i class="fa-solid fa-calculator w-5"></i> Calc. & Pedidos
+                </button>
+                <div id="lista-maquinas-nav">
+                    </div>
 
-            <nav class="flex-1 p-4 space-y-2">
-                <div id="nav-admin" class="hidden space-y-2">
-                    <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest pl-2 mb-2">Gestão</p>
-                    <button onclick="Router.go('dashboard')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all"><i class="fa-solid fa-chart-pie w-5"></i> Dashboard</button>
-                    <button onclick="Router.go('calculadora')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all"><i class="fa-solid fa-calculator w-5"></i> Calc. & Pedidos</button>
-                    <button onclick="Router.go('operadores')" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all"><i class="fa-solid fa-users w-5"></i> Operadores</button>
-                </div>
-
-                <div id="nav-operador" class="hidden">
-                    <button onclick="Router.go('machine')" class="nav-item active w-full flex items-center gap-3 px-4 py-4 bg-brand-DEFAULT/10 text-brand-light border border-brand-DEFAULT/20 rounded-xl shadow-neon-blue">
-                        <i class="fa-solid fa-microchip w-5"></i> Painel da Máquina
-                    </button>
-                </div>
+                <p class="text-xs font-bold text-gray-400 uppercase mb-2 mt-6 px-2">Gestão</p>
+                <button onclick="mudarAba('operadores', this)" class="nav-btn">
+                    <i class="fa-solid fa-users-gear w-5"></i> Operadores
+                </button>
             </nav>
 
-            <div class="p-4 border-t border-dark-border bg-dark-950/30">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-dark to-brand-DEFAULT flex items-center justify-center font-bold text-white text-xs" id="user-avatar">U</div>
-                    <div class="overflow-hidden">
-                        <p id="user-name" class="text-sm font-bold text-white truncate">Usuário</p>
-                        <p class="text-[10px] text-green-500 font-mono uppercase">● Online</p>
-                    </div>
-                    <button onclick="location.reload()" class="ml-auto text-slate-500 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
+            <div class="p-4 border-t border-gray-100 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-green-600 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Online</span>
+                    <button onclick="salvarDadosManual()" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-cloud-arrow-up"></i></button>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col relative bg-dark-950 overflow-hidden">
-            <header class="h-20 bg-dark-900/80 backdrop-blur border-b border-dark-border flex items-center justify-between px-8">
-                <h2 id="page-title" class="text-2xl font-bold text-white font-tech uppercase">Visão Geral</h2>
+        <main class="flex-1 bg-[#eef2f6] overflow-hidden flex flex-col relative">
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm">
+                <h2 id="titulo-pagina" class="text-lg font-bold text-gray-700">Visão Geral</h2>
                 <div class="flex items-center gap-4">
-                    <div class="text-right hidden md:block">
-                        <p id="clock-time" class="text-xl font-mono font-bold text-white leading-none">00:00</p>
-                        <p id="clock-date" class="text-[10px] text-brand-light uppercase">DATA</p>
+                    <div class="text-right">
+                        <p id="relogio" class="text-xl font-bold text-gray-800 leading-none">00:00</p>
+                        <p class="text-xs text-gray-400 font-bold uppercase">Hora Local</p>
                     </div>
-                    <button onclick="System.save()" class="p-2 rounded-full bg-dark-800 text-green-500 border border-dark-border hover:bg-green-500 hover:text-black transition-all" title="Salvar"><i class="fa-solid fa-cloud"></i></button>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-8 relative scroll-smooth space-y-8" id="viewport">
+            <div class="flex-1 overflow-auto p-8">
                 
-                <div id="view-dashboard" class="view-section hidden space-y-6 animate-fade-in">
+                <div id="aba-dashboard" class="aba-conteudo aba-ativa space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-brand-DEFAULT">
-                            <span class="text-xs font-bold text-slate-400 uppercase">Produção Total</span>
-                            <h3 class="text-4xl font-tech font-bold text-white mt-2" id="kpi-total">0</h3>
-                            <p class="text-xs text-brand-light mt-1">Peças hoje</p>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Produção Hoje</span>
+                            <div class="text-3xl font-black text-blue-600 mt-2" id="dash-total">0</div>
+                            <span class="text-xs text-gray-500">Peças Totais</span>
                         </div>
-                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-status-run">
-                            <span class="text-xs font-bold text-slate-400 uppercase">Eficiência</span>
-                            <h3 class="text-4xl font-tech font-bold text-status-run mt-2" id="kpi-eff">0%</h3>
-                            <div class="w-full bg-dark-800 h-1 mt-2"><div id="bar-eff" class="h-full bg-status-run" style="width:0%"></div></div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Eficiência Global</span>
+                            <div class="text-3xl font-black text-purple-600 mt-2" id="dash-eficiencia">0%</div>
+                            <span class="text-xs text-gray-500">Meta vs Realizado</span>
                         </div>
-                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-status-stop">
-                            <span class="text-xs font-bold text-slate-400 uppercase">Paradas</span>
-                            <h3 class="text-4xl font-tech font-bold text-white mt-2" id="kpi-stopped">0</h3>
-                            <p class="text-xs text-status-stop mt-1">Máquinas OFF/Parada</p>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Máquinas Ativas</span>
+                            <div class="text-3xl font-black text-green-500 mt-2" id="dash-ativas">0</div>
+                            <span class="text-xs text-gray-500">Produzindo agora</span>
                         </div>
-                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-purple-500">
-                            <span class="text-xs font-bold text-slate-400 uppercase">Pedidos Ativos</span>
-                            <h3 class="text-4xl font-tech font-bold text-white mt-2" id="kpi-orders">0</h3>
-                            <p class="text-xs text-purple-400 mt-1">Na fila</p>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Paradas/Off</span>
+                            <div class="text-3xl font-black text-red-500 mt-2" id="dash-paradas">0</div>
+                            <span class="text-xs text-gray-500">Requer atenção</span>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 glass-panel p-6 rounded-2xl">
-                            <h3 class="font-tech font-bold text-white mb-4"><i class="fa-solid fa-chart-bar text-brand-DEFAULT"></i> Produção por Máquina</h3>
-                            <div class="h-64"><canvas id="chart-bar"></canvas></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-gray-700 mb-4">Produção por Máquina</h3>
+                            <div class="h-64"><canvas id="graficoBarras"></canvas></div>
                         </div>
-                        <div class="glass-panel p-6 rounded-2xl">
-                            <h3 class="font-tech font-bold text-white mb-4"><i class="fa-solid fa-clock text-brand-DEFAULT"></i> Distribuição de Tempo</h3>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-gray-700 mb-4">Status & Tempo (Horas)</h3>
                             <div class="h-64 relative">
-                                <canvas id="chart-doughnut"></canvas>
-                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <span class="text-xs text-slate-500 font-mono">STATUS</span>
-                                </div>
+                                <canvas id="graficoRosca"></canvas>
                             </div>
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-2xl overflow-hidden p-4">
-                         <h3 class="font-tech font-bold text-white mb-4 uppercase text-sm">Monitoramento em Tempo Real</h3>
-                         <table class="w-full text-left text-sm text-slate-400">
-                             <thead class="bg-white/5 text-xs uppercase font-bold text-white">
-                                 <tr><th class="p-3">Máquina</th><th class="p-3">Status</th><th class="p-3">Operador</th><th class="p-3">Produto</th><th class="p-3 text-right">Progresso</th></tr>
-                             </thead>
-                             <tbody id="table-dashboard-body" class="font-mono"></tbody>
-                         </table>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                            <h3 class="font-bold text-gray-700">Status em Tempo Real</h3>
+                        </div>
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th>Máquina</th>
+                                    <th>Status</th>
+                                    <th>Operador</th>
+                                    <th>Pedido</th>
+                                    <th class="text-right">Progresso</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-dashboard">
+                                </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div id="view-calculadora" class="view-section hidden grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
-                    
-                    <div class="lg:col-span-5 glass-panel p-6 rounded-2xl h-fit">
-                        <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
-                            <div class="w-10 h-10 rounded bg-brand-DEFAULT flex items-center justify-center text-white"><i class="fa-solid fa-calculator"></i></div>
-                            <h2 class="font-tech text-xl font-bold text-white">Calculadora Técnica</h2>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-[10px] uppercase font-bold text-brand-light">Peso da Peça (g)</label>
-                                    <input type="number" id="calc-weight" class="input-tech w-full p-3 rounded" placeholder="ex: 20">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] uppercase font-bold text-brand-light">Ciclo (seg)</label>
-                                    <input type="number" id="calc-cycle" class="input-tech w-full p-3 rounded" placeholder="ex: 20">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-[10px] uppercase font-bold text-brand-light">Cavidades</label>
-                                    <input type="number" id="calc-cavities" class="input-tech w-full p-3 rounded" value="1">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] uppercase font-bold text-brand-light">Pigmento (%)</label>
-                                    <input type="number" id="calc-pigment" class="input-tech w-full p-3 rounded" placeholder="1 a 10" value="2">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="text-[10px] uppercase font-bold text-white">Quantidade Meta (Peças)</label>
-                                <input type="number" id="calc-target" class="input-tech w-full p-3 rounded border-brand-DEFAULT text-brand-light font-bold text-lg" placeholder="ex: 2000">
-                            </div>
-
-                            <button onclick="Calculator.calculate()" class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded border border-white/10 uppercase tracking-widest mt-2">Calcular</button>
-
-                            <div id="calc-results" class="bg-dark-900 p-4 rounded-xl border border-dashed border-white/20 mt-4 hidden">
-                                <div class="grid grid-cols-2 gap-4 mb-2">
-                                    <div>
-                                        <span class="text-[10px] text-slate-500 block">Tempo Est.</span>
-                                        <span class="text-xl font-bold text-white font-mono" id="res-time">0h</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-[10px] text-slate-500 block">Produção/h</span>
-                                        <span class="text-xl font-bold text-white font-mono" id="res-pph">0</span>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-2">
-                                    <div>
-                                        <span class="text-[10px] text-slate-500 block">Material (kg)</span>
-                                        <span class="text-lg font-bold text-brand-light font-mono" id="res-mat">0 kg</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-[10px] text-slate-500 block">Pigmento (kg)</span>
-                                        <span class="text-lg font-bold text-pink-500 font-mono" id="res-pig">0 kg</span>
-                                    </div>
-                                </div>
-                                <button onclick="Calculator.saveToOrder()" class="w-full mt-4 bg-green-600 hover:bg-green-500 text-white text-xs font-bold py-2 rounded uppercase shadow-neon-green"><i class="fa-solid fa-plus mr-1"></i> Criar Pedido com Estes Dados</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="lg:col-span-7 glass-panel p-6 rounded-2xl flex flex-col h-[600px]">
-                        <h3 class="font-tech font-bold text-white mb-4 flex justify-between items-center">
-                            <span><i class="fa-solid fa-clipboard-list text-brand-DEFAULT mr-2"></i> Cadastro de Pedidos</span>
-                            <span class="text-xs bg-brand-DEFAULT px-2 py-1 rounded text-white" id="order-count">0</span>
-                        </h3>
-                        <div class="flex-1 overflow-y-auto space-y-3 pr-2" id="orders-list">
-                            </div>
-                    </div>
-                </div>
-
-                <div id="view-operadores" class="view-section hidden max-w-4xl mx-auto glass-panel p-8 rounded-2xl animate-fade-in">
-                    <h2 class="text-2xl font-tech font-bold text-white mb-6 border-b border-white/10 pb-4">Registro de Operadores</h2>
-                    <div class="flex gap-4 mb-8">
-                        <input type="text" id="new-op-name" placeholder="Nome do Operador" class="input-tech flex-1 p-3 rounded-lg">
-                        <button onclick="Operators.add()" class="bg-brand-DEFAULT hover:bg-brand-light text-white px-6 py-3 rounded-lg font-bold shadow-neon-blue"><i class="fa-solid fa-user-plus"></i> Adicionar</button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="operators-grid">
-                        </div>
-                </div>
-
-                <div id="view-machine" class="view-section hidden max-w-6xl mx-auto animate-fade-in">
-                    <div class="glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative">
+                <div id="aba-calculadora" class="aba-conteudo space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         
-                        <div class="bg-dark-800/80 p-6 flex flex-col md:flex-row justify-between items-center border-b border-white/5 gap-4">
-                            <div>
-                                <h1 class="text-5xl font-tech font-bold text-white tracking-tight" id="mach-name">MQ-01</h1>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <i class="fa-solid fa-user text-slate-500"></i>
-                                    <select id="mach-op-select" onchange="MachineController.setOperator(this.value)" class="bg-dark-950 border border-dark-border text-white text-sm rounded p-1 font-bold cursor-pointer hover:border-brand-DEFAULT">
-                                        <option value="">Selecionar Operador...</option>
-                                    </select>
-                                </div>
+                        <div class="lg:col-span-5 bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+                            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                                <div class="bg-blue-100 text-blue-600 p-2 rounded-lg"><i class="fa-solid fa-calculator"></i></div>
+                                <h3 class="text-lg font-bold text-gray-800">Calculadora Técnica</h3>
                             </div>
-                            <div class="bg-dark-950 p-4 rounded-xl border border-white/5 min-w-[200px] text-right">
-                                <span class="block text-xs text-slate-500 uppercase font-bold tracking-widest">Produzido</span>
-                                <span class="block text-6xl font-mono font-bold text-white" id="mach-count">0</span>
+
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Peso da Peça (g)</label>
+                                        <input type="number" id="calc-peso" class="w-full border border-gray-300 rounded p-2 text-sm" placeholder="Ex: 20">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ciclo (seg)</label>
+                                        <input type="number" id="calc-ciclo" class="w-full border border-gray-300 rounded p-2 text-sm" placeholder="Ex: 20">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Cavidades</label>
+                                        <input type="number" id="calc-cav" class="w-full border border-gray-300 rounded p-2 text-sm" value="1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Pigmento (%)</label>
+                                        <input type="number" id="calc-pig" class="w-full border border-gray-300 rounded p-2 text-sm" value="2">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Quantidade Meta (Peças)</label>
+                                    <input type="number" id="calc-meta" class="w-full border-2 border-blue-500 rounded p-3 text-lg font-bold text-gray-700" placeholder="Ex: 2000">
+                                </div>
+
+                                <button onclick="calcularProducao()" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition">CALCULAR</button>
+
+                                <div id="res-container" class="hidden bg-blue-50 p-4 rounded-lg border border-blue-100 mt-4">
+                                    <div class="grid grid-cols-2 gap-4 mb-3">
+                                        <div>
+                                            <span class="text-xs text-gray-500 block">Horas Necessárias</span>
+                                            <span class="text-xl font-black text-blue-700" id="res-horas">0h</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-xs text-gray-500 block">Peças / Hora</span>
+                                            <span class="text-xl font-black text-blue-700" id="res-pph">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="border-t border-blue-200 pt-2 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <span class="text-xs text-gray-500 block">Material Total</span>
+                                            <span class="font-bold text-gray-700" id="res-mat">0 kg</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-xs text-gray-500 block">Pigmento</span>
+                                            <span class="font-bold text-pink-600" id="res-pigment">0 kg</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="salvarComoPedido()" class="w-full mt-3 bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2 rounded shadow-sm"><i class="fa-solid fa-plus"></i> CRIAR PEDIDO</button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div class="space-y-6">
-                                <div class="bg-dark-900/40 p-5 rounded-xl border border-white/5 space-y-4">
-                                    <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                                        <span class="text-xs font-bold text-brand-light uppercase">Dados da Ordem</span>
-                                        <button onclick="MachineController.loadOrder()" class="text-xs bg-brand-DEFAULT/20 text-brand-light px-2 py-1 rounded hover:bg-brand-DEFAULT hover:text-white"><i class="fa-solid fa-download"></i> Puxar Pedido</button>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div><label class="text-[10px] text-slate-500 uppercase block">Produto</label><input id="mach-prod" class="input-tech w-full p-2 text-sm rounded" readonly></div>
-                                        <div><label class="text-[10px] text-slate-500 uppercase block">Meta</label><input id="mach-target" type="number" class="input-tech w-full p-2 text-sm rounded text-center"></div>
-                                        <div><label class="text-[10px] text-slate-500 uppercase block">Ciclo (s)</label><input id="mach-cycle" type="number" class="input-tech w-full p-2 text-sm rounded text-center"></div>
-                                        <div><label class="text-[10px] text-slate-500 uppercase block">Cavidades</label><input id="mach-cav" type="number" class="input-tech w-full p-2 text-sm rounded text-center"></div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Controle de Estado</label>
-                                    <div class="grid grid-cols-2 gap-3 mb-3">
-                                        <button onclick="MachineController.setStatus('produzindo')" id="btn-run" class="btn-status h-16 rounded-xl bg-status-run text-black font-bold text-lg flex items-center justify-center gap-2 shadow-neon-green"><i class="fa-solid fa-play"></i> PRODUZINDO</button>
-                                        <button onclick="MachineController.setStatus('parada')" id="btn-stop" class="btn-status h-16 rounded-xl bg-status-stop text-white font-bold text-lg flex items-center justify-center gap-2 shadow-neon-red"><i class="fa-solid fa-stop"></i> PARADA</button>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <button onclick="MachineController.setStatus('setup')" id="btn-setup" class="btn-status h-12 rounded-xl bg-status-setup text-black font-bold text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-tools"></i> SETUP</button>
-                                        <button onclick="MachineController.setStatus('desligada')" id="btn-off" class="btn-status h-12 rounded-xl bg-status-off text-white font-bold text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-power-off"></i> DESLIGADA</button>
-                                    </div>
-                                </div>
+                        <div class="lg:col-span-7 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-clipboard-list text-blue-600 mr-2"></i> Pedidos Cadastrados</h3>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contador-pedidos">0</span>
                             </div>
-
-                            <div class="flex flex-col items-center justify-center bg-dark-900/30 rounded-2xl border border-white/5 p-8">
-                                <div class="relative w-64 h-64 mb-8">
-                                    <svg class="w-full h-full transform -rotate-90">
-                                        <circle cx="128" cy="128" r="110" stroke="#1e1e1e" stroke-width="15" fill="none"></circle>
-                                        <circle id="mach-ring" cx="128" cy="128" r="110" stroke="#2563eb" stroke-width="15" fill="none" stroke-dasharray="690" stroke-dashoffset="690" stroke-linecap="round" class="transition-all duration-500"></circle>
-                                    </svg>
-                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span class="text-5xl font-mono font-bold text-white" id="mach-pct">0%</span>
-                                    </div>
+                            <div class="overflow-y-auto h-[500px] space-y-3" id="lista-pedidos">
                                 </div>
-                                
-                                <button onclick="MachineController.add(1)" class="w-full py-6 rounded-2xl bg-gradient-to-r from-brand-dark to-brand-DEFAULT text-white font-black text-2xl uppercase tracking-widest shadow-neon-blue hover:brightness-110 active:scale-95 transition-all">
-                                    Registrar Ciclo (+<span id="mach-cav-disp">1</span>)
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div id="aba-operadores" class="aba-conteudo max-w-4xl mx-auto space-y-6">
+                    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-gray-100 pb-4">Registro de Operadores</h2>
+                        
+                        <div class="flex gap-4 mb-8">
+                            <input type="text" id="novo-operador" placeholder="Nome completo do operador" class="flex-1 border border-gray-300 rounded-lg p-3 outline-none focus:border-blue-500">
+                            <button onclick="adicionarOperador()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md">ADICIONAR</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="grid-operadores">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="aba-maquina" class="aba-conteudo space-y-6">
+                    </div>
 
             </div>
         </main>
     </div>
 
     <script>
-        // --- CONFIG ---
+        // CONFIGURAÇÃO SUPABASE
         const CONFIG = {
-            sbUrl: 'https://hgqnlqtvjiyuwxwypxhh.supabase.co',
-            sbKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y',
-            adminPass: 'admin'
+            url: 'https://hgqnlqtvjiyuwxwypxhh.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'
         };
-        const sb = supabase.createClient(CONFIG.sbUrl, CONFIG.sbKey);
+        const sb = supabase.createClient(CONFIG.url, CONFIG.key);
 
-        // --- STATE ---
-        const Store = {
-            user: null,
-            data: {
-                maquinas: Array.from({length: 4}, (_,i) => ({
-                    id: i+1, nome: `Injetora 0${i+1}`, status: 'desligada', operador: '',
-                    op: { produto: '', meta: 0, realizado: 0, ciclo: 20, cavidades: 1 },
-                    stats: { run: 0, stop: 0, setup: 0, off: 0 } // Contadores de tempo (simulado)
-                })),
-                pedidos: [],
-                operadores: ['João Silva', 'Maria Souza', 'Carlos Tech']
-            },
-            charts: {}
+        // ESTADO GLOBAL DO SISTEMA
+        let Sistema = {
+            maquinas: [
+                { id: 1, nome: "Injetora 01", status: "desligada", operador: "", pedido: null, dados: { meta: 0, realizado: 0, ciclo: 20, cav: 1 }, tempos: { run: 0, stop: 0, setup: 0, off: 0 } },
+                { id: 2, nome: "Injetora 02", status: "desligada", operador: "", pedido: null, dados: { meta: 0, realizado: 0, ciclo: 20, cav: 1 }, tempos: { run: 0, stop: 0, setup: 0, off: 0 } },
+                { id: 3, nome: "Injetora 03", status: "desligada", operador: "", pedido: null, dados: { meta: 0, realizado: 0, ciclo: 20, cav: 1 }, tempos: { run: 0, stop: 0, setup: 0, off: 0 } },
+                { id: 4, nome: "Injetora 04", status: "desligada", operador: "", pedido: null, dados: { meta: 0, realizado: 0, ciclo: 20, cav: 1 }, tempos: { run: 0, stop: 0, setup: 0, off: 0 } }
+            ],
+            pedidos: [],
+            operadores: ["João Silva", "Maria Souza", "Carlos Lima"],
+            maquinaSelecionada: 1
         };
 
-        // --- CORE SYSTEM ---
-        const System = {
-            async init() {
-                try {
-                    await this.load();
-                    this.clock();
-                    setInterval(() => { this.updateTimeStats(); UI.refresh(); }, 5000); // Atualiza stats a cada 5s
-                } catch(e) { console.error(e); alert("Erro conexao"); }
-            },
-            async load() {
+        // --- FUNÇÕES DE LOGIN ---
+        function realizarLogin(e) {
+            e.preventDefault();
+            const senha = document.getElementById('senha-input').value;
+            if(senha === '2026') {
+                document.getElementById('tela-login').classList.add('hidden');
+                document.getElementById('sistema-principal').classList.remove('hidden');
+                inicializarSistema();
+            } else {
+                alert("Senha Incorreta!");
+                document.getElementById('senha-input').value = '';
+            }
+        }
+
+        // --- INICIALIZAÇÃO ---
+        async function inicializarSistema() {
+            // Carregar dados (simulado do Supabase ou Local)
+            try {
                 let { data } = await sb.from('sistema').select('*').eq('id', 1).single();
-                if(data && data.conteudo) Store.data = { ...Store.data, ...data.conteudo };
-                UI.initSelectors();
-            },
-            async save() {
-                await sb.from('sistema').update({ conteudo: Store.data }).eq('id', 1);
-                // Feedback visual
-                const btn = document.querySelector('.fa-cloud');
-                btn.classList.replace('fa-cloud', 'fa-check');
-                setTimeout(() => btn.classList.replace('fa-check', 'fa-cloud'), 1000);
-            },
-            clock() {
-                setInterval(() => {
-                    document.getElementById('clock-time').innerText = moment().format('HH:mm');
-                    document.getElementById('clock-date').innerText = moment().format('DD/MM/YYYY');
-                }, 1000);
-            },
-            updateTimeStats() {
-                // Simula acumulo de tempo baseado no status atual
-                Store.data.maquinas.forEach(m => {
-                    if(m.status === 'produzindo') m.stats.run += 5;
-                    else if(m.status === 'parada') m.stats.stop += 5;
-                    else if(m.status === 'setup') m.stats.setup += 5;
-                    else m.stats.off += 5;
-                });
-            }
-        };
-
-        // --- AUTH & ROUTER ---
-        const Auth = {
-            mode: 'operador',
-            toggle(m) {
-                this.mode = m;
-                document.getElementById('btn-mode-op').className = m==='operador' ? 'p-3 rounded bg-brand-DEFAULT text-white font-bold shadow-neon-blue' : 'p-3 rounded bg-dark-800 text-slate-400';
-                document.getElementById('btn-mode-adm').className = m==='admin' ? 'p-3 rounded bg-brand-DEFAULT text-white font-bold shadow-neon-blue' : 'p-3 rounded bg-dark-800 text-slate-400';
-                document.getElementById('login-op-area').className = m==='operador' ? 'block' : 'hidden';
-                document.getElementById('login-adm-area').className = m==='admin' ? 'block' : 'hidden';
-            },
-            login(e) {
-                e.preventDefault();
-                if(this.mode === 'admin') {
-                    if(document.getElementById('login-pass').value === CONFIG.adminPass) {
-                        Store.user = { type: 'admin', name: 'Administrador' };
-                        this.enter();
-                    } else alert("Senha incorreta");
-                } else {
-                    const id = document.getElementById('login-machine').value;
-                    if(id) {
-                        Store.user = { type: 'operador', machId: id, name: Store.data.maquinas[id-1].nome };
-                        this.enter();
-                    }
+                if(data && data.conteudo) {
+                    Sistema = { ...Sistema, ...data.conteudo };
                 }
-            },
-            enter() {
-                document.getElementById('screen-login').classList.add('hidden');
-                document.getElementById('app-layout').classList.remove('hidden');
-                document.getElementById('user-name').innerText = Store.user.name;
-                document.getElementById('user-avatar').innerText = Store.user.name[0];
-                
-                if(Store.user.type === 'admin') {
-                    document.getElementById('nav-admin').classList.remove('hidden');
-                    Router.go('dashboard');
-                } else {
-                    document.getElementById('nav-operador').classList.remove('hidden');
-                    Router.go('machine');
-                }
-            }
-        };
+            } catch(error) { console.log("Usando dados locais iniciais"); }
 
-        const Router = {
-            go(route) {
-                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-                document.getElementById(`view-${route}`).classList.remove('hidden');
-                UI.refresh();
-            }
-        };
-
-        // --- CONTROLLERS ---
-        
-        const Calculator = {
-            calculate() {
-                // Inputs
-                const weight = parseFloat(document.getElementById('calc-weight').value) || 0;
-                const cycle = parseFloat(document.getElementById('calc-cycle').value) || 0;
-                const cav = parseFloat(document.getElementById('calc-cavities').value) || 1;
-                const pigmentPct = parseFloat(document.getElementById('calc-pigment').value) || 0;
-                const target = parseFloat(document.getElementById('calc-target').value) || 0;
-
-                if(cycle === 0) return alert("Ciclo não pode ser zero");
-
-                // Math Logic (Sua fórmula ajustada)
-                // 1. Tempo: (3600 / Ciclo) * Cav = Peças por Hora (PPH)
-                const pph = (3600 / cycle) * cav;
-                const totalHours = target / pph;
-
-                // 2. Material: (Peso * Qtd) / 1000 = kg Total
-                const totalMatKg = (weight * target) / 1000;
-                
-                // 3. Pigmento: % sobre o material total
-                const pigmentKg = totalMatKg * (pigmentPct / 100);
-
-                // Render
-                document.getElementById('res-time').innerText = totalHours.toFixed(1) + 'h';
-                document.getElementById('res-pph').innerText = Math.round(pph);
-                document.getElementById('res-mat').innerText = totalMatKg.toFixed(2) + ' kg';
-                document.getElementById('res-pig').innerText = pigmentKg.toFixed(3) + ' kg';
-                
-                document.getElementById('calc-results').classList.remove('hidden');
-                
-                // Guardar temp para criar pedido
-                this.tempData = { produto: 'Novo Produto', target, cycle, cav };
-            },
-            saveToOrder() {
-                const prodName = prompt("Nome do Produto/Cliente:");
-                if(prodName) {
-                    Store.data.pedidos.push({
-                        id: Date.now(),
-                        produto: prodName,
-                        meta: this.tempData.target,
-                        ciclo: this.tempData.cycle,
-                        cavidades: this.tempData.cav,
-                        data: moment().format('DD/MM/YYYY')
-                    });
-                    System.save();
-                    UI.renderOrders();
-                    alert("Pedido salvo!");
-                }
-            }
-        };
-
-        const Operators = {
-            add() {
-                const name = document.getElementById('new-op-name').value;
-                if(name) {
-                    Store.data.operadores.push(name);
-                    document.getElementById('new-op-name').value = '';
-                    System.save();
-                    UI.renderOperators();
-                    UI.initSelectors(); // Atualiza dropdowns
-                }
-            },
-            remove(idx) {
-                if(confirm("Remover operador?")) {
-                    Store.data.operadores.splice(idx, 1);
-                    System.save();
-                    UI.renderOperators();
-                }
-            }
-        };
-
-        const MachineController = {
-            get() { return Store.data.maquinas[Store.user.machId - 1]; },
+            atualizarRelogio();
+            renderizarMenuMaquinas();
+            atualizarDashboard();
             
-            setOperator(name) {
-                this.get().operador = name;
-                System.save();
-            },
+            // Loop de salvar e relogio
+            setInterval(atualizarRelogio, 1000);
+            setInterval(contabilizarTempo, 5000); // Conta horas a cada 5s
+            setInterval(salvarDadosManual, 60000); // Auto-save 1min
+        }
+
+        function atualizarRelogio() {
+            const agora = new Date();
+            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // --- RENDERIZAÇÃO DA INTERFACE ---
+        function mudarAba(abaNome, btnElement) {
+            // Esconder todas as abas
+            document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.remove('aba-ativa'));
+            // Mostrar a desejada
+            document.getElementById(`aba-${abaNome}`).classList.add('aba-ativa');
             
-            setStatus(s) {
-                const m = this.get();
-                m.status = s;
-                // Visual Update Buttons
-                document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-                const map = { 'produzindo': 'btn-run', 'parada': 'btn-stop', 'setup': 'btn-setup', 'desligada': 'btn-off' };
-                document.getElementById(map[s]).classList.add('active');
-                System.save();
-                UI.renderMachine(); // Update ring color
-            },
+            // Atualizar botões do menu
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
 
-            add(qtd) {
-                const m = this.get();
-                if(m.status !== 'produzindo') return alert("Máquina não está em produção!");
-                m.op.realizado += (qtd * m.op.cavidades);
-                System.save();
-                UI.renderMachine();
-            },
+            // Atualizar Titulo
+            document.getElementById('titulo-pagina').innerText = abaNome.charAt(0).toUpperCase() + abaNome.slice(1);
 
-            loadOrder() {
-                const pedidos = Store.data.pedidos;
-                if(pedidos.length === 0) return alert("Sem pedidos cadastrados");
-                let text = "ID - Produto (Meta)\n";
-                pedidos.forEach(p => text += `${p.id} - ${p.produto} (${p.meta})\n`);
-                const id = prompt("Digite o ID do pedido:\n" + text);
-                const order = pedidos.find(p => p.id == id);
+            // Se for aba específica, renderiza conteudo
+            if(abaNome === 'dashboard') atualizarDashboard();
+            if(abaNome === 'pedidos' || abaNome === 'calculadora') renderizarPedidos();
+            if(abaNome === 'operadores') renderizarOperadores();
+            if(abaNome === 'maquina') renderizarDetalheMaquina();
+        }
+
+        function renderizarMenuMaquinas() {
+            const container = document.getElementById('lista-maquinas-nav');
+            container.innerHTML = '';
+            Sistema.maquinas.forEach(m => {
+                let corDot = m.status === 'produzindo' ? 'bg-produzindo' : m.status === 'parada' ? 'bg-parada' : m.status === 'setup' ? 'bg-setup' : 'bg-desligada';
+                container.innerHTML += `
+                    <button onclick="selecionarMaquina(${m.id}, this)" class="nav-btn pl-6 text-sm">
+                        <span class="status-dot ${corDot}"></span> ${m.nome}
+                    </button>
+                `;
+            });
+        }
+
+        function selecionarMaquina(id, btn) {
+            Sistema.maquinaSelecionada = id;
+            mudarAba('maquina', btn); // Vai para a aba maquina
+        }
+
+        // --- LÓGICA DO DASHBOARD ---
+        let chartBarras = null;
+        let chartRosca = null;
+
+        function atualizarDashboard() {
+            let totalPecas = 0, ativas = 0, paradas = 0;
+            let somaMeta = 0, somaReal = 0;
+            let tempoTotal = { run: 0, stop: 0, setup: 0, off: 0 };
+
+            const tbody = document.getElementById('tabela-dashboard');
+            tbody.innerHTML = '';
+
+            Sistema.maquinas.forEach(m => {
+                totalPecas += m.dados.realizado;
+                if(m.status === 'produzindo') ativas++;
+                else if(m.status !== 'setup') paradas++;
+
+                somaMeta += m.dados.meta;
+                somaReal += m.dados.realizado;
+
+                tempoTotal.run += m.tempos.run;
+                tempoTotal.stop += m.tempos.stop;
+                tempoTotal.setup += m.tempos.setup;
+                tempoTotal.off += m.tempos.off;
+
+                // Linha Tabela
+                let corTexto = m.status === 'produzindo' ? 'text-green-600' : m.status === 'parada' ? 'text-red-600' : 'text-gray-400';
+                let pct = m.dados.meta > 0 ? Math.round((m.dados.realizado/m.dados.meta)*100) : 0;
                 
-                if(order) {
-                    const m = this.get();
-                    m.op.produto = order.produto;
-                    m.op.meta = parseInt(order.meta);
-                    m.op.ciclo = parseFloat(order.ciclo);
-                    m.op.cavidades = parseInt(order.cavidades);
-                    m.op.realizado = 0;
-                    System.save();
-                    UI.renderMachine();
-                }
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-bold text-gray-800">${m.nome}</td>
+                        <td class="uppercase text-xs font-bold ${corTexto}">${m.status}</td>
+                        <td>${m.operador || '-'}</td>
+                        <td>${m.pedido ? m.pedido.produto : '-'}</td>
+                        <td class="text-right font-mono">${pct}%</td>
+                    </tr>
+                `;
+            });
+
+            // Cards
+            document.getElementById('dash-total').innerText = totalPecas;
+            document.getElementById('dash-ativas').innerText = ativas;
+            document.getElementById('dash-paradas').innerText = paradas;
+            document.getElementById('dash-eficiencia').innerText = somaMeta > 0 ? Math.round((somaReal/somaMeta)*100)+'%' : '0%';
+
+            // Gráficos
+            atualizarGraficos(tempoTotal);
+        }
+
+        function atualizarGraficos(tempos) {
+            // Gráfico Barras (Produção)
+            const ctxBar = document.getElementById('graficoBarras').getContext('2d');
+            if(chartBarras) chartBarras.destroy();
+            chartBarras = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: Sistema.maquinas.map(m => m.nome),
+                    datasets: [{
+                        label: 'Peças Produzidas',
+                        data: Sistema.maquinas.map(m => m.dados.realizado),
+                        backgroundColor: '#3b82f6', borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} } }
+            });
+
+            // Gráfico Rosca (Tempo)
+            const ctxPie = document.getElementById('graficoRosca').getContext('2d');
+            if(chartRosca) chartRosca.destroy();
+            chartRosca = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Produzindo', 'Parada', 'Setup', 'Desligada'],
+                    datasets: [{
+                        data: [tempos.run, tempos.stop, tempos.setup, tempos.off],
+                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#9ca3af'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {position:'right'} } }
+            });
+        }
+
+        // --- CALCULADORA E PEDIDOS ---
+        let ultimoCalculo = null;
+
+        function calcularProducao() {
+            const peso = parseFloat(document.getElementById('calc-peso').value) || 0;
+            const ciclo = parseFloat(document.getElementById('calc-ciclo').value) || 0;
+            const cav = parseFloat(document.getElementById('calc-cav').value) || 1;
+            const meta = parseFloat(document.getElementById('calc-meta').value) || 0;
+            const pigPct = parseFloat(document.getElementById('calc-pig').value) || 0;
+
+            if(ciclo <= 0) return alert("Ciclo inválido");
+
+            // Fórmulas
+            // 1. PPH = (3600 / Ciclo) * Cav
+            const pph = (3600 / ciclo) * cav;
+            // 2. Horas = Meta / PPH
+            const horas = meta / pph;
+            // 3. Material (kg) = (Peso * Meta) / 1000
+            const materialKg = (peso * meta) / 1000;
+            // 4. Pigmento (kg) = Material * %
+            const pigmentoKg = materialKg * (pigPct / 100);
+
+            // Exibir
+            document.getElementById('res-horas').innerText = horas.toFixed(1) + 'h';
+            document.getElementById('res-pph').innerText = Math.round(pph);
+            document.getElementById('res-mat').innerText = materialKg.toFixed(2) + ' kg';
+            document.getElementById('res-pigment').innerText = pigmentoKg.toFixed(3) + ' kg';
+
+            document.getElementById('res-container').classList.remove('hidden');
+
+            ultimoCalculo = { meta, ciclo, cav, horas, materialKg, pigmentoKg };
+        }
+
+        function salvarComoPedido() {
+            if(!ultimoCalculo) return;
+            const nomeProduto = prompt("Digite o nome do Produto/Cliente:");
+            if(nomeProduto) {
+                Sistema.pedidos.push({
+                    id: Date.now(),
+                    produto: nomeProduto,
+                    ...ultimoCalculo,
+                    data: new Date().toLocaleDateString()
+                });
+                salvarDadosManual();
+                renderizarPedidos();
+                alert("Pedido salvo com sucesso!");
             }
-        };
+        }
 
-        const UI = {
-            initSelectors() {
-                // Login Select
-                const ls = document.getElementById('login-machine');
-                ls.innerHTML = '<option value="">Selecione a Máquina</option>';
-                Store.data.maquinas.forEach(m => ls.innerHTML += `<option value="${m.id}">${m.nome}</option>`);
+        function renderizarPedidos() {
+            const lista = document.getElementById('lista-pedidos');
+            lista.innerHTML = '';
+            Sistema.pedidos.forEach((p, idx) => {
+                lista.innerHTML += `
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center group hover:bg-white hover:shadow-md transition">
+                        <div>
+                            <p class="font-bold text-gray-800">${p.produto}</p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fa-solid fa-bullseye"></i> ${p.meta} un | 
+                                <i class="fa-solid fa-clock"></i> ${p.horas.toFixed(1)}h |
+                                <i class="fa-solid fa-cube"></i> ${p.materialKg.toFixed(1)}kg
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                             <button onclick="carregarPedidoEmMaquina(${idx})" class="text-blue-500 hover:text-blue-700 bg-white p-2 rounded shadow-sm text-xs font-bold" title="Usar na Máquina">USAR</button>
+                             <button onclick="removerPedido(${idx})" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('contador-pedidos').innerText = Sistema.pedidos.length;
+        }
 
-                // Machine Panel Operator Select
-                const ms = document.getElementById('mach-op-select');
-                if(ms) {
-                    ms.innerHTML = '<option value="">Selecionar Operador...</option>';
-                    Store.data.operadores.forEach(op => ms.innerHTML += `<option value="${op}">${op}</option>`);
-                }
-            },
+        function removerPedido(idx) {
+            if(confirm("Apagar este pedido?")) {
+                Sistema.pedidos.splice(idx, 1);
+                salvarDadosManual();
+                renderizarPedidos();
+            }
+        }
 
-            refresh() {
-                if(Store.user?.type === 'admin') {
-                    this.renderDashboard();
-                    this.renderOrders();
-                    this.renderOperators();
-                } else if(Store.user?.type === 'operador') {
-                    this.renderMachine();
-                }
-            },
+        // --- OPERADORES ---
+        function renderizarOperadores() {
+            const grid = document.getElementById('grid-operadores');
+            grid.innerHTML = '';
+            Sistema.operadores.forEach((op, idx) => {
+                grid.innerHTML += `
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">${op.charAt(0)}</div>
+                            <span class="font-bold text-gray-700">${op}</span>
+                        </div>
+                        <button onclick="removerOperador(${idx})" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
+                    </div>
+                `;
+            });
+        }
 
-            renderDashboard() {
-                // KPIs
-                let totalPecas = 0, paradas = 0, totalOrders = Store.data.pedidos.length;
-                let sumMeta = 0, sumReal = 0;
-                let statsAcc = { run: 0, stop: 0, setup: 0, off: 0 };
+        function adicionarOperador() {
+            const nome = document.getElementById('novo-operador').value;
+            if(nome) {
+                Sistema.operadores.push(nome);
+                document.getElementById('novo-operador').value = '';
+                salvarDadosManual();
+                renderizarOperadores();
+            }
+        }
 
-                const tbody = document.getElementById('table-dashboard-body');
-                tbody.innerHTML = '';
+        function removerOperador(idx) {
+            Sistema.operadores.splice(idx, 1);
+            salvarDadosManual();
+            renderizarOperadores();
+        }
 
-                Store.data.maquinas.forEach(m => {
-                    totalPecas += m.op.realizado;
-                    if(m.status === 'parada' || m.status === 'desligada') paradas++;
-                    sumMeta += m.op.meta;
-                    sumReal += m.op.realizado;
-                    
-                    // Stats accumulator for doughnut
-                    statsAcc.run += m.stats.run;
-                    statsAcc.stop += m.stats.stop;
-                    statsAcc.setup += m.stats.setup;
-                    statsAcc.off += m.stats.off;
+        // --- DETALHE DA MÁQUINA (FUNCIONALIDADE COMPLETA) ---
+        function renderizarDetalheMaquina() {
+            const m = Sistema.maquinas.find(x => x.id === Sistema.maquinaSelecionada);
+            const container = document.getElementById('aba-maquina');
+            
+            // Gerar Options de Operadores
+            let optionsOp = '<option value="">Selecionar Operador...</option>';
+            Sistema.operadores.forEach(op => {
+                optionsOp += `<option value="${op}" ${m.operador === op ? 'selected' : ''}>${op}</option>`;
+            });
 
-                    // Table Row
-                    let statusColor = m.status === 'produzindo' ? 'text-green-500' : m.status === 'parada' ? 'text-red-500' : 'text-slate-500';
-                    let pct = m.op.meta > 0 ? Math.round((m.op.realizado/m.op.meta)*100) : 0;
-                    tbody.innerHTML += `
-                        <tr class="border-b border-white/5 hover:bg-white/5 transition">
-                            <td class="p-3 text-white font-bold">${m.nome}</td>
-                            <td class="p-3 uppercase font-bold text-[10px] ${statusColor}">${m.status}</td>
-                            <td class="p-3">${m.operador || '-'}</td>
-                            <td class="p-3 text-brand-light">${m.op.produto}</td>
-                            <td class="p-3 text-right text-white">${pct}%</td>
-                        </tr>
-                    `;
-                });
+            // Classes para botões de status
+            const getBtnClass = (status, type) => {
+                let base = "btn-acao flex-1 h-14 flex items-center justify-center gap-2 ";
+                if(status === type) return base + "selected " + (type==='produzindo'?'bg-green-100 text-green-700 border-green-500':type==='parada'?'bg-red-100 text-red-700 border-red-500':type==='setup'?'bg-yellow-100 text-yellow-700 border-yellow-500':'bg-gray-200 text-gray-700 border-gray-500');
+                return base + "bg-white text-gray-400 hover:bg-gray-50";
+            };
 
-                document.getElementById('kpi-total').innerText = totalPecas;
-                document.getElementById('kpi-stopped').innerText = paradas;
-                document.getElementById('kpi-orders').innerText = totalOrders;
-                document.getElementById('kpi-eff').innerText = sumMeta > 0 ? Math.round((sumReal/sumMeta)*100) + '%' : '0%';
-                document.getElementById('bar-eff').style.width = (sumMeta > 0 ? Math.round((sumReal/sumMeta)*100) : 0) + '%';
+            container.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-800 text-white p-6 flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                            <h2 class="text-3xl font-black tracking-tight">${m.nome}</h2>
+                            <div class="flex items-center gap-3 mt-2 bg-gray-700 p-2 rounded lg:w-96">
+                                <i class="fa-solid fa-user-gear text-gray-400"></i>
+                                <select onchange="setarOperador(this.value)" class="bg-transparent text-white font-bold w-full outline-none">
+                                    ${optionsOp}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 md:mt-0 text-right bg-gray-700 p-4 rounded-lg">
+                            <span class="block text-xs text-gray-400 uppercase font-bold">Produção Atual</span>
+                            <span class="block text-5xl font-mono font-bold">${m.dados.realizado}</span>
+                        </div>
+                    </div>
 
-                // Charts
-                this.renderCharts(statsAcc);
-            },
-
-            renderCharts(stats) {
-                // Bar Chart (Produção)
-                const ctxBar = document.getElementById('chart-bar').getContext('2d');
-                if(Store.charts.bar) Store.charts.bar.destroy();
-                Store.charts.bar = new Chart(ctxBar, {
-                    type: 'bar',
-                    data: {
-                        labels: Store.data.maquinas.map(m => m.nome),
-                        datasets: [{ 
-                            label: 'Peças', 
-                            data: Store.data.maquinas.map(m => m.op.realizado),
-                            backgroundColor: '#2563eb', borderRadius: 4
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#333' } }, x: { grid: { display: false } } } }
-                });
-
-                // Doughnut Chart (Tempo/Status)
-                const ctxDough = document.getElementById('chart-doughnut').getContext('2d');
-                if(Store.charts.dough) Store.charts.dough.destroy();
-                Store.charts.dough = new Chart(ctxDough, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Produzindo', 'Parada', 'Setup', 'Offline'],
-                        datasets: [{
-                            data: [stats.run, stats.stop, stats.setup, stats.off],
-                            backgroundColor: ['#00d26a', '#f8312f', '#ffc107', '#6c757d'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { color: '#fff' } } } }
-                });
-            },
-
-            renderOrders() {
-                const list = document.getElementById('orders-list');
-                list.innerHTML = '';
-                Store.data.pedidos.forEach((p, idx) => {
-                    list.innerHTML += `
-                        <div class="bg-dark-900 p-4 rounded-xl border border-white/5 flex justify-between items-center group hover:border-brand-DEFAULT transition">
+                    <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div class="space-y-6">
                             <div>
-                                <h4 class="font-bold text-white text-sm">${p.produto}</h4>
-                                <div class="text-[10px] text-slate-500 mt-1 space-x-2">
-                                    <span><i class="fa-solid fa-bullseye"></i> ${p.meta} un</span>
-                                    <span><i class="fa-solid fa-stopwatch"></i> ${p.ciclo}s</span>
-                                    <span><i class="fa-solid fa-calendar"></i> ${p.data}</span>
+                                <h4 class="text-xs font-bold text-gray-400 uppercase mb-3">Controle de Status</h4>
+                                <div class="flex gap-2 mb-2">
+                                    <button onclick="setarStatus('produzindo')" class="${getBtnClass(m.status, 'produzindo')}"><i class="fa-solid fa-play"></i> PRODUZINDO</button>
+                                    <button onclick="setarStatus('parada')" class="${getBtnClass(m.status, 'parada')}"><i class="fa-solid fa-stop"></i> PARADA</button>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="setarStatus('setup')" class="${getBtnClass(m.status, 'setup')}"><i class="fa-solid fa-tools"></i> SETUP</button>
+                                    <button onclick="setarStatus('desligada')" class="${getBtnClass(m.status, 'desligada')}"><i class="fa-solid fa-power-off"></i> OFF</button>
                                 </div>
                             </div>
-                            <button onclick="if(confirm('Apagar?')) { Store.data.pedidos.splice(${idx},1); System.save(); UI.renderOrders(); }" class="text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `;
-                });
-                document.getElementById('order-count').innerText = Store.data.pedidos.length;
-            },
 
-            renderOperators() {
-                const grid = document.getElementById('operators-grid');
-                grid.innerHTML = '';
-                Store.data.operadores.forEach((op, idx) => {
-                    grid.innerHTML += `
-                        <div class="bg-dark-900 p-4 rounded-xl border border-white/5 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">${op[0]}</div>
-                                <span class="font-bold text-slate-300 text-sm">${op}</span>
+                            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4 class="text-sm font-bold text-gray-700 uppercase">Configuração Técnica</h4>
+                                    <button onclick="alert('Vá para a aba PEDIDOS e clique em USAR para carregar um pedido aqui.')" class="text-xs text-blue-600 font-bold hover:underline">Carregar Pedido</button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="text-[10px] uppercase text-gray-400 font-bold">Produto</label><input class="w-full bg-white border border-gray-300 rounded p-2 font-bold text-gray-700" value="${m.pedido ? m.pedido.produto : 'Sem pedido'}" readonly></div>
+                                    <div><label class="text-[10px] uppercase text-gray-400 font-bold">Meta</label><input type="number" onchange="atualizarDadoManual('meta', this.value)" class="w-full bg-white border border-gray-300 rounded p-2" value="${m.dados.meta}"></div>
+                                    <div><label class="text-[10px] uppercase text-gray-400 font-bold">Ciclo (s)</label><input type="number" onchange="atualizarDadoManual('ciclo', this.value)" class="w-full bg-white border border-gray-300 rounded p-2" value="${m.dados.ciclo}"></div>
+                                    <div><label class="text-[10px] uppercase text-gray-400 font-bold">Cavidades</label><input type="number" onchange="atualizarDadoManual('cav', this.value)" class="w-full bg-white border border-gray-300 rounded p-2" value="${m.dados.cav}"></div>
+                                </div>
                             </div>
-                            <button onclick="Operators.remove(${idx})" class="text-slate-600 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
                         </div>
-                    `;
-                });
-            },
 
-            renderMachine() {
-                const m = MachineController.get();
-                if(!m) return;
-                
-                document.getElementById('mach-name').innerText = m.nome;
-                document.getElementById('mach-prod').value = m.op.produto;
-                document.getElementById('mach-target').value = m.op.meta;
-                document.getElementById('mach-cycle').value = m.op.ciclo;
-                document.getElementById('mach-cav').value = m.op.cavidades;
-                document.getElementById('mach-cav-disp').innerText = m.op.cavidades;
-                
-                // Select Operator value update
-                const sel = document.getElementById('mach-op-select');
-                if(document.activeElement !== sel) sel.value = m.operador;
+                        <div class="flex flex-col items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-8">
+                            <button onclick="registrarCiclo()" class="w-full py-10 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all active:scale-95 group">
+                                <div class="text-sm uppercase font-bold text-blue-200 mb-2">Registrar Ciclo Manual</div>
+                                <div class="text-4xl font-black flex items-center justify-center gap-3">
+                                    <i class="fa-solid fa-plus-circle group-hover:rotate-90 transition duration-300"></i>
+                                    <span>+${m.dados.cav}</span>
+                                </div>
+                            </button>
 
-                // Status Buttons Active State
-                document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-                const map = { 'produzindo': 'btn-run', 'parada': 'btn-stop', 'setup': 'btn-setup', 'desligada': 'btn-off' };
-                if(map[m.status]) document.getElementById(map[m.status]).classList.add('active');
+                            <div class="mt-8 w-full">
+                                <div class="flex justify-between text-xs text-gray-500 font-bold uppercase mb-1">
+                                    <span>Progresso da Meta</span>
+                                    <span>${Math.round((m.dados.realizado/m.dados.meta)*100) || 0}%</span>
+                                </div>
+                                <div class="w-full bg-gray-300 h-4 rounded-full overflow-hidden">
+                                    <div class="h-full bg-green-500 transition-all duration-500" style="width: ${Math.min(100, (m.dados.realizado/m.dados.meta)*100) || 0}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
-                // Ring & Counters
-                document.getElementById('mach-count').innerText = m.op.realizado;
-                const pct = m.op.meta > 0 ? Math.min(100, Math.round((m.op.realizado / m.op.meta)*100)) : 0;
-                document.getElementById('mach-pct').innerText = pct + '%';
-                
-                // Ring Color and Offset (690 is approx 2*PI*110)
-                const offset = 690 - (690 * pct) / 100;
-                const ring = document.getElementById('mach-ring');
-                ring.style.strokeDashoffset = offset;
-                
-                let color = '#2563eb'; // Blue default
-                if(m.status === 'produzindo') color = '#00d26a';
-                if(m.status === 'parada') color = '#f8312f';
-                if(m.status === 'setup') color = '#ffc107';
-                if(m.status === 'desligada') color = '#4b5563';
-                ring.style.stroke = color;
+        // --- AÇÕES DA MÁQUINA ---
+        function setarOperador(nome) {
+            const m = Sistema.maquinas.find(x => x.id === Sistema.maquinaSelecionada);
+            m.operador = nome;
+            salvarDadosManual();
+        }
+
+        function setarStatus(status) {
+            const m = Sistema.maquinas.find(x => x.id === Sistema.maquinaSelecionada);
+            m.status = status;
+            salvarDadosManual();
+            renderizarDetalheMaquina(); // Atualiza botões
+            renderizarMenuMaquinas(); // Atualiza bolinha sidebar
+        }
+
+        function atualizarDadoManual(campo, valor) {
+            const m = Sistema.maquinas.find(x => x.id === Sistema.maquinaSelecionada);
+            if(campo === 'meta' || campo === 'cav') m.dados[campo] = parseInt(valor);
+            else m.dados[campo] = parseFloat(valor);
+            salvarDadosManual();
+        }
+
+        function registrarCiclo() {
+            const m = Sistema.maquinas.find(x => x.id === Sistema.maquinaSelecionada);
+            if(m.status !== 'produzindo') {
+                if(!confirm("Máquina não está em 'Produzindo'. Registrar mesmo assim?")) return;
             }
-        };
+            m.dados.realizado += m.dados.cav;
+            salvarDadosManual();
+            renderizarDetalheMaquina();
+        }
 
-        // --- INIT ---
-        window.addEventListener('DOMContentLoaded', () => System.init());
-        
-        // Listeners for Machine Input Changes
-        ['mach-target', 'mach-cycle', 'mach-cav'].forEach(id => {
-            document.getElementById(id).addEventListener('change', (e) => {
-                const m = MachineController.get();
-                if(id.includes('target')) m.op.meta = parseInt(e.target.value);
-                if(id.includes('cycle')) m.op.ciclo = parseFloat(e.target.value);
-                if(id.includes('cav')) m.op.cavidades = parseInt(e.target.value);
-                System.save();
-                UI.renderMachine();
+        function carregarPedidoEmMaquina(idxPedido) {
+            const p = Sistema.pedidos[idxPedido];
+            if(!p) return;
+            
+            // Pede qual maquina
+            const idMaq = prompt("Digite o número da máquina (1 a 4) para carregar este pedido:");
+            const m = Sistema.maquinas.find(x => x.id == idMaq);
+            
+            if(m) {
+                m.pedido = p;
+                m.dados.meta = p.meta;
+                m.dados.ciclo = p.ciclo;
+                m.dados.cav = p.cav;
+                m.dados.realizado = 0; // Reseta contador
+                salvarDadosManual();
+                alert(`Pedido carregado na ${m.nome}`);
+            } else {
+                alert("Máquina inválida");
+            }
+        }
+
+        // --- SISTEMA DE TEMPO E SAVE ---
+        function contabilizarTempo() {
+            // Roda a cada 5s, adiciona 5s (em horas = 5/3600)
+            const incremento = 5/3600;
+            Sistema.maquinas.forEach(m => {
+                if(m.status === 'produzindo') m.tempos.run += incremento;
+                else if(m.status === 'parada') m.tempos.stop += incremento;
+                else if(m.status === 'setup') m.tempos.setup += incremento;
+                else m.tempos.off += incremento;
             });
-        });
+            // Se estiver na aba dashboard, atualiza grafico em tempo real
+            if(document.getElementById('aba-dashboard').classList.contains('aba-ativa')) {
+                atualizarDashboard(); 
+            }
+        }
+
+        async function salvarDadosManual() {
+            const btn = document.querySelector('.fa-cloud-arrow-up');
+            if(btn) btn.classList.add('fa-fade');
+            
+            try {
+                await sb.from('sistema').update({ conteudo: Sistema }).eq('id', 1);
+            } catch(e) { console.error("Erro ao salvar nuvem", e); }
+            
+            if(btn) btn.classList.remove('fa-fade');
+        }
 
     </script>
 </body>
-</html>
+</html>,
