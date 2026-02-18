@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast Manager | v3.0 Enterprise</title>
+    <title>Triplast | Dashboard</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/pt-br.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Inter:wght@300;400;600;800&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -19,34 +21,35 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        tech: ['Rajdhani', 'sans-serif'],
+                        tech: ['"Chakra Petch"', 'sans-serif'],
                         mono: ['"Roboto Mono"', 'monospace'],
                     },
                     colors: {
-                        // Paleta Industrial Dark
                         dark: { 
-                            950: '#020617', 900: '#0f172a', 800: '#1e293b', 
-                            700: '#334155', 600: '#475569', surface: '#111827'
+                            950: '#050505', 900: '#0a0a0a', 800: '#121212', 
+                            700: '#1e1e1e', 600: '#2d2d2d', border: '#333333'
                         },
                         brand: { 
-                            DEFAULT: '#3b82f6', glow: '#60a5fa', dark: '#1d4ed8' 
+                            DEFAULT: '#2563eb', light: '#60a5fa', dark: '#1e40af', glow: 'rgba(37, 99, 235, 0.5)' 
                         },
                         status: {
-                            run: '#22c55e',   // Verde (Produzindo)
-                            stop: '#ef4444',  // Vermelho (Parada)
-                            setup: '#eab308', // Amarelo (Setup)
-                            wait: '#94a3b8'   // Cinza (Aguardando)
+                            run: '#00d26a', stop: '#f8312f', setup: '#ffc107', offline: '#6c757d'
                         }
                     },
                     boxShadow: {
-                        'neon': '0 0 15px rgba(59, 130, 246, 0.5)',
-                        'neon-green': '0 0 15px rgba(34, 197, 94, 0.4)',
-                        'neon-red': '0 0 15px rgba(239, 68, 68, 0.4)',
-                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                        'neon-blue': '0 0 10px rgba(37, 99, 235, 0.6), 0 0 20px rgba(37, 99, 235, 0.3)',
+                        'neon-green': '0 0 10px rgba(0, 210, 106, 0.6)',
+                        'neon-red': '0 0 10px rgba(248, 49, 47, 0.6)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
                     },
                     animation: {
-                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'spin-slow': 'spin 3s linear infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
                     }
                 }
             }
@@ -54,411 +57,489 @@
     </script>
 
     <style>
-        /* Base */
+        /* Fundo e Estrutura */
         body {
-            background-color: #020617;
+            background-color: #050505;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(15, 23, 42, 1) 0px, transparent 50%);
-            color: #e2e8f0;
-            overflow-x: hidden;
+                linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)),
+                url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+            color: #e5e5e5;
+            overflow: hidden; 
         }
 
-        /* Glassmorphism Panels */
+        /* Efeito de Vidro (Glassmorphism) */
         .glass-panel {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        .glass-header {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(30, 30, 30, 0.6);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Inputs Modernos */
-        .input-tech {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(71, 85, 105, 0.5);
-            color: white;
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
         }
+        
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(40, 40, 40, 0.7);
+        }
+
+        /* Inputs Futuristas */
+        .input-tech {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s;
+        }
         .input-tech:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            border-color: #2563eb;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
             outline: none;
-            background: rgba(15, 23, 42, 0.9);
         }
 
-        /* Botões 3D Flat */
-        .btn-3d {
-            transition: all 0.1s;
-            position: relative;
-            top: 0;
-        }
-        .btn-3d:active {
-            top: 2px;
-            box-shadow: none !important;
-        }
+        /* Scrollbars Customizadas */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* Tabela Estilizada */
+        .table-custom th {
+            background: #151515;
+            color: #888;
+            font-family: 'Chakra Petch', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 12px 16px;
+            border-bottom: 2px solid #222;
+        }
+        .table-custom td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #222;
+            color: #ccc;
+            font-size: 0.875rem;
+        }
+        .table-custom tr:hover td { background: rgba(255,255,255,0.02); color: #fff; }
+
+        /* Modal Overlay */
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            z-index: 50; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-backdrop.active { opacity: 1; pointer-events: all; }
+        .modal-content {
+            background: #121212; border: 1px solid #333;
+            transform: scale(0.9); transition: transform 0.3s;
+        }
+        .modal-backdrop.active .modal-content { transform: scale(1); }
 
         /* Loader */
-        .loader-wrapper {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #020617; z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
-            flex-direction: column;
-            transition: opacity 0.5s ease-out;
+        #loader-overlay { z-index: 9999; transition: opacity 0.5s; }
+        .loader-ring {
+            display: inline-block; position: relative; width: 80px; height: 80px;
         }
-
-        /* Classes Utilitárias de Estado */
-        .status-badge {
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .loader-ring div {
+            box-sizing: border-box; display: block; position: absolute;
+            width: 64px; height: 64px; margin: 8px; border: 4px solid #fff;
+            border-radius: 50%; animation: loader-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: #2563eb transparent transparent transparent;
         }
-
-        .text-glow { text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-
-        /* Grids Customizados */
-        .machine-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+        .loader-ring div:nth-child(1) { animation-delay: -0.45s; }
+        .loader-ring div:nth-child(2) { animation-delay: -0.3s; }
+        .loader-ring div:nth-child(3) { animation-delay: -0.15s; }
+        @keyframes loader-ring {
+            0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }
         }
-
-        /* Notificação */
-        #toast-container {
-            position: fixed; bottom: 2rem; right: 2rem; z-index: 100;
-            transform: translateY(150%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        #toast-container.active { transform: translateY(0); }
     </style>
 </head>
-<body class="h-screen flex flex-col antialiased selection:bg-brand-dark selection:text-white">
+<body class="h-screen flex flex-col antialiased">
 
-    <div id="loader" class="loader-wrapper">
-        <div class="relative w-24 h-24 mb-6">
-            <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-t-brand-DEFAULT border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-        </div>
-        <h2 class="text-2xl font-tech font-bold text-white tracking-widest uppercase">Triplast<span class="text-brand-DEFAULT">System</span></h2>
-        <p class="text-slate-500 text-sm font-mono mt-2" id="loader-msg">Conectando ao banco de dados...</p>
+    <div id="loader-overlay" class="fixed inset-0 bg-dark-950 flex flex-col items-center justify-center">
+        <div class="loader-ring"><div></div><div></div><div></div><div></div></div>
+        <h2 class="mt-4 text-xl font-tech font-bold text-white tracking-widest uppercase">Inicializando Sistema...</h2>
+        <p class="text-xs text-slate-500 font-mono mt-2">Conectando ao Cluster Seguro</p>
     </div>
 
-    <section id="screen-login" class="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
-            <i class="fa-solid fa-gear absolute top-10 left-10 text-9xl animate-spin-slow text-slate-700"></i>
-            <i class="fa-solid fa-microchip absolute bottom-10 right-10 text-9xl text-slate-700"></i>
+    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2"></div>
+
+    <div id="generic-modal" class="modal-backdrop">
+        <div class="modal-content w-full max-w-md rounded-xl shadow-2xl overflow-hidden">
+            <div class="bg-dark-800 p-4 border-b border-dark-border flex justify-between items-center">
+                <h3 id="modal-title" class="font-tech font-bold text-white uppercase">Título</h3>
+                <button onclick="Modal.close()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div id="modal-body" class="p-6">
+                </div>
+            <div class="bg-dark-800 p-4 border-t border-dark-border flex justify-end gap-2" id="modal-footer">
+                <button onclick="Modal.close()" class="px-4 py-2 rounded text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5">Cancelar</button>
+                <button id="modal-confirm-btn" class="px-4 py-2 rounded text-sm font-bold bg-brand-DEFAULT text-white shadow-neon-blue">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <section id="screen-login" class="flex-1 flex items-center justify-center relative">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-10">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-DEFAULT rounded-full blur-[128px]"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600 rounded-full blur-[128px]"></div>
         </div>
 
-        <div class="w-full max-w-lg glass-panel rounded-2xl p-8 z-10 shadow-glass border-t border-white/10">
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 mb-4 shadow-neon">
-                    <i class="fa-solid fa-cube text-3xl text-white"></i>
+        <div class="w-full max-w-lg glass-panel rounded-2xl p-10 z-10 border border-white/10 animate-slide-up relative">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-DEFAULT to-transparent"></div>
+            
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-dark-800 border border-dark-border mb-6 shadow-neon-blue">
+                    <i class="fa-solid fa-network-wired text-4xl text-brand-DEFAULT"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-white font-tech">Acesso ao Sistema</h1>
-                <p class="text-slate-400 text-sm">Controle e Monitoramento de Produção</p>
+                <h1 class="text-4xl font-bold text-white font-tech tracking-wide">TRIPLAST <span class="text-brand-DEFAULT">TITANIUM</span></h1>
+                <p class="text-slate-500 text-sm mt-2 font-mono">v4.0.0 | Secure Environment</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 bg-dark-900/50 p-1.5 rounded-xl mb-6">
-                <button onclick="toggleLoginMode('operador')" id="btn-mode-operador" class="py-2.5 rounded-lg text-sm font-bold transition-all bg-brand-600 text-white shadow-lg">
-                    <i class="fa-solid fa-user-hard-hat mr-2"></i> Operador
+            <div class="grid grid-cols-2 gap-2 bg-dark-900 p-1.5 rounded-xl mb-8 border border-dark-border">
+                <button onclick="Auth.toggleMode('operador')" id="btn-mode-operador" class="py-3 rounded-lg text-sm font-bold transition-all bg-brand-DEFAULT text-white shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-hard-hat"></i> Operador
                 </button>
-                <button onclick="toggleLoginMode('admin')" id="btn-mode-admin" class="py-2.5 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-user-tie mr-2"></i> Admin
+                <button onclick="Auth.toggleMode('admin')" id="btn-mode-admin" class="py-3 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-shield"></i> Gerência
                 </button>
             </div>
 
-            <form onsubmit="handleLogin(event)" class="space-y-5">
-                <div id="login-fields-operador" class="space-y-4 animate-fade-in">
+            <form onsubmit="Auth.handleLogin(event)" class="space-y-6">
+                <div id="login-fields-operador" class="animate-fade-in">
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Selecione a Máquina</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-robot absolute left-4 top-3.5 text-slate-500"></i>
-                            <select id="login-machine-select" class="input-tech w-full pl-11 pr-4 py-3 rounded-xl appearance-none cursor-pointer">
-                                <option value="">Carregando lista...</option>
+                        <label class="block text-xs font-bold text-brand-light uppercase mb-2 ml-1">Posto de Trabalho (Máquina)</label>
+                        <div class="relative group">
+                            <i class="fa-solid fa-industry absolute left-4 top-4 text-slate-500 group-focus-within:text-brand-DEFAULT transition-colors"></i>
+                            <select id="login-machine-select" class="input-tech w-full pl-12 pr-4 py-4 rounded-xl appearance-none cursor-pointer text-sm font-bold">
+                                <option value="">Carregando dados...</option>
                             </select>
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-slate-500 pointer-events-none"></i>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-slate-500 pointer-events-none"></i>
                         </div>
                     </div>
                 </div>
 
-                <div id="login-fields-admin" class="space-y-4 hidden animate-fade-in">
+                <div id="login-fields-admin" class="hidden animate-fade-in">
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Senha de Administração</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-500"></i>
-                            <input type="password" id="login-admin-pass" placeholder="••••••••" class="input-tech w-full pl-11 pr-4 py-3 rounded-xl font-mono">
+                        <label class="block text-xs font-bold text-brand-light uppercase mb-2 ml-1">Credencial de Administrador</label>
+                        <div class="relative group">
+                            <i class="fa-solid fa-key absolute left-4 top-4 text-slate-500 group-focus-within:text-brand-DEFAULT transition-colors"></i>
+                            <input type="password" id="login-admin-pass" placeholder="Código de Acesso" class="input-tech w-full pl-12 pr-4 py-4 rounded-xl font-mono tracking-widest">
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-2 text-right">Esqueceu? Contate o suporte TI.</p>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-900/50 transition-all transform active:scale-95 btn-3d flex items-center justify-center gap-2 group">
-                    <span>Entrar no Painel</span>
-                    <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                <button type="submit" class="w-full bg-gradient-to-r from-brand-dark to-brand-DEFAULT hover:from-brand-DEFAULT hover:to-brand-light text-white font-bold py-4 rounded-xl shadow-neon-blue transition-all transform active:scale-95 flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
+                    <span>Acessar Painel</span> <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
             
-            <div class="mt-6 pt-6 border-t border-white/5 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div id="db-status-dot" class="w-2 h-2 rounded-full bg-slate-500"></div>
-                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Banco de Dados</span>
-                </div>
-                <span class="text-[10px] text-slate-600 font-mono">v3.0.1 Stable</span>
+            <div class="mt-8 pt-6 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-600 font-mono">
+                <span class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> DB: Connected</span>
+                <span>ID: S-2026-X</span>
             </div>
         </div>
     </section>
 
-    <div id="app-layout" class="hidden flex-1 flex overflow-hidden">
+    <div id="app-layout" class="hidden flex-1 flex overflow-hidden bg-dark-950">
         
-        <aside class="w-20 lg:w-64 bg-dark-900 border-r border-white/5 flex flex-col justify-between z-20 shadow-2xl">
+        <aside class="w-20 lg:w-72 bg-dark-900 border-r border-dark-border flex flex-col justify-between z-30 transition-all duration-300">
             <div>
-                <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/5 bg-dark-950/50">
-                    <i class="fa-solid fa-cube text-brand-DEFAULT text-2xl"></i>
-                    <span class="ml-3 font-tech font-bold text-xl text-white tracking-wide hidden lg:block">TRIPLAST</span>
+                <div class="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-dark-border bg-dark-950/50">
+                    <i class="fa-solid fa-cube text-brand-DEFAULT text-2xl shadow-neon-blue rounded"></i>
+                    <div class="ml-3 hidden lg:block">
+                        <h1 class="font-tech font-bold text-xl text-white leading-none">TRIPLAST</h1>
+                        <span class="text-[10px] text-brand-light font-mono tracking-widest">TITANIUM</span>
+                    </div>
                 </div>
 
-                <nav class="mt-6 px-2 space-y-2">
-                    <div id="nav-group-admin" class="hidden">
-                        <p class="px-4 text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2 hidden lg:block">Gestão</p>
-                        <button onclick="Router.go('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                            <i class="fa-solid fa-grid-2 text-lg w-6 text-center group-hover:text-brand-400"></i>
-                            <span class="hidden lg:block font-medium">Visão Geral</span>
+                <nav class="mt-8 px-3 space-y-1">
+                    <div id="nav-group-admin" class="hidden space-y-1">
+                        <p class="px-3 text-[10px] font-bold text-slate-600 uppercase mb-2 mt-2 hidden lg:block">Monitoramento</p>
+                        
+                        <button onclick="Router.go('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-4 px-4 py-3.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
+                            <i class="fa-solid fa-chart-pie text-lg w-6 text-center group-hover:text-brand-light"></i>
+                            <span class="hidden lg:block font-medium text-sm">Visão Geral</span>
                         </button>
-                        <button onclick="Router.go('config')" id="nav-config" class="nav-item w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
-                            <i class="fa-solid fa-sliders text-lg w-6 text-center group-hover:text-brand-400"></i>
-                            <span class="hidden lg:block font-medium">Configurações</span>
+                        
+                        <button onclick="Router.go('gestao-op')" id="nav-gestao-op" class="nav-item w-full flex items-center gap-4 px-4 py-3.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
+                            <i class="fa-solid fa-clipboard-check text-lg w-6 text-center group-hover:text-brand-light"></i>
+                            <span class="hidden lg:block font-medium text-sm">Gestão de O.P.</span>
+                        </button>
+
+                         <p class="px-3 text-[10px] font-bold text-slate-600 uppercase mb-2 mt-6 hidden lg:block">Análise</p>
+
+                        <button onclick="Router.go('auditoria')" id="nav-auditoria" class="nav-item w-full flex items-center gap-4 px-4 py-3.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
+                            <i class="fa-solid fa-list-ol text-lg w-6 text-center group-hover:text-brand-light"></i>
+                            <span class="hidden lg:block font-medium text-sm">Log de Eventos</span>
+                        </button>
+                        
+                        <button onclick="Router.go('config')" id="nav-config" class="nav-item w-full flex items-center gap-4 px-4 py-3.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all group">
+                            <i class="fa-solid fa-cogs text-lg w-6 text-center group-hover:text-brand-light"></i>
+                            <span class="hidden lg:block font-medium text-sm">Configurações</span>
                         </button>
                     </div>
 
                     <div id="nav-group-operador" class="hidden">
-                         <p class="px-4 text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2 hidden lg:block">Produção</p>
-                        <button onclick="Router.go('machine')" id="nav-machine" class="nav-item active w-full flex items-center gap-4 px-4 py-3 bg-brand-600/10 text-brand-400 border border-brand-600/20 rounded-xl transition-all">
-                            <i class="fa-solid fa-industry text-lg w-6 text-center"></i>
-                            <span class="hidden lg:block font-bold">Minha Máquina</span>
+                        <button onclick="Router.go('machine')" id="nav-machine" class="nav-item active w-full flex items-center gap-4 px-4 py-4 bg-brand-DEFAULT/10 text-brand-light border border-brand-DEFAULT/20 rounded-xl shadow-neon-blue">
+                            <i class="fa-solid fa-microchip text-xl w-6 text-center"></i>
+                            <span class="hidden lg:block font-bold">Painel da Máquina</span>
                         </button>
                     </div>
                 </nav>
             </div>
 
-            <div class="p-4 border-t border-white/5 bg-dark-950/30">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-700 to-slate-600 flex items-center justify-center border border-white/10 shadow-lg">
+            <div class="p-4 border-t border-dark-border bg-dark-950/30">
+                <div class="flex items-center gap-3 p-2 rounded-xl border border-transparent hover:border-dark-border hover:bg-white/5 transition-all cursor-pointer">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center border border-white/10 shadow-lg relative">
                         <i class="fa-solid fa-user text-slate-300"></i>
+                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-dark-900 rounded-full"></div>
                     </div>
                     <div class="hidden lg:block overflow-hidden">
                         <p id="user-display-name" class="text-sm font-bold text-white truncate">Usuário</p>
-                        <p id="user-role-label" class="text-[10px] text-brand-400 font-bold uppercase tracking-wider">Acesso</p>
+                        <p id="user-role-label" class="text-[10px] text-brand-light font-bold uppercase tracking-wider">Online</p>
                     </div>
-                    <button onclick="App.logout()" class="ml-auto text-slate-500 hover:text-red-400 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">
-                        <i class="fa-solid fa-right-from-bracket"></i>
+                    <button onclick="Auth.logout()" class="ml-auto text-slate-500 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center" title="Sair">
+                        <i class="fa-solid fa-power-off"></i>
                     </button>
                 </div>
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col relative bg-dark-950 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-opacity-20">
-            
-            <header class="h-16 glass-header flex items-center justify-between px-6 z-10 sticky top-0">
-                <div class="flex items-center gap-4">
-                    <h2 id="page-title" class="text-lg font-bold text-white flex items-center gap-2 font-tech tracking-wide uppercase">
-                        Painel de Controle
-                    </h2>
+        <main class="flex-1 flex flex-col relative bg-dark-950">
+            <header class="h-20 bg-dark-900/80 backdrop-blur border-b border-dark-border flex items-center justify-between px-8 z-20">
+                <div>
+                    <h2 id="page-title" class="text-2xl font-bold text-white font-tech uppercase tracking-wide">Dashboard</h2>
+                    <p class="text-[10px] text-slate-500 font-mono" id="page-subtitle">Visão geral do sistema</p>
                 </div>
                 
-                <div class="flex items-center gap-4">
-                    <div class="hidden md:block text-right">
-                        <p id="clock-time" class="text-lg font-mono font-bold text-white leading-none">00:00</p>
-                        <p id="clock-date" class="text-[10px] text-slate-400 uppercase font-bold">Data</p>
+                <div class="flex items-center gap-6">
+                    <div class="text-right hidden md:block">
+                        <p id="clock-time" class="text-xl font-mono font-bold text-white leading-none tracking-widest">00:00:00</p>
+                        <p id="clock-date" class="text-[10px] text-brand-light uppercase font-bold tracking-wide mt-1">Carregando...</p>
                     </div>
                     
                     <div class="h-8 w-px bg-white/10 mx-2"></div>
 
-                    <div class="flex items-center gap-2 bg-dark-800/80 px-3 py-1.5 rounded-full border border-white/5 shadow-inner">
-                        <div id="cloud-indicator" class="w-2 h-2 rounded-full bg-green-500 shadow-neon-green animate-pulse"></div>
-                        <span class="text-[10px] font-mono text-slate-400 font-bold">ONLINE</span>
+                    <div id="connection-status" class="flex items-center gap-2 bg-dark-800 px-4 py-2 rounded-full border border-dark-border shadow-inner">
+                        <div id="cloud-indicator" class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-neon-green animate-pulse"></div>
+                        <span class="text-[10px] font-mono text-slate-300 font-bold uppercase">System Online</span>
                     </div>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative scroll-smooth" id="viewport">
+            <div class="flex-1 overflow-y-auto p-6 lg:p-10 relative scroll-smooth space-y-8 custom-scrollbar" id="viewport">
                 
                 <div id="view-dashboard" class="view-section hidden space-y-8 animate-fade-in">
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-brand-500 relative overflow-hidden group">
-                            <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-boxes-stacked text-6xl"></i>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-brand-DEFAULT relative overflow-hidden group">
+                            <div class="absolute right-[-10px] top-[-10px] text-8xl text-brand-DEFAULT opacity-5 transform rotate-12 group-hover:scale-110 transition-transform"><i class="fa-solid fa-layer-group"></i></div>
                             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Produção Total</span>
-                            <h3 class="text-3xl font-tech font-bold text-white mt-2" id="kpi-total">0</h3>
-                            <p class="text-[10px] text-brand-400 mt-1 font-mono">+0% vs ontem</p>
+                            <h3 class="text-4xl font-tech font-bold text-white mt-2" id="kpi-total">0</h3>
+                            <p class="text-xs text-brand-light mt-1 font-mono">Peças Hoje</p>
                         </div>
                         
-                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-status-run relative overflow-hidden">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Eficiência (OEE)</span>
-                            <h3 class="text-3xl font-tech font-bold text-status-run mt-2 text-glow" id="kpi-oee">0%</h3>
-                             <div class="w-full h-1 bg-dark-900 mt-2 rounded-full overflow-hidden">
-                                <div id="kpi-bar-oee" class="h-full bg-status-run w-0 transition-all duration-1000"></div>
-                            </div>
+                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-status-run relative overflow-hidden group">
+                            <div class="absolute right-[-10px] top-[-10px] text-8xl text-status-run opacity-5 transform rotate-12 group-hover:scale-110 transition-transform"><i class="fa-solid fa-gauge-high"></i></div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Eficiência Global</span>
+                            <h3 class="text-4xl font-tech font-bold text-status-run mt-2" id="kpi-oee">0%</h3>
+                            <div class="w-full bg-dark-800 h-1.5 rounded-full mt-2 overflow-hidden"><div id="kpi-bar-oee" class="h-full bg-status-run" style="width:0%"></div></div>
                         </div>
 
-                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-status-stop relative overflow-hidden">
+                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-status-stop relative overflow-hidden group">
+                            <div class="absolute right-[-10px] top-[-10px] text-8xl text-status-stop opacity-5 transform rotate-12 group-hover:scale-110 transition-transform"><i class="fa-solid fa-triangle-exclamation"></i></div>
                             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Máquinas Paradas</span>
-                            <h3 class="text-3xl font-tech font-bold text-white mt-2" id="kpi-stopped">0</h3>
-                            <p class="text-[10px] text-status-stop mt-1 font-bold">Atenção Requerida</p>
+                            <h3 class="text-4xl font-tech font-bold text-white mt-2" id="kpi-stopped">0</h3>
+                            <p class="text-xs text-status-stop mt-1 font-bold">Atenção Requerida</p>
                         </div>
 
-                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-purple-500 relative overflow-hidden">
+                        <div class="glass-panel p-6 rounded-2xl border-l-4 border-purple-500 relative overflow-hidden group">
+                            <div class="absolute right-[-10px] top-[-10px] text-8xl text-purple-500 opacity-5 transform rotate-12 group-hover:scale-110 transition-transform"><i class="fa-solid fa-clock"></i></div>
                             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Turno Atual</span>
-                            <h3 class="text-3xl font-tech font-bold text-white mt-2">1º</h3>
-                            <p class="text-[10px] text-purple-400 mt-1 font-mono">06:00 - 14:00</p>
+                            <h3 class="text-4xl font-tech font-bold text-white mt-2">1º</h3>
+                            <p class="text-xs text-purple-400 mt-1 font-mono">06:00 - 14:00</p>
                         </div>
                     </div>
 
-                    <div>
-                        <div class="flex justify-between items-end mb-4 px-2">
-                            <h3 class="text-xl font-bold text-white font-tech uppercase tracking-wide border-b-2 border-brand-500 pb-1">Parque Fabril</h3>
-                            <div class="flex gap-4 text-[10px] font-bold uppercase text-slate-400">
-                                <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-status-run"></div> Prod</span>
-                                <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-status-stop"></div> Parado</span>
-                                <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-status-setup"></div> Setup</span>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass-panel p-6 rounded-2xl border border-white/5">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-tech font-bold text-white uppercase flex items-center gap-2"><i class="fa-solid fa-chart-line text-brand-DEFAULT"></i> Performance de Produção</h3>
+                                <button class="text-xs bg-dark-800 text-slate-400 px-3 py-1 rounded border border-dark-border hover:text-white"><i class="fa-solid fa-download mr-1"></i> CSV</button>
+                            </div>
+                            <div class="h-72 w-full">
+                                <canvas id="chart-main"></canvas>
                             </div>
                         </div>
-                        <div id="admin-machine-grid" class="machine-grid">
+
+                        <div class="lg:col-span-1 space-y-4">
+                            <h3 class="font-tech font-bold text-white uppercase text-sm border-b border-white/10 pb-2">Status em Tempo Real</h3>
+                            <div id="dashboard-machine-list" class="space-y-3">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+                        <div class="p-4 bg-dark-900/50 border-b border-white/5 flex justify-between items-center">
+                            <h3 class="font-bold text-white font-tech uppercase text-sm"><i class="fa-solid fa-list mr-2 text-brand-DEFAULT"></i> Detalhamento de O.P.</h3>
+                            <button onclick="System.exportCSV()" class="text-xs font-bold text-brand-light hover:text-white uppercase"><i class="fa-solid fa-file-export mr-1"></i> Exportar</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Máquina</th>
+                                        <th>Operador</th>
+                                        <th>O.P.</th>
+                                        <th>Produto</th>
+                                        <th class="text-center">Meta</th>
+                                        <th class="text-center">Realizado</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-resumo-body" class="text-slate-300 font-mono">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-gestao-op" class="view-section hidden space-y-6 animate-fade-in">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-white font-tech">Controle de Produção</h2>
+                        <button onclick="Modal.info('Ajuda', 'Para criar uma nova OP, edite os campos da máquina desejada e clique em salvar.')" class="text-slate-500 hover:text-white"><i class="fa-solid fa-circle-question"></i></button>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl border border-white/10">
+                        <div class="grid gap-8" id="gestao-op-container">
                             </div>
                     </div>
                 </div>
 
-                <div id="view-machine" class="view-section hidden max-w-5xl mx-auto animate-fade-in">
-                    
-                    <div class="glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                        <div class="bg-dark-800/50 p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div id="view-auditoria" class="view-section hidden animate-fade-in">
+                    <div class="glass-panel p-6 rounded-2xl border border-white/10 h-[calc(100vh-200px)] flex flex-col">
+                        <h3 class="font-tech font-bold text-white uppercase mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-terminal text-brand-DEFAULT"></i> Log do Sistema
+                        </h3>
+                        <div id="system-logs" class="flex-1 bg-dark-950/50 rounded-xl p-4 font-mono text-xs text-slate-400 overflow-y-auto border border-dark-border space-y-2">
+                            <div class="text-brand-light">[SYSTEM] Inicializando logs...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-config" class="view-section hidden max-w-4xl mx-auto animate-fade-in">
+                    <div class="glass-panel p-8 rounded-2xl border border-white/10">
+                        <div class="flex items-center gap-4 mb-8 border-b border-white/10 pb-4">
+                            <div class="w-12 h-12 rounded-lg bg-brand-DEFAULT/20 flex items-center justify-center text-brand-light border border-brand-DEFAULT/30">
+                                <i class="fa-solid fa-sliders text-xl"></i>
+                            </div>
                             <div>
-                                <h1 class="text-4xl md:text-5xl font-tech font-bold text-white" id="op-machine-name">MÁQUINA 00</h1>
-                                <div class="flex items-center gap-3 mt-2">
-                                    <span class="bg-brand-900/50 text-brand-300 border border-brand-500/30 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                                        <i class="fa-solid fa-user"></i> <span id="op-operator-name">--</span>
+                                <h2 class="text-xl font-bold text-white font-tech">Parâmetros do Sistema</h2>
+                                <p class="text-xs text-slate-500">Listas globais para operadores</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-bold text-brand-light uppercase mb-2 tracking-widest">Lista de Produtos (CSV)</label>
+                                <textarea id="cfg-products" rows="5" class="input-tech w-full p-4 rounded-xl font-mono text-sm leading-relaxed" placeholder="Separe por vírgula..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-brand-light uppercase mb-2 tracking-widest">Lista de Operadores (CSV)</label>
+                                <textarea id="cfg-operators" rows="3" class="input-tech w-full p-4 rounded-xl font-mono text-sm leading-relaxed"></textarea>
+                            </div>
+                            <div class="flex justify-end pt-4">
+                                <button onclick="AdminController.saveConfig()" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-lg font-bold shadow-neon-green transition-all flex items-center gap-2 uppercase tracking-wide text-sm">
+                                    <i class="fa-solid fa-save"></i> Salvar Configurações
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-machine" class="view-section hidden max-w-6xl mx-auto animate-fade-in">
+                    <div class="glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative">
+                        <div class="bg-dark-800/80 p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/5 gap-4">
+                            <div>
+                                <h1 class="text-5xl font-tech font-bold text-white tracking-tight" id="op-machine-name">MQ-01</h1>
+                                <div class="flex items-center gap-4 mt-2">
+                                    <span class="text-sm font-bold text-brand-light uppercase tracking-wider bg-brand-DEFAULT/10 px-3 py-1 rounded border border-brand-DEFAULT/20">
+                                        <i class="fa-solid fa-user mr-2"></i><span id="op-operator-name">--</span>
                                     </span>
-                                    <span id="op-status-badge" class="bg-slate-800 text-slate-400 border border-slate-700 px-4 py-1 rounded text-xs font-bold uppercase tracking-wider shadow-inner">
-                                        OFFLINE
-                                    </span>
+                                    <span id="op-status-badge" class="px-4 py-1 rounded text-xs font-bold uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700">OFFLINE</span>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <span class="block text-xs font-bold text-slate-500 uppercase tracking-widest">Contador Atual</span>
-                                <span class="block text-5xl md:text-6xl font-mono font-bold text-white text-glow" id="op-counter-big">0</span>
+                            <div class="text-right bg-dark-950/30 p-4 rounded-xl border border-white/5 min-w-[200px]">
+                                <span class="block text-xs text-slate-500 uppercase font-bold tracking-widest mb-1">Peças Produzidas</span>
+                                <span class="block text-6xl font-mono font-bold text-white drop-shadow-lg" id="op-counter-big">0</span>
                             </div>
                         </div>
 
                         <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
                             
                             <div class="lg:col-span-5 space-y-6">
-                                <div class="bg-dark-900/40 p-5 rounded-2xl border border-white/5">
-                                    <label class="text-[10px] font-bold text-brand-400 uppercase tracking-widest mb-2 block">Ordem de Produção</label>
-                                    <div class="flex gap-2 mb-4">
-                                        <input type="text" id="op-input-number" class="input-tech flex-1 p-3 rounded-lg font-mono text-lg font-bold text-center uppercase" placeholder="OP-000">
-                                        <button class="bg-brand-600 hover:bg-brand-500 text-white w-12 rounded-lg shadow-lg flex items-center justify-center">
-                                            <i class="fa-solid fa-check"></i>
-                                        </button>
-                                    </div>
+                                <div class="bg-dark-900/40 p-6 rounded-2xl border border-white/5 shadow-inner">
+                                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Dados da Ordem</h4>
                                     
-                                    <label class="text-[10px] font-bold text-brand-400 uppercase tracking-widest mb-2 block">Produto</label>
-                                    <select id="op-input-product" class="input-tech w-full p-3 rounded-lg mb-4 text-sm font-semibold bg-dark-900">
-                                        </select>
-
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-4">
                                         <div>
-                                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Meta</label>
-                                            <input type="number" id="op-input-target" class="input-tech w-full p-2 rounded-lg font-mono text-center" placeholder="0">
+                                            <label class="text-[10px] text-brand-light font-bold uppercase mb-1 block">Número da O.P.</label>
+                                            <input type="text" id="op-input-number" class="input-tech w-full p-3 rounded-lg text-lg font-bold text-center uppercase tracking-widest border-l-4 border-brand-DEFAULT">
                                         </div>
                                         <div>
-                                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Ciclo (s)</label>
-                                            <input type="number" id="op-input-cycle" class="input-tech w-full p-2 rounded-lg font-mono text-center" placeholder="0.0">
+                                            <label class="text-[10px] text-brand-light font-bold uppercase mb-1 block">Produto</label>
+                                            <select id="op-input-product" class="input-tech w-full p-3 rounded-lg font-bold bg-dark-950 text-white cursor-pointer"></select>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="text-[10px] text-brand-light font-bold uppercase mb-1 block">Meta (Qtd)</label>
+                                                <input type="number" id="op-input-target" class="input-tech w-full p-3 rounded-lg text-center font-mono font-bold">
+                                            </div>
+                                            <div>
+                                                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Ciclo (Seg)</label>
+                                                <input type="number" id="op-input-cycle" class="input-tech w-full p-3 rounded-lg text-center font-mono text-slate-400">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3">
-                                    <button onclick="MachineController.setStatus('produzindo')" class="py-4 bg-status-run/20 hover:bg-status-run hover:text-dark-950 text-status-run border border-status-run/50 rounded-xl font-bold transition-all shadow-neon-green flex flex-col items-center gap-1 group">
-                                        <i class="fa-solid fa-play text-2xl group-hover:scale-110 transition-transform"></i>
-                                        <span class="text-xs uppercase">Iniciar</span>
+                                    <button onclick="MachineController.setStatus('produzindo')" class="py-6 bg-status-run/10 border border-status-run/50 text-status-run rounded-xl font-bold text-lg hover:bg-status-run hover:text-black transition-all shadow-neon-green group active:scale-95">
+                                        <i class="fa-solid fa-play block text-3xl mb-2 group-hover:scale-110 transition-transform"></i> INICIAR
                                     </button>
-                                    <button onclick="MachineController.setStatus('parada')" class="py-4 bg-status-stop/20 hover:bg-status-stop hover:text-white text-status-stop border border-status-stop/50 rounded-xl font-bold transition-all shadow-neon-red flex flex-col items-center gap-1 group">
-                                        <i class="fa-solid fa-stop text-2xl group-hover:scale-110 transition-transform"></i>
-                                        <span class="text-xs uppercase">Parar</span>
-                                    </button>
-                                    <button onclick="MachineController.setStatus('setup')" class="col-span-2 py-3 bg-status-setup/10 hover:bg-status-setup hover:text-dark-900 text-status-setup border border-status-setup/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-tools"></i> MODO SETUP / AJUSTE
+                                    <button onclick="MachineController.setStatus('parada')" class="py-6 bg-status-stop/10 border border-status-stop/50 text-status-stop rounded-xl font-bold text-lg hover:bg-status-stop hover:text-white transition-all shadow-neon-red group active:scale-95">
+                                        <i class="fa-solid fa-stop block text-3xl mb-2 group-hover:scale-110 transition-transform"></i> PARAR
                                     </button>
                                 </div>
+                                <button onclick="MachineController.setStatus('setup')" class="w-full py-4 bg-status-setup/10 text-status-setup border border-status-setup/30 rounded-xl font-bold hover:bg-status-setup hover:text-black transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-tools"></i> MODO SETUP / MANUTENÇÃO
+                                </button>
                             </div>
 
-                            <div class="lg:col-span-7 flex flex-col">
-                                <div class="flex-1 bg-dark-900/40 rounded-2xl border border-white/5 flex flex-col items-center justify-center p-6 relative">
-                                    <div class="relative w-64 h-64">
-                                        <svg class="w-full h-full transform -rotate-90">
-                                            <circle cx="128" cy="128" r="120" stroke="#1e293b" stroke-width="12" fill="none"></circle>
-                                            <circle id="op-progress-ring" cx="128" cy="128" r="120" stroke="#3b82f6" stroke-width="12" fill="none" stroke-dasharray="753" stroke-dashoffset="753" stroke-linecap="round" class="transition-all duration-1000 ease-out shadow-neon"></circle>
+                            <div class="lg:col-span-7 flex flex-col justify-between">
+                                <div class="flex-1 bg-dark-900/30 rounded-2xl border border-white/5 p-8 flex flex-col items-center justify-center relative shadow-inner">
+                                    <div class="relative w-72 h-72">
+                                        <svg class="w-full h-full transform -rotate-90 filter drop-shadow-lg">
+                                            <circle cx="144" cy="144" r="130" stroke="#1e1e1e" stroke-width="20" fill="none"></circle>
+                                            <circle id="op-progress-ring" cx="144" cy="144" r="130" stroke="#2563eb" stroke-width="20" fill="none" stroke-dasharray="816" stroke-dashoffset="816" stroke-linecap="round" class="transition-all duration-1000 ease-out"></circle>
                                         </svg>
                                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                            <span class="text-5xl font-black text-white font-mono" id="op-percent-text">0%</span>
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-2">Concluído</span>
+                                            <span class="text-6xl font-black text-white font-mono tracking-tighter" id="op-percent-text">0%</span>
+                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-2 border border-slate-700 px-2 py-1 rounded">Progresso</span>
                                         </div>
                                     </div>
                                     
-                                    <div class="w-full mt-8 flex gap-4">
-                                        <button onclick="MachineController.addCount(-1)" class="w-16 h-16 rounded-2xl bg-dark-800 hover:bg-red-900/30 hover:text-red-400 text-slate-400 border border-white/10 font-black text-2xl transition-all btn-3d">-</button>
-                                        <button onclick="MachineController.addCount(1)" class="flex-1 h-16 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-black text-2xl shadow-neon transition-all btn-3d flex items-center justify-center gap-3">
-                                            <i class="fa-solid fa-plus text-lg"></i> 1 PEÇA
+                                    <div class="w-full mt-10 flex gap-4">
+                                        <button onclick="MachineController.addCount(-1)" class="w-20 h-20 rounded-2xl bg-dark-800 text-slate-500 hover:text-red-500 hover:bg-dark-700 border border-white/10 text-3xl font-bold transition-all active:scale-90 shadow-lg">
+                                            <i class="fa-solid fa-minus"></i>
+                                        </button>
+                                        <button onclick="MachineController.addCount(1)" class="flex-1 h-20 rounded-2xl bg-gradient-to-br from-brand-DEFAULT to-brand-dark text-white text-3xl font-black shadow-neon-blue transition-all active:scale-95 flex items-center justify-center gap-4 hover:brightness-110 border border-white/10">
+                                            <i class="fa-solid fa-plus-circle"></i> REGISTRAR PEÇA
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                        </div>
-                    </div>
-                </div>
-
-                <div id="view-config" class="view-section hidden max-w-3xl mx-auto animate-fade-in">
-                    <div class="glass-panel p-8 rounded-2xl border border-white/10">
-                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-                            <div class="w-10 h-10 rounded-lg bg-brand-900/50 flex items-center justify-center text-brand-400">
-                                <i class="fa-solid fa-database"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-xl font-bold text-white font-tech">Dados do Sistema</h2>
-                                <p class="text-xs text-slate-400">Edite as listas utilizadas pelos operadores</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-xs font-bold text-brand-400 uppercase tracking-widest mb-2">Produtos Cadastrados (CSV)</label>
-                                <textarea id="cfg-products" rows="5" class="input-tech w-full p-4 rounded-xl font-mono text-sm leading-relaxed" placeholder="Separe por vírgula..."></textarea>
-                                <p class="text-[10px] text-slate-500 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Separe os itens por vírgula.</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-brand-400 uppercase tracking-widest mb-2">Operadores (CSV)</label>
-                                <textarea id="cfg-operators" rows="3" class="input-tech w-full p-4 rounded-xl font-mono text-sm leading-relaxed"></textarea>
-                            </div>
-
-                            <div class="pt-4 flex justify-end">
-                                <button onclick="AdminController.saveConfig()" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-xl font-bold shadow-neon-green transition-all flex items-center gap-2 btn-3d">
-                                    <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -467,82 +548,113 @@
         </main>
     </div>
 
-    <div id="toast-container" class="flex items-center gap-4 bg-dark-800 border-l-4 border-brand-500 text-white px-6 py-4 rounded-lg shadow-2xl">
-        <div id="toast-icon" class="text-brand-500 text-xl"><i class="fa-solid fa-check-circle"></i></div>
-        <div>
-            <h4 id="toast-title" class="font-bold text-sm uppercase tracking-wide">Notificação</h4>
-            <p id="toast-message" class="text-xs text-slate-400">Mensagem do sistema.</p>
-        </div>
-    </div>
-
     <script>
         /**
-         * CONFIGURAÇÃO E CONEXÃO SUPABASE
-         * Chave extraída e configurada automaticamente.
+         * CORE CONFIGURATION
          */
-        const SUPABASE_CONFIG = {
-            url: 'https://hgqnlqtvjiyuwxwypxhh.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'
+        const CONFIG = {
+            supabaseUrl: 'https://hgqnlqtvjiyuwxwypxhh.supabase.co',
+            supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y',
+            adminPass: '2026',
+            machineLimit: 4
         };
 
-        const sb = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+        const sb = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
 
         /**
-         * STATE MANAGEMENT (STORE)
-         * Mantém o estado da aplicação em memória.
+         * UTILS & HELPERS
          */
-        const Store = {
-            user: null, // { type: 'admin' | 'operator', machineId: int | null, name: string }
-            data: {
-                maquinas: [], // Array principal
-                operadores: [],
-                produtos: [],
-                lastUpdateTimestamp: 0,
-                // Mantém compatibilidade com campos antigos para não perder dados
-                historico: [],
-                dadosMensais: {},
-                modoHoraExtra: false
-            },
-            isSaving: false
+        const Utils = {
+            now: () => moment().format('HH:mm:ss'),
+            date: () => moment().format('dddd, D [de] MMMM [de] YYYY'),
+            formatNum: (n) => new Intl.NumberFormat('pt-BR').format(n),
+            
+            // Toasts (Notificações)
+            toast: (msg, type = 'info') => {
+                const container = document.getElementById('toast-container');
+                const div = document.createElement('div');
+                let colors = type === 'error' ? 'bg-red-900/90 border-red-500 text-red-200' : 
+                             type === 'success' ? 'bg-green-900/90 border-green-500 text-green-200' : 
+                             'bg-dark-800/90 border-brand-DEFAULT text-white';
+                
+                div.className = `${colors} border-l-4 px-6 py-4 rounded shadow-2xl backdrop-blur flex items-center gap-3 min-w-[300px] animate-slide-up cursor-pointer`;
+                div.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle'}"></i> <span class="font-bold text-sm">${msg}</span>`;
+                
+                div.onclick = () => div.remove();
+                container.appendChild(div);
+                setTimeout(() => div.remove(), 4000);
+            }
         };
 
-        // Template de Máquina Padrão (Factory)
+        /**
+         * MODAL SYSTEM
+         */
+        const Modal = {
+            el: document.getElementById('generic-modal'),
+            title: document.getElementById('modal-title'),
+            body: document.getElementById('modal-body'),
+            confirmBtn: document.getElementById('modal-confirm-btn'),
+            
+            open: (title, html, onConfirm = null) => {
+                Modal.title.innerText = title;
+                Modal.body.innerHTML = html;
+                Modal.el.classList.add('active');
+                
+                if(onConfirm) {
+                    Modal.confirmBtn.style.display = 'block';
+                    Modal.confirmBtn.onclick = () => { onConfirm(); Modal.close(); };
+                } else {
+                    Modal.confirmBtn.style.display = 'none';
+                }
+            },
+            close: () => Modal.el.classList.remove('active'),
+            info: (t, m) => Modal.open(t, `<p class="text-slate-300">${m}</p>`, null)
+        };
+
+        /**
+         * STATE MANAGEMENT
+         */
+        const Store = {
+            user: null,
+            data: {
+                maquinas: [], 
+                operadores: [], 
+                produtos: [], 
+                logs: [],
+                lastUpdateTimestamp: 0
+            },
+            charts: {}
+        };
+
+        // Factory function para máquinas
         const createMachine = (id) => ({
             id: id,
             nome: `Injetora ${String(id).padStart(2, '0')}`,
             status: 'offline', // offline, produzindo, parada, setup
-            operador: null,
-            op_atual: {
-                numero: '',
-                produto: '',
-                meta: 0,
-                produzido: 0,
-                ciclo_padrao: 0,
-                inicio: null
-            },
-            log: []
+            operador: '',
+            op_atual: { numero: '', produto: '', meta: 0, produzido: 0, ciclo: 0, inicio: null }
         });
 
         /**
-         * SYSTEM CONTROLLER
-         * Lógica de inicialização e rede.
+         * SYSTEM CORE
          */
         const System = {
             async init() {
                 try {
+                    UI.startClock();
                     await this.fetchData();
                     this.setupRealtime();
-                    UI.init();
                     
-                    // Esconde Loader
-                    setTimeout(() => {
-                        document.getElementById('loader').style.opacity = '0';
-                        setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
-                    }, 800);
-
-                } catch (error) {
-                    console.error("Fatal Error:", error);
-                    alert("Erro ao conectar no banco de dados. Verifique a internet.");
+                    // Hide Loader
+                    document.getElementById('loader-overlay').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loader-overlay').classList.add('hidden'), 500);
+                    
+                    this.log("Sistema inicializado com sucesso.");
+                } catch (e) {
+                    console.error(e);
+                    document.querySelector('#loader-overlay h2').innerText = "ERRO DE CONEXÃO";
+                    document.querySelector('#loader-overlay h2').classList.add('text-red-500');
+                    Utils.toast("Falha crítica ao conectar no banco de dados", "error");
                 }
             },
 
@@ -550,399 +662,415 @@
                 const { data, error } = await sb.from('sistema').select('*').eq('id', 1).single();
                 
                 if (error || !data) {
-                    // Se não existe, cria estrutura inicial (Bootstrap)
-                    console.warn("Criando banco de dados inicial...");
-                    Store.data.maquinas = Array.from({length: 12}, (_, i) => createMachine(i + 1));
-                    Store.data.produtos = ['Produto A', 'Produto B', 'Tampa Padrão'];
-                    Store.data.operadores = ['Operador 1', 'Operador 2'];
-                    Store.data.lastUpdateTimestamp = Date.now();
-                    
+                    this.log("Banco vazio. Criando estrutura padrão...");
+                    Store.data.maquinas = Array.from({length: CONFIG.machineLimit}, (_, i) => createMachine(i + 1));
+                    Store.data.produtos = ['Produto A', 'Tampa Padrão', 'Suporte B', 'Peça Técnica X'];
+                    Store.data.operadores = ['Operador 1', 'Operador 2', 'Técnico Manutenção'];
+                    Store.data.logs = [`[${Utils.now()}] Banco de dados criado.`];
                     await sb.from('sistema').insert([{ id: 1, conteudo: Store.data }]);
                 } else {
-                    // Merge seguro dos dados vindos da nuvem
                     Store.data = { ...Store.data, ...data.conteudo };
+                    // Força limite de 4 máquinas
+                    if (Store.data.maquinas.length !== CONFIG.machineLimit) {
+                         Store.data.maquinas = Array.from({length: CONFIG.machineLimit}, (_, i) => Store.data.maquinas[i] || createMachine(i+1));
+                    }
                 }
-                UI.renderLoginSelect();
+                UI.populateLoginSelect();
             },
 
             setupRealtime() {
                 sb.channel('public:sistema')
                   .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sistema' }, payload => {
                       if(payload.new && payload.new.conteudo) {
-                          const cloudData = payload.new.conteudo;
-                          // Só atualiza se o timestamp da nuvem for mais recente que o local (evita loop)
-                          if(cloudData.lastUpdateTimestamp > Store.data.lastUpdateTimestamp) {
-                              Store.data = cloudData;
-                              UI.refreshCurrentView();
-                              UI.flashCloudStatus();
+                          if(payload.new.conteudo.lastUpdateTimestamp > Store.data.lastUpdateTimestamp) {
+                              Store.data = payload.new.conteudo;
+                              UI.refreshAll();
+                              document.getElementById('cloud-indicator').classList.add('bg-blue-500'); // Indicate sync
+                              setTimeout(() => document.getElementById('cloud-indicator').classList.remove('bg-blue-500'), 500);
                           }
                       }
-                  })
-                  .subscribe();
+                  }).subscribe();
             },
 
-            // Debounce Save (Salva a cada 1s se houver mudanças)
             saveTimer: null,
             save() {
-                document.getElementById('cloud-indicator').classList.remove('bg-green-500', 'shadow-neon-green');
-                document.getElementById('cloud-indicator').classList.add('bg-yellow-500');
+                // UI Feedback
+                const ind = document.getElementById('cloud-indicator');
+                ind.className = "w-2.5 h-2.5 rounded-full bg-yellow-500 animate-spin";
                 
                 Store.data.lastUpdateTimestamp = Date.now();
                 
                 clearTimeout(this.saveTimer);
                 this.saveTimer = setTimeout(async () => {
-                    try {
-                        const { error } = await sb.from('sistema').update({ conteudo: Store.data }).eq('id', 1);
-                        if(error) throw error;
-                        
-                        document.getElementById('cloud-indicator').classList.remove('bg-yellow-500');
-                        document.getElementById('cloud-indicator').classList.add('bg-green-500', 'shadow-neon-green');
-                    } catch (e) {
-                        console.error("Save failed", e);
-                        document.getElementById('cloud-indicator').classList.add('bg-red-500');
-                        UI.toast("Erro ao salvar na nuvem!", "error");
-                    }
+                    await sb.from('sistema').update({ conteudo: Store.data }).eq('id', 1);
+                    ind.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-neon-green";
                 }, 1000);
-            }
-        };
-
-        /**
-         * UI CONTROLLER
-         * Manipulação do DOM e visualização.
-         */
-        const UI = {
-            init() {
-                this.updateClock();
-                setInterval(this.updateClock, 1000);
             },
 
-            renderLoginSelect() {
-                const sel = document.getElementById('login-machine-select');
-                sel.innerHTML = '<option value="">Selecione sua Máquina...</option>';
+            log(msg) {
+                const entry = `[${Utils.now()}] ${msg}`;
+                Store.data.logs.unshift(entry);
+                if(Store.data.logs.length > 100) Store.data.logs.pop(); // Keep only 100
+                // Se admin estiver vendo logs, atualiza
+                if(Store.user?.type === 'admin') AdminController.renderLogs();
+            },
+
+            exportCSV() {
+                let csvContent = "data:text/csv;charset=utf-8,Maquina,Status,Operador,OP,Produto,Meta,Realizado\n";
                 Store.data.maquinas.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m.id;
-                    opt.textContent = m.nome;
-                    sel.appendChild(opt);
+                    csvContent += `${m.nome},${m.status},${m.operador},${m.op_atual.numero},${m.op_atual.produto},${m.op_atual.meta},${m.op_atual.produzido}\n`;
                 });
-            },
-
-            refreshCurrentView() {
-                if(!Store.user) return;
-                if(Store.user.type === 'admin') AdminController.renderDashboard();
-                if(Store.user.type === 'operator') MachineController.render();
-            },
-
-            updateClock() {
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-                const dateStr = now.toLocaleDateString('pt-BR', {weekday: 'short', day: 'numeric', month: 'long'});
-                
-                const elTime = document.getElementById('clock-time');
-                if(elTime) {
-                    elTime.textContent = timeStr;
-                    document.getElementById('clock-date').textContent = dateStr;
-                }
-            },
-
-            flashCloudStatus() {
-                const dot = document.getElementById('cloud-indicator');
-                dot.classList.add('scale-150');
-                setTimeout(() => dot.classList.remove('scale-150'), 200);
-            },
-
-            toast(msg, type = 'success') {
-                const el = document.getElementById('toast-container');
-                const title = document.getElementById('toast-title');
-                const icon = document.getElementById('toast-icon');
-                
-                document.getElementById('toast-message').textContent = msg;
-                
-                if(type === 'error') {
-                    el.className = "flex items-center gap-4 bg-dark-800 border-l-4 border-red-500 text-white px-6 py-4 rounded-lg shadow-2xl";
-                    icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>';
-                    title.textContent = "Erro";
-                } else {
-                    el.className = "flex items-center gap-4 bg-dark-800 border-l-4 border-brand-500 text-white px-6 py-4 rounded-lg shadow-2xl";
-                    icon.innerHTML = '<i class="fa-solid fa-check-circle text-brand-500"></i>';
-                    title.textContent = "Sucesso";
-                }
-
-                el.classList.add('active');
-                setTimeout(() => el.classList.remove('active'), 3000);
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `relatorio_producao_${Date.now()}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                Utils.toast("Relatório CSV gerado!", "success");
             }
         };
 
         /**
-         * ROUTER
-         * Navegação SPA simples.
+         * AUTHENTICATION CONTROLLER
+         */
+        const Auth = {
+            mode: 'operador',
+            toggleMode: (m) => {
+                Auth.mode = m;
+                document.getElementById('btn-mode-operador').className = m === 'operador' 
+                    ? "py-3 rounded-lg text-sm font-bold transition-all bg-brand-DEFAULT text-white shadow-lg flex items-center justify-center gap-2" 
+                    : "py-3 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2";
+                document.getElementById('btn-mode-admin').className = m === 'admin' 
+                    ? "py-3 rounded-lg text-sm font-bold transition-all bg-brand-DEFAULT text-white shadow-lg flex items-center justify-center gap-2" 
+                    : "py-3 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2";
+                
+                document.getElementById('login-fields-operador').className = m === 'operador' ? 'block animate-fade-in' : 'hidden';
+                document.getElementById('login-fields-admin').className = m === 'admin' ? 'block animate-fade-in' : 'hidden';
+            },
+
+            handleLogin: (e) => {
+                e.preventDefault();
+                if(Auth.mode === 'admin') {
+                    if(document.getElementById('login-admin-pass').value === CONFIG.adminPass) {
+                        Store.user = { type: 'admin', name: 'Administrador' };
+                        Auth.enterApp();
+                        Router.go('dashboard');
+                    } else {
+                        Utils.toast("Senha de administrador incorreta", "error");
+                    }
+                } else {
+                    const id = document.getElementById('login-machine-select').value;
+                    if(!id) return Utils.toast("Selecione uma máquina válida", "error");
+                    const m = Store.data.maquinas.find(x => x.id == id);
+                    Store.user = { type: 'operator', machineId: id, name: m.nome };
+                    Auth.enterApp();
+                    Router.go('machine');
+                }
+            },
+
+            enterApp: () => {
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('app-layout').classList.remove('hidden');
+                
+                document.getElementById('user-display-name').innerText = Store.user.name;
+                document.getElementById('user-role-label').innerText = Store.user.type === 'admin' ? 'Administrador' : 'Operador';
+                
+                if(Store.user.type === 'admin') document.getElementById('nav-group-admin').classList.remove('hidden');
+                else document.getElementById('nav-group-operador').classList.remove('hidden');
+
+                System.log(`Login efetuado: ${Store.user.name} (${Store.user.type})`);
+            },
+            
+            logout: () => location.reload()
+        };
+
+        /**
+         * UI & ROUTER
          */
         const Router = {
-            go(route) {
-                // Hide all views
+            go: (route) => {
                 document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'bg-brand-600/10', 'text-brand-400', 'border', 'border-brand-600/20'));
+                document.getElementById(`view-${route}`).classList.remove('hidden');
                 
-                // Show requested
-                const view = document.getElementById(`view-${route}`);
-                if(view) {
-                    view.classList.remove('hidden');
-                    const nav = document.getElementById(`nav-${route}`);
-                    if(nav) nav.classList.add('active', 'bg-brand-600/10', 'text-brand-400', 'border', 'border-brand-600/20');
-                    UI.refreshCurrentView();
-                }
+                // Update Sidebar
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'bg-brand-DEFAULT/10', 'text-brand-light', 'shadow-neon-blue', 'border', 'border-brand-DEFAULT/20'));
+                const nav = document.getElementById(`nav-${route}`);
+                if(nav) nav.classList.add('active', 'bg-brand-DEFAULT/10', 'text-brand-light', 'shadow-neon-blue', 'border', 'border-brand-DEFAULT/20');
+                
+                // Set Titles
+                const titles = {
+                    'dashboard': 'Visão Geral', 'gestao-op': 'Gestão de Produção', 'config': 'Configurações', 
+                    'machine': 'Painel Operacional', 'auditoria': 'Auditoria de Eventos'
+                };
+                document.getElementById('page-title').innerText = titles[route];
+                
+                UI.refreshAll();
             }
         };
 
-        /**
-         * AUTH LOGIC
-         */
-        let loginMode = 'operador'; // default
-
-        function toggleLoginMode(mode) {
-            loginMode = mode;
-            const btnOp = document.getElementById('btn-mode-operador');
-            const btnAd = document.getElementById('btn-mode-admin');
-            const fieldsOp = document.getElementById('login-fields-operador');
-            const fieldsAd = document.getElementById('login-fields-admin');
-
-            if(mode === 'operador') {
-                btnOp.className = "py-2.5 rounded-lg text-sm font-bold transition-all bg-brand-600 text-white shadow-lg";
-                btnAd.className = "py-2.5 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white";
-                fieldsOp.classList.remove('hidden');
-                fieldsAd.classList.add('hidden');
-            } else {
-                btnOp.className = "py-2.5 rounded-lg text-sm font-bold transition-all text-slate-400 hover:text-white";
-                btnAd.className = "py-2.5 rounded-lg text-sm font-bold transition-all bg-brand-600 text-white shadow-lg";
-                fieldsOp.classList.add('hidden');
-                fieldsAd.classList.remove('hidden');
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            if(loginMode === 'admin') {
-                const pass = document.getElementById('login-admin-pass').value;
-                if(pass === '2026') {
-                    Store.user = { type: 'admin', name: 'Administrador' };
-                    startApp();
+        const UI = {
+            startClock: () => {
+                setInterval(() => {
+                    document.getElementById('clock-time').innerText = Utils.now();
+                    document.getElementById('clock-date').innerText = Utils.date();
+                }, 1000);
+            },
+            populateLoginSelect: () => {
+                const s = document.getElementById('login-machine-select');
+                s.innerHTML = '<option value="">Selecione...</option>';
+                Store.data.maquinas.forEach(m => {
+                    s.innerHTML += `<option value="${m.id}">${m.nome} - ${m.status.toUpperCase()}</option>`;
+                });
+            },
+            refreshAll: () => {
+                if(!Store.user) return;
+                if(Store.user.type === 'admin') {
+                    AdminController.renderDashboard();
+                    AdminController.renderGestaoOP();
+                    AdminController.renderLogs();
                 } else {
-                    UI.toast("Senha Incorreta", "error");
+                    MachineController.render();
                 }
-            } else {
-                const id = document.getElementById('login-machine-select').value;
-                if(!id) return UI.toast("Selecione uma máquina", "error");
-                
-                const machine = Store.data.maquinas.find(m => m.id == id);
-                Store.user = { type: 'operator', machineId: id, name: machine.nome };
-                startApp();
             }
-        }
-
-        function startApp() {
-            document.getElementById('screen-login').classList.add('hidden');
-            document.getElementById('app-layout').classList.remove('hidden');
-            
-            document.getElementById('user-display-name').textContent = Store.user.name;
-            document.getElementById('user-role-label').textContent = Store.user.type === 'admin' ? 'Administrador' : 'Operador';
-
-            if(Store.user.type === 'admin') {
-                document.getElementById('nav-group-admin').classList.remove('hidden');
-                Router.go('dashboard');
-            } else {
-                document.getElementById('nav-group-operador').classList.remove('hidden');
-                Router.go('machine');
-            }
-        }
-
-        const App = {
-            logout() { window.location.reload(); }
         };
 
         /**
-         * MACHINE CONTROLLER (LOGIC OPERATOR)
+         * MACHINE LOGIC
          */
         const MachineController = {
-            getMachine() {
-                return Store.data.maquinas.find(m => m.id == Store.user.machineId);
-            },
-
-            render() {
-                const m = this.getMachine();
+            get: () => Store.data.maquinas.find(m => m.id == Store.user.machineId),
+            
+            render: () => {
+                const m = MachineController.get();
                 if(!m) return;
-
-                // Header Info
-                document.getElementById('op-machine-name').textContent = m.nome;
-                document.getElementById('op-operator-name').textContent = m.operador || 'Não definido';
                 
-                const badge = document.getElementById('op-status-badge');
-                badge.textContent = m.status;
+                // Header
+                document.getElementById('op-machine-name').innerText = m.nome;
+                document.getElementById('op-operator-name').innerText = m.operador || 'Sem Operador';
                 
-                // Color mapping
-                let colorClass = "bg-slate-800 text-slate-400 border-slate-700";
-                if(m.status === 'produzindo') colorClass = "bg-status-run text-dark-950 border-status-run shadow-neon-green";
-                if(m.status === 'parada') colorClass = "bg-status-stop text-white border-status-stop shadow-neon-red";
-                if(m.status === 'setup') colorClass = "bg-status-setup text-dark-950 border-status-setup";
-                badge.className = `px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-inner transition-all ${colorClass}`;
-
-                // Inputs (Check focus to avoid interruption)
-                if(document.activeElement.id !== 'op-input-number') document.getElementById('op-input-number').value = m.op_atual.numero;
-                if(document.activeElement.id !== 'op-input-target') document.getElementById('op-input-target').value = m.op_atual.meta || '';
-                if(document.activeElement.id !== 'op-input-cycle') document.getElementById('op-input-cycle').value = m.op_atual.ciclo_padrao || '';
-
-                // Product Select population check
-                const sel = document.getElementById('op-input-product');
-                if(sel.options.length !== Store.data.produtos.length + 1) {
-                    sel.innerHTML = '<option value="">Selecione Produto...</option>';
-                    Store.data.produtos.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p; opt.textContent = p;
-                        sel.appendChild(opt);
-                    });
+                // Status Badge
+                const b = document.getElementById('op-status-badge');
+                b.innerText = m.status;
+                let sClass = "bg-slate-800 text-slate-400 border-slate-700";
+                if(m.status === 'produzindo') sClass = "bg-green-500/20 text-green-400 border-green-500 shadow-neon-green";
+                if(m.status === 'parada') sClass = "bg-red-500/20 text-red-400 border-red-500 shadow-neon-red";
+                if(m.status === 'setup') sClass = "bg-yellow-500/20 text-yellow-400 border-yellow-500";
+                b.className = `px-4 py-1 rounded-xs font-bold uppercase tracking-wider border ${sClass}`;
+                
+                // Inputs (Prevent overwrite if focused)
+                const doc = document;
+                if(doc.activeElement.id !== 'op-input-number') doc.getElementById('op-input-number').value = m.op_atual.numero;
+                if(doc.activeElement.id !== 'op-input-target') doc.getElementById('op-input-target').value = m.op_atual.meta;
+                if(doc.activeElement.id !== 'op-input-cycle') doc.getElementById('op-input-cycle').value = m.op_atual.ciclo;
+                
+                // Select Product
+                const sel = doc.getElementById('op-input-product');
+                if(sel.options.length <= 1) {
+                    sel.innerHTML = '<option value="">Selecione...</option>';
+                    Store.data.produtos.forEach(p => sel.innerHTML += `<option value="${p}">${p}</option>`);
                 }
-                if(document.activeElement.id !== 'op-input-product') sel.value = m.op_atual.produto;
+                if(doc.activeElement.id !== 'op-input-product') sel.value = m.op_atual.produto;
 
-                // Big Counter & Circle
-                document.getElementById('op-counter-big').textContent = m.op_atual.produzido;
+                // Visuals
+                doc.getElementById('op-counter-big').innerText = m.op_atual.produzido;
+                const pct = m.op_atual.meta > 0 ? Math.min(100, Math.round((m.op_atual.produzido / m.op_atual.meta) * 100)) : 0;
+                doc.getElementById('op-percent-text').innerText = pct + '%';
                 
-                const meta = m.op_atual.meta || 1;
-                const pct = Math.min(100, Math.round((m.op_atual.produzido / meta) * 100));
-                document.getElementById('op-percent-text').textContent = pct + '%';
-                
-                // SVG Circle calculation (circumference ~ 753)
-                const offset = 753 - (753 * pct) / 100;
-                document.getElementById('op-progress-ring').style.strokeDashoffset = offset;
-                document.getElementById('op-progress-ring').style.stroke = 
-                    m.status === 'produzindo' ? '#22c55e' : 
-                    m.status === 'parada' ? '#ef4444' : '#3b82f6';
+                // SVG Calculation (816 is circumference of r=130)
+                const offset = 816 - (816 * pct) / 100;
+                const ring = doc.getElementById('op-progress-ring');
+                ring.style.strokeDashoffset = offset;
+                ring.style.stroke = m.status === 'produzindo' ? '#00d26a' : m.status === 'parada' ? '#f8312f' : '#2563eb';
             },
 
-            setStatus(status) {
-                const m = this.getMachine();
-                m.status = status;
-                
-                // Auto-set Operator Name if missing
-                if(!m.operador) {
-                    const name = prompt("Nome do Operador:");
-                    if(name) m.operador = name;
+            setStatus: (s) => {
+                const m = MachineController.get();
+                if(s === 'produzindo' && !m.operador) {
+                    Modal.open("Identificação", 
+                        `<label class='text-sm text-slate-400'>Nome do Operador:</label>
+                         <input id='modal-op-name' class='input-tech w-full p-2 mt-2 rounded' placeholder='Seu nome...'>`, 
+                        () => {
+                            const name = document.getElementById('modal-op-name').value;
+                            if(name) { m.operador = name; m.status = s; System.log(`Máquina ${m.id} iniciada por ${name}`); System.save(); MachineController.render(); }
+                        }
+                    );
+                    return;
                 }
-                
+                m.status = s;
+                System.log(`Máquina ${m.id} mudou status para ${s}`);
                 System.save();
-                this.render();
-                UI.toast(`Status: ${status.toUpperCase()}`);
+                MachineController.render();
             },
 
-            addCount(qtd) {
-                const m = this.getMachine();
-                const novo = (parseInt(m.op_atual.produzido) || 0) + qtd;
-                if(novo >= 0) {
-                    m.op_atual.produzido = novo;
+            addCount: (qtd) => {
+                const m = MachineController.get();
+                if((m.op_atual.produzido + qtd) >= 0) {
+                    m.op_atual.produzido += qtd;
                     System.save();
-                    this.render();
+                    MachineController.render();
                 }
             }
         };
 
-        // Bind Inputs
-        ['op-input-number', 'op-input-product', 'op-input-target', 'op-input-cycle'].forEach(id => {
+        // Listeners for Machine Inputs
+        ['op-input-number', 'op-input-target', 'op-input-cycle', 'op-input-product'].forEach(id => {
             const el = document.getElementById(id);
-            if(el) {
-                el.addEventListener('change', (e) => {
-                    const m = MachineController.getMachine();
-                    if(!m) return;
-                    
-                    if(id === 'op-input-number') m.op_atual.numero = e.target.value;
-                    if(id === 'op-input-product') m.op_atual.produto = e.target.value;
-                    if(id === 'op-input-target') m.op_atual.meta = parseInt(e.target.value) || 0;
-                    if(id === 'op-input-cycle') m.op_atual.ciclo_padrao = parseFloat(e.target.value) || 0;
-                    
-                    System.save();
-                    MachineController.render();
-                });
-            }
+            if(el) el.addEventListener('change', (e) => {
+                const m = MachineController.get();
+                if(id.includes('number')) m.op_atual.numero = e.target.value;
+                if(id.includes('target')) m.op_atual.meta = parseInt(e.target.value) || 0;
+                if(id.includes('cycle')) m.op_atual.ciclo = parseFloat(e.target.value) || 0;
+                if(id.includes('product')) m.op_atual.produto = e.target.value;
+                System.save();
+            });
         });
 
         /**
          * ADMIN CONTROLLER
          */
         const AdminController = {
-            renderDashboard() {
-                // KPIs
-                let total = 0, paradas = 0, produzindo = 0;
-                const totalMaq = Store.data.maquinas.length;
-
-                const grid = document.getElementById('admin-machine-grid');
-                grid.innerHTML = '';
+            renderDashboard: () => {
+                // KPIs Calc
+                let total = 0, paradas = 0, oeeAcc = 0;
+                const list = document.getElementById('dashboard-machine-list');
+                const tbody = document.getElementById('table-resumo-body');
+                list.innerHTML = ''; tbody.innerHTML = '';
 
                 Store.data.maquinas.forEach(m => {
-                    total += (parseInt(m.op_atual.produzido) || 0);
+                    total += (m.op_atual.produzido || 0);
                     if(m.status === 'parada') paradas++;
-                    if(m.status === 'produzindo') produzindo++;
-
-                    // Create Card
-                    const meta = m.op_atual.meta || 1;
-                    const pct = Math.round((m.op_atual.produzido / meta) * 100);
                     
-                    let statusColor = 'text-slate-400';
-                    let borderClass = 'border-slate-700';
-                    let icon = 'fa-power-off';
+                    const pct = m.op_atual.meta > 0 ? Math.round((m.op_atual.produzido / m.op_atual.meta) * 100) : 0;
+                    oeeAcc += pct;
 
-                    if(m.status === 'produzindo') { statusColor = 'text-status-run'; borderClass = 'border-status-run'; icon = 'fa-gear fa-spin'; }
-                    if(m.status === 'parada') { statusColor = 'text-status-stop'; borderClass = 'border-status-stop'; icon = 'fa-triangle-exclamation'; }
-                    if(m.status === 'setup') { statusColor = 'text-status-setup'; borderClass = 'border-status-setup'; icon = 'fa-tools'; }
-
-                    const card = document.createElement('div');
-                    card.className = `glass-panel rounded-xl p-4 border-t-2 ${borderClass} hover:translate-y-[-2px] transition-transform duration-300`;
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-3">
-                            <h4 class="font-bold text-white font-tech text-lg">${m.nome}</h4>
-                            <i class="fa-solid ${icon} ${statusColor}"></i>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs text-slate-400">
-                                <span>${m.op_atual.produto || 'Sem Produto'}</span>
-                                <span class="font-mono text-white">${m.op_atual.produzido}/${m.op_atual.meta}</span>
+                    // Cards in Dashboard
+                    let color = m.status === 'produzindo' ? 'text-green-500 border-green-500' : m.status === 'parada' ? 'text-red-500 border-red-500' : 'text-slate-500 border-slate-700';
+                    let icon = m.status === 'produzindo' ? 'fa-spin fa-gear' : m.status === 'parada' ? 'fa-triangle-exclamation' : 'fa-power-off';
+                    
+                    list.innerHTML += `
+                        <div class="glass-panel p-3 rounded-xl border-l-4 ${color} flex justify-between items-center hover:bg-white/5 transition-colors">
+                            <div>
+                                <h4 class="font-bold text-white text-sm">${m.nome}</h4>
+                                <span class="text-[10px] uppercase font-bold text-slate-400">${m.op_atual.produto || 'Sem prod.'}</span>
                             </div>
-                            <div class="w-full bg-dark-900 h-1.5 rounded-full overflow-hidden">
-                                <div class="h-full ${statusColor === 'text-status-run' ? 'bg-status-run' : 'bg-slate-500'} transition-all" style="width: ${pct}%"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-2">
-                                <span class="text-[10px] uppercase font-bold text-slate-500">${m.operador || 'Livre'}</span>
-                                <span class="text-[10px] font-bold uppercase ${statusColor}">${m.status}</span>
+                            <div class="text-right">
+                                <span class="block font-mono font-bold text-white text-lg leading-none">${m.op_atual.produzido}</span>
+                                <span class="text-[10px] ${color.split(' ')[0]} font-bold uppercase">${m.status}</span>
                             </div>
                         </div>
                     `;
-                    grid.appendChild(card);
+
+                    // Table Rows
+                    tbody.innerHTML += `
+                        <tr class="transition-colors">
+                            <td class="font-bold text-white">${m.nome}</td>
+                            <td class="text-slate-400">${m.operador || '-'}</td>
+                            <td>${m.op_atual.numero || '-'}</td>
+                            <td class="text-brand-light">${m.op_atual.produto || '-'}</td>
+                            <td class="text-center font-mono">${m.op_atual.meta}</td>
+                            <td class="text-center font-mono text-white font-bold">${m.op_atual.produzido} <small class="text-slate-500">(${pct}%)</small></td>
+                            <td class="text-center"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase border ${color}">${m.status}</span></td>
+                        </tr>
+                    `;
                 });
 
-                document.getElementById('kpi-total').textContent = total;
-                document.getElementById('kpi-stopped').textContent = paradas;
-                
-                const oee = totalMaq > 0 ? Math.round((produzindo/totalMaq)*100) : 0;
-                document.getElementById('kpi-oee').textContent = oee + '%';
+                document.getElementById('kpi-total').innerText = Utils.formatNum(total);
+                document.getElementById('kpi-stopped').innerText = paradas;
+                const oee = Math.round(oeeAcc / 4);
+                document.getElementById('kpi-oee').innerText = oee + '%';
                 document.getElementById('kpi-bar-oee').style.width = oee + '%';
-                
-                // Config load
+
+                AdminController.renderChart();
+            },
+
+            renderGestaoOP: () => {
+                const div = document.getElementById('gestao-op-container');
+                div.innerHTML = '';
+                Store.data.maquinas.forEach((m, idx) => {
+                    div.innerHTML += `
+                        <div class="bg-dark-900/50 p-6 rounded-xl border border-white/5 flex flex-col lg:flex-row gap-6 items-end">
+                            <div class="min-w-[150px]">
+                                <span class="text-xs font-bold text-brand-DEFAULT uppercase tracking-widest block mb-1">${m.nome}</span>
+                                <div class="text-2xl font-tech text-white font-bold">${m.op_atual.produto || 'N/A'}</div>
+                            </div>
+                            <div class="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                                <div><label class="text-[10px] text-slate-500 uppercase font-bold">O.P.</label><input type="text" value="${m.op_atual.numero}" onchange="AdminController.updateOP(${idx}, 'numero', this.value)" class="input-tech w-full p-2 rounded text-xs"></div>
+                                <div><label class="text-[10px] text-slate-500 uppercase font-bold">Produto</label><input type="text" value="${m.op_atual.produto}" onchange="AdminController.updateOP(${idx}, 'produto', this.value)" class="input-tech w-full p-2 rounded text-xs"></div>
+                                <div><label class="text-[10px] text-slate-500 uppercase font-bold">Meta</label><input type="number" value="${m.op_atual.meta}" onchange="AdminController.updateOP(${idx}, 'meta', this.value)" class="input-tech w-full p-2 rounded text-xs"></div>
+                                <div><label class="text-[10px] text-slate-500 uppercase font-bold">Realizado</label><input type="number" value="${m.op_atual.produzido}" onchange="AdminController.updateOP(${idx}, 'produzido', this.value)" class="input-tech w-full p-2 rounded text-xs font-bold text-brand-light"></div>
+                            </div>
+                            <button onclick="AdminController.resetMachine(${idx})" class="bg-red-900/20 hover:bg-red-900 text-red-500 border border-red-900 px-4 py-2 rounded-lg text-xs font-bold transition-all"><i class="fa-solid fa-rotate-left mr-2"></i> ZERAR</button>
+                        </div>
+                    `;
+                });
+            },
+
+            updateOP: (idx, field, val) => {
+                if(field === 'meta' || field === 'produzido') val = parseInt(val) || 0;
+                Store.data.maquinas[idx].op_atual[field] = val;
+                System.save();
+                Utils.toast("Dados da O.P. atualizados");
+            },
+
+            resetMachine: (idx) => {
+                Modal.open("Confirmar Reset", `Deseja realmente zerar a produção da <b>${Store.data.maquinas[idx].nome}</b>?`, () => {
+                    Store.data.maquinas[idx].op_atual.produzido = 0;
+                    Store.data.maquinas[idx].op_atual.numero = '';
+                    Store.data.maquinas[idx].status = 'setup';
+                    System.log(`Reset forçado na máquina ${Store.data.maquinas[idx].id} por Admin`);
+                    System.save();
+                    AdminController.renderGestaoOP();
+                });
+            },
+
+            renderLogs: () => {
+                const el = document.getElementById('system-logs');
+                el.innerHTML = Store.data.logs.map(l => `<div class="border-b border-white/5 py-1 hover:text-white transition-colors">${l}</div>`).join('');
+            },
+
+            renderChart: () => {
+                const ctx = document.getElementById('chart-main').getContext('2d');
+                if(Store.charts.main) Store.charts.main.destroy();
+
+                const labels = Store.data.maquinas.map(m => m.nome);
+                const dataProd = Store.data.maquinas.map(m => m.op_atual.produzido);
+                const dataMeta = Store.data.maquinas.map(m => m.op_atual.meta);
+
+                Store.charts.main = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Realizado', data: dataProd, backgroundColor: '#2563eb', borderRadius: 4 },
+                            { label: 'Meta', data: dataMeta, borderColor: '#fff', borderWidth: 2, type: 'line', borderDash: [5,5], pointRadius: 0 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#ccc' } } },
+                        scales: {
+                            y: { grid: { color: '#333' }, ticks: { color: '#888' } },
+                            x: { grid: { display: false }, ticks: { color: '#888' } }
+                        }
+                    }
+                });
+
+                // Preenche config inputs
                 document.getElementById('cfg-products').value = Store.data.produtos.join(', ');
                 document.getElementById('cfg-operators').value = Store.data.operadores.join(', ');
             },
 
-            saveConfig() {
-                const prods = document.getElementById('cfg-products').value.split(',').map(s => s.trim()).filter(Boolean);
-                const ops = document.getElementById('cfg-operators').value.split(',').map(s => s.trim()).filter(Boolean);
-                
-                Store.data.produtos = prods;
-                Store.data.operadores = ops;
+            saveConfig: () => {
+                Store.data.produtos = document.getElementById('cfg-products').value.split(',').map(s=>s.trim()).filter(Boolean);
+                Store.data.operadores = document.getElementById('cfg-operators').value.split(',').map(s=>s.trim()).filter(Boolean);
                 System.save();
-                UI.toast("Configurações atualizadas!");
+                Utils.toast("Listas globais salvas com sucesso", "success");
             }
         };
 
         // STARTUP
-        window.addEventListener('DOMContentLoaded', () => {
-            System.init();
-        });
+        window.addEventListener('DOMContentLoaded', System.init.bind(System));
 
     </script>
 </body>
