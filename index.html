@@ -383,10 +383,10 @@
             <div class="flex justify-between items-center mb-1">
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Produto / Peça</label>
                 <div class="flex gap-1">
-                    <button type="button" onclick="excluirPecaSelecionada()" class="text-[10px] bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded" title="Excluir Peça">
+                    <button onclick="excluirPecaSelecionada()" class="text-[10px] bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded" title="Excluir Peça">
                         <i class="fa-solid fa-trash"></i> EXCL.
                     </button>
-                    <button type="button" onclick="abrirModalNovoProduto()" class="text-[10px] bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded">
+                    <button onclick="abrirModalNovoProduto()" class="text-[10px] bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded">
                         + PEÇA
                     </button>
                 </div>
@@ -400,36 +400,27 @@
         <div class="md:col-span-2 grid grid-cols-4 gap-2">
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Peso (kg)</label>
-                <input type="number" id="input-peso" step="0.001" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-peso" step="0.001" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Pigm. (%)</label>
-                <input type="number" id="input-pigmento" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-pigmento" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Ciclo (s)</label>
-                <input type="number" id="input-ciclo" oninput="recalcularTempo()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-ciclo" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Cavidades</label>
-                <input type="number" id="input-cavidades" oninput="recalcularTempo()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-cavidades" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
         </div>
 
-    </div> 
-    
-    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200">
-        <div class="flex items-center gap-3">
-            <label class="text-xs text-blue-800 font-bold uppercase">Meta da O.P. (peças):</label>
-            <input type="number" id="input-meta" oninput="recalcularTempo()" class="w-24 p-2 bg-slate-50 border border-blue-200 rounded text-sm font-bold outline-none focus:border-blue-500" placeholder="Ex: 5000">
-        </div>
-        <div class="text-right">
-            <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Tempo de Máquina:</p>
-            <p id="resultado-tempo" class="text-2xl font-black text-blue-600">0h 00m</p>
-        </div>
+    </div> <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200">
+        <p class="text-xs text-blue-800 font-bold uppercase">Rendimento Estimado (Saco 25kg):</p>
+        <p id="resultado-rendimento" class="text-2xl font-black text-blue-600">0 peças</p>
     </div>
 </div>
-                    
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <div class="md:col-span-1">
         <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
@@ -673,7 +664,7 @@
             setTimeout(() => {
                 t.classList.remove('toast-show');
                 t.classList.add('toast-hide');
-            }, 3000);
+            }, 1000);
         }
 
         // ==========================================================
@@ -759,7 +750,7 @@
                 iniciarRelogio();
                 
                 // Iniciar o Loop de Sincronização (Polling)
-                setInterval(sincronizarComServidor, 3000); // Verifica a cada 3 segundos
+                setInterval(sincronizarComServidor, 1000); // Verifica a cada 3 segundos
 
                 document.getElementById('loading-spinner').style.display = 'none';
                 document.getElementById('loading-action').classList.remove('hidden');
@@ -1462,37 +1453,38 @@
         }
 
         // --- FUNÇÕES DE EDIÇÃO ---
-        function abrirModalNovoProduto() {
-    try {
-        // Limpa os campos APENAS se eles existirem (evita erros fatais)
-        const inputNome = document.getElementById('novo-produto-nome');
-        if (inputNome) inputNome.value = '';
-        
-        const inputPeso = document.getElementById('novo-produto-peso');
-        if (inputPeso) inputPeso.value = '';
-        
-        const inputPigmento = document.getElementById('novo-produto-pigmento');
-        if (inputPigmento) inputPigmento.value = '';
-        
-        const inputCiclo = document.getElementById('novo-produto-ciclo');
-        if (inputCiclo) inputCiclo.value = '';
-        
-        const inputCavidades = document.getElementById('novo-produto-cavidades');
-        if (inputCavidades) inputCavidades.value = '';
-        
-        // Procura a janela
-        const modal = document.getElementById('modal-novo-produto');
-        if (modal) {
-            modal.classList.remove('hidden'); // Tira a invisibilidade
-            modal.style.display = 'flex';     // Força o formato de ecrã
-            modal.style.zIndex = '999999';    // Força a ficar na FRENTE DE TUDO
-        } else {
-            alert("Aviso: A caixa do HTML (modal-novo-produto) não foi encontrada no final do código!");
+        function abrirModalEdicao(maqId, opIndex) {
+            const m = maquinas.find(x => x.id === maqId);
+            const op = m.fila[opIndex];
+            
+            document.getElementById('edit-maq-id').value = maqId;
+            document.getElementById('edit-op-index').value = opIndex;
+            
+            document.getElementById('edit-op-num').value = op.op;
+            document.getElementById('edit-op-cliente').value = op.cliente || '';
+            document.getElementById('edit-op-qtd').value = op.qtd;
+
+            // ATUALIZADO: Agora lê corretamente os produtos mesmo com peso e ciclo salvos
+            const selProd = document.getElementById('edit-op-produto');
+            const opcoesProdutos = produtosGlobais.map(p => {
+                const nomePeca = typeof p === 'string' ? p : p.nome;
+                return `<option value="${nomePeca}" ${nomePeca === op.produto ? 'selected' : ''}>${nomePeca}</option>`;
+            }).join('');
+            selProd.innerHTML = '<option value="">-- Selecione --</option>' + opcoesProdutos;
+
+            // Preencher campos novos
+            document.getElementById('edit-op-material').value = op.material || '';
+            document.getElementById('edit-op-material-qtd').value = op.materialQtd || '';
+            document.getElementById('edit-op-pigmento').value = op.pigmento || '';
+            document.getElementById('edit-op-porcentagem').value = op.porcentagem || '';
+            document.getElementById('edit-op-caixa').value = op.caixa || '';
+            document.getElementById('edit-op-saco').value = op.saco || '';
+            
+            const sel = document.getElementById('edit-op-operador');
+            sel.innerHTML = '<option value="">-- Selecione --</option>' + operadoresGlobais.map(o => `<option value="${o}" ${o===op.operador?'selected':''}>${o}</option>`).join('');
+
+            document.getElementById('modal-editar-op').style.display = 'flex';
         }
-    } catch (erro) {
-        alert("Erro bloqueado pelo sistema: " + erro.message);
-    }
-}
 
         function salvarEdicaoOP() {
             const maqId = parseInt(document.getElementById('edit-maq-id').value);
@@ -1685,33 +1677,14 @@
             else { alert("Qtd inválida."); }
         }
 
-        function addProd(id, qtd) {
-    // 1. Encontra APENAS a máquina exata onde você clicou
-    const maquina = maquinas.find(m => m.id === id);
-    
-    // Se a máquina não existir, para aqui e não faz nada
-    if (!maquina) return; 
-    
-    // 2. Garante que os contadores da máquina existem e estão zerados se for a primeira vez
-    if (!maquina.dadosMensais) {
-        maquina.dadosMensais = { boas: 0, refugo: 0 };
-    }
-    
-    // 3. Soma apenas na máquina certa (e garante que é número)
-    const quantidadeASomar = parseInt(qtd) || 1; // Se não mandar quantidade, soma 1 por defeito
-    maquina.dadosMensais.boas += quantidadeASomar;
-    
-    // 4. Regista no histórico apenas desta máquina
-    if (typeof registrarHistorico === 'function') {
-        registrarHistorico(id, 'PRODUÇÃO', quantidadeASomar, maquina.status, 'Boas');
-    }
-    
-    // 5. Atualiza o ecrã e salva na nuvem
-    if (typeof render === 'function') render();
-    if (typeof atualizarResumoGlobalNumeros === 'function') atualizarResumoGlobalNumeros();
-    if (typeof iniciarGraficos === 'function') iniciarGraficos();
-    if (typeof salvarAutomatico === 'function') salvarAutomatico();
-}
+        function addProd(id, v) { 
+            const t = document.getElementById('filtro-turno').value; 
+            const maq = maquinas.find(x => x.id === id);
+            maq.dadosTurno[t].boas += v;
+            maq.resumoTurno[t].boas += v;
+            render(); 
+            if(usuarioLogado === 'admin') renderApontamento(); 
+            salvarAutomatico();
         }
 
         function addRefugo(id) { 
@@ -2076,32 +2049,93 @@
         carregarBanco();
 
         // =========================================================
-// SISTEMA DE PRODUTOS (CADASTRAR, EXCLUIR E CALCULAR)
+// SISTEMA DE AUTOCOMPLETAR E CÁLCULO DE RENDIMENTO DA PEÇA
 // =========================================================
 
+function atualizarSelectPecas() {
+    // Agora ele busca o select correto da sua tela: f-produto
+    const select = document.getElementById('f-produto');
+    const selectEdicao = document.getElementById('edit-op-produto'); // E o da janela de edição
+    
+    if (select && typeof produtosGlobais !== 'undefined') {
+        let htmlBase = '<option value="">-- Selecione Produto --</option>';
+        produtosGlobais.forEach(peca => {
+            const nomePeca = typeof peca === 'string' ? peca : peca.nome;
+            htmlBase += `<option value="${nomePeca}">${nomePeca}</option>`;
+        });
+        
+        select.innerHTML = htmlBase;
+        if(selectEdicao) selectEdicao.innerHTML = htmlBase;
+    }
+}
+
+function autocompletarPeca() {
+    const nomeSelecionado = document.getElementById('f-produto').value;
+    const pecaEncontrada = produtosGlobais.find(p => p.nome === nomeSelecionado);
+
+    if (pecaEncontrada) {
+        document.getElementById('input-peso').value = pecaEncontrada.peso || '';
+        document.getElementById('input-ciclo').value = pecaEncontrada.ciclo || '';
+        document.getElementById('input-pigmento').value = pecaEncontrada.pigmento || '';
+        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '';
+        calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
+    } else {
+        document.getElementById('input-peso').value = '';
+        document.getElementById('input-ciclo').value = '';
+        document.getElementById('input-pigmento').value = '';
+        document.getElementById('input-cavidades').value = '';
+        document.getElementById('resultado-rendimento').innerText = '0 peças';
+    }
+}
+
+function recalcularRendimento() {
+    const peso = parseFloat(document.getElementById('input-peso').value);
+    const pigmento = parseFloat(document.getElementById('input-pigmento').value) || 0; 
+    calcularRendimento(peso, pigmento);
+}
+
+function calcularRendimento(pesoPeca, porcentagemPigmento) {
+    const displayResultado = document.getElementById('resultado-rendimento');
+    if (!pesoPeca || pesoPeca <= 0) {
+        if(displayResultado) displayResultado.innerText = '0 peças';
+        return;
+    }
+    const pigmentoDecimal = porcentagemPigmento / 100;
+    const materialTotal = 25 + (25 * pigmentoDecimal); // 25.5kg
+    const quantidadePecas = Math.floor(materialTotal / pesoPeca);
+
+    if(displayResultado) displayResultado.innerText = `${quantidadePecas} peças`;
+}
+
+// Atualiza a lista 2 segundos após o site abrir para garantir que o Supabase já carregou
+setTimeout(atualizarSelectPecas, 2000);
+
+
+        // =========================================================
+// SISTEMA COMPLETO DE PRODUTOS (CADASTRAR, EXCLUIR E CALCULAR)
+// =========================================================
+
+// 1. Abre a janela de registrar produto
 function abrirModalNovoProduto() {
+    // Limpa os campos
     document.getElementById('novo-produto-nome').value = '';
     document.getElementById('novo-produto-peso').value = '';
     document.getElementById('novo-produto-pigmento').value = '';
     document.getElementById('novo-produto-ciclo').value = '';
     document.getElementById('novo-produto-cavidades').value = '';
     
+    // Mostra a janela
     const modal = document.getElementById('modal-novo-produto');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex'; // Força a janela a abrir no estilo certo!
-    } else {
-        alert("Erro: O HTML da janela não foi encontrado lá no final do arquivo.");
-    }
+    if(modal) modal.classList.remove('hidden');
 }
 
+// 2. Fecha a janela
 function fecharModalNovoProduto() {
     const modal = document.getElementById('modal-novo-produto');
-    if(modal) {
-        modal.style.display = 'none';
-    }
+    if(modal) modal.classList.add('hidden');
 }
 
+// 3. Salva o produto novo que você digitou
 function salvarNovoProduto() {
     const nome = document.getElementById('novo-produto-nome').value.trim().toUpperCase();
     const peso = parseFloat(document.getElementById('novo-produto-peso').value) || 0;
@@ -2118,17 +2152,18 @@ function salvarNovoProduto() {
 
     const indexExistente = produtosGlobais.findIndex(p => (typeof p === 'string' ? p : p.nome) === nome);
     if (indexExistente >= 0) {
-        produtosGlobais[indexExistente] = novaPeca; 
+        produtosGlobais[indexExistente] = novaPeca; // Atualiza
     } else {
-        produtosGlobais.push(novaPeca); 
+        produtosGlobais.push(novaPeca); // Cria novo
     }
 
     atualizarSelectPecas();
-    if (typeof salvarAutomatico === 'function') salvarAutomatico(); 
+    if (typeof salvarAutomatico === 'function') salvarAutomatico(); // Salva na nuvem do seu sistema
     fecharModalNovoProduto();
-    alert("Peça registada com sucesso!");
+    alert("Peça registrada com sucesso!");
 }
 
+// 4. Exclui um produto (Botão Vermelho)
 function excluirPecaSelecionada() {
     const select = document.getElementById('f-produto');
     const nomeSelecionado = select.value;
@@ -2147,9 +2182,9 @@ function excluirPecaSelecionada() {
     }
 }
 
+// 5. Atualiza a lista de seleção
 function atualizarSelectPecas() {
     const select = document.getElementById('f-produto');
-    const selectEdicao = document.getElementById('edit-op-produto'); 
     if (select && typeof produtosGlobais !== 'undefined') {
         let htmlBase = '<option value="">-- Selecione Produto --</option>';
         produtosGlobais.forEach(peca => {
@@ -2157,10 +2192,10 @@ function atualizarSelectPecas() {
             htmlBase += `<option value="${nomePeca}">${nomePeca}</option>`;
         });
         select.innerHTML = htmlBase;
-        if(selectEdicao) selectEdicao.innerHTML = htmlBase;
     }
 }
 
+// 6. Preenche os campos sozinhos quando escolhe a peça
 function autocompletarPeca() {
     const nomeSelecionado = document.getElementById('f-produto').value;
     const pecaEncontrada = typeof produtosGlobais !== 'undefined' ? produtosGlobais.find(p => (typeof p === 'string' ? p : p.nome) === nomeSelecionado) : null;
@@ -2169,42 +2204,22 @@ function autocompletarPeca() {
         document.getElementById('input-peso').value = pecaEncontrada.peso || '';
         document.getElementById('input-ciclo').value = pecaEncontrada.ciclo || '';
         document.getElementById('input-pigmento').value = pecaEncontrada.pigmento || '';
-        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '1';
-        recalcularTempo(); 
+        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '';
+        calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
     } else {
         document.getElementById('input-peso').value = '';
         document.getElementById('input-ciclo').value = '';
         document.getElementById('input-pigmento').value = '';
         document.getElementById('input-cavidades').value = '';
-        document.getElementById('resultado-tempo').innerText = '0h 00m';
+        document.getElementById('resultado-rendimento').innerText = '0 peças';
     }
 }
 
-function recalcularTempo() {
-    // Pega os valores digitados na tela
-    const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
-    const cavidades = parseInt(document.getElementById('input-cavidades').value) || 1;
-    const meta = parseInt(document.getElementById('input-meta').value) || 0;
-    
-    const displayResultado = document.getElementById('resultado-tempo');
-    if (!displayResultado) return;
-
-    // Se faltar alguma informação, zera o relógio
-    if (ciclo <= 0 || meta <= 0 || cavidades <= 0) {
-        displayResultado.innerText = '0h 00m';
-        return;
-    }
-
-    // Calcula os ciclos necessários e o tempo total em segundos
-    const totalCiclos = Math.ceil(meta / cavidades);
-    const tempoSegundos = totalCiclos * ciclo;
-    
-    // Converte para horas e minutos
-    const horas = Math.floor(tempoSegundos / 3600);
-    const minutos = Math.floor((tempoSegundos % 3600) / 60);
-
-    // Mostra na tela
-    displayResultado.innerText = `${horas}h ${minutos}m`;
+// 7. Cálculos de rendimento
+function recalcularRendimento() {
+    const peso = parseFloat(document.getElementById('input-peso').value);
+    const pigmento = parseFloat(document.getElementById('input-pigmento').value) || 0; 
+    calcularRendimento(peso, pigmento);
 }
 
 function calcularRendimento(pesoPeca, porcentagemPigmento) {
@@ -2214,62 +2229,20 @@ function calcularRendimento(pesoPeca, porcentagemPigmento) {
         return;
     }
     const pigmentoDecimal = porcentagemPigmento / 100;
-    const materialTotal = 25 + (25 * pigmentoDecimal); 
+    const materialTotal = 25 + (25 * pigmentoDecimal); // 25kg + %
     const quantidadePecas = Math.floor(materialTotal / pesoPeca);
     if(displayResultado) displayResultado.innerText = `${quantidadePecas} peças`;
 }
 
+// Carrega os produtos 2 segundos após abrir o site
 setTimeout(atualizarSelectPecas, 2000);
         
     </script>
 
-    <div id="modal-novo-produto" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-[9999]">
-    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-        <h2 class="text-xl font-black text-slate-800 mb-4 border-b pb-2">Cadastrar Nova Peça</h2>
-        
-        <div class="space-y-3">
-            <div>
-                <label class="text-xs font-bold text-slate-500 uppercase">Nome da Peça / Produto</label>
-                <input type="text" id="novo-produto-nome" placeholder="Ex: Pote 500ml, Teclado Gamer..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
+    <div id="modal-novo-produto" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
             </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase">Peso (kg)</label>
-                    <input type="number" id="novo-produto-peso" step="0.001" placeholder="Ex: 0.047" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase">Pigmento (%)</label>
-                    <input type="number" id="novo-produto-pigmento" placeholder="Ex: 2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase">Ciclo (Segundos)</label>
-                    <input type="number" id="novo-produto-ciclo" placeholder="Ex: 15" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase">Cavidades</label>
-                    <input type="number" id="novo-produto-cavidades" placeholder="Ex: 1" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
-                </div>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 mt-6">
-            <button type="button" onclick="fecharModalNovoProduto()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition">Cancelar</button>
-            <button type="button" onclick="salvarNovoProduto()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">Salvar Peça</button>
-        </div>
     </div>
-</div>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
