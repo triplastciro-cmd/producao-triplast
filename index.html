@@ -376,46 +376,50 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 border-t pt-4">
-            <h3 class="text-md font-bold text-gray-700 mb-2">Configuração da Peça</h3>
-            
-            <label class="block text-sm font-medium text-gray-700 mt-2">Produto / Peça</label>
-            <select id="select-peca" onchange="autocompletarPeca()" class="w-full p-2 border border-gray-300 rounded mt-1 bg-white">
-                <option value="">Selecione uma peça...</option>
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="md:col-span-1">
+            <label class="text-[10px] font-bold text-blue-800 uppercase">Produto / Peça</label>
+            <select id="f-produto" onchange="autocompletarPeca()" class="w-full p-3 bg-white border border-blue-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                <option value="">-- Selecione Produto --</option>
             </select>
-
-            <div class="grid grid-cols-2 gap-2 mt-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-700">Peso da Peça (kg)</label>
-                    <input type="number" id="input-peso" step="0.001" placeholder="Ex: 0.047" class="w-full p-2 border border-gray-300 rounded mt-1" oninput="recalcularRendimento()">
-                </div>
-                
-                <div>
-                    <label class="block text-xs font-medium text-gray-700">Pigmento (%)</label>
-                    <input type="number" id="input-pigmento" placeholder="Ex: 2" class="w-full p-2 border border-gray-300 rounded mt-1" oninput="recalcularRendimento()">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-gray-700">Ciclo (Segundos)</label>
-                    <input type="number" id="input-ciclo" placeholder="Ex: 15" class="w-full p-2 border border-gray-300 rounded mt-1">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-gray-700">Cavidades</label>
-                    <input type="number" id="input-cavidades" placeholder="Ex: 1" class="w-full p-2 border border-gray-300 rounded mt-1">
-                </div>
+        </div>
+        
+        <div class="md:col-span-2 grid grid-cols-4 gap-2">
+            <div>
+                <label class="text-[10px] font-bold text-blue-800 uppercase">Peso (kg)</label>
+                <input type="number" id="input-peso" step="0.001" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
-
-            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center mb-4">
-                <p class="text-xs text-blue-800 font-bold uppercase tracking-wider">Rendimento (Saco 25kg)</p>
-                <p id="resultado-rendimento" class="text-3xl font-black text-blue-600 mt-1">0 peças</p>
+            <div>
+                <label class="text-[10px] font-bold text-blue-800 uppercase">Pigm. (%)</label>
+                <input type="number" id="input-pigmento" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-blue-800 uppercase">Ciclo (s)</label>
+                <input type="number" id="input-ciclo" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-blue-800 uppercase">Cavidades</label>
+                <input type="number" id="input-cavidades" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
         </div>
-        <div class="flex justify-end gap-2">
-            <button onclick="fecharModalMaquina()" class="...">Cancelar</button>
-            <button onclick="salvarConfiguracaoMaquina()" class="...">Salvar</button>
-        </div>
-                        </div>
+    </div>
+    
+    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200">
+        <p class="text-xs text-blue-800 font-bold uppercase">Rendimento Estimado (Saco 25kg):</p>
+        <p id="resultado-rendimento" class="text-2xl font-black text-blue-600">0 peças</p>
+    </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div class="md:col-span-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
+        <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+    </div>
+     <div class="md:col-span-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
+        <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+    </div>
+</div>
                         <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
                             <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
@@ -2028,35 +2032,30 @@
         window.addEventListener('beforeunload', () => { salvarGeral(); }); 
         setInterval(() => { salvarGeral(); }, 60000); 
         carregarBanco();
-    </script>
 
-    <script>
         // =========================================================
 // SISTEMA DE AUTOCOMPLETAR E CÁLCULO DE RENDIMENTO DA PEÇA
 // =========================================================
 
-// 1. Atualiza as opções do Select (puxando do seu banco de produtosGlobais)
 function atualizarSelectPecas() {
-    const select = document.getElementById('select-peca');
-    if (!select) return; 
+    // Agora ele busca o select correto da sua tela: f-produto
+    const select = document.getElementById('f-produto');
+    const selectEdicao = document.getElementById('edit-op-produto'); // E o da janela de edição
     
-    select.innerHTML = '<option value="">Selecione uma peça...</option>';
-    
-    if (typeof produtosGlobais !== 'undefined') {
+    if (select && typeof produtosGlobais !== 'undefined') {
+        let htmlBase = '<option value="">-- Selecione Produto --</option>';
         produtosGlobais.forEach(peca => {
-            // Supondo que a peça salva no banco seja apenas uma string (nome), 
-            // mas se for um objeto, ajustamos!
             const nomePeca = typeof peca === 'string' ? peca : peca.nome;
-            select.innerHTML += `<option value="${nomePeca}">${nomePeca}</option>`;
+            htmlBase += `<option value="${nomePeca}">${nomePeca}</option>`;
         });
+        
+        select.innerHTML = htmlBase;
+        if(selectEdicao) selectEdicao.innerHTML = htmlBase;
     }
 }
 
-// 2. Preenche os campos sozinhos quando escolhe a peça
 function autocompletarPeca() {
-    const nomeSelecionado = document.getElementById('select-peca').value;
-    
-    // Procura a peça no banco. (Ajuste aqui se o seu banco for diferente)
+    const nomeSelecionado = document.getElementById('f-produto').value;
     const pecaEncontrada = produtosGlobais.find(p => p.nome === nomeSelecionado);
 
     if (pecaEncontrada) {
@@ -2064,10 +2063,8 @@ function autocompletarPeca() {
         document.getElementById('input-ciclo').value = pecaEncontrada.ciclo || '';
         document.getElementById('input-pigmento').value = pecaEncontrada.pigmento || '';
         document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '';
-        
         calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
     } else {
-        // Limpa se escolher "Selecione..."
         document.getElementById('input-peso').value = '';
         document.getElementById('input-ciclo').value = '';
         document.getElementById('input-pigmento').value = '';
@@ -2076,36 +2073,29 @@ function autocompletarPeca() {
     }
 }
 
-// 3. Função que recalcula se o operador digitar na mão
 function recalcularRendimento() {
     const peso = parseFloat(document.getElementById('input-peso').value);
     const pigmento = parseFloat(document.getElementById('input-pigmento').value) || 0; 
     calcularRendimento(peso, pigmento);
 }
 
-// 4. A Matemática (25kg de material + % de pigmento dividido pelo peso da peça)
 function calcularRendimento(pesoPeca, porcentagemPigmento) {
     const displayResultado = document.getElementById('resultado-rendimento');
-    
     if (!pesoPeca || pesoPeca <= 0) {
         if(displayResultado) displayResultado.innerText = '0 peças';
         return;
     }
-
     const pigmentoDecimal = porcentagemPigmento / 100;
     const materialTotal = 25 + (25 * pigmentoDecimal); // 25.5kg
     const quantidadePecas = Math.floor(materialTotal / pesoPeca);
 
-    if(displayResultado) {
-        displayResultado.innerText = `${quantidadePecas} peças`;
-    }
+    if(displayResultado) displayResultado.innerText = `${quantidadePecas} peças`;
 }
 
-// Faz o select carregar as opções logo que o sistema inicia
+// Atualiza a lista 2 segundos após o site abrir para garantir que o Supabase já carregou
 setTimeout(atualizarSelectPecas, 2000);
+        
     </script>
-    
 </body>
 </html>
-
 
