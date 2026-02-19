@@ -2042,11 +2042,15 @@
             showToast("DADOS SALVOS");
         }
 
-        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+        function alterarFiltroGrafico(valor) { 
+    filtroGraficoId = valor; 
+    atualizarResumoGlobalNumeros(); 
+    iniciarGraficos(); 
+}
         
-        window.addEventListener('beforeunload', () => { salvarGeral(); }); 
-        setInterval(() => { salvarGeral(); }, 60000); 
-        carregarBanco();
+window.addEventListener('beforeunload', () => { salvarGeral(); }); 
+setInterval(() => { salvarGeral(); }, 60000); 
+carregarBanco();
 
         // =========================================================
 // SISTEMA DE AUTOCOMPLETAR E CÁLCULO DE RENDIMENTO DA PEÇA
@@ -2246,3 +2250,4 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
