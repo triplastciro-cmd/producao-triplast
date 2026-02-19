@@ -1464,9 +1464,13 @@
             document.getElementById('edit-op-cliente').value = op.cliente || '';
             document.getElementById('edit-op-qtd').value = op.qtd;
 
-            // Agora Produto é um Select
+            // ATUALIZADO: Agora lê corretamente os produtos mesmo com peso e ciclo salvos
             const selProd = document.getElementById('edit-op-produto');
-            selProd.innerHTML = '<option value="">-- Selecione --</option>' + produtosGlobais.map(p => `<option value="${p}" ${p===op.produto?'selected':''}>${p}</option>`).join('');
+            const opcoesProdutos = produtosGlobais.map(p => {
+                const nomePeca = typeof p === 'string' ? p : p.nome;
+                return `<option value="${nomePeca}" ${nomePeca === op.produto ? 'selected' : ''}>${nomePeca}</option>`;
+            }).join('');
+            selProd.innerHTML = '<option value="">-- Selecione --</option>' + opcoesProdutos;
 
             // Preencher campos novos
             document.getElementById('edit-op-material').value = op.material || '';
@@ -2105,6 +2109,133 @@ function calcularRendimento(pesoPeca, porcentagemPigmento) {
 
 // Atualiza a lista 2 segundos após o site abrir para garantir que o Supabase já carregou
 setTimeout(atualizarSelectPecas, 2000);
+
+
+        // =========================================================
+// SISTEMA COMPLETO DE PRODUTOS (CADASTRAR, EXCLUIR E CALCULAR)
+// =========================================================
+
+// 1. Abre a janela de registrar produto
+function abrirModalNovoProduto() {
+    // Limpa os campos
+    document.getElementById('novo-produto-nome').value = '';
+    document.getElementById('novo-produto-peso').value = '';
+    document.getElementById('novo-produto-pigmento').value = '';
+    document.getElementById('novo-produto-ciclo').value = '';
+    document.getElementById('novo-produto-cavidades').value = '';
+    
+    // Mostra a janela
+    const modal = document.getElementById('modal-novo-produto');
+    if(modal) modal.classList.remove('hidden');
+}
+
+// 2. Fecha a janela
+function fecharModalNovoProduto() {
+    const modal = document.getElementById('modal-novo-produto');
+    if(modal) modal.classList.add('hidden');
+}
+
+// 3. Salva o produto novo que você digitou
+function salvarNovoProduto() {
+    const nome = document.getElementById('novo-produto-nome').value.trim().toUpperCase();
+    const peso = parseFloat(document.getElementById('novo-produto-peso').value) || 0;
+    const pigmento = parseFloat(document.getElementById('novo-produto-pigmento').value) || 0;
+    const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value) || 0;
+    const cavidades = parseInt(document.getElementById('novo-produto-cavidades').value) || 1;
+
+    if (!nome) { alert("Por favor, digite o nome da peça!"); return; }
+    if (peso <= 0) { alert("O peso precisa ser maior que zero!"); return; }
+
+    const novaPeca = { nome, peso, pigmento, ciclo, cavidades };
+
+    if (typeof produtosGlobais === 'undefined') window.produtosGlobais = [];
+
+    const indexExistente = produtosGlobais.findIndex(p => (typeof p === 'string' ? p : p.nome) === nome);
+    if (indexExistente >= 0) {
+        produtosGlobais[indexExistente] = novaPeca; // Atualiza
+    } else {
+        produtosGlobais.push(novaPeca); // Cria novo
+    }
+
+    atualizarSelectPecas();
+    if (typeof salvarAutomatico === 'function') salvarAutomatico(); // Salva na nuvem do seu sistema
+    fecharModalNovoProduto();
+    alert("Peça registrada com sucesso!");
+}
+
+// 4. Exclui um produto (Botão Vermelho)
+function excluirPecaSelecionada() {
+    const select = document.getElementById('f-produto');
+    const nomeSelecionado = select.value;
+    
+    if (!nomeSelecionado) { alert("Selecione uma peça na lista para excluir!"); return; }
+
+    if (confirm("Tem certeza que deseja excluir a peça: " + nomeSelecionado + "?")) {
+        const index = produtosGlobais.findIndex(p => (typeof p === 'string' ? p : p.nome) === nomeSelecionado);
+        if (index !== -1) {
+            produtosGlobais.splice(index, 1);
+            atualizarSelectPecas();
+            autocompletarPeca();
+            if (typeof salvarAutomatico === 'function') salvarAutomatico();
+            alert("Peça excluída com sucesso!");
+        }
+    }
+}
+
+// 5. Atualiza a lista de seleção
+function atualizarSelectPecas() {
+    const select = document.getElementById('f-produto');
+    if (select && typeof produtosGlobais !== 'undefined') {
+        let htmlBase = '<option value="">-- Selecione Produto --</option>';
+        produtosGlobais.forEach(peca => {
+            const nomePeca = typeof peca === 'string' ? peca : peca.nome;
+            htmlBase += `<option value="${nomePeca}">${nomePeca}</option>`;
+        });
+        select.innerHTML = htmlBase;
+    }
+}
+
+// 6. Preenche os campos sozinhos quando escolhe a peça
+function autocompletarPeca() {
+    const nomeSelecionado = document.getElementById('f-produto').value;
+    const pecaEncontrada = typeof produtosGlobais !== 'undefined' ? produtosGlobais.find(p => (typeof p === 'string' ? p : p.nome) === nomeSelecionado) : null;
+
+    if (pecaEncontrada && typeof pecaEncontrada === 'object') {
+        document.getElementById('input-peso').value = pecaEncontrada.peso || '';
+        document.getElementById('input-ciclo').value = pecaEncontrada.ciclo || '';
+        document.getElementById('input-pigmento').value = pecaEncontrada.pigmento || '';
+        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '';
+        calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
+    } else {
+        document.getElementById('input-peso').value = '';
+        document.getElementById('input-ciclo').value = '';
+        document.getElementById('input-pigmento').value = '';
+        document.getElementById('input-cavidades').value = '';
+        document.getElementById('resultado-rendimento').innerText = '0 peças';
+    }
+}
+
+// 7. Cálculos de rendimento
+function recalcularRendimento() {
+    const peso = parseFloat(document.getElementById('input-peso').value);
+    const pigmento = parseFloat(document.getElementById('input-pigmento').value) || 0; 
+    calcularRendimento(peso, pigmento);
+}
+
+function calcularRendimento(pesoPeca, porcentagemPigmento) {
+    const displayResultado = document.getElementById('resultado-rendimento');
+    if (!pesoPeca || pesoPeca <= 0) {
+        if(displayResultado) displayResultado.innerText = '0 peças';
+        return;
+    }
+    const pigmentoDecimal = porcentagemPigmento / 100;
+    const materialTotal = 25 + (25 * pigmentoDecimal); // 25kg + %
+    const quantidadePecas = Math.floor(materialTotal / pesoPeca);
+    if(displayResultado) displayResultado.innerText = `${quantidadePecas} peças`;
+}
+
+// Carrega os produtos 2 segundos após abrir o site
+setTimeout(atualizarSelectPecas, 2000);
         
     </script>
 
@@ -2115,6 +2246,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
