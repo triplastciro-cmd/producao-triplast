@@ -2117,24 +2117,28 @@ setTimeout(atualizarSelectPecas, 2000);
 
 // 1. Abre a janela de registrar produto
 function abrirModalNovoProduto() {
-    // Limpa os campos
     document.getElementById('novo-produto-nome').value = '';
     document.getElementById('novo-produto-peso').value = '';
     document.getElementById('novo-produto-pigmento').value = '';
     document.getElementById('novo-produto-ciclo').value = '';
     document.getElementById('novo-produto-cavidades').value = '';
     
-    // Mostra a janela
     const modal = document.getElementById('modal-novo-produto');
-    if(modal) modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden'); // Remove a classe antiga (se tiver)
+        modal.style.display = 'flex';     // Força a janela a aparecer no estilo do seu sistema
+    } else {
+        alert("Ops! O sistema não achou o código HTML da janela lá no final do arquivo.");
+    }
 }
 
 // 2. Fecha a janela
 function fecharModalNovoProduto() {
     const modal = document.getElementById('modal-novo-produto');
-    if(modal) modal.classList.add('hidden');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
-
 // 3. Salva o produto novo que você digitou
 function salvarNovoProduto() {
     const nome = document.getElementById('novo-produto-nome').value.trim().toUpperCase();
@@ -2246,6 +2250,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
