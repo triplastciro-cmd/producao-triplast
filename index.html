@@ -2072,16 +2072,29 @@ function atualizarSelectPecas() {
     
     if (select && typeof produtosGlobais !== 'undefined') {
         let htmlBase = '<option value="">-- Selecione Produto --</option>';
+        
         produtosGlobais.forEach(peca => {
-            const nomePeca = typeof peca === 'string' ? peca : peca.nome;
-            htmlBase += `<option value="${nomePeca}">${nomePeca}</option>`;
+            // Descobre o nome verdadeiro não importa como o dado venha
+            let nomePeca = "Desconhecido";
+            
+            if (typeof peca === 'string') {
+                nomePeca = peca;
+            } else if (typeof peca === 'object' && peca !== null) {
+                // Se for objeto, tenta achar em 'nome', 'produto' ou 'descricao'
+                nomePeca = peca.nome || peca.produto || peca.descricao || "Sem Nome";
+            }
+            
+            // Trava de segurança: Impede que o erro feio apareça na tela
+            if (String(nomePeca) !== '[object Object]' && String(nomePeca) !== 'undefined' && String(nomePeca) !== 'Desconhecido') {
+                htmlBase += `<option value="${nomePeca}">${nomePeca}</option>`;
+            }
         });
         
         select.innerHTML = htmlBase;
         if(selectEdicao) selectEdicao.innerHTML = htmlBase;
     }
 }
-
+        
 function autocompletarPeca() {
     const nomeSelecionado = document.getElementById('f-produto').value;
     const pecaEncontrada = produtosGlobais.find(p => p.nome === nomeSelecionado);
@@ -2259,5 +2272,6 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
