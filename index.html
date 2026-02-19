@@ -2174,13 +2174,46 @@ setTimeout(atualizarSelectPecas, 2000);
         
     </script>
 
-    <div id="modal-novo-produto" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
+    <div id="modal-novo-produto" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-[9999]">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
+        <h2 class="text-xl font-black text-slate-800 mb-4 border-b pb-2">Cadastrar Nova Peça</h2>
+        
+        <div class="space-y-3">
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase">Nome da Peça / Produto</label>
+                <input type="text" id="novo-produto-nome" placeholder="Ex: Pote 500ml, Teclado Gamer..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
             </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Peso (kg)</label>
+                    <input type="number" id="novo-produto-peso" step="0.001" placeholder="Ex: 0.047" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Pigmento (%)</label>
+                    <input type="number" id="novo-produto-pigmento" placeholder="Ex: 2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Ciclo (Segundos)</label>
+                    <input type="number" id="novo-produto-ciclo" placeholder="Ex: 15" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Cavidades</label>
+                    <input type="number" id="novo-produto-cavidades" placeholder="Ex: 1" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <button type="button" onclick="fecharModalNovoProduto()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg transition">Cancelar</button>
+            <button type="button" onclick="salvarNovoProduto()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">Salvar Peça</button>
+        </div>
     </div>
+</div>
 
 </body>
 </html>
+
 
 
 
