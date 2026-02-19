@@ -1685,14 +1685,33 @@
             else { alert("Qtd inválida."); }
         }
 
-        function addProd(id, v) { 
-            const t = document.getElementById('filtro-turno').value; 
-            const maq = maquinas.find(x => x.id === id);
-            maq.dadosTurno[t].boas += v;
-            maq.resumoTurno[t].boas += v;
-            render(); 
-            if(usuarioLogado === 'admin') renderApontamento(); 
-            salvarAutomatico();
+        function addProd(id, qtd) {
+    // 1. Encontra APENAS a máquina exata onde você clicou
+    const maquina = maquinas.find(m => m.id === id);
+    
+    // Se a máquina não existir, para aqui e não faz nada
+    if (!maquina) return; 
+    
+    // 2. Garante que os contadores da máquina existem e estão zerados se for a primeira vez
+    if (!maquina.dadosMensais) {
+        maquina.dadosMensais = { boas: 0, refugo: 0 };
+    }
+    
+    // 3. Soma apenas na máquina certa (e garante que é número)
+    const quantidadeASomar = parseInt(qtd) || 1; // Se não mandar quantidade, soma 1 por defeito
+    maquina.dadosMensais.boas += quantidadeASomar;
+    
+    // 4. Regista no histórico apenas desta máquina
+    if (typeof registrarHistorico === 'function') {
+        registrarHistorico(id, 'PRODUÇÃO', quantidadeASomar, maquina.status, 'Boas');
+    }
+    
+    // 5. Atualiza o ecrã e salva na nuvem
+    if (typeof render === 'function') render();
+    if (typeof atualizarResumoGlobalNumeros === 'function') atualizarResumoGlobalNumeros();
+    if (typeof iniciarGraficos === 'function') iniciarGraficos();
+    if (typeof salvarAutomatico === 'function') salvarAutomatico();
+}
         }
 
         function addRefugo(id) { 
@@ -2243,6 +2262,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
