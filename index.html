@@ -2042,25 +2042,11 @@
             showToast("DADOS SALVOS");
         }
 
-        // 1. DESLIGA A ANIMAÇÃO LENTA DOS GRÁFICOS (Fica instantâneo!)
-Chart.defaults.animation = false;
-
-function alterarFiltroGrafico(valor) { 
-    filtroGraficoId = valor; 
-    atualizarResumoGlobalNumeros(); 
-    iniciarGraficos(); 
-}
-
-window.addEventListener('beforeunload', () => { salvarGeral(); }); 
-setInterval(() => { salvarGeral(); }, 60000); 
-
-// 2. FORÇA O GRÁFICO A ATUALIZAR A CADA 1 SEGUNDO CRAVADO (1000ms)
-setInterval(() => {
-    atualizarResumoGlobalNumeros();
-    iniciarGraficos();
-}, 1000);
-
-carregarBanco();
+        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+        
+        window.addEventListener('beforeunload', () => { salvarGeral(); }); 
+        setInterval(() => { salvarGeral(); }, 60000); 
+        carregarBanco();
 
         // =========================================================
 // SISTEMA DE AUTOCOMPLETAR E CÁLCULO DE RENDIMENTO DA PEÇA
@@ -2258,9 +2244,5 @@ setTimeout(atualizarSelectPecas, 2000);
             </div>
     </div>
 
-
-    
 </body>
 </html>
-
-
