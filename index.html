@@ -1919,29 +1919,38 @@
         }
 
         function atualizarResumoGlobalNumeros() {
-            if(usuarioLogado !== 'admin') return;
-            const t = document.getElementById('filtro-turno').value;
-            let d = { tp:0, tb:0, pa:0, sp:0 };
-            
-            // Somamos na hora, sem depender de variável incremental que falha
-            maquinas.forEach(m => { 
-                if(filtroGraficoId==='todas' || m.id==filtroGraficoId) { 
-                    // AQUI ESTAVA O ERRO DE UNDEFINED - CORRIGIDO
-                    if(m.resumoTurno[t]) {
-                        d.tp += (m.resumoTurno[t].tempoProducao || 0); 
-                        d.tb += (m.resumoTurno[t].tempoBaixa || 0); 
-                        d.pa += (m.resumoTurno[t].paradas || 0); 
-                        d.sp += (m.resumoTurno[t].tempoSemProg || 0); 
-                    }
-                } 
-            });
-            if(document.getElementById('global-timer-prod')) {
-                document.getElementById('global-timer-prod').innerText = fmtTempo(d.tp); 
-                document.getElementById('global-timer-baixa').innerText = fmtTempo(d.tb);
-                document.getElementById('global-timer-parado').innerText = fmtTempo(d.pa); 
-                document.getElementById('global-timer-semprog').innerText = fmtTempo(d.sp);
+    if(usuarioLogado !== 'admin') return;
+    const t = document.getElementById('filtro-turno').value;
+    let d = { tp:0, tb:0, pa:0, sp:0 };
+    
+    // Agora o sistema não mistura os tempos!
+    maquinas.forEach(m => { 
+        if(filtroGraficoId === 'todas' || m.id == filtroGraficoId) { 
+            if(m.resumoTurno[t]) {
+                if (filtroGraficoId === 'todas') {
+                    // Se for "Todas", em vez de somar 3x, pega o tempo cronológico real (o maior tempo rolando)
+                    d.tp = Math.max(d.tp, m.resumoTurno[t].tempoProducao || 0);
+                    d.tb = Math.max(d.tb, m.resumoTurno[t].tempoBaixa || 0);
+                    d.pa = Math.max(d.pa, m.resumoTurno[t].paradas || 0);
+                    d.sp = Math.max(d.sp, m.resumoTurno[t].tempoSemProg || 0);
+                } else {
+                    // Se o seu pai filtrar por uma máquina específica, mostra o tempo EXATO só dela
+                    d.tp += (m.resumoTurno[t].tempoProducao || 0); 
+                    d.tb += (m.resumoTurno[t].tempoBaixa || 0); 
+                    d.pa += (m.resumoTurno[t].paradas || 0); 
+                    d.sp += (m.resumoTurno[t].tempoSemProg || 0); 
+                }
             }
-        }
+        } 
+    });
+    
+    if(document.getElementById('global-timer-prod')) {
+        document.getElementById('global-timer-prod').innerText = fmtTempo(d.tp); 
+        document.getElementById('global-timer-baixa').innerText = fmtTempo(d.tb);
+        document.getElementById('global-timer-parado').innerText = fmtTempo(d.pa); 
+        document.getElementById('global-timer-semprog').innerText = fmtTempo(d.sp);
+    }
+}
 
         function atualizarStatus(id, st) { 
             const m = maquinas.find(x => x.id === id); 
@@ -2250,4 +2259,5 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
