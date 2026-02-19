@@ -383,7 +383,7 @@
             <div class="flex justify-between items-center mb-1">
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Produto / Peça</label>
                 <div class="flex gap-1">
-                    <button onclick="excluirPecaSelecionada()" class="text-[10px] bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded" title="Excluir Peça">
+                    <button type="button" onclick="excluirPecaSelecionada()" class="text-[10px] bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded" title="Excluir Peça">
                         <i class="fa-solid fa-trash"></i> EXCL.
                     </button>
                     <button type="button" onclick="abrirModalNovoProduto()" class="text-[10px] bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded">
@@ -400,27 +400,36 @@
         <div class="md:col-span-2 grid grid-cols-4 gap-2">
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Peso (kg)</label>
-                <input type="number" id="input-peso" step="0.001" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-peso" step="0.001" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Pigm. (%)</label>
-                <input type="number" id="input-pigmento" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-pigmento" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Ciclo (s)</label>
-                <input type="number" id="input-ciclo" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-ciclo" oninput="recalcularTempo()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-blue-800 uppercase">Cavidades</label>
-                <input type="number" id="input-cavidades" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+                <input type="number" id="input-cavidades" oninput="recalcularTempo()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
             </div>
         </div>
 
-    </div> <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200">
-        <p class="text-xs text-blue-800 font-bold uppercase">Rendimento Estimado (Saco 25kg):</p>
-        <p id="resultado-rendimento" class="text-2xl font-black text-blue-600">0 peças</p>
+    </div> 
+    
+    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200">
+        <div class="flex items-center gap-3">
+            <label class="text-xs text-blue-800 font-bold uppercase">Meta da O.P. (peças):</label>
+            <input type="number" id="input-meta" oninput="recalcularTempo()" class="w-24 p-2 bg-slate-50 border border-blue-200 rounded text-sm font-bold outline-none focus:border-blue-500" placeholder="Ex: 5000">
+        </div>
+        <div class="text-right">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Tempo de Máquina:</p>
+            <p id="resultado-tempo" class="text-2xl font-black text-blue-600">0h 00m</p>
+        </div>
     </div>
 </div>
+                    
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <div class="md:col-span-1">
         <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
@@ -2141,21 +2150,42 @@ function autocompletarPeca() {
         document.getElementById('input-peso').value = pecaEncontrada.peso || '';
         document.getElementById('input-ciclo').value = pecaEncontrada.ciclo || '';
         document.getElementById('input-pigmento').value = pecaEncontrada.pigmento || '';
-        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '';
-        calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
+        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '1';
+        recalcularTempo(); 
     } else {
         document.getElementById('input-peso').value = '';
         document.getElementById('input-ciclo').value = '';
         document.getElementById('input-pigmento').value = '';
         document.getElementById('input-cavidades').value = '';
-        document.getElementById('resultado-rendimento').innerText = '0 peças';
+        document.getElementById('resultado-tempo').innerText = '0h 00m';
     }
 }
 
-function recalcularRendimento() {
-    const peso = parseFloat(document.getElementById('input-peso').value);
-    const pigmento = parseFloat(document.getElementById('input-pigmento').value) || 0; 
-    calcularRendimento(peso, pigmento);
+function recalcularTempo() {
+    // Pega os valores digitados na tela
+    const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
+    const cavidades = parseInt(document.getElementById('input-cavidades').value) || 1;
+    const meta = parseInt(document.getElementById('input-meta').value) || 0;
+    
+    const displayResultado = document.getElementById('resultado-tempo');
+    if (!displayResultado) return;
+
+    // Se faltar alguma informação, zera o relógio
+    if (ciclo <= 0 || meta <= 0 || cavidades <= 0) {
+        displayResultado.innerText = '0h 00m';
+        return;
+    }
+
+    // Calcula os ciclos necessários e o tempo total em segundos
+    const totalCiclos = Math.ceil(meta / cavidades);
+    const tempoSegundos = totalCiclos * ciclo;
+    
+    // Converte para horas e minutos
+    const horas = Math.floor(tempoSegundos / 3600);
+    const minutos = Math.floor((tempoSegundos % 3600) / 60);
+
+    // Mostra na tela
+    displayResultado.innerText = `${horas}h ${minutos}m`;
 }
 
 function calcularRendimento(pesoPeca, porcentagemPigmento) {
@@ -2213,6 +2243,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
