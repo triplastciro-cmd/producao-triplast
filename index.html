@@ -856,51 +856,29 @@
             }
         }
 
-        function compensarTempoOffline(segundos) { 
-    const agora = getBrasiliaDate();
-    if ((isFimDeSemana(agora) && !modoHoraExtra) || sistemaPausado) return; 
-    const t = document.getElementById('filtro-turno').value;
-    
-    // 1. Variável para checar se a fábrica está ativa
-    let fabricaAtiva = false;
+        function compensarTempoOffline(segundos) {
+            const agora = getBrasiliaDate();
+            if ((isFimDeSemana(agora) && !modoHoraExtra) || sistemaPausado) return; 
 
-    maquinas.forEach(m => { 
-        if (m.status === "23-EMPRESA FECHADA") return; 
-        
-        // Agrupando SEM PROG e PARADA PROGRAMADA como tempo neutro 
-        if (m.status === "22-SEM PROGRAMAÇÃO" || m.status === "24-PARADA PROGRAMADA") { 
-            m.dadosTurno[t].tempoSemProg += segundos; 
-            m.resumoTurno[t].tempoSemProg += segundos; 
-            return; 
-        } 
-        
-        // Verifica se a máquina está ativa (mas não soma o tempo global aqui!)
-        if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) { 
-            fabricaAtiva = true;
-        } 
-
-        // Atualiza os tempos individuais da máquina (Isso fica dentro do loop)
-        if(m.status === "04-PRODUÇÃO") { 
-            m.dadosTurno[t].tempoProducao += segundos; 
-            m.resumoTurno[t].tempoProducao += segundos; 
-        } else if (m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATERIA-PRIMA/ AJUSTE") { 
-            m.dadosTurno[t].tempoBaixa += segundos; 
-            m.resumoTurno[t].tempoBaixa += segundos; 
-        } else { 
-            m.dadosTurno[t].tempoParada += segundos; 
-            m.resumoTurno[t].tempoParada += segundos; 
-        }
-    });
-
-    // 2. SOMA O TEMPO GLOBAL AQUI FORA! (Soma 1 vez só)
-    if (fabricaAtiva) {
-        if (isFimDeSemana(agora) && modoHoraExtra) { 
-            dadosMensais.tempoHoraExtraTotal += segundos; 
-        } else { 
-            dadosMensais.tempoProducaoTotal += segundos; 
-        }
-    }
-}
+            const t = document.getElementById('filtro-turno').value;
+            
+            maquinas.forEach(m => {
+                if (m.status === "23-EMPRESA FECHADA") return; 
+                
+                // Agrupando SEM PROG e PARADA PROGRAMADA como tempo neutro
+                if (m.status === "22-SEM PROGRAMAÇÃO" || m.status === "24-PARADA PROGRAMADA") { 
+                    m.dadosTurno[t].tempoSemProg += segundos; 
+                    m.resumoTurno[t].tempoSemProg += segundos; 
+                    return; 
+                }
+                
+                if (m.status === "04-PRODUÇÃO" || m.status.includes("BAIXA") || m.status.includes("MATERIA")) {
+                     if (isFimDeSemana(agora) && modoHoraExtra) {
+                         dadosMensais.tempoHoraExtraTotal += segundos;
+                     } else {
+                         dadosMensais.tempoProducaoTotal += segundos;
+                     }
+                }
 
                 if(m.status === "04-PRODUÇÃO") { 
                     m.dadosTurno[t].tempoProducao += segundos; 
@@ -2020,5 +1998,4 @@
     </script>
 </body>
 </html>
-
 
