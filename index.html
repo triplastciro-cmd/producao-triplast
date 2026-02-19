@@ -1453,38 +1453,37 @@
         }
 
         // --- FUNÇÕES DE EDIÇÃO ---
-        function abrirModalEdicao(maqId, opIndex) {
-            const m = maquinas.find(x => x.id === maqId);
-            const op = m.fila[opIndex];
-            
-            document.getElementById('edit-maq-id').value = maqId;
-            document.getElementById('edit-op-index').value = opIndex;
-            
-            document.getElementById('edit-op-num').value = op.op;
-            document.getElementById('edit-op-cliente').value = op.cliente || '';
-            document.getElementById('edit-op-qtd').value = op.qtd;
-
-            // ATUALIZADO: Agora lê corretamente os produtos mesmo com peso e ciclo salvos
-            const selProd = document.getElementById('edit-op-produto');
-            const opcoesProdutos = produtosGlobais.map(p => {
-                const nomePeca = typeof p === 'string' ? p : p.nome;
-                return `<option value="${nomePeca}" ${nomePeca === op.produto ? 'selected' : ''}>${nomePeca}</option>`;
-            }).join('');
-            selProd.innerHTML = '<option value="">-- Selecione --</option>' + opcoesProdutos;
-
-            // Preencher campos novos
-            document.getElementById('edit-op-material').value = op.material || '';
-            document.getElementById('edit-op-material-qtd').value = op.materialQtd || '';
-            document.getElementById('edit-op-pigmento').value = op.pigmento || '';
-            document.getElementById('edit-op-porcentagem').value = op.porcentagem || '';
-            document.getElementById('edit-op-caixa').value = op.caixa || '';
-            document.getElementById('edit-op-saco').value = op.saco || '';
-            
-            const sel = document.getElementById('edit-op-operador');
-            sel.innerHTML = '<option value="">-- Selecione --</option>' + operadoresGlobais.map(o => `<option value="${o}" ${o===op.operador?'selected':''}>${o}</option>`).join('');
-
-            document.getElementById('modal-editar-op').style.display = 'flex';
+        function abrirModalNovoProduto() {
+    try {
+        // Limpa os campos APENAS se eles existirem (evita erros fatais)
+        const inputNome = document.getElementById('novo-produto-nome');
+        if (inputNome) inputNome.value = '';
+        
+        const inputPeso = document.getElementById('novo-produto-peso');
+        if (inputPeso) inputPeso.value = '';
+        
+        const inputPigmento = document.getElementById('novo-produto-pigmento');
+        if (inputPigmento) inputPigmento.value = '';
+        
+        const inputCiclo = document.getElementById('novo-produto-ciclo');
+        if (inputCiclo) inputCiclo.value = '';
+        
+        const inputCavidades = document.getElementById('novo-produto-cavidades');
+        if (inputCavidades) inputCavidades.value = '';
+        
+        // Procura a janela
+        const modal = document.getElementById('modal-novo-produto');
+        if (modal) {
+            modal.classList.remove('hidden'); // Tira a invisibilidade
+            modal.style.display = 'flex';     // Força o formato de ecrã
+            modal.style.zIndex = '999999';    // Força a ficar na FRENTE DE TUDO
+        } else {
+            alert("Aviso: A caixa do HTML (modal-novo-produto) não foi encontrada no final do código!");
         }
+    } catch (erro) {
+        alert("Erro bloqueado pelo sistema: " + erro.message);
+    }
+}
 
         function salvarEdicaoOP() {
             const maqId = parseInt(document.getElementById('edit-maq-id').value);
@@ -2182,6 +2181,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
