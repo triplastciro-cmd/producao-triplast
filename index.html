@@ -396,14 +396,11 @@
         </div>
     </div>
     
-    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm mb-4">
+    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm">
         <option value="">-- Selecione Produto --</option>
     </select>
-
-    <div class="mt-2 p-4 bg-slate-800 rounded-xl border border-slate-700 text-center shadow-inner">
-        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Tempo Estimado de Produção</p>
-        <div id="resultado-rendimento" class="text-3xl font-black text-emerald-400">00h 00min</div>
-    </div>
+    
+    <div id="resultado-rendimento" class="hidden"></div> 
 </div>
         
         <div class="md:col-span-2 grid grid-cols-4 gap-2">
@@ -2128,25 +2125,25 @@ function autocompletarPeca() {
 
 // 3. O NOVO CÁLCULO DE TEMPO (HORAS E MINUTOS)
 function recalcularRendimento() {
-    const display = document.getElementById('resultado-rendimento');
+    // Busca os valores dos campos
     const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
     const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 1;
-    const meta = parseFloat(document.getElementById('f-qtd').value) || 0; // ID CORRIGIDO AQUI
+    const meta = parseFloat(document.getElementById('f-qtd').value) || 0;
 
-    if (ciclo <= 0 || meta <= 0) {
-        if(display) display.innerText = '00h 00min';
-        return;
-    }
-
-    const segundosTotais = (meta / cavidades) * ciclo;
-    const horas = Math.floor(segundosTotais / 3600);
-    const minutos = Math.floor((segundosTotais % 3600) / 60);
-
-    if(display) {
-        display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
+    // Se quiser exibir o tempo em algum lugar, crie um elemento com ID "tempo-producao" 
+    // ou use o console para testar primeiro:
+    if (ciclo > 0 && meta > 0) {
+        const segundosTotais = (meta / cavidades) * ciclo;
+        const horas = Math.floor(segundosTotais / 3600);
+        const minutos = Math.floor((segundosTotais % 3600) / 60);
+        
+        console.log(`Tempo estimado: ${horas}h ${minutos}min`);
+        
+        // Se você tiver um campo de texto para mostrar o tempo, preencha-o aqui:
+        // document.getElementById('seu-id-de-exibicao').innerText = `${horas}h ${minutos}min`;
     }
 }
-
+        
 function calcularRendimento(pesoPeca, porcentagemPigmento) {
     const displayResultado = document.getElementById('resultado-rendimento');
     if (!pesoPeca || pesoPeca <= 0) {
@@ -2346,6 +2343,7 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
 
 </body>
 </html>
+
 
 
 
