@@ -2260,6 +2260,11 @@ function calcularRendimento(pesoPeca, porcentagemPigmento) {
 
 // Carrega os produtos 2 segundos após abrir o site
 setTimeout(atualizarSelectPecas, 2000);
+
+    function fecharModalNovoProduto() {
+    const modal = document.getElementById('modal-novo-produto');
+    if (modal) modal.style.display = 'none';
+}
         
     </script>
 
@@ -2270,6 +2275,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
