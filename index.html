@@ -2276,13 +2276,56 @@ setTimeout(atualizarSelectPecas, 2000);
         
     </script>
 
-    <div id="modal-novo-produto" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
+    <div id="modal-novo-produto" style="display: none;" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center z-[9999] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200">
+        <div class="bg-slate-50 border-b border-slate-100 p-5">
+            <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-circle-plus text-emerald-600"></i> 
+                Cadastrar Nova Peça
+            </h2>
+            <p class="text-xs text-slate-500 font-medium">Preencha os dados técnicos da injeção</p>
+        </div>
+
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Nome do Produto</label>
+                <input type="text" id="novo-produto-nome" placeholder="Ex: Balde 20L" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
             </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Peso (kg)</label>
+                    <input type="number" id="novo-produto-peso" step="0.001" placeholder="0.500" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 transition-all">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Pigmento (%)</label>
+                    <input type="number" id="novo-produto-pigmento" placeholder="2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 transition-all">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Ciclo (Seg)</label>
+                    <input type="number" id="novo-produto-ciclo" placeholder="25" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 transition-all">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Cavidades</label>
+                    <input type="number" id="novo-produto-cavidades" placeholder="1" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 transition-all">
+                </div>
+            </div>
+        </div>
+
+        <div class="p-5 bg-slate-50 border-t border-slate-100 flex gap-3">
+            <button type="button" onclick="document.getElementById('modal-novo-produto').style.display='none'" class="flex-1 py-3 text-slate-600 font-bold text-sm hover:bg-slate-200 rounded-xl transition-all">
+                Cancelar
+            </button>
+            <button type="button" onclick="salvarNovoProduto()" class="flex-1 py-3 bg-emerald-600 text-white font-black text-sm rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 active:scale-95 transition-all">
+                SALVAR PEÇA
+            </button>
+        </div>
     </div>
+</div>
 
 </body>
 </html>
+
 
 
 
