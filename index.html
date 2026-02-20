@@ -2273,31 +2273,6 @@ setTimeout(atualizarSelectPecas, 2000);
     const modal = document.getElementById('modal-novo-produto');
     if (modal) modal.style.display = 'none';
 }
-
-    function preencherDadosProduto() {
-    const select = document.getElementById('f-produto');
-    const nomeSelecionado = select.value;
-    
-    // Procura a peça no banco de dados local
-    const pecaEncontrada = produtosGlobais.find(p => (typeof p === 'string' ? p : p.nome) === nomeSelecionado);
-    
-    if (pecaEncontrada) {
-        // Preenche os campos do formulário principal
-        // Verifique se esses IDs abaixo (f-peso, f-ciclo, etc) existem no seu HTML
-        if(document.getElementById('f-peso')) document.getElementById('f-peso').value = pecaEncontrada.peso || '';
-        if(document.getElementById('f-ciclo')) document.getElementById('f-ciclo').value = pecaEncontrada.ciclo || '';
-        if(document.getElementById('f-pigmento')) document.getElementById('f-pigmento').value = pecaEncontrada.pigmento || '';
-        if(document.getElementById('f-cavidades')) document.getElementById('f-cavidades').value = pecaEncontrada.cavidades || '';
-        
-        // Se houver um campo de porcentagem de pigmento separado:
-        if(document.getElementById('f-porcentagem')) document.getElementById('f-porcentagem').value = (pecaEncontrada.pigmento || 0) + '%';
-        
-        // Chama o cálculo de rendimento se a função existir
-        if(typeof calcularRendimento === 'function') {
-            calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
-        }
-    }
-}
         
     </script>
 
@@ -2350,6 +2325,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
