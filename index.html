@@ -380,27 +380,26 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         
         <div class="md:col-span-1">
-            <div class="flex justify-between items-center mb-1">
-                <label class="text-[10px] font-bold text-blue-800 uppercase">Produto / Peça</label>
-                <div class="flex gap-1">
-                    <button onclick="excluirPecaSelecionada()" class="text-[10px] bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded" title="Excluir Peça">
-                        <i class="fa-solid fa-trash"></i> EXCL.
-                    </button>
-                    <button onclick="abrirModalNovoProduto()" class="text-[10px] bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded">
-                        + PEÇA
-                    </button>
-                </div>
-            </div>
-            
-            <label class="text-xs font-bold text-slate-500 uppercase"><i class="fa-solid fa-box text-blue-500 mr-1"></i> Produto</label>
-<div class="flex gap-2">
-    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none transition-all">
+    <div class="flex justify-between items-center mb-1">
+        <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+            <i class="fa-solid fa-microchip mr-1 text-blue-600"></i> Gestão de Peças
+        </label>
+        <div class="flex gap-2">
+            <button type="button" onclick="document.getElementById('modal-novo-produto').style.display='flex'" 
+                class="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-black py-1.5 px-3 rounded-md shadow-sm transition-all flex items-center gap-1 active:scale-95">
+                <i class="fa-solid fa-plus"></i> NOVA PEÇA
+            </button>
+
+            <button type="button" onclick="excluirPecaSelecionada()" 
+                class="text-[10px] bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-600 font-bold py-1.5 px-3 rounded-md transition-all flex items-center gap-1 active:scale-95">
+                <i class="fa-solid fa-trash-can"></i> APAGAR
+            </button>
+        </div>
+    </div>
+
+    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm">
         <option value="">-- Selecione Produto --</option>
     </select>
-    
-    <button type="button" onclick="document.getElementById('modal-novo-produto').style.display='flex'" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg font-bold transition-colors flex items-center justify-center shadow-md" title="Cadastrar Nova Peça">
-        <i class="fa-solid fa-plus"></i>
-    </button>
 </div>
         
         <div class="md:col-span-2 grid grid-cols-4 gap-2">
@@ -2281,6 +2280,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
