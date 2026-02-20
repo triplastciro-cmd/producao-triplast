@@ -385,13 +385,16 @@
             <i class="fa-solid fa-microchip mr-1 text-blue-600"></i> Gestão de Peças
         </label>
         <div class="flex gap-2">
-            <button type="button" onclick="document.getElementById('modal-novo-produto').style.display='flex'" 
+            <button type="button" 
+                onclick="document.getElementById('modal-novo-produto').style.display='flex'" 
                 class="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-black py-1.5 px-3 rounded-md shadow-sm transition-all flex items-center gap-1 active:scale-95">
-                <i class="fa-solid fa-plus"></i> NOVA PEÇA
+                <i class="fa-solid fa-plus"></i> + PEÇA
             </button>
 
-            <button type="button" onclick="excluirPecaSelecionada()" 
-                class="text-[10px] bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-600 font-bold py-1.5 px-3 rounded-md transition-all flex items-center gap-1 active:scale-95">
+            <button type="button" 
+                onclick="excluirPecaSelecionada()" 
+                class="text-[10px] bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-600 font-bold py-1.5 px-3 rounded-md transition-all flex items-center gap-1 active:scale-95" 
+                title="Excluir Peça">
                 <i class="fa-solid fa-trash-can"></i> APAGAR
             </button>
         </div>
@@ -2280,6 +2283,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
