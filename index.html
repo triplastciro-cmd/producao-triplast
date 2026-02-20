@@ -372,7 +372,7 @@
                         </div>
                          <div class="md:col-span-1">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                            <input type="number" id="f-qtd" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                            <input type="number" id="f-qtd" oninput="recalcularRendimento()" placeholder="Ex: 5000" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm">
                         </div>
                     </div>
 
@@ -400,9 +400,9 @@
         <option value="">-- Selecione Produto --</option>
     </select>
 
-    <div class="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
-        <p class="text-[10px] font-bold text-blue-800 uppercase mb-1">Tempo Estimado de Produção:</p>
-        <div id="resultado-rendimento" class="text-2xl font-black text-blue-900">00h 00min</div>
+    <div class="mt-2 p-4 bg-slate-800 rounded-xl border border-slate-700 text-center shadow-inner">
+        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Tempo Estimado de Produção</p>
+        <div id="resultado-rendimento" class="text-3xl font-black text-emerald-400">00h 00min</div>
     </div>
 </div>
         
@@ -2078,16 +2078,27 @@ function atualizarSelectPecas() {
     const select = document.getElementById('f-produto');
     if (!select) return;
     let html = '<option value="">-- Selecione Produto --</option>';
-    
     produtosGlobais.forEach(p => {
-        let nomeLimpo = (p && typeof p === 'object') ? p.nome : p;
-        // Filtra se for nulo ou se for o texto do erro
-        if (nomeLimpo && String(nomeLimpo) !== "[object Object]") {
+        let nomeLimpo = (p && typeof p === 'object') ? (p.nome || p.produto) : p;
+        if (nomeLimpo && String(nomeLimpo) !== "[object Object]" && String(nomeLimpo).trim() !== "") {
             html += `<option value="${nomeLimpo}">${nomeLimpo}</option>`;
         }
     });
     select.innerHTML = html;
 }
+
+function preencherDadosProduto() {
+    const nomeSelecionado = document.getElementById('f-produto').value;
+    const peca = produtosGlobais.find(p => ((p && typeof p === 'object') ? p.nome : p) === nomeSelecionado);
+    if (peca && typeof peca === 'object') {
+        document.getElementById('input-peso').value = peca.peso || '';
+        document.getElementById('input-ciclo').value = peca.ciclo || '';
+        document.getElementById('input-pigmento').value = peca.pigmento || '';
+        document.getElementById('input-cavidades').value = peca.cavidades || '';
+        recalcularRendimento(); 
+    }
+}
+        
 function limparCamposTecnicos() {
     const ids = ['input-peso', 'input-ciclo', 'input-pigmento', 'input-cavidades'];
     ids.forEach(id => {
@@ -2120,19 +2131,20 @@ function recalcularRendimento() {
     const display = document.getElementById('resultado-rendimento');
     const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
     const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 1;
-    const meta = parseFloat(document.getElementById('f-planejado')?.value) || 0;
+    const meta = parseFloat(document.getElementById('f-qtd').value) || 0; // ID CORRIGIDO AQUI
 
     if (ciclo <= 0 || meta <= 0) {
-        display.innerText = '00h 00min';
+        if(display) display.innerText = '00h 00min';
         return;
     }
 
-    // Lógica: (Meta / Cavidades) * Ciclo = Total de Segundos
     const segundosTotais = (meta / cavidades) * ciclo;
     const horas = Math.floor(segundosTotais / 3600);
     const minutos = Math.floor((segundosTotais % 3600) / 60);
 
-    display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
+    if(display) {
+        display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
+    }
 }
 
 function calcularRendimento(pesoPeca, porcentagemPigmento) {
@@ -2334,6 +2346,7 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
 
 </body>
 </html>
+
 
 
 
