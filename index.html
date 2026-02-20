@@ -2068,42 +2068,63 @@ carregarBanco();
 // SISTEMA DE AUTOCOMPLETAR E CÁLCULO DE RENDIMENTO DA PEÇA
 // =========================================================
 
-// Atualiza o select com o que está no banco de dados
+// 1. Atualiza a lista tirando o erro do [object Object]
 function atualizarSelectPecas() {
     const select = document.getElementById('f-produto');
     if (!select) return;
     
     let html = '<option value="">-- Selecione Produto --</option>';
+    
     produtosGlobais.forEach(p => {
-        const nome = typeof p === 'string' ? p : p.nome;
-        html += `<option value="${nome}">${nome}</option>`;
+        let nomeExibicao = "";
+
+        // Se o item for um objeto, pega a propriedade 'nome'
+        if (p && typeof p === 'object') {
+            nomeExibicao = p.nome || p.produto || "";
+        } else {
+            nomeExibicao = p;
+        }
+
+        // TRAVA DE SEGURANÇA: Só adiciona se o nome for válido e NÃO for a palavra "object"
+        if (nomeExibicao && nomeExibicao !== "[object Object]" && String(nomeExibicao).trim() !== "") {
+            html += `<option value="${nomeExibicao}">${nomeExibicao}</option>`;
+        }
     });
+    
     select.innerHTML = html;
 }
 
-// Preenche os campos do formulário automaticamente
+// 2. Preenche os campos automaticamente ao selecionar
 function preencherDadosProduto() {
-    const nomeSelecionado = document.getElementById('f-produto').value;
+    const select = document.getElementById('f-produto');
+    const nomeSelecionado = select.value;
+    
     if (!nomeSelecionado) {
         limparCamposTecnicos();
         return;
     }
 
-    const peca = produtosGlobais.find(p => (typeof p === 'string' ? p : p.nome) === nomeSelecionado);
+    // Procura o objeto correto na lista global
+    const peca = produtosGlobais.find(p => {
+        const nomePeca = (p && typeof p === 'object') ? p.nome : p;
+        return nomePeca === nomeSelecionado;
+    });
     
     if (peca && typeof peca === 'object') {
-        document.getElementById('input-peso').value = peca.peso || '';
-        document.getElementById('input-ciclo').value = peca.ciclo || '';
-        document.getElementById('input-pigmento').value = peca.pigmento || '';
-        document.getElementById('input-cavidades').value = peca.cavidades || '';
+        // Preenche os inputs cinzas com os dados do banco
+        if(document.getElementById('input-peso')) document.getElementById('input-peso').value = peca.peso || '';
+        if(document.getElementById('input-ciclo')) document.getElementById('input-ciclo').value = peca.ciclo || '';
+        if(document.getElementById('input-pigmento')) document.getElementById('input-pigmento').value = peca.pigmento || '';
+        if(document.getElementById('input-cavidades')) document.getElementById('input-cavidades').value = peca.cavidades || '';
         
-        // Dispara o cálculo de rendimento
-        if(typeof recalcularRendimento === 'function') recalcularRendimento();
+        // Faz o cálculo de rendimento na hora
+        recalcularRendimento();
     }
 }
 
 function limparCamposTecnicos() {
-    ['input-peso', 'input-ciclo', 'input-pigmento', 'input-cavidades'].forEach(id => {
+    const ids = ['input-peso', 'input-ciclo', 'input-pigmento', 'input-cavidades'];
+    ids.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.value = '';
     });
@@ -2326,6 +2347,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
