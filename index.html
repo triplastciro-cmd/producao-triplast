@@ -395,9 +395,15 @@
             </button>
         </div>
     </div>
-    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm">
+    
+    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm mb-4">
         <option value="">-- Selecione Produto --</option>
     </select>
+
+    <div class="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+        <p class="text-[10px] font-bold text-blue-800 uppercase mb-1">Tempo Estimado de Produção:</p>
+        <div id="resultado-rendimento" class="text-2xl font-black text-blue-900">00h 00min</div>
+    </div>
 </div>
         
         <div class="md:col-span-2 grid grid-cols-4 gap-2">
@@ -420,7 +426,7 @@
         </div>
 
     </div> <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200">
-        <p class="text-xs text-blue-800 font-bold uppercase">Rendimento Estimado (Saco 25kg):</p>
+        <p class="text-xs text-blue-800 font-bold uppercase">Tempo Estimado de Produção:</p>
         <p id="resultado-rendimento" class="text-2xl font-black text-blue-600">0 peças</p>
     </div>
 </div>
@@ -2068,60 +2074,20 @@ carregarBanco();
 // SISTEMA DE AUTOCOMPLETAR E CÁLCULO DE RENDIMENTO DA PEÇA
 // =========================================================
 
-// 1. Atualiza a lista tirando o erro do [object Object]
 function atualizarSelectPecas() {
     const select = document.getElementById('f-produto');
     if (!select) return;
-    
     let html = '<option value="">-- Selecione Produto --</option>';
     
     produtosGlobais.forEach(p => {
-        let nomeExibicao = "";
-
-        // Se o item for um objeto, pega a propriedade 'nome'
-        if (p && typeof p === 'object') {
-            nomeExibicao = p.nome || p.produto || "";
-        } else {
-            nomeExibicao = p;
-        }
-
-        // TRAVA DE SEGURANÇA: Só adiciona se o nome for válido e NÃO for a palavra "object"
-        if (nomeExibicao && nomeExibicao !== "[object Object]" && String(nomeExibicao).trim() !== "") {
-            html += `<option value="${nomeExibicao}">${nomeExibicao}</option>`;
+        let nomeLimpo = (p && typeof p === 'object') ? p.nome : p;
+        // Filtra se for nulo ou se for o texto do erro
+        if (nomeLimpo && String(nomeLimpo) !== "[object Object]") {
+            html += `<option value="${nomeLimpo}">${nomeLimpo}</option>`;
         }
     });
-    
     select.innerHTML = html;
 }
-
-// 2. Preenche os campos automaticamente ao selecionar
-function preencherDadosProduto() {
-    const select = document.getElementById('f-produto');
-    const nomeSelecionado = select.value;
-    
-    if (!nomeSelecionado) {
-        limparCamposTecnicos();
-        return;
-    }
-
-    // Procura o objeto correto na lista global
-    const peca = produtosGlobais.find(p => {
-        const nomePeca = (p && typeof p === 'object') ? p.nome : p;
-        return nomePeca === nomeSelecionado;
-    });
-    
-    if (peca && typeof peca === 'object') {
-        // Preenche os inputs cinzas com os dados do banco
-        if(document.getElementById('input-peso')) document.getElementById('input-peso').value = peca.peso || '';
-        if(document.getElementById('input-ciclo')) document.getElementById('input-ciclo').value = peca.ciclo || '';
-        if(document.getElementById('input-pigmento')) document.getElementById('input-pigmento').value = peca.pigmento || '';
-        if(document.getElementById('input-cavidades')) document.getElementById('input-cavidades').value = peca.cavidades || '';
-        
-        // Faz o cálculo de rendimento na hora
-        recalcularRendimento();
-    }
-}
-
 function limparCamposTecnicos() {
     const ids = ['input-peso', 'input-ciclo', 'input-pigmento', 'input-cavidades'];
     ids.forEach(id => {
@@ -2149,10 +2115,24 @@ function autocompletarPeca() {
     }
 }
 
+// 3. O NOVO CÁLCULO DE TEMPO (HORAS E MINUTOS)
 function recalcularRendimento() {
-    const peso = parseFloat(document.getElementById('input-peso').value);
-    const pigmento = parseFloat(document.getElementById('input-pigmento').value) || 0; 
-    calcularRendimento(peso, pigmento);
+    const display = document.getElementById('resultado-rendimento');
+    const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
+    const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 1;
+    const meta = parseFloat(document.getElementById('f-planejado')?.value) || 0;
+
+    if (ciclo <= 0 || meta <= 0) {
+        display.innerText = '00h 00min';
+        return;
+    }
+
+    // Lógica: (Meta / Cavidades) * Ciclo = Total de Segundos
+    const segundosTotais = (meta / cavidades) * ciclo;
+    const horas = Math.floor(segundosTotais / 3600);
+    const minutos = Math.floor((segundosTotais % 3600) / 60);
+
+    display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
 }
 
 function calcularRendimento(pesoPeca, porcentagemPigmento) {
@@ -2276,31 +2256,38 @@ function autocompletarPeca() {
     }
 }
 
-// 7. Cálculos de rendimento
+// 1. Gatilho para atualizar o cálculo (Troque as antigas por estas)
 function recalcularRendimento() {
-    const peso = parseFloat(document.getElementById('input-peso').value);
-    const pigmento = parseFloat(document.getElementById('input-pigmento').value) || 0; 
-    calcularRendimento(peso, pigmento);
+    const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
+    const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 0;
+    
+    // Pega a quantidade que o operador digitou no campo "Planejado"
+    const metaProducao = parseFloat(document.getElementById('f-planejado')?.value) || 0;
+
+    calcularTempoProducao(ciclo, cavidades, metaProducao);
 }
 
-function calcularRendimento(pesoPeca, porcentagemPigmento) {
+// 2. A nova função que calcula o TEMPO DE HORAS
+function calcularTempoProducao(ciclo, cavidades, meta) {
     const displayResultado = document.getElementById('resultado-rendimento');
-    if (!pesoPeca || pesoPeca <= 0) {
-        if(displayResultado) displayResultado.innerText = '0 peças';
+    
+    if (!displayResultado) return;
+
+    if (ciclo <= 0 || cavidades <= 0 || meta <= 0) {
+        displayResultado.innerText = '00h 00min';
         return;
     }
-    const pigmentoDecimal = porcentagemPigmento / 100;
-    const materialTotal = 25 + (25 * pigmentoDecimal); // 25kg + %
-    const quantidadePecas = Math.floor(materialTotal / pesoPeca);
-    if(displayResultado) displayResultado.innerText = `${quantidadePecas} peças`;
-}
 
-// Carrega os produtos 2 segundos após abrir o site
-setTimeout(atualizarSelectPecas, 2000);
+    // CÁLCULO: (Meta / Cavidades) * Ciclo = Total de segundos
+    const totalSegundos = (meta / cavidades) * ciclo;
+    
+    const horas = Math.floor(totalSegundos / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
 
-    function fecharModalNovoProduto() {
-    const modal = document.getElementById('modal-novo-produto');
-    if (modal) modal.style.display = 'none';
+    // Formata o texto para ficar profissional
+    const resultadoFormatado = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
+    
+    displayResultado.innerText = resultadoFormatado;
 }
         
     </script>
@@ -2347,6 +2334,7 @@ setTimeout(atualizarSelectPecas, 2000);
 
 </body>
 </html>
+
 
 
 
