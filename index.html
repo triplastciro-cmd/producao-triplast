@@ -425,10 +425,6 @@
             </div>
         </div>
 
-    </div> <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-blue-200">
-        <p class="text-xs text-blue-800 font-bold uppercase">Tempo Estimado de Produção:</p>
-        <p id="resultado-rendimento" class="text-2xl font-black text-blue-600">0 peças</p>
-    </div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <div class="md:col-span-1">
@@ -2120,25 +2116,25 @@ function autocompletarPeca() {
 function recalcularRendimento() {
     const display = document.getElementById('resultado-rendimento');
     
-    // Pega os valores da ficha técnica
+    // Pega os valores da peça (que são preenchidos sozinhos quando você seleciona o produto)
     const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
     const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 1;
     
-    // Pega o valor da Quantidade Meta (ID f-qtd)
+    // Pega o valor exato que você acabou de digitar na Meta
     const meta = parseFloat(document.getElementById('f-qtd').value) || 0;
 
-    // Se não tiver ciclo ou não tiver meta, zera o tempo
+    // Se faltar algum dado, zera o visor
     if (ciclo <= 0 || meta <= 0) {
         if(display) display.innerText = '00h 00min';
         return;
     }
 
-    // Fórmula: (Meta / Cavidades) * Segundos do Ciclo
+    // A Conta Mágica: (Meta / Cavidades) * Tempo do Ciclo
     const segundosTotais = (meta / cavidades) * ciclo;
     const horas = Math.floor(segundosTotais / 3600);
     const minutos = Math.floor((segundosTotais % 3600) / 60);
 
-    // Mostra o resultado bonitinho no painel
+    // Escreve na tela
     if(display) {
         display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
     }
@@ -2343,6 +2339,7 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
 
 </body>
 </html>
+
 
 
 
