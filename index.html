@@ -2298,6 +2298,36 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
     
     displayResultado.innerText = resultadoFormatado;
 }
+
+window.onload = function() {
+    // 1º PASSO: FORÇAR O ECRÃ A APARECER IMEDIATAMENTE!
+    alternarAba('aba-lista'); // ou 'aba-maquinas', dependendo de qual queres que abra primeiro
+    
+    // 2º PASSO: Só agora vai tentar puxar os dados
+    carregarMaquinas();
+    carregarHistorico();
+    // ... resto do teu código
+};
+
+function carregarMaquinas() {
+    const grid = document.getElementById('grid-maquinas');
+    
+    // ESTA LINHA SALVA A TUA PÁGINA DE FICAR BRANCA:
+    if (!grid) return; 
+
+    grid.innerHTML = ''; // O teu código continua normal a partir daqui...
+    // ...
+}
+
+function atualizarGraficos() {
+    const ctxProducao = document.getElementById('graficoProducao');
+    const ctxStatus = document.getElementById('graficoStatus');
+    
+    // SE NÃO ACHAR O GRÁFICO, PARA SEM DAR ERRO!
+    if (!ctxProducao || !ctxStatus) return;
+
+    // O teu código dos gráficos continua normal a partir daqui...
+}
         
     </script>
 
@@ -2343,4 +2373,5 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
 
 </body>
 </html>
+
 
