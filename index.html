@@ -2112,22 +2112,49 @@ function autocompletarPeca() {
     }
 }
 
+// O CÁLCULO INTELIGENTE DE TEMPO
 function recalcularRendimento() {
     const display = document.getElementById('resultado-rendimento');
+    if (!display) return;
+
+    // Busca os 3 valores que a calculadora precisa
     const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
     const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 1;
     const meta = parseFloat(document.getElementById('f-qtd').value) || 0;
 
-    if (ciclo <= 0 || meta <= 0) {
-        if(display) display.innerText = '00h 00min';
+    // Se a meta estiver zerada, mostra 00h 00min normalmente
+    if (meta <= 0) {
+        display.innerText = '00h 00min';
+        display.classList.remove('text-red-400', 'text-yellow-400');
+        display.classList.add('text-emerald-400'); // Fica verde
         return;
     }
 
+    // SE FALTAR O CICLO, ELE AVISA NO PAINEL!
+    if (ciclo <= 0) {
+        display.innerText = 'Falta Ciclo!';
+        display.classList.remove('text-emerald-400', 'text-yellow-400');
+        display.classList.add('text-red-400'); // Fica vermelho para chamar a atenção
+        return;
+    }
+
+    // SE FALTAR CAVIDADE, ELE AVISA!
+    if (cavidades <= 0) {
+        display.innerText = 'Falta Cavid.';
+        display.classList.remove('text-emerald-400', 'text-red-400');
+        display.classList.add('text-yellow-400'); // Fica amarelo
+        return;
+    }
+
+    // Se tudo estiver preenchido, faz a Conta Mágica!
     const segundosTotais = (meta / cavidades) * ciclo;
     const horas = Math.floor(segundosTotais / 3600);
     const minutos = Math.floor((segundosTotais % 3600) / 60);
 
-    if(display) display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
+    // Volta a ficar verde e mostra o resultado
+    display.classList.remove('text-red-400', 'text-yellow-400');
+    display.classList.add('text-emerald-400');
+    display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
 }
         
 function calcularRendimento(pesoPeca, porcentagemPigmento) {
@@ -2329,6 +2356,7 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
 
 </body>
 </html>
+
 
 
 
