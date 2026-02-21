@@ -370,82 +370,72 @@
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
                             <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
-                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
-                            <input type="number" id="f-qtd" oninput="calcularPrevisao()" placeholder="0" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+                         <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Quantidade (Meta)</label>
+                            <input type="number" id="f-qtd" oninput="recalculateManual()" placeholder="Ex: 5000" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm">
                         </div>
                     </div>
 
-                                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 mt-2 shadow-sm">
-                <div class="flex items-center gap-2 mb-3 border-b border-gray-200 pb-2">
-                    <i class="fas fa-calculator text-blue-600"></i>
-                    <h4 class="text-slate-700 font-bold text-sm uppercase">Cálculo Técnico</h4>
-                </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">PESO 1 PEÇA (g)</label>
-                        <input type="number" id="tec-peso" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 20" oninput="calcularPrevisao()">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">CICLO (seg)</label>
-                        <input type="number" id="tec-ciclo" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="Ex: 25" oninput="calcularPrevisao()">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">CAVIDADES</label>
-                        <input type="number" id="tec-cav" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="1" value="1" oninput="calcularPrevisao()">
-                    </div>
-                    
-                    <div class="flex gap-1">
-                        <div class="flex-1">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">PIGMENTO</label>
-                            <select id="tec-pig-select" onchange="aoSelecionarPigmento()" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700">
-                                <option value="0">Sem Pigmento</option>
-                                </select>
-                        </div>
-                        <div class="w-20">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase">%</label>
-                            <input type="number" id="tec-pig-porc" class="w-full p-2 bg-white border border-gray-300 rounded-lg font-bold text-sm text-slate-700" placeholder="%" value="0" oninput="calcularPrevisao()">
-                        </div>
-                        <div class="pt-6">
-                            <button onclick="abrirModalPigmentos()" class="bg-slate-200 text-slate-600 p-2 rounded-lg hover:bg-slate-300 transition"><i class="fas fa-cog"></i></button>
-                        </div>
-                    </div>
-                </div>
-            
-                <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Tempo</span>
-                        <strong id="out-tempo" class="text-blue-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Material</span>
-                        <strong id="out-material" class="text-green-600 text-sm md:text-base font-black">-</strong>
-                    </div>
-                    <div class="bg-white p-2 rounded border border-gray-100 shadow-sm">
-                        <span class="block text-[9px] text-slate-400 font-bold uppercase">Pigmento</span>
-                        <strong id="out-pigmento" class="text-purple-600 text-sm md:text-base font-black">-</strong>
-                    </div>
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        
+        <div class="md:col-span-1">
+            <div class="flex justify-between items-center mb-1">
+                <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    <i class="fa-solid fa-microchip mr-1 text-blue-600"></i> Gestão de Peças
+                </label>
+                <div class="flex gap-2">
+                    <button type="button" onclick="document.getElementById('modal-novo-produto').style.display='flex'" class="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-black py-1.5 px-3 rounded-md shadow-sm transition-all flex items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-plus"></i> NOVA PEÇA
+                    </button>
+                    <button type="button" onclick="excluirPecaSelecionada()" class="text-[10px] bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-600 font-bold py-1.5 px-3 rounded-md transition-all flex items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-trash-can"></i> APAGAR
+                    </button>
                 </div>
             </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Produto / Peça</label>
-                            <select id="f-produto" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                                <option value="">-- Selecione Produto --</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
-                            <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
-                            <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                    </div>
+            
+            <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm mb-4">
+                <option value="">-- Selecione Produto --</option>
+            </select>
+            
+            <div class="mt-2 p-4 bg-slate-800 rounded-xl border border-slate-700 text-center shadow-inner">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Tempo Estimado</p>
+                <div id="resultado-rendimento" class="text-3xl font-black text-emerald-400">00h 00min</div>
+            </div>
+        </div>
+        
+        <div class="md:col-span-2 grid grid-cols-4 gap-2">
+            <div>
+                <label class="text-[10px] font-bold text-blue-800 uppercase">Peso (kg)</label>
+                <input type="number" id="input-peso" step="0.001" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-blue-800 uppercase">Pigm. (%)</label>
+                <input type="number" id="input-pigmento" oninput="recalcularRendimento()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+            </div>
+            <div>
+            <label class="text-[10px] font-bold text-blue-800 uppercase">Ciclo (s)</label>
+            <input type="number" id="input-ciclo" oninput="recalculateManual()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+        </div>
+        <div>
+            <label class="text-[10px] font-bold text-blue-800 uppercase">Cavidades</label>
+            <input type="number" id="input-cavidades" oninput="recalculateManual()" class="w-full p-3 bg-white border border-blue-200 rounded-xl text-sm font-bold">
+        </div>
+        </div>
+    </div> 
+</div>
 
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div class="md:col-span-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
+        <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+    </div>
+    <div class="md:col-span-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
+        <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
+    </div>
+</div>
+                    
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <div class="md:col-span-2 flex items-center">
                             <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
@@ -637,7 +627,6 @@
         // VARIÁVEIS GLOBAIS
         let maquinas = [];
         let historico = [];
-        let pigmentosGlobais = []; // Nova lista de pigmentos
         let coresGlobais = ["Natural", "Preto", "Branco"];
         let operadoresGlobais = ["João", "Maria", "José"]; 
         let produtosGlobais = ["Garrafa 500ml", "Tampa Padrão", "Pote 1kg"]; 
@@ -670,7 +659,7 @@
             setTimeout(() => {
                 t.classList.remove('toast-show');
                 t.classList.add('toast-hide');
-            }, 3000);
+            }, 1000);
         }
 
         // ==========================================================
@@ -756,7 +745,7 @@
                 iniciarRelogio();
                 
                 // Iniciar o Loop de Sincronização (Polling)
-                setInterval(sincronizarComServidor, 3000); // Verifica a cada 3 segundos
+                setInterval(sincronizarComServidor, 1000); // Verifica a cada 3 segundos
 
                 document.getElementById('loading-spinner').style.display = 'none';
                 document.getElementById('loading-action').classList.remove('hidden');
@@ -771,11 +760,7 @@
             if (conteudo.produtos) produtosGlobais = conteudo.produtos;
             historico = conteudo.historico || []; 
             if(conteudo.dadosMensais) dadosMensais = conteudo.dadosMensais;
-            if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra;
-            if(data.conteudo.pigmentos) {
-    pigmentosGlobais = data.conteudo.pigmentos;
-    renderizarOpcoesPigmentos();
-}
+            if(conteudo.modoHoraExtra !== undefined) modoHoraExtra = conteudo.modoHoraExtra; 
             
             // Atualiza timestamp local para saber se estamos atualizados
             dadosLocaisLastUpdate = conteudo.lastUpdateTimestamp || 0;
@@ -1474,9 +1459,13 @@
             document.getElementById('edit-op-cliente').value = op.cliente || '';
             document.getElementById('edit-op-qtd').value = op.qtd;
 
-            // Agora Produto é um Select
+            // ATUALIZADO: Agora lê corretamente os produtos mesmo com peso e ciclo salvos
             const selProd = document.getElementById('edit-op-produto');
-            selProd.innerHTML = '<option value="">-- Selecione --</option>' + produtosGlobais.map(p => `<option value="${p}" ${p===op.produto?'selected':''}>${p}</option>`).join('');
+            const opcoesProdutos = produtosGlobais.map(p => {
+                const nomePeca = typeof p === 'string' ? p : p.nome;
+                return `<option value="${nomePeca}" ${nomePeca === op.produto ? 'selected' : ''}>${nomePeca}</option>`;
+            }).join('');
+            selProd.innerHTML = '<option value="">-- Selecione --</option>' + opcoesProdutos;
 
             // Preencher campos novos
             document.getElementById('edit-op-material').value = op.material || '';
@@ -1925,29 +1914,38 @@
         }
 
         function atualizarResumoGlobalNumeros() {
-            if(usuarioLogado !== 'admin') return;
-            const t = document.getElementById('filtro-turno').value;
-            let d = { tp:0, tb:0, pa:0, sp:0 };
-            
-            // Somamos na hora, sem depender de variável incremental que falha
-            maquinas.forEach(m => { 
-                if(filtroGraficoId==='todas' || m.id==filtroGraficoId) { 
-                    // AQUI ESTAVA O ERRO DE UNDEFINED - CORRIGIDO
-                    if(m.resumoTurno[t]) {
-                        d.tp += (m.resumoTurno[t].tempoProducao || 0); 
-                        d.tb += (m.resumoTurno[t].tempoBaixa || 0); 
-                        d.pa += (m.resumoTurno[t].paradas || 0); 
-                        d.sp += (m.resumoTurno[t].tempoSemProg || 0); 
-                    }
-                } 
-            });
-            if(document.getElementById('global-timer-prod')) {
-                document.getElementById('global-timer-prod').innerText = fmtTempo(d.tp); 
-                document.getElementById('global-timer-baixa').innerText = fmtTempo(d.tb);
-                document.getElementById('global-timer-parado').innerText = fmtTempo(d.pa); 
-                document.getElementById('global-timer-semprog').innerText = fmtTempo(d.sp);
+    if(usuarioLogado !== 'admin') return;
+    const t = document.getElementById('filtro-turno').value;
+    let d = { tp:0, tb:0, pa:0, sp:0 };
+    
+    // Agora o sistema não mistura os tempos!
+    maquinas.forEach(m => { 
+        if(filtroGraficoId === 'todas' || m.id == filtroGraficoId) { 
+            if(m.resumoTurno[t]) {
+                if (filtroGraficoId === 'todas') {
+                    // Se for "Todas", em vez de somar 3x, pega o tempo cronológico real (o maior tempo rolando)
+                    d.tp = Math.max(d.tp, m.resumoTurno[t].tempoProducao || 0);
+                    d.tb = Math.max(d.tb, m.resumoTurno[t].tempoBaixa || 0);
+                    d.pa = Math.max(d.pa, m.resumoTurno[t].paradas || 0);
+                    d.sp = Math.max(d.sp, m.resumoTurno[t].tempoSemProg || 0);
+                } else {
+                    // Se o seu pai filtrar por uma máquina específica, mostra o tempo EXATO só dela
+                    d.tp += (m.resumoTurno[t].tempoProducao || 0); 
+                    d.tb += (m.resumoTurno[t].tempoBaixa || 0); 
+                    d.pa += (m.resumoTurno[t].paradas || 0); 
+                    d.sp += (m.resumoTurno[t].tempoSemProg || 0); 
+                }
             }
-        }
+        } 
+    });
+    
+    if(document.getElementById('global-timer-prod')) {
+        document.getElementById('global-timer-prod').innerText = fmtTempo(d.tp); 
+        document.getElementById('global-timer-baixa').innerText = fmtTempo(d.tb);
+        document.getElementById('global-timer-parado').innerText = fmtTempo(d.pa); 
+        document.getElementById('global-timer-semprog').innerText = fmtTempo(d.sp);
+    }
+}
 
         function atualizarStatus(id, st) { 
             const m = maquinas.find(x => x.id === id); 
@@ -2030,108 +2028,357 @@
         }
 
         async function salvarGeral() { 
-    await sb.from('sistema').update({ 
-        conteudo: { 
-            maquinas, 
-            cores: coresGlobais, 
-            operadores: operadoresGlobais, 
-            produtos: produtosGlobais,
-            pigmentos: pigmentosGlobais, // <--- ADICIONE ESSA LINHA
-            historico, 
-            dadosMensais, 
-            modoHoraExtra, 
-            lastUpdateTimestamp: Date.now() 
-        } 
-    }).eq('id', 1);
-    
-    dadosLocaisLastUpdate = Date.now();
-    showToast("DADOS SALVOS");
+            await sb.from('sistema').update({ 
+                conteudo: { 
+                    maquinas, 
+                    cores: coresGlobais, 
+                    operadores: operadoresGlobais, 
+                    produtos: produtosGlobais, 
+                    historico, 
+                    dadosMensais, 
+                    modoHoraExtra, 
+                    lastUpdateTimestamp: Date.now() 
+                } 
+            }).eq('id', 1); // SALVA TUDO
+            
+            // ATUALIZA TIMESTAMP LOCAL PARA EVITAR AUTO-REFRESH NO PRÓPRIO DISPOSITIVO QUE SALVOU
+            dadosLocaisLastUpdate = Date.now();
+            showToast("DADOS SALVOS");
+        }
+
+        function alterarFiltroGrafico(valor) { 
+    filtroGraficoId = valor; 
+    atualizarResumoGlobalNumeros(); 
+    iniciarGraficos(); 
+}
+        
+window.addEventListener('beforeunload', () => { salvarGeral(); }); 
+setInterval(() => { salvarGeral(); }, 60000); 
+carregarBanco();
+
+        // =========================================================
+// SISTEMA DE AUTOCOMPLETAR E CÁLCULO DE RENDIMENTO DA PEÇA
+// =========================================================
+
+function atualizarSelectPecas() {
+    const select = document.getElementById('f-produto');
+    if (!select) return;
+    let html = '<option value="">-- Selecione Produto --</option>';
+    produtosGlobais.forEach(p => {
+        let nomeLimpo = (p && typeof p === 'object') ? (p.nome || p.produto) : p;
+        if (nomeLimpo && String(nomeLimpo) !== "[object Object]" && String(nomeLimpo).trim() !== "") {
+            html += `<option value="${nomeLimpo}">${nomeLimpo}</option>`;
+        }
+    });
+    select.innerHTML = html;
 }
 
-        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; atualizarResumoGlobalNumeros(); iniciarGraficos(); }
+function preencherDadosProduto() {
+    const nomeSelecionado = document.getElementById('f-produto').value;
+    const peca = produtosGlobais.find(p => ((p && typeof p === 'object') ? p.nome : p) === nomeSelecionado);
+    if (peca && typeof peca === 'object') {
+        document.getElementById('input-peso').value = peca.peso || '';
+        document.getElementById('input-ciclo').value = peca.ciclo || '';
+        document.getElementById('input-pigmento').value = peca.pigmento || '';
+        document.getElementById('input-cavidades').value = peca.cavidades || '';
+        recalcularRendimento(); 
+    }
+}
         
-        window.addEventListener('beforeunload', () => { salvarGeral(); }); 
-        setInterval(() => { salvarGeral(); }, 60000); 
-        carregarBanco();
+function limparCamposTecnicos() {
+    const ids = ['input-peso', 'input-ciclo', 'input-pigmento', 'input-cavidades'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = '';
+    });
+}
+        
+function autocompletarPeca() {
+    const nomeSelecionado = document.getElementById('f-produto').value;
+    const pecaEncontrada = produtosGlobais.find(p => p.nome === nomeSelecionado);
+
+    if (pecaEncontrada) {
+        document.getElementById('input-peso').value = pecaEncontrada.peso || '';
+        document.getElementById('input-ciclo').value = pecaEncontrada.ciclo || '';
+        document.getElementById('input-pigmento').value = pecaEncontrada.pigmento || '';
+        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '';
+        calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
+    } else {
+        document.getElementById('input-peso').value = '';
+        document.getElementById('input-ciclo').value = '';
+        document.getElementById('input-pigmento').value = '';
+        document.getElementById('input-cavidades').value = '';
+        document.getElementById('resultado-rendimento').innerText = '0 peças';
+    }
+}
+
+// O CÁLCULO INTELIGENTE DE TEMPO
+function recalcularRendimento() {
+    const display = document.getElementById('resultado-rendimento');
+    if (!display) return;
+
+    // Busca os 3 valores que a calculadora precisa
+    const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
+    const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 1;
+    const meta = parseFloat(document.getElementById('f-qtd').value) || 0;
+
+    // Se a meta estiver zerada, mostra 00h 00min normalmente
+    if (meta <= 0) {
+        display.innerText = '00h 00min';
+        display.classList.remove('text-red-400', 'text-yellow-400');
+        display.classList.add('text-emerald-400'); // Fica verde
+        return;
+    }
+
+    // SE FALTAR O CICLO, ELE AVISA NO PAINEL!
+    if (ciclo <= 0) {
+        display.innerText = 'Falta Ciclo!';
+        display.classList.remove('text-emerald-400', 'text-yellow-400');
+        display.classList.add('text-red-400'); // Fica vermelho para chamar a atenção
+        return;
+    }
+
+    // SE FALTAR CAVIDADE, ELE AVISA!
+    if (cavidades <= 0) {
+        display.innerText = 'Falta Cavid.';
+        display.classList.remove('text-emerald-400', 'text-red-400');
+        display.classList.add('text-yellow-400'); // Fica amarelo
+        return;
+    }
+
+    // Se tudo estiver preenchido, faz a Conta Mágica!
+    const segundosTotais = (meta / cavidades) * ciclo;
+    const horas = Math.floor(segundosTotais / 3600);
+    const minutos = Math.floor((segundosTotais % 3600) / 60);
+
+    // Volta a ficar verde e mostra o resultado
+    display.classList.remove('text-red-400', 'text-yellow-400');
+    display.classList.add('text-emerald-400');
+    display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
+}
+        
+function calcularRendimento(pesoPeca, porcentagemPigmento) {
+    const displayResultado = document.getElementById('resultado-rendimento');
+    if (!pesoPeca || pesoPeca <= 0) {
+        if(displayResultado) displayResultado.innerText = '0 peças';
+        return;
+    }
+    const pigmentoDecimal = porcentagemPigmento / 100;
+    const materialTotal = 25 + (25 * pigmentoDecimal); // 25.5kg
+    const quantidadePecas = Math.floor(materialTotal / pesoPeca);
+
+    if(displayResultado) displayResultado.innerText = `${quantidadePecas} peças`;
+}
+
+// Atualiza a lista 2 segundos após o site abrir para garantir que o Supabase já carregou
+setTimeout(atualizarSelectPecas, 2000);
+
+
+        // =========================================================
+// SISTEMA COMPLETO DE PRODUTOS (CADASTRAR, EXCLUIR E CALCULAR)
+// =========================================================
+
+// 1. Abre a janela de registrar produto
+function abrirModalNovoProduto() {
+    // Limpa os campos
+    document.getElementById('novo-produto-nome').value = '';
+    document.getElementById('novo-produto-peso').value = '';
+    document.getElementById('novo-produto-pigmento').value = '';
+    document.getElementById('novo-produto-ciclo').value = '';
+    document.getElementById('novo-produto-cavidades').value = '';
+    
+    // Mostra a janela
+    const modal = document.getElementById('modal-novo-produto');
+    if(modal) modal.classList.remove('hidden');
+}
+
+// 2. Fecha a janela
+function fecharModalNovoProduto() {
+    const modal = document.getElementById('modal-novo-produto');
+    if(modal) modal.classList.add('hidden');
+}
+
+// 3. Salva o produto novo que você digitou
+function salvarNovoProduto() {
+    const nome = document.getElementById('novo-produto-nome').value.trim().toUpperCase();
+    const peso = parseFloat(document.getElementById('novo-produto-peso').value) || 0;
+    const pigmento = parseFloat(document.getElementById('novo-produto-pigmento').value) || 0;
+    const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value) || 0;
+    const cavidades = parseInt(document.getElementById('novo-produto-cavidades').value) || 1;
+
+    if (!nome) { alert("Por favor, digite o nome da peça!"); return; }
+    if (peso <= 0) { alert("O peso precisa ser maior que zero!"); return; }
+
+    const novaPeca = { nome, peso, pigmento, ciclo, cavidades };
+
+    if (typeof produtosGlobais === 'undefined') window.produtosGlobais = [];
+
+    const indexExistente = produtosGlobais.findIndex(p => (typeof p === 'string' ? p : p.nome) === nome);
+    if (indexExistente >= 0) {
+        produtosGlobais[indexExistente] = novaPeca; // Atualiza
+    } else {
+        produtosGlobais.push(novaPeca); // Cria novo
+    }
+
+    atualizarSelectPecas();
+    if (typeof salvarAutomatico === 'function') salvarAutomatico(); // Salva na nuvem do seu sistema
+    fecharModalNovoProduto();
+    alert("Peça registrada com sucesso!");
+}
+
+// 4. Exclui um produto (Botão Vermelho)
+function excluirPecaSelecionada() {
+    const select = document.getElementById('f-produto');
+    const nomeSelecionado = select.value;
+    
+    if (!nomeSelecionado) { alert("Selecione uma peça na lista para excluir!"); return; }
+
+    if (confirm("Tem certeza que deseja excluir a peça: " + nomeSelecionado + "?")) {
+        const index = produtosGlobais.findIndex(p => (typeof p === 'string' ? p : p.nome) === nomeSelecionado);
+        if (index !== -1) {
+            produtosGlobais.splice(index, 1);
+            atualizarSelectPecas();
+            autocompletarPeca();
+            if (typeof salvarAutomatico === 'function') salvarAutomatico();
+            alert("Peça excluída com sucesso!");
+        }
+    }
+}
+
+// 5. Atualiza a lista de seleção
+function atualizarSelectPecas() {
+    const select = document.getElementById('f-produto');
+    if (select && typeof produtosGlobais !== 'undefined') {
+        let htmlBase = '<option value="">-- Selecione Produto --</option>';
+        produtosGlobais.forEach(peca => {
+            const nomePeca = typeof peca === 'string' ? peca : peca.nome;
+            htmlBase += `<option value="${nomePeca}">${nomePeca}</option>`;
+        });
+        select.innerHTML = htmlBase;
+    }
+}
+
+// 6. Preenche os campos sozinhos quando escolhe a peça
+function autocompletarPeca() {
+    const nomeSelecionado = document.getElementById('f-produto').value;
+    const pecaEncontrada = typeof produtosGlobais !== 'undefined' ? produtosGlobais.find(p => (typeof p === 'string' ? p : p.nome) === nomeSelecionado) : null;
+
+    if (pecaEncontrada && typeof pecaEncontrada === 'object') {
+        document.getElementById('input-peso').value = pecaEncontrada.peso || '';
+        document.getElementById('input-ciclo').value = pecaEncontrada.ciclo || '';
+        document.getElementById('input-pigmento').value = pecaEncontrada.pigmento || '';
+        document.getElementById('input-cavidades').value = pecaEncontrada.cavidades || '';
+        calcularRendimento(pecaEncontrada.peso, pecaEncontrada.pigmento);
+    } else {
+        document.getElementById('input-peso').value = '';
+        document.getElementById('input-ciclo').value = '';
+        document.getElementById('input-pigmento').value = '';
+        document.getElementById('input-cavidades').value = '';
+        document.getElementById('resultado-rendimento').innerText = '0 peças';
+    }
+}
+
+// 1. Gatilho para atualizar o cálculo (Troque as antigas por estas)
+function recalcularRendimento() {
+    const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
+    const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 0;
+    
+    // Pega a quantidade que o operador digitou no campo "Planejado"
+    const metaProducao = parseFloat(document.getElementById('f-planejado')?.value) || 0;
+
+    calcularTempoProducao(ciclo, cavidades, metaProducao);
+}
+
+// 2. A nova função que calcula o TEMPO DE HORAS
+function calcularTempoProducao(ciclo, cavidades, meta) {
+    const displayResultado = document.getElementById('resultado-rendimento');
+    
+    if (!displayResultado) return;
+
+    if (ciclo <= 0 || cavidades <= 0 || meta <= 0) {
+        displayResultado.innerText = '00h 00min';
+        return;
+    }
+
+    // CÁLCULO: (Meta / Cavidades) * Ciclo = Total de segundos
+    const totalSegundos = (meta / cavidades) * ciclo;
+    
+    const horas = Math.floor(totalSegundos / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+
+    // Formata o texto para ficar profissional
+    const resultadoFormatado = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
+    
+    displayResultado.innerText = resultadoFormatado;
+}
+
+
+    // Função de força bruta para garantir o cálculo
+function recalculateManual() {
+    const fieldQtd = document.getElementById('f-qtd');
+    const fieldCiclo = document.getElementById('input-ciclo');
+    const fieldCav = document.getElementById('input-cavidades');
+    const display = document.getElementById('resultado-rendimento');
+
+    if (!fieldQtd || !fieldCiclo || !fieldCav || !display) return;
+
+    const meta = parseFloat(fieldQtd.value) || 0;
+    const ciclo = parseFloat(fieldCiclo.value) || 0;
+    const cavidades = parseFloat(fieldCav.value) || 1;
+
+    if (meta > 0 && ciclo > 0) {
+        const segundosTotais = (meta / cavidades) * ciclo;
+        const h = Math.floor(segundosTotais / 3600);
+        const m = Math.floor((segundosTotais % 3600) / 60);
+        
+        display.innerText = h.toString().padStart(2, '0') + "h " + m.toString().padStart(2, '0') + "min";
+        display.style.color = "#34d399"; // Cor emerald-400
+    } else {
+        display.innerText = "00h 00min";
+    }
+}
+        
     </script>
 
-    <div id="modal-pigmentos" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md m-4 overflow-hidden">
-        <div class="bg-slate-800 p-4 flex justify-between items-center">
-            <h3 class="text-white font-bold">Gerenciar Pigmentos</h3>
-            <button onclick="document.getElementById('modal-pigmentos').classList.add('hidden')" class="text-slate-400 hover:text-white">X</button>
+    <div id="modal-novo-produto" style="display: none;" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm items-center justify-center z-[9999] p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200">
+        <div class="bg-slate-50 border-b border-slate-100 p-5">
+            <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-circle-plus text-emerald-600"></i> Cadastrar Nova Peça
+            </h2>
         </div>
-        <div class="p-6">
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="novo-pigmento-nome" placeholder="Nome (Ex: Azul)" class="flex-1 p-3 border rounded-lg">
-                <button onclick="adicionarNovoPigmento()" class="bg-blue-600 text-white px-4 rounded-lg font-bold">+</button>
+
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Nome do Produto</label>
+                <input type="text" id="novo-produto-nome" placeholder="Ex: Pote 500ml" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500 transition-all">
             </div>
-            <ul id="lista-pigmentos-gerenciar" class="space-y-2 max-h-60 overflow-y-auto">
-                </ul>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Peso (kg)</label>
+                    <input type="number" id="novo-produto-peso" step="0.001" placeholder="0.050" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Pigmento (%)</label>
+                    <input type="number" id="novo-produto-pigmento" placeholder="2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Ciclo (Seg)</label>
+                    <input type="number" id="novo-produto-ciclo" placeholder="20" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Cavidades</label>
+                    <input type="number" id="novo-produto-cavidades" placeholder="2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="p-5 bg-slate-50 border-t border-slate-100 flex gap-3">
+            <button type="button" onclick="document.getElementById('modal-novo-produto').style.display='none'" class="flex-1 py-3 text-slate-600 font-bold text-sm hover:bg-slate-200 rounded-xl transition-all">Cancelar</button>
+            <button type="button" onclick="salvarNovoProduto()" class="flex-1 py-3 bg-emerald-600 text-white font-black text-sm rounded-xl shadow-lg hover:bg-emerald-700 active:scale-95 transition-all">SALVAR PEÇA</button>
         </div>
     </div>
 </div>
 
-    <script>
-        // --- VARIÁVEL GLOBAL ---
-let pigmentosGlobais = [];
-
-// --- FUNÇÕES ---
-function abrirModalPigmentos() {
-    renderizarListaGerenciaPigmentos();
-    document.getElementById('modal-pigmentos').classList.remove('hidden');
-}
-
-function adicionarNovoPigmento() {
-    let nome = document.getElementById('novo-pigmento-nome').value;
-    if(!nome) return alert("Digite um nome!");
-    
-    pigmentosGlobais.push(nome);
-    document.getElementById('novo-pigmento-nome').value = "";
-    
-    salvarGeral(); // Tenta salvar
-    renderizarListaGerenciaPigmentos();
-    renderizarOpcoesPigmentos();
-}
-
-function removerPigmento(index) {
-    if(confirm("Excluir?")) {
-        pigmentosGlobais.splice(index, 1);
-        salvarGeral();
-        renderizarListaGerenciaPigmentos();
-        renderizarOpcoesPigmentos();
-    }
-}
-
-function renderizarListaGerenciaPigmentos() {
-    let html = "";
-    pigmentosGlobais.forEach((pig, index) => {
-        html += `<li class="flex justify-between bg-slate-50 p-3 rounded border">
-                    <b>${pig}</b>
-                    <button onclick="removerPigmento(${index})" class="text-red-500">Excluir</button>
-                 </li>`;
-    });
-    document.getElementById('lista-pigmentos-gerenciar').innerHTML = html || "Vazio";
-}
-
-function renderizarOpcoesPigmentos() {
-    let select = document.getElementById('tec-pig-select');
-    if(!select) return;
-    let atual = select.value;
-    
-    let html = `<option value="0">Sem Pigmento</option>`;
-    pigmentosGlobais.forEach(pig => {
-        html += `<option value="${pig}">${pig}</option>`;
-    });
-    
-    select.innerHTML = html;
-    select.value = atual;
-}
-
-function aoSelecionarPigmento() {
-    calcularPrevisao();
-}
-    </script>
-    
 </body>
 </html>
