@@ -2299,35 +2299,32 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
     displayResultado.innerText = resultadoFormatado;
 }
 
-window.onload = function() {
-    // 1º PASSO: FORÇAR O ECRÃ A APARECER IMEDIATAMENTE!
-    alternarAba('aba-lista'); // ou 'aba-maquinas', dependendo de qual queres que abra primeiro
+// ==========================================
+// GATILHO DE PARTIDA FORÇADA (LIGA O PAINEL)
+// ==========================================
+setTimeout(function() {
+    console.log("Iniciando carregamento forçado do Painel...");
     
-    // 2º PASSO: Só agora vai tentar puxar os dados
-    carregarMaquinas();
-    carregarHistorico();
-    // ... resto do teu código
-};
-
-function carregarMaquinas() {
-    const grid = document.getElementById('grid-maquinas');
+    // 1. Força a desenhar as Máquinas na tela
+    if (typeof carregarMaquinas === 'function') {
+        carregarMaquinas();
+    }
     
-    // ESTA LINHA SALVA A TUA PÁGINA DE FICAR BRANCA:
-    if (!grid) return; 
-
-    grid.innerHTML = ''; // O teu código continua normal a partir daqui...
-    // ...
-}
-
-function atualizarGraficos() {
-    const ctxProducao = document.getElementById('graficoProducao');
-    const ctxStatus = document.getElementById('graficoStatus');
+    // 2. Força a puxar os dados do Supabase (O.P.s cadastradas)
+    if (typeof carregarHistorico === 'function') {
+        carregarHistorico();
+    }
     
-    // SE NÃO ACHAR O GRÁFICO, PARA SEM DAR ERRO!
-    if (!ctxProducao || !ctxStatus) return;
-
-    // O teu código dos gráficos continua normal a partir daqui...
-}
+    // 3. Força a atualizar os Gráficos
+    if (typeof atualizarGraficos === 'function') {
+        atualizarGraficos();
+    }
+    
+    // 4. Preenche as Peças no formulário (caso tenha)
+    if (typeof atualizarSelectPecas === 'function') {
+        atualizarSelectPecas();
+    }
+}, 500); // Espera meio segundo para garantir que o HTML carregou e dispara tudo!
         
     </script>
 
@@ -2373,5 +2370,6 @@ function atualizarGraficos() {
 
 </body>
 </html>
+
 
 
