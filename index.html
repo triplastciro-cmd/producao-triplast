@@ -2303,28 +2303,31 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
 // GATILHO DE PARTIDA FORÇADA (LIGA O PAINEL)
 // ==========================================
 setTimeout(function() {
-    console.log("Iniciando carregamento forçado do Painel...");
+    console.log("Iniciando carregamento do sistema...");
     
-    // 1. Força a desenhar as Máquinas na tela
-    if (typeof carregarMaquinas === 'function') {
-        carregarMaquinas();
+    // 1. LIGA O PAINEL DE MÁQUINAS (A sua função chama-se render!)
+    if (typeof render === 'function') {
+        render();
     }
     
-    // 2. Força a puxar os dados do Supabase (O.P.s cadastradas)
+    // 2. LIGA O RESUMO E HISTÓRICO
     if (typeof carregarHistorico === 'function') {
         carregarHistorico();
     }
     
-    // 3. Força a atualizar os Gráficos
+    // 3. LIGA OS GRÁFICOS
     if (typeof atualizarGraficos === 'function') {
         atualizarGraficos();
+    } else if (typeof atualizarResumoGlobalNumeros === 'function') {
+        // Se a sua função de gráficos tiver este nome
+        atualizarResumoGlobalNumeros(); 
     }
     
-    // 4. Preenche as Peças no formulário (caso tenha)
-    if (typeof atualizarSelectPecas === 'function') {
-        atualizarSelectPecas();
+    // 4. GARANTE QUE A ABA PAINEL ESTÁ ABERTA E ATIVA
+    if (typeof trocarAba === 'function') {
+        trocarAba('painel');
     }
-}, 500); // Espera meio segundo para garantir que o HTML carregou e dispara tudo!
+}, 500);
         
     </script>
 
@@ -2370,6 +2373,7 @@ setTimeout(function() {
 
 </body>
 </html>
+
 
 
 
