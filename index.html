@@ -296,7 +296,7 @@
         </div>
     </div>
 
-    <div id="app-content" style="display: none;">
+    <div id="app-content">
         <header class="max-w-7xl mx-auto mb-6 relative">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div class="flex items-center gap-4">
@@ -347,15 +347,8 @@
             <button onclick="trocarAba('apontamento')" id="btn-apontamento" class="tab-btn shadow-md">📝 RESUMO</button>
         </nav>
 
-        <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
-            <div id="grid-maquinas">
-                
-                <div style="background-color: white; padding: 20px; border: 3px solid red; border-radius: 10px;">
-                    <h3 style="color: red; font-size: 20px; font-weight: bold;">⚠️ MÁQUINA DE TESTE</h3>
-                    <p>Se esta caixa vermelha apareceu, o seu site NÃO ESTÁ QUEBRADO! O problema é o banco de dados que não está enviando as máquinas de verdade.</p>
-                </div>
-
-            </div>
+       <div id="aba-painel" class="aba-conteudo aba-ativa px-4">
+            <div id="grid-maquinas"></div>
         </div>
 
         <div id="aba-lista" class="aba-conteudo aba-ativa px-4">
@@ -2380,6 +2373,7 @@ setTimeout(function() {
 
 </body>
 </html>
+
 
 
 
