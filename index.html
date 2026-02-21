@@ -370,8 +370,8 @@
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Cliente</label>
                             <input type="text" id="f-cliente" placeholder="Nome do Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
                         </div>
-                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Quantidade (Meta)</label>
+                         <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Quantidade (Meta)</label>
                             <input type="number" id="f-qtd" oninput="recalcularRendimento()" placeholder="Ex: 5000" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm">
                         </div>
                     </div>
@@ -396,11 +396,14 @@
         </div>
     </div>
     
-    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm">
+    <select id="f-produto" onchange="preencherDadosProduto()" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm mb-4">
         <option value="">-- Selecione Produto --</option>
     </select>
-    
-    <div id="resultado-rendimento" class="hidden"></div> 
+
+    <div class="mt-2 p-4 bg-slate-800 rounded-xl border border-slate-700 text-center shadow-inner">
+        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Tempo Estimado de Produção</p>
+        <div id="resultado-rendimento" class="text-3xl font-black text-emerald-400">00h 00min</div>
+    </div>
 </div>
         
         <div class="md:col-span-2 grid grid-cols-4 gap-2">
@@ -437,16 +440,7 @@
         <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
     </div>
 </div>
-                        <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Material (Resina)</label>
-                            <input type="text" id="f-material" placeholder="Ex: PP, PE, ABS" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                         <div class="md:col-span-1">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Qtd Material</label>
-                            <input type="text" id="f-material-qtd" placeholder="Ex: 50kg, 2 Sacos" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-blue-500">
-                        </div>
-                    </div>
-
+                    
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <div class="md:col-span-2 flex items-center">
                             <label class="text-xs font-black text-blue-600 uppercase mr-2"><i class="fa-solid fa-fill-drip"></i> MISTURA:</label>
@@ -2123,24 +2117,30 @@ function autocompletarPeca() {
     }
 }
 
-// 3. O NOVO CÁLCULO DE TEMPO (HORAS E MINUTOS)
 function recalcularRendimento() {
-    // Busca os valores dos campos
+    const display = document.getElementById('resultado-rendimento');
+    
+    // Pega os valores da ficha técnica
     const ciclo = parseFloat(document.getElementById('input-ciclo').value) || 0;
     const cavidades = parseFloat(document.getElementById('input-cavidades').value) || 1;
+    
+    // Pega o valor da Quantidade Meta (ID f-qtd)
     const meta = parseFloat(document.getElementById('f-qtd').value) || 0;
 
-    // Se quiser exibir o tempo em algum lugar, crie um elemento com ID "tempo-producao" 
-    // ou use o console para testar primeiro:
-    if (ciclo > 0 && meta > 0) {
-        const segundosTotais = (meta / cavidades) * ciclo;
-        const horas = Math.floor(segundosTotais / 3600);
-        const minutos = Math.floor((segundosTotais % 3600) / 60);
-        
-        console.log(`Tempo estimado: ${horas}h ${minutos}min`);
-        
-        // Se você tiver um campo de texto para mostrar o tempo, preencha-o aqui:
-        // document.getElementById('seu-id-de-exibicao').innerText = `${horas}h ${minutos}min`;
+    // Se não tiver ciclo ou não tiver meta, zera o tempo
+    if (ciclo <= 0 || meta <= 0) {
+        if(display) display.innerText = '00h 00min';
+        return;
+    }
+
+    // Fórmula: (Meta / Cavidades) * Segundos do Ciclo
+    const segundosTotais = (meta / cavidades) * ciclo;
+    const horas = Math.floor(segundosTotais / 3600);
+    const minutos = Math.floor((segundosTotais % 3600) / 60);
+
+    // Mostra o resultado bonitinho no painel
+    if(display) {
+        display.innerText = `${String(horas).padStart(2, '0')}h ${String(minutos).padStart(2, '0')}min`;
     }
 }
         
@@ -2343,6 +2343,7 @@ function calcularTempoProducao(ciclo, cavidades, meta) {
 
 </body>
 </html>
+
 
 
 
