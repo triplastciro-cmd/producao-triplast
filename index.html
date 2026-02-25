@@ -20,22 +20,27 @@
             padding: 0; 
         }
         
-        .aba-conteudo { display: none !important; }
-        .aba-ativa { display: block !important; animation: fadeIn 0.4s ease; }
+        .aba-conteudo { 
+            display: none !important; 
+        }
+        
+        .aba-ativa { 
+            display: block !important; 
+            animation: fadeIn 0.4s ease; 
+        }
         
         @keyframes fadeIn { 
             from { opacity: 0; transform: translateY(5px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
 
-        /* CARDS INDUSTRIAIS ESTICADOS */
         .card-producao {
             background: white; 
             border-radius: 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-            border-left: 12px solid #cbd5e1; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
+            border-left: 12px solid #cbd5e1;
             transition: 0.3s; 
-            overflow: hidden;
+            overflow: hidden; 
             display: flex; 
             flex-direction: column; 
             width: 100%; 
@@ -75,22 +80,22 @@
             text-align: center; 
             display: flex; 
             flex-direction: column; 
-            justify-content: space-between;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            justify-content: space-between; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); 
         }
-
-        .fila-scroll-vertical {
+        
+        .fila-scroll-vertical { 
             flex: 1; 
             overflow-y: auto; 
             gap: 12px; 
             display: flex; 
-            flex-direction: column;
+            flex-direction: column; 
             padding-right: 5px; 
             scrollbar-width: thin; 
-            max-height: 450px;
+            max-height: 450px; 
         }
-
-        .tab-btn {
+        
+        .tab-btn { 
             background: white; 
             padding: 12px 24px; 
             border-radius: 16px; 
@@ -99,8 +104,8 @@
             color: #64748b; 
             transition: 0.2s; 
             border: 2px solid transparent; 
-            text-transform: uppercase;
-            white-space: nowrap;
+            text-transform: uppercase; 
+            white-space: nowrap; 
         }
         
         .tab-btn.active { 
@@ -122,7 +127,6 @@
         }
         
         .input-industrial:focus { border-color: #3b82f6; }
-        
         input[type="number"]::-webkit-inner-spin-button { display: none; }
     </style>
 </head>
@@ -131,7 +135,7 @@
     <div id="tela-loading" class="fixed inset-0 bg-slate-900 z-[200] flex flex-col items-center justify-center transition-all duration-500">
         <h1 class="text-6xl font-black italic tracking-tighter mb-8 text-white">TRI<span class="text-blue-500">PLAST</span></h1>
         <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-blue-400 font-bold text-sm tracking-widest uppercase animate-pulse">Carregando Sistema MES...</p>
+        <p class="text-blue-400 font-bold text-sm tracking-widest uppercase animate-pulse">Sincronizando com a Nuvem...</p>
     </div>
 
     <div id="toast-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-slate-800 text-green-400 px-6 py-3 rounded-full shadow-2xl z-[999] hidden flex items-center gap-2 border border-slate-600 transition-all">
@@ -461,7 +465,8 @@
         let filtroGraficoId = 'hoje';
         let turnoForcado = null; 
         
-        // Timestamp para a sincronização
+        // TRAVA DE SEGURANÇA PARA ATUALIZAÇÕES
+        let sistemaPronto = false; 
         let lastSyncTs = parseInt(localStorage.getItem('triplast_ts')) || 0;
         
         let dadosMensais = { 
@@ -500,10 +505,19 @@
         let chartStatusInstance = null;
 
         // ==========================================
-        // 2. INICIALIZAÇÃO
+        // 2. INICIALIZAÇÃO SEGURA (BOOT)
         // ==========================================
-        window.onload = () => {
-            carregarDadosLocais(); 
+        window.onload = async () => {
+            // 1º Passo: Tentar forçar download da Nuvem antes de qualquer coisa
+            await carregarDaNuvem();
+            
+            // 2º Passo: Se não conseguiu nuvem (sem net), carrega o backup oficial
+            if(!sistemaPronto) {
+                carregarDadosLocais();
+            }
+            
+            sistemaPronto = true; // AGORA É SEGURO SALVAR
+
             let userSalvo = localStorage.getItem('triplast_session');
 
             setTimeout(() => {
@@ -525,10 +539,38 @@
         };
 
         // ==========================================
-        // 3. CACHE LOCAL E MOTOR DE SINCRONIZAÇÃO
+        // 3. SINCRONIZAÇÃO E PREVENÇÃO DE PERDA DE DADOS
         // ==========================================
+        async function carregarDaNuvem() {
+            if(!sb) return;
+            try {
+                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                if(data && data.conteudo) {
+                    const db = data.conteudo;
+                    
+                    maquinas = db.maquinas || maquinas;
+                    produtosGlobais = db.produtos || produtosGlobais;
+                    operadoresGlobais = db.operadores || operadoresGlobais;
+                    historico = db.historico || historico;
+                    dadosMensais = db.dadosMensais || dadosMensais;
+                    modoHoraExtra = db.modoHoraExtra || false;
+                    
+                    lastSyncTs = db.ts || 0;
+                    localStorage.setItem('triplast_ts', lastSyncTs);
+                    
+                    // Cria backup seguro
+                    localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
+                    
+                    sistemaPronto = true;
+                }
+            } catch(e) { 
+                console.error("Erro no boot da nuvem"); 
+            }
+        }
+
         function carregarDadosLocais() {
-            const memory = localStorage.getItem('triplast_dados_v17');
+            // Usa uma chave oficial permanente para sobreviver às atualizações do código
+            const memory = localStorage.getItem('triplast_dados_oficial');
             if(memory) {
                 try {
                     const db = JSON.parse(memory);
@@ -539,14 +581,14 @@
                     if(db.dadosMensais) dadosMensais = db.dadosMensais;
                     if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
                 } catch(e) {
-                    console.log("Erro ao ler cache.");
+                    console.log("Erro ao ler backup.");
                 }
             }
         }
 
-        // Sincroniza dados da nuvem em tempo real (para Notebook/Tablet)
-        async function sincronizarNuvem() {
-            if(!sb) return;
+        // MOTOR INVISÍVEL DE SINCRONIZAÇÃO (ATUALIZA O TABLET SE O PAI MEXER NO NOTEBOOK)
+        setInterval(async () => {
+            if(!sb || !sistemaPronto) return;
             try {
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
@@ -562,17 +604,15 @@
                     lastSyncTs = db.ts;
                     localStorage.setItem('triplast_ts', lastSyncTs);
                     
+                    // Atualiza a tela que estiver aberta
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
                     if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
                     renderCatalogo(); 
                     atualizarSelectProdutos();
                 }
-            } catch(e) { console.error("Erro no motor de sync", e); }
-        }
-
-        // Roda a sincronização a cada 5 segundos
-        setInterval(sincronizarNuvem, 5000);
+            } catch(e) {}
+        }, 5000);
 
         function sanitizarDados() {
             maquinas.forEach(m => {
@@ -596,12 +636,15 @@
         }
 
         async function salvarAutomatico() { 
+            // IMPEDE SALVAR POR CIMA ANTES DE CARREGAR A NUVEM
+            if(!sistemaPronto) return; 
+
             sanitizarDados();
             
             lastSyncTs = Date.now();
             localStorage.setItem('triplast_ts', lastSyncTs);
             
-            localStorage.setItem('triplast_dados_v17', JSON.stringify({
+            localStorage.setItem('triplast_dados_oficial', JSON.stringify({
                 maquinas, 
                 produtos: produtosGlobais, 
                 operadores: operadoresGlobais, 
@@ -615,33 +658,21 @@
             if(saveTimeout) clearTimeout(saveTimeout); 
             
             saveTimeout = setTimeout(async () => { 
-                await salvarGeral(); 
+                if(sb) {
+                    await sb.from('sistema').update({ 
+                        conteudo: { 
+                            maquinas, 
+                            operadores: operadoresGlobais, 
+                            produtos: produtosGlobais, 
+                            historico, 
+                            dadosMensais, 
+                            modoHoraExtra, 
+                            ts: lastSyncTs 
+                        } 
+                    }).eq('id', 1);
+                }
                 document.getElementById('status-nuvem').innerText = "☁️"; 
             }, 1000); 
-        }
-
-        async function salvarGeral() { 
-            if(sb) {
-                await sb.from('sistema').update({ 
-                    conteudo: { 
-                        maquinas, 
-                        operadores: operadoresGlobais, 
-                        produtos: produtosGlobais, 
-                        historico, 
-                        dadosMensais, 
-                        modoHoraExtra, 
-                        ts: lastSyncTs 
-                    } 
-                }).eq('id', 1);
-            }
-            showToast("Nuvem Atualizada");
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast-notification');
-            document.getElementById('toast-msg').innerText = msg;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 2000);
         }
 
         // ==========================================
@@ -750,7 +781,7 @@
                 
                 if(m.status === "04-PRODUÇÃO") {
                     sClass = "status-produzindo"; 
-                } else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") {
+                } else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) {
                     sClass = "status-baixa"; 
                 } else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA"].includes(m.status)) {
                     sClass = "status-sem-prog"; 
@@ -843,6 +874,7 @@
                 }
 
                 let filaHTML = `<div class="text-center text-xs font-bold text-slate-400 p-6 border-2 border-dashed border-slate-300 rounded-2xl mt-2 bg-slate-50">Nenhuma O.P na Fila</div>`;
+                
                 if(m.fila.length > 0) {
                     filaHTML = m.fila.map((f, index) => `
                     <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm relative mb-3">
@@ -959,9 +991,18 @@
             const qtd = parseInt(document.getElementById(`refugo-qtd-${id}`).value);
             const motivo = document.getElementById(`motivo-${id}`).value;
             
-            if(!maq.opAtiva) { alert("Nenhuma O.P ativa nesta máquina."); return; }
-            if(isNaN(qtd) || qtd <= 0) { alert("Digite uma quantidade válida de peças."); return; }
-            if(!motivo) { alert("Selecione um motivo de refugo antes de lançar."); return; }
+            if(!maq.opAtiva) { 
+                alert("Nenhuma O.P ativa nesta máquina."); 
+                return; 
+            }
+            if(isNaN(qtd) || qtd <= 0) { 
+                alert("Digite uma quantidade válida de peças."); 
+                return; 
+            }
+            if(!motivo) { 
+                alert("Selecione um motivo de refugo antes de lançar."); 
+                return; 
+            }
             
             const perc = ((qtd / maq.opAtiva.meta) * 100).toFixed(2);
             
@@ -977,7 +1018,10 @@
 
         function zerarRefugo(id) {
             const maq = maquinas.find(m => m.id === id);
-            if(!maq.opAtiva) { alert("Nenhuma O.P ativa nesta máquina."); return; }
+            if(!maq.opAtiva) { 
+                alert("Nenhuma O.P ativa nesta máquina."); 
+                return; 
+            }
             
             if(confirm(`Tem certeza que deseja ZERAR A CONTAGEM DE REFUGO desta O.P? (Atual: ${maq.opAtiva.refugo} peças)`)) {
                 maq.opAtiva.refugo = 0;
@@ -989,7 +1033,10 @@
 
         function zerarBoas(id) {
             const maq = maquinas.find(m => m.id === id);
-            if(!maq.opAtiva) { alert("Nenhuma O.P ativa nesta máquina."); return; }
+            if(!maq.opAtiva) { 
+                alert("Nenhuma O.P ativa nesta máquina."); 
+                return; 
+            }
             
             if(confirm(`Tem certeza que deseja ZERAR A CONTAGEM DE PEÇAS BOAS desta O.P? (Atual: ${maq.opAtiva.boas} peças)`)) {
                 maq.opAtiva.boas = 0;
@@ -1252,158 +1299,175 @@
         }
 
         // ==========================================
-        // 11. MOTOR DO TEMPO REAL ABSOLUTO
-        // (Resolve o problema do "Contador Lento")
+        // 11. MOTOR DO TEMPO REAL ABSOLUTO (200ms)
+        // Resolve o problema de "dormir" no tablet
         // ==========================================
-        let ultimoTempoContado = Date.now();
+        let ultimoTick = Date.now();
 
         setInterval(() => {
-            // Atualiza sempre o relógio do cabeçalho
-            const agora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+            const agoraReogioBsB = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
+            document.getElementById('relogio').innerText = agoraReogioBsB.toLocaleTimeString('pt-BR');
 
-            // CÁLCULO DE TEMPO EXATO (Corrige se a aba dormiu)
+            // CÁLCULO DE TEMPO EXATO (Corrige as falhas se o navegador "dormir")
             const agoraMs = Date.now();
-            const deltaSegundos = Math.floor((agoraMs - ultimoTempoContado) / 1000);
+            const deltaMs = agoraMs - ultimoTick;
 
-            // Só roda se passou pelo menos 1 segundo inteiro
-            if (deltaSegundos < 1) return;
-            
-            ultimoTempoContado += deltaSegundos * 1000;
+            // Só libera a contagem quando o tempo acumulado bater 1 segundo exato (1000ms)
+            if (deltaMs >= 1000) {
+                const passados = Math.floor(deltaMs / 1000);
+                ultimoTick += passados * 1000; // Incrementa o último tick com exatidão
 
-            if (agora.getMonth() !== dadosMensais.mesAtual) {
-                dadosMensais.mesAtual = agora.getMonth();
-                dadosMensais.metaAtualSec = 0;
-                dadosMensais.horaExtraSec = 0;
-                dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-                
-                maquinas.forEach(m => { 
-                    m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; 
-                    if(m.opAtiva) { m.opAtiva.boas = 0; m.opAtiva.refugo = 0; } 
-                });
-                
-                salvarAutomatico(); renderPainel(); 
-            }
-
-            const selTurno = document.getElementById('select-turno');
-            const optAuto = document.getElementById('opt-auto');
-            const mTotal = agora.getHours() * 60 + agora.getMinutes();
-            let textAuto = "Turno 3 (23h-05h)";
-            
-            if (mTotal >= 300 && mTotal < 858) textAuto = "Turno 1 (05h-14h)";
-            else if (mTotal >= 858 && mTotal < 1416) textAuto = "Turno 2 (14h-23h)";
-            
-            if(optAuto) optAuto.innerText = "Atual: " + textAuto;
-            if(turnoForcado && turnoForcado !== "auto") selTurno.value = turnoForcado;
-
-            const isWeekend = (agora.getDay() === 0 || agora.getDay() === 6);
-            let contarTempo = true;
-            let maqTrabalhando = false;
-
-            if (isWeekend && !modoHoraExtra) {
-                contarTempo = false;
-                document.getElementById('badge-fds').classList.remove('hidden');
-                let statusMudou = false;
-                
-                maquinas.forEach(m => {
-                    if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { 
-                        m.status = "25-FIM DE SEMANA (PAUSADO)"; 
-                        statusMudou = true; 
-                    }
-                });
-                if(statusMudou && document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
-            } else {
-                document.getElementById('badge-fds').classList.add('hidden');
-            }
-
-            if(contarTempo) {
-                let cProd = 0, cBaixa = 0, cParada = 0, cNeutro = 0;
-                let maquinasAtivas = 0;
-                
-                maquinas.forEach(m => {
-                    maquinasAtivas++;
+                // Regra de Mês
+                if (agoraReogioBsB.getMonth() !== dadosMensais.mesAtual) {
+                    dadosMensais.mesAtual = agoraReogioBsB.getMonth(); 
+                    dadosMensais.metaAtualSec = 0; 
+                    dadosMensais.horaExtraSec = 0; 
+                    dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
                     
-                    if(m.status === "04-PRODUÇÃO") { 
-                        m.tempos.prod += deltaSegundos; cProd++; maqTrabalhando = true; 
-                    }
-                    else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { 
-                        m.tempos.baixa += deltaSegundos; cBaixa++; maqTrabalhando = true; 
-                    }
-                    else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE"].includes(m.status)) { 
-                        m.tempos.neutro += deltaSegundos; cNeutro++; 
-                    }
-                    else { 
-                        m.tempos.parado += deltaSegundos; cParada++; 
-                    } 
-                    
-                    if(document.getElementById(`t-prod-${m.id}`)) {
-                        document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
-                        document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
-                        document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado);
-                        document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
-                    }
-                    
-                    if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
-                        let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado;
-                        let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
-                        
-                        let ciclo = parseFloat(m.opAtiva.ciclo) || 1; 
-                        let cavs = parseInt(m.opAtiva.cavs) || 1;
-                        let teorica = (m.tempos.prod / ciclo) * cavs; 
-                        let real = m.opAtiva.boas + m.opAtiva.refugo;
-                        
-                        let perf = teorica > 0 ? (real / teorica) : 0; 
-                        if(perf > 1) perf = 1; 
-                        
-                        let qual = real > 0 ? (m.opAtiva.boas / real) : 0;
-                        let oee = disp * perf * qual;
-                        
-                        document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%';
-                        document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
-                        document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%';
-                        document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
-                    }
-                });
+                    maquinas.forEach(m => { 
+                        m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; 
+                        if(m.opAtiva) { 
+                            m.opAtiva.boas = 0; 
+                            m.opAtiva.refugo = 0; 
+                        } 
+                    });
+                    salvarAutomatico(); 
+                    renderPainel(); 
+                }
 
-                // CÁLCULO PROPORCIONAL COM DELTA TIME
-                if (maquinasAtivas > 0) {
-                    dadosMensais.plantTempos.prod += (cProd / maquinasAtivas) * deltaSegundos;
-                    dadosMensais.plantTempos.baixa += (cBaixa / maquinasAtivas) * deltaSegundos;
-                    dadosMensais.plantTempos.parado += (cParada / maquinasAtivas) * deltaSegundos;
-                    dadosMensais.plantTempos.neutro += (cNeutro / maquinasAtivas) * deltaSegundos;
+                // Turnos
+                const mTotal = agoraReogioBsB.getHours() * 60 + agoraReogioBsB.getMinutes();
+                let textAuto = "Turno 3 (23h-05h)";
+                if (mTotal >= 300 && mTotal < 858) {
+                    textAuto = "Turno 1 (05h-14h)"; 
+                } else if (mTotal >= 858 && mTotal < 1416) {
+                    textAuto = "Turno 2 (14h-23h)";
+                }
+                
+                if(document.getElementById('opt-auto')) {
+                    document.getElementById('opt-auto').innerText = "Atual: " + textAuto; 
+                }
+                
+                if(turnoForcado && turnoForcado !== "auto") {
+                    document.getElementById('select-turno').value = turnoForcado;
+                }
+
+                const isWeekend = (agoraReogioBsB.getDay() === 0 || agoraReogioBsB.getDay() === 6);
+                let contarTempo = true;
+                let maqTrabalhando = false;
+
+                if (isWeekend && !modoHoraExtra) {
+                    contarTempo = false; 
+                    document.getElementById('badge-fds').classList.remove('hidden'); 
+                    let statusMudou = false;
+                    
+                    maquinas.forEach(m => { 
+                        if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { 
+                            m.status = "25-FIM DE SEMANA (PAUSADO)"; 
+                            statusMudou = true; 
+                        } 
+                    });
+                    
+                    if(statusMudou && document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
+                } else { 
+                    document.getElementById('badge-fds').classList.add('hidden'); 
+                }
+
+                if(contarTempo) {
+                    let pProd = 0, pBaixa = 0, pParada = 0, pNeutro = 0;
+                    let maquinasAtivas = 0;
+                    
+                    maquinas.forEach(m => {
+                        maquinasAtivas++;
+                        
+                        if(m.status === "04-PRODUÇÃO") { 
+                            m.tempos.prod += passados; 
+                            pProd++; 
+                            maqTrabalhando = true; 
+                        }
+                        else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { 
+                            m.tempos.baixa += passados; 
+                            pBaixa++; 
+                            maqTrabalhando = true; 
+                        }
+                        else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE", "09-LIMPEZA"].includes(m.status)) { 
+                            m.tempos.neutro += passados; 
+                            pNeutro++; 
+                        }
+                        else { 
+                            m.tempos.parado += passados; 
+                            pParada++; 
+                        } 
+                        
+                        if(document.getElementById(`t-prod-${m.id}`)) {
+                            document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
+                            document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
+                            document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado);
+                            document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
+                        }
+                        
+                        if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
+                            let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; 
+                            let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
+                            
+                            let ciclo = parseFloat(m.opAtiva.ciclo) || 1; 
+                            let cavs = parseInt(m.opAtiva.cavs) || 1; 
+                            let teorica = (m.tempos.prod / ciclo) * cavs; 
+                            let real = m.opAtiva.boas + m.opAtiva.refugo;
+                            
+                            let perf = teorica > 0 ? (real / teorica) : 0; 
+                            if(perf > 1) perf = 1; 
+                            
+                            let qual = real > 0 ? (m.opAtiva.boas / real) : 0; 
+                            let oee = disp * perf * qual;
+                            
+                            document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%';
+                            document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
+                            document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%';
+                            document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
+                        }
+                    });
+
+                    // CÁLCULO PROPORCIONAL DE FÁBRICA (Dividido pelo número de máquinas)
+                    if (maquinasAtivas > 0) {
+                        dadosMensais.plantTempos.prod += (pProd / maquinasAtivas) * passados;
+                        dadosMensais.plantTempos.baixa += (pBaixa / maquinasAtivas) * passados;
+                        dadosMensais.plantTempos.parado += (pParada / maquinasAtivas) * passados;
+                        dadosMensais.plantTempos.neutro += (pNeutro / maquinasAtivas) * passados;
+                    }
+                }
+
+                const limiteSec = 1628 * 3600;
+                if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
+                    dadosMensais.metaAtualSec += passados; 
+                    if(modoHoraExtra) dadosMensais.horaExtraSec += passados;
+                }
+                
+                document.getElementById('horas-mensal-txt').innerText = `${Math.floor(dadosMensais.metaAtualSec/3600)}h`;
+                document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / limiteSec) * 100, 100)}%`;
+
+                if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
+
+                // GRÁFICOS DA FÁBRICA ATUALIZADOS COM PRECISÃO
+                if (chartStatusInstance) {
+                    let pSec = dadosMensais.plantTempos.prod;
+                    let bSec = dadosMensais.plantTempos.baixa;
+                    let paSec = dadosMensais.plantTempos.parado;
+                    let nSec = dadosMensais.plantTempos.neutro;
+
+                    document.getElementById('lbl-chart-prod').innerText = fmtTm(pSec);
+                    document.getElementById('lbl-chart-baixa').innerText = fmtTm(bSec);
+                    document.getElementById('lbl-chart-parado').innerText = fmtTm(paSec);
+                    document.getElementById('lbl-chart-neutro').innerText = fmtTm(nSec);
+
+                    chartStatusInstance.data.datasets[0].data = [pSec, bSec, paSec, nSec];
+                    chartStatusInstance.update('none'); 
                 }
             }
-
-            const limiteSec = 1628 * 3600;
-            if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
-                dadosMensais.metaAtualSec += deltaSegundos;
-                if(modoHoraExtra) dadosMensais.horaExtraSec += deltaSegundos;
-            }
-            
-            document.getElementById('horas-mensal-txt').innerText = `${Math.floor(dadosMensais.metaAtualSec/3600)}h`;
-            document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / limiteSec) * 100, 100)}%`;
-
-            if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
-
-            if (chartStatusInstance) {
-                let pSec = dadosMensais.plantTempos.prod;
-                let bSec = dadosMensais.plantTempos.baixa;
-                let paSec = dadosMensais.plantTempos.parado;
-                let nSec = dadosMensais.plantTempos.neutro;
-
-                document.getElementById('lbl-chart-prod').innerText = fmtTm(pSec);
-                document.getElementById('lbl-chart-baixa').innerText = fmtTm(bSec);
-                document.getElementById('lbl-chart-parado').innerText = fmtTm(paSec);
-                document.getElementById('lbl-chart-neutro').innerText = fmtTm(nSec);
-
-                chartStatusInstance.data.datasets[0].data = [pSec, bSec, paSec, nSec];
-                chartStatusInstance.update('none'); 
-            }
-
-        }, 1000);
+        }, 200); // 200ms garante que ele não perca o momento da virada do segundo!
 
         // ==========================================
-        // 12. GRÁFICOS
+        // 12. GRÁFICOS (COM TOOLTIP FORMATADA HH:MM:SS)
         // ==========================================
         function alterarFiltroGrafico(valor) { 
             filtroGraficoId = valor; 
@@ -1490,4 +1554,3 @@
     </script>
 </body>
 </html>
-
