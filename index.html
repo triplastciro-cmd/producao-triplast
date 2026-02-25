@@ -29,14 +29,30 @@
         }
 
         .card-producao {
-            background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-left: 12px solid #cbd5e1;
-            transition: 0.3s; overflow: hidden; display: flex; flex-direction: column; width: 100%; max-width: 1200px; margin: 0 auto;
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
+            border-left: 12px solid #cbd5e1;
+            transition: 0.3s; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            max-width: 1200px; 
+            margin: 0 auto;
         }
         
         @media (min-width: 1024px) {
             .card-producao { flex-direction: row; }
             .card-esq { flex: 1; padding: 32px; }
-            .card-dir { width: 400px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 32px; display: flex; flex-direction: column;}
+            .card-dir { 
+                width: 400px; 
+                background: #f8fafc; 
+                border-left: 1px solid #e2e8f0; 
+                padding: 32px; 
+                display: flex; 
+                flex-direction: column;
+            }
         }
         
         @media (max-width: 1023px) {
@@ -50,12 +66,60 @@
         .status-parada { border-left-color: #ef4444 !important; } 
         .status-fds { border-left-color: #475569 !important; background-color: #f1f5f9; }
 
-        .info-badge { background: #ffffff; padding: 16px; border-radius: 16px; border: 2px solid #e2e8f0; text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        .fila-scroll-vertical { flex: 1; overflow-y: auto; gap: 12px; display: flex; flex-direction: column; padding-right: 5px; scrollbar-width: thin; max-height: 450px; }
-        .tab-btn { background: white; padding: 12px 24px; border-radius: 16px; font-weight: 900; font-size: 12px; color: #64748b; transition: 0.2s; border: 2px solid transparent; text-transform: uppercase; white-space: nowrap; }
-        .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
+        .info-badge { 
+            background: #ffffff; 
+            padding: 16px; 
+            border-radius: 16px; 
+            border: 2px solid #e2e8f0; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); 
+        }
+        
+        .fila-scroll-vertical { 
+            flex: 1; 
+            overflow-y: auto; 
+            gap: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            padding-right: 5px; 
+            scrollbar-width: thin; 
+            max-height: 450px; 
+        }
+        
+        .tab-btn { 
+            background: white; 
+            padding: 12px 24px; 
+            border-radius: 16px; 
+            font-weight: 900; 
+            font-size: 12px; 
+            color: #64748b; 
+            transition: 0.2s; 
+            border: 2px solid transparent; 
+            text-transform: uppercase; 
+            white-space: nowrap; 
+        }
+        
+        .tab-btn.active { 
+            background: #3b82f6; 
+            color: white; 
+            border-color: #2563eb; 
+            box-shadow: 0 4px 10px rgba(37,99,235,0.3); 
+        }
 
-        .input-industrial { font-size: 1.5rem; font-weight: 900; text-align: center; border: 2px solid #cbd5e1; border-radius: 12px; padding: 10px; width: 100%; outline: none; }
+        .input-industrial { 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            text-align: center; 
+            border: 2px solid #cbd5e1; 
+            border-radius: 12px; 
+            padding: 10px; 
+            width: 100%; 
+            outline: none; 
+        }
+        
         .input-industrial:focus { border-color: #3b82f6; }
         input[type="number"]::-webkit-inner-spin-button { display: none; }
     </style>
@@ -438,15 +502,13 @@
         // 2. INICIALIZAÇÃO SEGURA (BOOT)
         // ==========================================
         window.onload = async () => {
-            // 1º Passo: Tentar forçar download da Nuvem antes de qualquer coisa
             await carregarDaNuvem();
             
-            // 2º Passo: Se não conseguiu nuvem (sem net), carrega o backup oficial
             if(!sistemaPronto) {
                 carregarDadosLocais();
             }
             
-            sistemaPronto = true; // AGORA É SEGURO SALVAR
+            sistemaPronto = true;
 
             let userSalvo = localStorage.getItem('triplast_session');
 
@@ -487,8 +549,6 @@
                     
                     lastSyncTs = db.ts || 0;
                     localStorage.setItem('triplast_ts', lastSyncTs);
-                    
-                    // Cria backup seguro
                     localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
                     
                     sistemaPronto = true;
@@ -499,7 +559,6 @@
         }
 
         function carregarDadosLocais() {
-            // Usa uma chave oficial permanente para sobreviver às atualizações do código
             const memory = localStorage.getItem('triplast_dados_oficial');
             if(memory) {
                 try {
@@ -516,7 +575,6 @@
             }
         }
 
-        // MOTOR INVISÍVEL DE SINCRONIZAÇÃO (ATUALIZA O TABLET SE O PAI MEXER NO NOTEBOOK)
         setInterval(async () => {
             if(!sb || !sistemaPronto) return;
             try {
@@ -534,7 +592,6 @@
                     lastSyncTs = db.ts;
                     localStorage.setItem('triplast_ts', lastSyncTs);
                     
-                    // Atualiza a tela que estiver aberta
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
                     if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
@@ -566,7 +623,6 @@
         }
 
         async function salvarAutomatico() { 
-            // IMPEDE SALVAR POR CIMA ANTES DE CARREGAR A NUVEM
             if(!sistemaPronto) return; 
 
             sanitizarDados();
@@ -1229,32 +1285,26 @@
         }
 
         // ==========================================
-        // 11. MOTOR DE TEMPO REAL OTIMIZADO (1000ms)
-        // Resolve o problema de "dormir" e tira o lag!
+        // 11. MOTOR DE TEMPO REAL OTIMIZADO E CRAVADO (1 PARA 1)
         // ==========================================
         
-        // Formatador super leve para o horário de Brasília
         const optBSB = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         let ultimoTick = Date.now();
 
         setInterval(() => {
-            // Atualiza o relógio do cabeçalho sem pesar o sistema
             const relogioHtml = document.getElementById('relogio');
             if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', optBSB);
 
-            // CÁLCULO DE TEMPO EXATO
             const agoraMs = Date.now();
             const deltaSegundos = Math.round((agoraMs - ultimoTick) / 1000);
 
-            // Só processa a matemática se passou 1 segundo ou mais (evita lentidão)
+            // A cada 1 segundo real (ou mais se o tablet dormiu)
             if (deltaSegundos >= 1) {
-                ultimoTick = agoraMs; // Prepara para a próxima rodada
-                const passados = deltaSegundos; // Puxa quantos segundos passaram (normalmente é 1)
+                ultimoTick = agoraMs; 
+                const passados = deltaSegundos; 
 
-                // Puxa a data completa do PC para checar mês e turno
                 const agoraCompleto = new Date();
 
-                // Regra de Virada de Mês
                 if (agoraCompleto.getMonth() !== dadosMensais.mesAtual) {
                     dadosMensais.mesAtual = agoraCompleto.getMonth(); 
                     dadosMensais.metaAtualSec = 0; 
@@ -1272,7 +1322,6 @@
                     renderPainel(); 
                 }
 
-                // Turnos
                 const mTotal = agoraCompleto.getHours() * 60 + agoraCompleto.getMinutes();
                 let textAuto = "Turno 3 (23h-05h)";
                 if (mTotal >= 300 && mTotal < 858) {
@@ -1311,33 +1360,31 @@
                 }
 
                 if(contarTempo) {
-                    let pProd = 0, pBaixa = 0, pParada = 0, pNeutro = 0;
-                    let maquinasAtivas = 0;
+                    
+                    let pProd = false, pBaixa = false, pParada = false, pNeutro = false;
                     
                     maquinas.forEach(m => {
-                        maquinasAtivas++;
                         
-                        // Incrementa o tempo das máquinas
+                        // Incrementa o tempo INDIVIDUAL da máquina cravado
                         if(m.status === "04-PRODUÇÃO") { 
                             m.tempos.prod += passados; 
-                            pProd++; 
+                            pProd = true; 
                             maqTrabalhando = true; 
                         }
                         else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { 
                             m.tempos.baixa += passados; 
-                            pBaixa++; 
+                            pBaixa = true; 
                             maqTrabalhando = true; 
                         }
                         else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE", "09-LIMPEZA"].includes(m.status)) { 
                             m.tempos.neutro += passados; 
-                            pNeutro++; 
+                            pNeutro = true; 
                         }
                         else { 
                             m.tempos.parado += passados; 
-                            pParada++; 
+                            pParada = true; 
                         } 
                         
-                        // Atualiza as telas de tempo da máquina
                         if(document.getElementById(`t-prod-${m.id}`)) {
                             document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
                             document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
@@ -1345,7 +1392,6 @@
                             document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
                         }
                         
-                        // OEE da Máquina
                         if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
                             let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; 
                             let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
@@ -1368,16 +1414,14 @@
                         }
                     });
 
-                    // CÁLCULO PROPORCIONAL DE FÁBRICA
-                    if (maquinasAtivas > 0) {
-                        dadosMensais.plantTempos.prod += (pProd / maquinasAtivas) * passados;
-                        dadosMensais.plantTempos.baixa += (pBaixa / maquinasAtivas) * passados;
-                        dadosMensais.plantTempos.parado += (pParada / maquinasAtivas) * passados;
-                        dadosMensais.plantTempos.neutro += (pNeutro / maquinasAtivas) * passados;
-                    }
+                    // CÁLCULO GERAL DA FÁBRICA (Todos sincronizados de 1 em 1 segundo!)
+                    // Se há pelo menos 1 máquina naquele status, o status da fábrica roda 1 segundo exato.
+                    if (pProd) dadosMensais.plantTempos.prod += passados;
+                    if (pBaixa) dadosMensais.plantTempos.baixa += passados;
+                    if (pParada) dadosMensais.plantTempos.parado += passados;
+                    if (pNeutro) dadosMensais.plantTempos.neutro += passados;
                 }
 
-                // Cálculo da Meta do Mês
                 const limiteSec = 1628 * 3600;
                 if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
                     dadosMensais.metaAtualSec += passados; 
@@ -1387,7 +1431,9 @@
                 document.getElementById('horas-mensal-txt').innerText = `${Math.floor(dadosMensais.metaAtualSec/3600)}h`;
                 document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / limiteSec) * 100, 100)}%`;
 
-                // GRÁFICOS DA FÁBRICA
+                if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
+
+                // GRÁFICOS DA FÁBRICA ATUALIZADOS COM PRECISÃO
                 if (chartStatusInstance) {
                     let pSec = dadosMensais.plantTempos.prod;
                     let bSec = dadosMensais.plantTempos.baixa;
@@ -1403,7 +1449,7 @@
                     chartStatusInstance.update('none'); 
                 }
             }
-        }, 1000); // 1000ms = 1 segundo perfeito e suave.
+        }, 200); 
 
         // ==========================================
         // 12. GRÁFICOS (COM TOOLTIP FORMATADA HH:MM:SS)
