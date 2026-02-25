@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES V14 (OEE, Telão & Contadores HH:MM:SS)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -374,24 +374,24 @@
                 <div class="grid grid-cols-1 gap-8">
                     
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
-                        <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Status da Fábrica (Minutos Reais)</h3>
+                        <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Status Geral da Fábrica</h3>
                         
                         <div class="grid grid-cols-4 gap-2 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
                             <div class="text-center border-r border-slate-200">
                                 <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Produção</span>
-                                <span id="lbl-chart-prod" class="text-lg md:text-2xl font-black text-green-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                                <span id="lbl-chart-prod" class="text-lg md:text-2xl font-black text-green-500 font-mono">00:00:00</span>
                             </div>
                             <div class="text-center border-r border-slate-200">
                                 <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Baixa Efi.</span>
-                                <span id="lbl-chart-baixa" class="text-lg md:text-2xl font-black text-orange-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                                <span id="lbl-chart-baixa" class="text-lg md:text-2xl font-black text-orange-500 font-mono">00:00:00</span>
                             </div>
                             <div class="text-center border-r border-slate-200">
                                 <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Parada</span>
-                                <span id="lbl-chart-parado" class="text-lg md:text-2xl font-black text-red-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                                <span id="lbl-chart-parado" class="text-lg md:text-2xl font-black text-red-500 font-mono">00:00:00</span>
                             </div>
                             <div class="text-center">
                                 <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Neutro</span>
-                                <span id="lbl-chart-neutro" class="text-lg md:text-2xl font-black text-slate-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                                <span id="lbl-chart-neutro" class="text-lg md:text-2xl font-black text-slate-500 font-mono">00:00:00</span>
                             </div>
                         </div>
 
@@ -434,7 +434,9 @@
     </div>
 
     <script>
-        // Formatação de Tempo (Transforma Segundos em HH:MM:SS)
+        // ==========================================
+        // FUNÇÃO GLOBAL DE FORMATAÇÃO DE TEMPO (00:00:00)
+        // ==========================================
         const fmtTm = s => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
 
         // ==========================================
@@ -520,7 +522,7 @@
         // 3. CACHE LOCAL E SEGURANÇA MULTI-DISPOSITIVO
         // ==========================================
         function carregarDadosLocais() {
-            const memory = localStorage.getItem('triplast_dados_v13');
+            const memory = localStorage.getItem('triplast_dados_v14');
             if(memory) {
                 try {
                     const db = JSON.parse(memory);
@@ -560,7 +562,7 @@
         async function salvarAutomatico() { 
             sanitizarDados();
             
-            localStorage.setItem('triplast_dados_v13', JSON.stringify({
+            localStorage.setItem('triplast_dados_v14', JSON.stringify({
                 maquinas, 
                 produtos: produtosGlobais, 
                 operadores: operadoresGlobais, 
@@ -920,12 +922,8 @@
             
             if(confirm(`Você digitou ${qtd} peças. Isso representa ${perc}% da meta de ${maq.opAtiva.meta}. Confirma lançamento por "${motivo}"?`)) {
                 maq.opAtiva.refugo += qtd; 
-                
-                // SALVA A MEMÓRIA DO MOTIVO DE REFUGO
                 maq.ultimoMotivoRefugo = motivo; 
-                
                 document.getElementById(`refugo-qtd-${id}`).value = ""; 
-                
                 renderPainel(); 
                 renderResumo(); 
                 salvarAutomatico();
@@ -949,13 +947,8 @@
                 if(maq.fila.length > 0) { 
                     const p = maq.fila.shift(); 
                     maq.opAtiva = { 
-                        op: p.op, 
-                        prod: p.prod, 
-                        meta: p.meta, 
-                        boas: p.boas || 0, 
-                        refugo: p.refugo || 0, 
-                        ciclo: p.ciclo || 1, 
-                        cavs: p.cavs || 1 
+                        op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, 
+                        refugo: p.refugo || 0, ciclo: p.ciclo || 1, cavs: p.cavs || 1 
                     }; 
                     maq.status = "04-PRODUÇÃO"; 
                 } else { 
@@ -963,10 +956,7 @@
                     maq.status = "22-SEM PROGRAMAÇÃO"; 
                 }
                 
-                renderPainel(); 
-                renderResumo(); 
-                renderHistorico(); 
-                salvarAutomatico();
+                renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
             }
         }
 
@@ -983,9 +973,7 @@
                     maq.status = "22-SEM PROGRAMAÇÃO"; 
                 }
                 
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
+                renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
 
@@ -1004,9 +992,7 @@
                 maq.opAtiva = opEscolhida; 
                 maq.status = "04-PRODUÇÃO";
                 
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
+                renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
 
@@ -1021,9 +1007,7 @@
             
             if(nome && ciclo && cav && peso) {
                 produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso });
-                renderCatalogo(); 
-                atualizarSelectProdutos(); 
-                salvarAutomatico();
+                renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();
                 
                 document.getElementById('novo-produto-nome').value = ""; 
                 document.getElementById('novo-produto-ciclo').value = ""; 
@@ -1065,14 +1049,14 @@
 
             if(meta > 0 && ciclo > 0 && cav > 0) {
                 const totalSec = (meta / cav) * ciclo; 
-                document.getElementById('res-tempo').innerText = `${Math.floor(totalSec/3600)}h ${Math.floor((totalSec%3600)/60)}m`;
+                document.getElementById('res-tempo').innerText = fmtTm(totalSec);
                 
                 const kgBruto = ((meta / cav) * peso) / 1000; 
                 const kgTotal = kgBruto + (kgBruto * (pigm / 100));
                 
                 document.getElementById('res-material').innerText = `${kgTotal.toFixed(3)} KG`;
             } else { 
-                document.getElementById('res-tempo').innerText = "00h 00m"; 
+                document.getElementById('res-tempo').innerText = "00:00:00"; 
                 document.getElementById('res-material').innerText = "0.000 KG"; 
             }
         }
@@ -1085,21 +1069,14 @@
             
             if(op && prodSel.value && meta) {
                 maquinas.find(m => m.id === mId).fila.push({ 
-                    op, 
-                    prod: prodSel.options[prodSel.selectedIndex].text, 
-                    meta,
-                    ciclo: document.getElementById('c-ciclo').value, 
-                    cavs: document.getElementById('c-cav').value, 
-                    material: document.getElementById('res-material').innerText 
+                    op, prod: prodSel.options[prodSel.selectedIndex].text, meta,
+                    ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, material: document.getElementById('res-material').innerText 
                 });
                 
                 alert(`O.P ${op} enviada para a fila da máquina ${mId.toUpperCase()}!`); 
-                document.getElementById('f-op').value = ""; 
-                document.getElementById('c-meta').value = ""; 
-                document.getElementById('f-prod-select').value = "";
+                document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
                 
-                renderPainel(); 
-                salvarAutomatico();
+                renderPainel(); salvarAutomatico();
             } else { 
                 alert("Preencha O.P, selecione a Peça e a Meta!"); 
             }
@@ -1191,7 +1168,6 @@
             const agora = new Date();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
             
-            // Verifica mês
             if (agora.getMonth() !== dadosMensais.mesAtual) {
                 dadosMensais.mesAtual = agora.getMonth();
                 dadosMensais.metaAtualSec = 0;
@@ -1206,11 +1182,9 @@
                     } 
                 });
                 
-                salvarAutomatico(); 
-                renderPainel(); 
+                salvarAutomatico(); renderPainel(); 
             }
 
-            // Atualiza Turno no menu
             const selTurno = document.getElementById('select-turno');
             const optAuto = document.getElementById('opt-auto');
             const mTotal = agora.getHours() * 60 + agora.getMinutes();
@@ -1222,7 +1196,6 @@
             if(optAuto) optAuto.innerText = "Atual: " + textAuto;
             if(turnoForcado && turnoForcado !== "auto") selTurno.value = turnoForcado;
 
-            // Fim de Semana
             const isWeekend = (agora.getDay() === 0 || agora.getDay() === 6);
             let contarTempo = true;
             let maqTrabalhando = false;
@@ -1243,14 +1216,10 @@
                 document.getElementById('badge-fds').classList.add('hidden');
             }
 
-            // ==========================================
-            // LÓGICA DE 1 EM 1 SEGUNDO (TRAVA)
-            // ==========================================
             if(contarTempo) {
                 let pProd = false, pBaixa = false, pParada = false, pNeutro = false;
                 
                 maquinas.forEach(m => {
-                    
                     if(m.status === "04-PRODUÇÃO") { 
                         m.tempos.prod++; maqTrabalhando = true; pProd = true; 
                     }
@@ -1264,7 +1233,6 @@
                         m.tempos.parado++; pParada = true; 
                     } 
                     
-                    // Atualiza contador da máquina na tela
                     if(document.getElementById(`t-prod-${m.id}`)) {
                         document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
                         document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
@@ -1272,7 +1240,6 @@
                         document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
                     }
                     
-                    // Cálculo OEE ao vivo
                     if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
                         let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado;
                         let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
@@ -1286,7 +1253,6 @@
                         if(perf > 1) perf = 1; 
                         
                         let qual = real > 0 ? (m.opAtiva.boas / real) : 0;
-                        
                         let oee = disp * perf * qual;
                         
                         document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%';
@@ -1296,19 +1262,12 @@
                     }
                 });
 
-                // Aqui está a Mágica: Se 4 máquinas estiverem em produção, a fábrica computa só +1 segundo de Produção.
-                if(pProd) {
-                    dadosMensais.plantTempos.prod++;
-                } else if(pBaixa) {
-                    dadosMensais.plantTempos.baixa++;
-                } else if(pParada) {
-                    dadosMensais.plantTempos.parado++;
-                } else if(pNeutro) {
-                    dadosMensais.plantTempos.neutro++;
-                }
+                if(pProd) { dadosMensais.plantTempos.prod++; } 
+                else if(pBaixa) { dadosMensais.plantTempos.baixa++; } 
+                else if(pParada) { dadosMensais.plantTempos.parado++; } 
+                else if(pNeutro) { dadosMensais.plantTempos.neutro++; }
             }
 
-            // Meta Mensal
             const limiteSec = 1628 * 3600;
             if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
                 dadosMensais.metaAtualSec++;
@@ -1319,26 +1278,26 @@
 
             if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
-            // Atualiza os Gráficos do Telão em Tempo Real
+            // AQUI ESTÁ A MUDANÇA: O GRÁFICO E OS CONTADORES AGORA MOSTRAM HH:MM:SS
             if (chartStatusInstance) {
-                let pMin = (dadosMensais.plantTempos.prod / 60).toFixed(1);
-                let bMin = (dadosMensais.plantTempos.baixa / 60).toFixed(1);
-                let paMin = (dadosMensais.plantTempos.parado / 60).toFixed(1);
-                let nMin = (dadosMensais.plantTempos.neutro / 60).toFixed(1);
+                let pSec = dadosMensais.plantTempos.prod;
+                let bSec = dadosMensais.plantTempos.baixa;
+                let paSec = dadosMensais.plantTempos.parado;
+                let nSec = dadosMensais.plantTempos.neutro;
 
-                document.getElementById('lbl-chart-prod').innerHTML = pMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
-                document.getElementById('lbl-chart-baixa').innerHTML = bMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
-                document.getElementById('lbl-chart-parado').innerHTML = paMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
-                document.getElementById('lbl-chart-neutro').innerHTML = nMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
+                document.getElementById('lbl-chart-prod').innerText = fmtTm(pSec);
+                document.getElementById('lbl-chart-baixa').innerText = fmtTm(bSec);
+                document.getElementById('lbl-chart-parado').innerText = fmtTm(paSec);
+                document.getElementById('lbl-chart-neutro').innerText = fmtTm(nSec);
 
-                chartStatusInstance.data.datasets[0].data = [pMin, bMin, paMin, nMin];
+                chartStatusInstance.data.datasets[0].data = [pSec, bSec, paSec, nSec];
                 chartStatusInstance.update('none'); 
             }
 
         }, 1000);
 
         // ==========================================
-        // 12. GRÁFICOS
+        // 12. GRÁFICOS (COM TOOLTIP FORMATADA HH:MM:SS)
         // ==========================================
         function alterarFiltroGrafico(valor) { 
             filtroGraficoId = valor; 
@@ -1355,10 +1314,10 @@
                     labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], 
                     datasets: [{ 
                         data: [
-                            (dadosMensais.plantTempos.prod / 60).toFixed(1), 
-                            (dadosMensais.plantTempos.baixa / 60).toFixed(1), 
-                            (dadosMensais.plantTempos.parado / 60).toFixed(1), 
-                            (dadosMensais.plantTempos.neutro / 60).toFixed(1)
+                            dadosMensais.plantTempos.prod, 
+                            dadosMensais.plantTempos.baixa, 
+                            dadosMensais.plantTempos.parado, 
+                            dadosMensais.plantTempos.neutro
                         ], 
                         backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'],
                         borderWidth: 2,
@@ -1373,7 +1332,8 @@
                             padding: 12,
                             callbacks: {
                                 label: function(context) {
-                                    return ' ' + context.label + ': ' + context.raw + ' minutos';
+                                    // TRANSFORMA OS SEGUNDOS DO GRÁFICO EM HH:MM:SS AO PASSAR O MOUSE
+                                    return ' ' + context.label + ': ' + fmtTm(context.raw);
                                 }
                             }
                         }
@@ -1425,4 +1385,3 @@
     </script>
 </body>
 </html>
-
