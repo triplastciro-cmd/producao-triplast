@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema MES V13 (OEE, Telão & Nuvem)</title>
+    <title>Triplast - Sistema MES V13.1 (OEE & Telão)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -90,7 +90,6 @@
             max-height: 450px;
         }
 
-        /* TAB BOTÕES */
         .tab-btn {
             background: white; 
             padding: 12px 24px; 
@@ -373,9 +372,30 @@
                 </div>
                 
                 <div class="grid grid-cols-1 gap-8">
+                    
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                         <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Status da Fábrica (Minutos Reais)</h3>
-                        <div class="h-[400px] md:h-[600px] relative"><canvas id="chartStatus"></canvas></div>
+                        
+                        <div class="grid grid-cols-4 gap-2 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
+                            <div class="text-center border-r border-slate-200">
+                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Produção</span>
+                                <span id="lbl-chart-prod" class="text-lg md:text-2xl font-black text-green-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                            </div>
+                            <div class="text-center border-r border-slate-200">
+                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Baixa Efi.</span>
+                                <span id="lbl-chart-baixa" class="text-lg md:text-2xl font-black text-orange-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                            </div>
+                            <div class="text-center border-r border-slate-200">
+                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Parada</span>
+                                <span id="lbl-chart-parado" class="text-lg md:text-2xl font-black text-red-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                            </div>
+                            <div class="text-center">
+                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Neutro</span>
+                                <span id="lbl-chart-neutro" class="text-lg md:text-2xl font-black text-slate-500">0.0<span class="text-xs ml-1 text-slate-400">min</span></span>
+                            </div>
+                        </div>
+
+                        <div class="h-[300px] md:h-[500px] relative"><canvas id="chartStatus"></canvas></div>
                     </div>
                     
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
@@ -392,6 +412,7 @@
                         <h3 class="font-black text-blue-500 text-sm uppercase mb-4 text-center tracking-widest"><i class="fa-solid fa-bolt"></i> Horas Extras Cumpridas</h3>
                         <div class="h-[400px] md:h-[500px]"><canvas id="chartHoraExtra"></canvas></div>
                     </div>
+
                 </div>
             </div>
 
@@ -413,9 +434,7 @@
     </div>
 
     <script>
-        // ==========================================
-        // FUNÇÃO GLOBAL DE FORMATAÇÃO DE TEMPO
-        // ==========================================
+        // Formatação de Tempo (Transforma Segundos em HH:MM:SS)
         const fmtTm = s => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
 
         // ==========================================
@@ -461,31 +480,12 @@
         ];
 
         const statusMaquinasList = [
-            "01-TROCA DE MOLDE",
-            "02-TROCA DE POSTIÇO",
-            "03-MATÉRIA-PRIMA / AJUSTE",
-            "04-PRODUÇÃO",
-            "05-AQUECIMENTO DE MÁQUINA",
-            "06-TROCA DE COR",
-            "07-MANUTENÇÃO GELADEIRA",
-            "08-LANCHE",
-            "09-LIMPEZA",
-            "10-PEÇA PRESA NO MOLDE",
-            "11-INÍCIO DE PROCESSO",
-            "12-FALTA DE ENERGIA ELÉTRICA",
-            "13-MANUTENÇÃO DE MOLDE",
-            "14-MANUTENÇÃO DE MÁQUINA",
-            "15-PROBLEMA AR",
-            "16-PROBLEMA CÂMARA QUENTE",
-            "17-TROCA DE BICO DE INJEÇÃO",
-            "18-OUTROS",
-            "19-ELÉTRICA DE MOLDE",
-            "20-FALTA DE OPERADOR",
-            "21-BAIXA EFICIÊNCIA",
-            "22-SEM PROGRAMAÇÃO",
-            "23-EMPRESA FECHADA",
-            "24-PARADA PROGRAMADA",
-            "25-FIM DE SEMANA (PAUSADO)"
+            "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATÉRIA-PRIMA / AJUSTE", "04-PRODUÇÃO", 
+            "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", "08-LANCHE", 
+            "09-LIMPEZA", "10-PEÇA PRESA NO MOLDE", "11-INÍCIO DE PROCESSO", "12-FALTA DE ENERGIA ELÉTRICA", 
+            "13-MANUTENÇÃO DE MOLDE", "14-MANUTENÇÃO DE MÁQUINA", "15-PROBLEMA AR", "16-PROBLEMA CÂMARA QUENTE", 
+            "17-TROCA DE BICO DE INJEÇÃO", "18-OUTROS", "19-ELÉTRICA DE MOLDE", "20-FALTA DE OPERADOR", 
+            "21-BAIXA EFICIÊNCIA", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)"
         ];
         
         const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
@@ -737,11 +737,23 @@
                             <span class="text-xs font-black text-slate-500 uppercase truncate bg-white px-3 py-1.5 rounded-lg border border-slate-200">${prodNome}</span>
                         </div>
                         
-                        <div class="flex justify-between items-center bg-slate-800 p-2 rounded-xl text-[10px] md:text-xs font-mono mb-4 text-center border border-slate-700 shadow-inner">
-                            <div class="flex-1 border-r border-slate-600"><span class="text-slate-400 block text-[8px] uppercase tracking-widest">Produzindo</span><span id="t-prod-${m.id}" class="text-green-400 font-black">${fmtTm(m.tempos.prod)}</span></div>
-                            <div class="flex-1 border-r border-slate-600"><span class="text-slate-400 block text-[8px] uppercase tracking-widest">Baixa Efi.</span><span id="t-baixa-${m.id}" class="text-orange-400 font-black">${fmtTm(m.tempos.baixa)}</span></div>
-                            <div class="flex-1 border-r border-slate-600"><span class="text-slate-400 block text-[8px] uppercase tracking-widest">Parada</span><span id="t-parado-${m.id}" class="text-red-400 font-black">${fmtTm(m.tempos.parado)}</span></div>
-                            <div class="flex-1"><span class="text-slate-400 block text-[8px] uppercase tracking-widest">Neutro</span><span id="t-neutro-${m.id}" class="text-slate-300 font-black">${fmtTm(m.tempos.neutro)}</span></div>
+                        <div class="flex justify-between items-center bg-slate-800 p-3 rounded-xl text-[10px] md:text-xs font-mono mb-4 text-center border border-slate-700 shadow-inner">
+                            <div class="flex-1 border-r border-slate-600">
+                                <span class="text-slate-400 block text-[8px] uppercase tracking-widest">Produzindo</span>
+                                <span id="t-prod-${m.id}" class="text-green-400 font-black text-sm">${fmtTm(m.tempos.prod)}</span>
+                            </div>
+                            <div class="flex-1 border-r border-slate-600">
+                                <span class="text-slate-400 block text-[8px] uppercase tracking-widest">Baixa Efi.</span>
+                                <span id="t-baixa-${m.id}" class="text-orange-400 font-black text-sm">${fmtTm(m.tempos.baixa)}</span>
+                            </div>
+                            <div class="flex-1 border-r border-slate-600">
+                                <span class="text-slate-400 block text-[8px] uppercase tracking-widest">Parada</span>
+                                <span id="t-parado-${m.id}" class="text-red-400 font-black text-sm">${fmtTm(m.tempos.parado)}</span>
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-slate-400 block text-[8px] uppercase tracking-widest">Neutro</span>
+                                <span id="t-neutro-${m.id}" class="text-slate-300 font-black text-sm">${fmtTm(m.tempos.neutro)}</span>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-3 gap-3 md:gap-6 mb-5">
@@ -852,10 +864,12 @@
                             <div class="bg-red-50/50 p-5 md:p-6 rounded-[24px] border border-red-200 text-center flex flex-col justify-between shadow-inner">
                                 <label class="text-xs md:text-sm font-black text-red-500 uppercase mb-3 tracking-widest"><i class="fa-solid fa-recycle mr-1"></i> Refugo (Qtd. de Peças)</label>
                                 <input type="number" id="refugo-qtd-${m.id}" placeholder="Ex: 2" class="input-industrial border-red-300 text-red-800 mb-2 !p-3 md:!p-4 bg-white shadow-sm text-lg">
+                                
                                 <select id="motivo-${m.id}" class="w-full text-xs font-bold p-3 md:p-4 rounded-xl border border-red-300 outline-none text-red-700 bg-white mb-4 shadow-sm">
                                     <option value="">Motivo da perda...</option>
                                     ${motivosRefugo.map(mot => `<option value="${mot}" ${m.ultimoMotivoRefugo === mot ? 'selected' : ''}>${mot}</option>`).join('')}
                                 </select>
+                                
                                 <button onclick="lancarRefugoManual('${m.id}')" class="w-full bg-red-100 border-2 border-red-400 text-red-600 py-3 md:py-4 rounded-xl font-black uppercase shadow-sm hover:bg-red-500 hover:text-white transition-all text-sm tracking-widest">
                                     LANÇAR REFUGO
                                 </button>
@@ -907,7 +921,7 @@
             if(confirm(`Você digitou ${qtd} peças. Isso representa ${perc}% da meta de ${maq.opAtiva.meta}. Confirma lançamento por "${motivo}"?`)) {
                 maq.opAtiva.refugo += qtd; 
                 
-                // SALVA A MEMÓRIA DO MOTIVO DE REFUGO PARA O OPERADOR NÃO PERDER TEMPO
+                // SALVA A MEMÓRIA DO MOTIVO DE REFUGO
                 maq.ultimoMotivoRefugo = motivo; 
                 
                 document.getElementById(`refugo-qtd-${id}`).value = ""; 
@@ -1171,13 +1185,13 @@
         }
 
         // ==========================================
-        // 11. MOTOR DO TEMPO REAL E OEE (Coração do MES)
+        // 11. MOTOR DO TEMPO REAL E OEE
         // ==========================================
         setInterval(() => {
             const agora = new Date();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
             
-            // VERIFICA SE O MÊS VIROU E ZERA OS TEMPOS
+            // Verifica mês
             if (agora.getMonth() !== dadosMensais.mesAtual) {
                 dadosMensais.mesAtual = agora.getMonth();
                 dadosMensais.metaAtualSec = 0;
@@ -1196,7 +1210,7 @@
                 renderPainel(); 
             }
 
-            // TURNO AUTOMÁTICO
+            // Atualiza Turno no menu
             const selTurno = document.getElementById('select-turno');
             const optAuto = document.getElementById('opt-auto');
             const mTotal = agora.getHours() * 60 + agora.getMinutes();
@@ -1208,7 +1222,7 @@
             if(optAuto) optAuto.innerText = "Atual: " + textAuto;
             if(turnoForcado && turnoForcado !== "auto") selTurno.value = turnoForcado;
 
-            // FIM DE SEMANA
+            // Fim de Semana
             const isWeekend = (agora.getDay() === 0 || agora.getDay() === 6);
             let contarTempo = true;
             let maqTrabalhando = false;
@@ -1229,12 +1243,14 @@
                 document.getElementById('badge-fds').classList.add('hidden');
             }
 
-            // CONTAGEM DE TEMPOS E OEE
+            // ==========================================
+            // LÓGICA DE 1 EM 1 SEGUNDO (TRAVA)
+            // ==========================================
             if(contarTempo) {
                 let pProd = false, pBaixa = false, pParada = false, pNeutro = false;
                 
                 maquinas.forEach(m => {
-                    // CÁLCULO DOS STATUS
+                    
                     if(m.status === "04-PRODUÇÃO") { 
                         m.tempos.prod++; maqTrabalhando = true; pProd = true; 
                     }
@@ -1248,7 +1264,7 @@
                         m.tempos.parado++; pParada = true; 
                     } 
                     
-                    // ATUALIZA OS CONTADORES DA MÁQUINA AO VIVO (Sem recarregar a tela inteira)
+                    // Atualiza contador da máquina na tela
                     if(document.getElementById(`t-prod-${m.id}`)) {
                         document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
                         document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
@@ -1256,11 +1272,8 @@
                         document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
                     }
                     
-                    // ==========================================
-                    // CÁLCULO OEE (AO VIVO)
-                    // ==========================================
+                    // Cálculo OEE ao vivo
                     if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
-                        
                         let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado;
                         let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
                         
@@ -1283,14 +1296,19 @@
                     }
                 });
 
-                // Soma global para os gráficos gerais
-                if(pProd) dadosMensais.plantTempos.prod++;
-                if(pBaixa) dadosMensais.plantTempos.baixa++;
-                if(pParada) dadosMensais.plantTempos.parado++;
-                if(pNeutro) dadosMensais.plantTempos.neutro++;
+                // Aqui está a Mágica: Se 4 máquinas estiverem em produção, a fábrica computa só +1 segundo de Produção.
+                if(pProd) {
+                    dadosMensais.plantTempos.prod++;
+                } else if(pBaixa) {
+                    dadosMensais.plantTempos.baixa++;
+                } else if(pParada) {
+                    dadosMensais.plantTempos.parado++;
+                } else if(pNeutro) {
+                    dadosMensais.plantTempos.neutro++;
+                }
             }
 
-            // META DE HORAS MENSAL
+            // Meta Mensal
             const limiteSec = 1628 * 3600;
             if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
                 dadosMensais.metaAtualSec++;
@@ -1301,21 +1319,26 @@
 
             if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
-            // Atualiza Gráfico de Status na Aba de Gráficos em MINUTOS
+            // Atualiza os Gráficos do Telão em Tempo Real
             if (chartStatusInstance) {
-                chartStatusInstance.data.datasets[0].data = [
-                    (dadosMensais.plantTempos.prod / 60).toFixed(1), 
-                    (dadosMensais.plantTempos.baixa / 60).toFixed(1), 
-                    (dadosMensais.plantTempos.parado / 60).toFixed(1), 
-                    (dadosMensais.plantTempos.neutro / 60).toFixed(1)
-                ];
+                let pMin = (dadosMensais.plantTempos.prod / 60).toFixed(1);
+                let bMin = (dadosMensais.plantTempos.baixa / 60).toFixed(1);
+                let paMin = (dadosMensais.plantTempos.parado / 60).toFixed(1);
+                let nMin = (dadosMensais.plantTempos.neutro / 60).toFixed(1);
+
+                document.getElementById('lbl-chart-prod').innerHTML = pMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
+                document.getElementById('lbl-chart-baixa').innerHTML = bMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
+                document.getElementById('lbl-chart-parado').innerHTML = paMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
+                document.getElementById('lbl-chart-neutro').innerHTML = nMin + '<span class="text-[10px] md:text-xs ml-1 text-slate-400">min</span>';
+
+                chartStatusInstance.data.datasets[0].data = [pMin, bMin, paMin, nMin];
                 chartStatusInstance.update('none'); 
             }
 
         }, 1000);
 
         // ==========================================
-        // 12. GRÁFICOS (PARA O TELÃO)
+        // 12. GRÁFICOS
         // ==========================================
         function alterarFiltroGrafico(valor) { 
             filtroGraficoId = valor; 
@@ -1329,7 +1352,7 @@
             chartStatusInstance = new Chart(ctxStatus, { 
                 type: 'pie', 
                 data: { 
-                    labels: ['Produzindo (Minutos)', 'Baixa Efi. (Minutos)', 'Paradas (Minutos)', 'Neutro (Minutos)'], 
+                    labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], 
                     datasets: [{ 
                         data: [
                             (dadosMensais.plantTempos.prod / 60).toFixed(1), 
@@ -1337,10 +1360,25 @@
                             (dadosMensais.plantTempos.parado / 60).toFixed(1), 
                             (dadosMensais.plantTempos.neutro / 60).toFixed(1)
                         ], 
-                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'] 
+                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'],
+                        borderWidth: 2,
+                        hoverOffset: 10
                     }] 
                 }, 
-                options: { maintainAspectRatio: false } 
+                options: { 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            bodyFont: { size: 16, weight: 'bold' },
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label + ': ' + context.raw + ' minutos';
+                                }
+                            }
+                        }
+                    }
+                } 
             });
             
             new Chart(document.getElementById('chartGeral'), { 
