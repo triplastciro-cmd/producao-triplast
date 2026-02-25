@@ -136,7 +136,7 @@
 
     <div id="toast-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-slate-800 text-green-400 px-6 py-3 rounded-full shadow-2xl z-[999] hidden flex items-center gap-2 border border-slate-600 transition-all">
         <span id="status-nuvem" class="text-lg">☁️</span>
-        <span class="text-[10px] font-black uppercase tracking-widest" id="toast-msg">Salvo na Nuvem</span>
+        <span class="text-[10px] font-black uppercase tracking-widest" id="toast-msg">Nuvem Atualizada</span>
     </div>
 
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-all duration-500">
@@ -437,7 +437,10 @@
         // ==========================================
         // FUNÇÃO GLOBAL DE FORMATAÇÃO DE TEMPO (00:00:00)
         // ==========================================
-        const fmtTm = s => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+        const fmtTm = s => {
+            let tempo = Math.floor(s);
+            return `${Math.floor(tempo/3600).toString().padStart(2,'0')}:${Math.floor((tempo%3600)/60).toString().padStart(2,'0')}:${(tempo%60).toString().padStart(2,'0')}`;
+        };
 
         // ==========================================
         // 1. CONFIGURAÇÃO DO BANCO DE DADOS
@@ -457,6 +460,9 @@
         let saveTimeout;
         let filtroGraficoId = 'hoje';
         let turnoForcado = null; 
+        
+        // Timestamp para a sincronização
+        let lastSyncTs = parseInt(localStorage.getItem('triplast_ts')) || 0;
         
         let dadosMensais = { 
             mesAtual: new Date().getMonth(), 
@@ -519,10 +525,10 @@
         };
 
         // ==========================================
-        // 3. CACHE LOCAL E SEGURANÇA MULTI-DISPOSITIVO
+        // 3. CACHE LOCAL E MOTOR DE SINCRONIZAÇÃO
         // ==========================================
         function carregarDadosLocais() {
-            const memory = localStorage.getItem('triplast_dados_v14');
+            const memory = localStorage.getItem('triplast_dados_v16');
             if(memory) {
                 try {
                     const db = JSON.parse(memory);
@@ -537,6 +543,37 @@
                 }
             }
         }
+
+        // FUNÇÃO NOVA: Sincroniza dados da nuvem em tempo real (para Notebook/Tablet)
+        async function sincronizarNuvem() {
+            if(!sb) return;
+            try {
+                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
+                    const db = data.conteudo;
+                    
+                    maquinas = db.maquinas || maquinas;
+                    produtosGlobais = db.produtos || produtosGlobais;
+                    operadoresGlobais = db.operadores || operadoresGlobais;
+                    historico = db.historico || historico;
+                    dadosMensais = db.dadosMensais || dadosMensais;
+                    modoHoraExtra = db.modoHoraExtra || false;
+                    
+                    lastSyncTs = db.ts;
+                    localStorage.setItem('triplast_ts', lastSyncTs);
+                    
+                    // Atualiza a tela que estiver aberta no momento
+                    if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
+                    if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
+                    if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
+                    renderCatalogo(); 
+                    atualizarSelectProdutos();
+                }
+            } catch(e) { console.error("Erro no motor de sync", e); }
+        }
+
+        // Roda a sincronização a cada 5 segundos
+        setInterval(sincronizarNuvem, 5000);
 
         function sanitizarDados() {
             maquinas.forEach(m => {
@@ -562,7 +599,10 @@
         async function salvarAutomatico() { 
             sanitizarDados();
             
-            localStorage.setItem('triplast_dados_v14', JSON.stringify({
+            lastSyncTs = Date.now();
+            localStorage.setItem('triplast_ts', lastSyncTs);
+            
+            localStorage.setItem('triplast_dados_v16', JSON.stringify({
                 maquinas, 
                 produtos: produtosGlobais, 
                 operadores: operadoresGlobais, 
@@ -591,11 +631,11 @@
                         historico, 
                         dadosMensais, 
                         modoHoraExtra, 
-                        ts: Date.now() 
+                        ts: lastSyncTs 
                     } 
                 }).eq('id', 1);
             }
-            showToast("Sincronizado");
+            showToast("Nuvem Atualizada");
         }
 
         function showToast(msg) {
@@ -936,7 +976,6 @@
             }
         }
 
-        // --- FUNÇÕES DE ZERAR (RESET) ---
         function zerarRefugo(id) {
             const maq = maquinas.find(m => m.id === id);
             if(!maq.opAtiva) { alert("Nenhuma O.P ativa nesta máquina."); return; }
@@ -960,7 +999,6 @@
                 salvarAutomatico();
             }
         }
-        // --------------------------------
 
         function concluirOP(id) {
             const maq = maquinas.find(m => m.id === id);
@@ -979,8 +1017,13 @@
                 if(maq.fila.length > 0) { 
                     const p = maq.fila.shift(); 
                     maq.opAtiva = { 
-                        op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, 
-                        refugo: p.refugo || 0, ciclo: p.ciclo || 1, cavs: p.cavs || 1 
+                        op: p.op, 
+                        prod: p.prod, 
+                        meta: p.meta, 
+                        boas: p.boas || 0, 
+                        refugo: p.refugo || 0, 
+                        ciclo: p.ciclo || 1, 
+                        cavs: p.cavs || 1 
                     }; 
                     maq.status = "04-PRODUÇÃO"; 
                 } else { 
@@ -988,7 +1031,10 @@
                     maq.status = "22-SEM PROGRAMAÇÃO"; 
                 }
                 
-                renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
+                renderPainel(); 
+                renderResumo(); 
+                renderHistorico(); 
+                salvarAutomatico();
             }
         }
 
@@ -1005,7 +1051,9 @@
                     maq.status = "22-SEM PROGRAMAÇÃO"; 
                 }
                 
-                renderPainel(); renderResumo(); salvarAutomatico();
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
             }
         }
 
@@ -1024,7 +1072,9 @@
                 maq.opAtiva = opEscolhida; 
                 maq.status = "04-PRODUÇÃO";
                 
-                renderPainel(); renderResumo(); salvarAutomatico();
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
             }
         }
 
@@ -1039,7 +1089,9 @@
             
             if(nome && ciclo && cav && peso) {
                 produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso });
-                renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();
+                renderCatalogo(); 
+                atualizarSelectProdutos(); 
+                salvarAutomatico();
                 
                 document.getElementById('novo-produto-nome').value = ""; 
                 document.getElementById('novo-produto-ciclo').value = ""; 
@@ -1101,14 +1153,21 @@
             
             if(op && prodSel.value && meta) {
                 maquinas.find(m => m.id === mId).fila.push({ 
-                    op, prod: prodSel.options[prodSel.selectedIndex].text, meta,
-                    ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, material: document.getElementById('res-material').innerText 
+                    op, 
+                    prod: prodSel.options[prodSel.selectedIndex].text, 
+                    meta,
+                    ciclo: document.getElementById('c-ciclo').value, 
+                    cavs: document.getElementById('c-cav').value, 
+                    material: document.getElementById('res-material').innerText 
                 });
                 
                 alert(`O.P ${op} enviada para a fila da máquina ${mId.toUpperCase()}!`); 
-                document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
+                document.getElementById('f-op').value = ""; 
+                document.getElementById('c-meta').value = ""; 
+                document.getElementById('f-prod-select').value = "";
                 
-                renderPainel(); salvarAutomatico();
+                renderPainel(); 
+                salvarAutomatico();
             } else { 
                 alert("Preencha O.P, selecione a Peça e a Meta!"); 
             }
@@ -1194,7 +1253,7 @@
         }
 
         // ==========================================
-        // 11. MOTOR DO TEMPO REAL E OEE
+        // 11. MOTOR DO TEMPO REAL PROPORCIONAL
         // ==========================================
         setInterval(() => {
             const agora = new Date();
@@ -1214,7 +1273,8 @@
                     } 
                 });
                 
-                salvarAutomatico(); renderPainel(); 
+                salvarAutomatico(); 
+                renderPainel(); 
             }
 
             const selTurno = document.getElementById('select-turno');
@@ -1249,20 +1309,24 @@
             }
 
             if(contarTempo) {
-                let pProd = false, pBaixa = false, pParada = false, pNeutro = false;
+                // Variáveis para a regra proporcional da fábrica
+                let cProd = 0, cBaixa = 0, cParada = 0, cNeutro = 0;
+                let maquinasAtivas = 0;
                 
                 maquinas.forEach(m => {
+                    maquinasAtivas++;
+                    
                     if(m.status === "04-PRODUÇÃO") { 
-                        m.tempos.prod++; maqTrabalhando = true; pProd = true; 
+                        m.tempos.prod++; cProd++; maqTrabalhando = true; 
                     }
-                    else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") { 
-                        m.tempos.baixa++; maqTrabalhando = true; pBaixa = true; 
+                    else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { 
+                        m.tempos.baixa++; cBaixa++; maqTrabalhando = true; 
                     }
                     else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE"].includes(m.status)) { 
-                        m.tempos.neutro++; pNeutro = true; 
+                        m.tempos.neutro++; cNeutro++; 
                     }
                     else { 
-                        m.tempos.parado++; pParada = true; 
+                        m.tempos.parado++; cParada++; 
                     } 
                     
                     if(document.getElementById(`t-prod-${m.id}`)) {
@@ -1294,10 +1358,14 @@
                     }
                 });
 
-                if(pProd) { dadosMensais.plantTempos.prod++; } 
-                else if(pBaixa) { dadosMensais.plantTempos.baixa++; } 
-                else if(pParada) { dadosMensais.plantTempos.parado++; } 
-                else if(pNeutro) { dadosMensais.plantTempos.neutro++; }
+                // NOVO CÁLCULO PARA O GRÁFICO (PROPORCIONAL)
+                // Se o total de máquinas for 4, dividimos exatamente 1 segundo entre elas.
+                if (maquinasAtivas > 0) {
+                    dadosMensais.plantTempos.prod += (cProd / maquinasAtivas);
+                    dadosMensais.plantTempos.baixa += (cBaixa / maquinasAtivas);
+                    dadosMensais.plantTempos.parado += (cParada / maquinasAtivas);
+                    dadosMensais.plantTempos.neutro += (cNeutro / maquinasAtivas);
+                }
             }
 
             const limiteSec = 1628 * 3600;
@@ -1310,7 +1378,7 @@
 
             if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
-            // AQUI O GRÁFICO PUXA O FORMATO HH:MM:SS
+            // Atualiza os Contadores e Gráficos da Fábrica em Formato HH:MM:SS
             if (chartStatusInstance) {
                 let pSec = dadosMensais.plantTempos.prod;
                 let bSec = dadosMensais.plantTempos.baixa;
