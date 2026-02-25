@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema MES V11 (Design Premium)</title>
+    <title>Triplast - Sistema MES V12 (OEE & Nuvem)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,23 +13,49 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         
-        body { background-color: #eef2f6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { 
+            background-color: #eef2f6; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        }
         
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
         /* CARDS INDUSTRIAIS ESTICADOS */
         .card-producao {
-            background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-            border-left: 12px solid #cbd5e1; transition: 0.3s; overflow: hidden;
-            display: flex; flex-direction: column; width: 100%; max-width: 1200px; margin: 0 auto;
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border-left: 12px solid #cbd5e1; 
+            transition: 0.3s; 
+            overflow: hidden;
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            max-width: 1200px; 
+            margin: 0 auto;
         }
+        
         @media (min-width: 1024px) {
             .card-producao { flex-direction: row; }
             .card-esq { flex: 1; padding: 32px; }
-            .card-dir { width: 400px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 32px; display: flex; flex-direction: column;}
+            .card-dir { 
+                width: 400px; 
+                background: #f8fafc; 
+                border-left: 1px solid #e2e8f0; 
+                padding: 32px; 
+                display: flex; 
+                flex-direction: column;
+            }
         }
+        
         @media (max-width: 1023px) {
             .card-esq { padding: 16px; }
             .card-dir { padding: 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
@@ -42,26 +68,62 @@
         .status-fds { border-left-color: #475569 !important; background-color: #f1f5f9; }
 
         .info-badge { 
-            background: #ffffff; padding: 16px; border-radius: 16px; border: 2px solid #e2e8f0; 
-            text-align: center; display: flex; flex-direction: column; justify-content: space-between;
+            background: #ffffff; 
+            padding: 16px; 
+            border-radius: 16px; 
+            border: 2px solid #e2e8f0; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .fila-scroll-vertical {
-            flex: 1; overflow-y: auto; gap: 12px; display: flex; flex-direction: column;
-            padding-right: 5px; scrollbar-width: thin; max-height: 450px;
+            flex: 1; 
+            overflow-y: auto; 
+            gap: 12px; 
+            display: flex; 
+            flex-direction: column;
+            padding-right: 5px; 
+            scrollbar-width: thin; 
+            max-height: 450px;
         }
 
         /* TAB BOTÕES */
         .tab-btn {
-            background: white; padding: 12px 24px; border-radius: 16px; font-weight: 900; 
-            font-size: 12px; color: #64748b; transition: 0.2s; border: 2px solid transparent; text-transform: uppercase;
+            background: white; 
+            padding: 12px 24px; 
+            border-radius: 16px; 
+            font-weight: 900; 
+            font-size: 12px; 
+            color: #64748b; 
+            transition: 0.2s; 
+            border: 2px solid transparent; 
+            text-transform: uppercase;
             white-space: nowrap;
         }
-        .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
+        
+        .tab-btn.active { 
+            background: #3b82f6; 
+            color: white; 
+            border-color: #2563eb; 
+            box-shadow: 0 4px 10px rgba(37,99,235,0.3); 
+        }
 
-        .input-industrial { font-size: 1.5rem; font-weight: 900; text-align: center; border: 2px solid #cbd5e1; border-radius: 12px; padding: 10px; width: 100%; outline: none; }
+        .input-industrial { 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            text-align: center; 
+            border: 2px solid #cbd5e1; 
+            border-radius: 12px; 
+            padding: 10px; 
+            width: 100%; 
+            outline: none; 
+        }
+        
         .input-industrial:focus { border-color: #3b82f6; }
+        
         input[type="number"]::-webkit-inner-spin-button { display: none; }
     </style>
 </head>
@@ -75,7 +137,7 @@
 
     <div id="toast-notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-slate-800 text-green-400 px-6 py-3 rounded-full shadow-2xl z-[999] hidden flex items-center gap-2 border border-slate-600 transition-all">
         <span id="status-nuvem" class="text-lg">☁️</span>
-        <span class="text-[10px] font-black uppercase tracking-widest" id="toast-msg">Salvo no Dispositivo</span>
+        <span class="text-[10px] font-black uppercase tracking-widest" id="toast-msg">Salvo na Nuvem</span>
     </div>
 
     <div id="tela-login" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-all duration-500">
@@ -104,7 +166,6 @@
     <div id="app-content" class="hidden">
         
         <header class="bg-slate-900 text-white px-4 md:px-6 py-4 rounded-b-[32px] shadow-lg mb-6 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-800">
-            
             <div class="flex items-center gap-4 md:gap-8 w-full md:w-auto justify-between md:justify-start">
                 <span class="text-2xl md:text-3xl font-black italic tracking-tighter">TRI<span class="text-blue-500">PLAST</span></span>
                 
@@ -169,11 +230,23 @@
                 <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                     <h2 class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-boxes-stacked text-blue-600"></i> CATÁLOGO DE PRODUTOS</h2>
                     <div class="flex flex-col md:flex-row gap-4 md:items-end mb-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                        <div class="flex-1"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Nome da Peça</label><input type="text" id="novo-produto-nome" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none focus:border-blue-500"></div>
+                        <div class="flex-1">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Nome da Peça</label>
+                            <input type="text" id="novo-produto-nome" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none focus:border-blue-500">
+                        </div>
                         <div class="flex gap-4">
-                            <div class="w-20 md:w-24"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Ciclo (s)</label><input type="number" id="novo-produto-ciclo" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none"></div>
-                            <div class="w-20 md:w-24"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Cavs</label><input type="number" id="novo-produto-cavidades" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none"></div>
-                            <div class="w-24 md:w-32"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Peso (Gramas)</label><input type="number" step="0.001" id="novo-produto-peso" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none"></div>
+                            <div class="w-20 md:w-24">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Ciclo (s)</label>
+                                <input type="number" id="novo-produto-ciclo" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none">
+                            </div>
+                            <div class="w-20 md:w-24">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Cavs</label>
+                                <input type="number" id="novo-produto-cavidades" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none">
+                            </div>
+                            <div class="w-24 md:w-32">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Peso (Gramas)</label>
+                                <input type="number" step="0.001" id="novo-produto-peso" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none">
+                            </div>
                         </div>
                         <button onclick="salvarNovoProduto()" class="w-full md:w-auto bg-blue-600 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-blue-500 shadow-md mt-2 md:mt-0">Salvar</button>
                     </div>
@@ -183,22 +256,42 @@
                 <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                     <h2 class="text-xl md:text-2xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-file-circle-plus text-blue-600"></i> LANÇAR O.P NA PRODUÇÃO</h2>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Máquina</label><select id="f-maq" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none"></select></div>
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Nº O.P</label><input type="text" id="f-op" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none"></div>
-                        <div class="md:col-span-2"><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Selecionar Produto</label>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Máquina</label>
+                            <select id="f-maq" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Nº O.P</label>
+                            <input type="text" id="f-op" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Selecionar Produto</label>
                             <select id="f-prod-select" onchange="autoFillCalculadora()" class="w-full p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl font-bold outline-none"></select>
                         </div>
                     </div>
 
                     <div class="bg-slate-900 p-4 md:p-6 rounded-[24px] mb-6 shadow-inner text-white">
                         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-4">
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Ciclo (s)</label><input type="number" id="c-ciclo" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none"></div>
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Cavidades</label><input type="number" id="c-cav" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none"></div>
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Peso (Gramas)</label><input type="number" id="c-peso" step="0.001" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none"></div>
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Pigmento (%)</label>
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Ciclo (s)</label>
+                                <input type="number" id="c-ciclo" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Cavidades</label>
+                                <input type="number" id="c-cav" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Peso (Gramas)</label>
+                                <input type="number" id="c-peso" step="0.001" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Pigmento (%)</label>
                                 <input type="number" id="c-pigm" value="2" step="0.1" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none text-blue-400">
                             </div>
-                            <div class="col-span-2 md:col-span-1"><label class="text-[10px] font-black text-emerald-400 uppercase mb-1 block">META (PEÇAS)</label><input type="number" id="c-meta" oninput="calcularTudo()" class="w-full p-3 bg-white text-emerald-700 border-2 border-emerald-500 rounded-xl font-black outline-none shadow-[0_0_10px_rgba(16,185,129,0.2)]"></div>
+                            <div class="col-span-2 md:col-span-1">
+                                <label class="text-[10px] font-black text-emerald-400 uppercase mb-1 block">META (PEÇAS)</label>
+                                <input type="number" id="c-meta" oninput="calcularTudo()" class="w-full p-3 bg-white text-emerald-700 border-2 border-emerald-500 rounded-xl font-black outline-none shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                            </div>
                         </div>
                         <div class="flex flex-col md:flex-row gap-4">
                             <div class="flex-1 bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
@@ -224,8 +317,15 @@
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-slate-100 text-slate-500 uppercase font-black text-[10px]">
                                 <tr>
-                                    <th class="p-4">Máquina</th><th class="p-4">O.P Atual</th><th class="p-4">Boas</th><th class="p-4">Refugo</th><th class="p-4">% Perda</th>
-                                    <th class="p-4 text-green-600">T. Prod</th><th class="p-4 text-orange-500">T. Baixa</th><th class="p-4 text-red-600">T. Parado</th><th class="p-4 text-slate-400">T. Neutro</th>
+                                    <th class="p-4">Máquina</th>
+                                    <th class="p-4">O.P Atual</th>
+                                    <th class="p-4">Boas</th>
+                                    <th class="p-4">Refugo</th>
+                                    <th class="p-4">% Perda</th>
+                                    <th class="p-4 text-green-600">T. Prod</th>
+                                    <th class="p-4 text-orange-500">T. Baixa</th>
+                                    <th class="p-4 text-red-600">T. Parado</th>
+                                    <th class="p-4 text-slate-400">T. Neutro</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-resumo" class="font-bold text-slate-700 divide-y divide-slate-100"></tbody>
@@ -246,7 +346,15 @@
                     <div class="overflow-x-auto max-h-[600px]">
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-slate-100 text-slate-500 uppercase font-black text-[10px] sticky top-0 shadow-sm">
-                                <tr><th class="p-4">Data</th><th class="p-4">Máquina</th><th class="p-4">O.P</th><th class="p-4">Produto</th><th class="p-4">Boas</th><th class="p-4">Refugo</th><th class="p-4 text-right">Ação</th></tr>
+                                <tr>
+                                    <th class="p-4">Data</th>
+                                    <th class="p-4">Máquina</th>
+                                    <th class="p-4">O.P</th>
+                                    <th class="p-4">Produto</th>
+                                    <th class="p-4">Boas</th>
+                                    <th class="p-4">Refugo</th>
+                                    <th class="p-4 text-right">Ação</th>
+                                </tr>
                             </thead>
                             <tbody id="tbody-historico" class="font-bold text-slate-600 divide-y divide-slate-100"></tbody>
                         </table>
@@ -257,7 +365,9 @@
             <div id="aba-graficos" class="aba-conteudo space-y-6">
                 <div class="flex justify-end">
                     <select onchange="alterarFiltroGrafico(this.value)" class="bg-white border border-slate-200 p-2 rounded-xl font-bold text-slate-600 outline-none shadow-sm cursor-pointer hover:border-blue-500">
-                        <option value="hoje">Hoje</option><option value="semana">Esta Semana</option><option value="mes">Este Mês</option>
+                        <option value="hoje">Hoje</option>
+                        <option value="semana">Esta Semana</option>
+                        <option value="mes">Este Mês</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -298,10 +408,18 @@
     </div>
 
     <script>
-        const supabaseUrl = 'https://supabase.com/dashboard/project/hgqnlqtvjiyuwnwypxxh'; 
+        // ==========================================
+        // 1. CONFIGURAÇÃO DO BANCO DE DADOS
+        // ==========================================
+        const supabaseUrl = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
+        
         let sb = null;
-        try { sb = window.supabase.createClient(supabaseUrl, supabaseKey); } catch(e) {}
+        try { 
+            sb = window.supabase.createClient(supabaseUrl, supabaseKey); 
+        } catch(e) {
+            console.error("Erro ao conectar no banco de dados.");
+        }
 
         const SENHAS = { admin: '2026', m1: 'm1', m2: 'm2', m3: 'm3', m4: 'm4' };
         let userLogado = "";
@@ -309,12 +427,22 @@
         let filtroGraficoId = 'hoje';
         let turnoForcado = null; 
         
-        let dadosMensais = { mesAtual: new Date().getMonth(), metaAtualSec: 0, horaExtraSec: 0, plantTempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } };
+        let dadosMensais = { 
+            mesAtual: new Date().getMonth(), 
+            metaAtualSec: 0, 
+            horaExtraSec: 0, 
+            plantTempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } 
+        };
+        
         let modoHoraExtra = false;
-        let produtosGlobais = [{ id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45 }, { id: 2, nome: "Balde 20L", ciclo: 45, cav: 1, peso: 500 }];
+        let produtosGlobais = [
+            { id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45 }, 
+            { id: 2, nome: "Balde 20L", ciclo: 45, cav: 1, peso: 500 }
+        ];
+        
         let operadoresGlobais = ["João Silva", "Carlos Souza", "Ana Maria", "Roberto"];
         let historico = [];
-        let coresGlobais = {}; 
+        
         let maquinas = [
             { id: 'm1', nome: 'Injetora M1', status: '04-PRODUÇÃO', operador: '', opAtiva: null, fila: [], tempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } },
             { id: 'm2', nome: 'Injetora M2', status: '22-SEM PROGRAMAÇÃO', operador: '', opAtiva: null, fila: [], tempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } },
@@ -353,14 +481,19 @@
         const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
         let chartStatusInstance = null;
 
+        // ==========================================
+        // 2. INICIALIZAÇÃO
+        // ==========================================
         window.onload = () => {
             carregarDadosLocais(); 
             let userSalvo = localStorage.getItem('triplast_session');
 
             setTimeout(() => {
                 document.getElementById('tela-loading').classList.add('opacity-0');
+                
                 setTimeout(() => { 
                     document.getElementById('tela-loading').classList.add('hidden');
+                    
                     if (userSalvo && SENHAS[userSalvo]) {
                         document.getElementById('login-user').value = userSalvo;
                         document.getElementById('login-pass').value = SENHAS[userSalvo];
@@ -373,8 +506,11 @@
             }, 1000);
         };
 
+        // ==========================================
+        // 3. CACHE LOCAL E SEGURANÇA MULTI-DISPOSITIVO
+        // ==========================================
         function carregarDadosLocais() {
-            const memory = localStorage.getItem('triplast_dados_v11');
+            const memory = localStorage.getItem('triplast_dados_v12');
             if(memory) {
                 try {
                     const db = JSON.parse(memory);
@@ -384,39 +520,68 @@
                     if(db.historico) historico = db.historico;
                     if(db.dadosMensais) dadosMensais = db.dadosMensais;
                     if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
-                } catch(e) { console.log("Erro ao ler cache."); }
+                } catch(e) {
+                    console.log("Erro ao ler cache.");
+                }
             }
         }
 
+        // Função de Segurança para evitar Undefined se vários tablets salvarem ao mesmo tempo
         function sanitizarDados() {
             maquinas.forEach(m => {
                 if(!m.tempos) m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
                 if(!m.fila) m.fila = [];
                 if(!m.operador) m.operador = "";
+                
                 if(m.opAtiva) {
                     m.opAtiva.boas = m.opAtiva.boas || 0;
                     m.opAtiva.refugo = m.opAtiva.refugo || 0;
                     m.opAtiva.meta = m.opAtiva.meta || 0;
+                    m.opAtiva.ciclo = m.opAtiva.ciclo || 1;
+                    m.opAtiva.cavs = m.opAtiva.cavs || 1;
                 }
             });
-            if(!dadosMensais.plantTempos) dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
+            
+            if(!dadosMensais.plantTempos) {
+                dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
+            }
         }
 
         async function salvarAutomatico() { 
             sanitizarDados();
-            localStorage.setItem('triplast_dados_v11', JSON.stringify({
-                maquinas, produtos: produtosGlobais, operadores: operadoresGlobais, historico, dadosMensais, modoHoraExtra
+            
+            // Salva no aparelho local
+            localStorage.setItem('triplast_dados_v12', JSON.stringify({
+                maquinas, 
+                produtos: produtosGlobais, 
+                operadores: operadoresGlobais, 
+                historico, 
+                dadosMensais, 
+                modoHoraExtra
             }));
 
             document.getElementById('status-nuvem').innerText = "⏳"; 
+            
             if(saveTimeout) clearTimeout(saveTimeout); 
-            saveTimeout = setTimeout(async () => { await salvarGeral(); document.getElementById('status-nuvem').innerText = "☁️"; }, 1000); 
+            
+            saveTimeout = setTimeout(async () => { 
+                await salvarGeral(); 
+                document.getElementById('status-nuvem').innerText = "☁️"; 
+            }, 1000); 
         }
 
         async function salvarGeral() { 
             if(sb) {
                 await sb.from('sistema').update({ 
-                    conteudo: { maquinas, cores: coresGlobais, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, lastUpdateTimestamp: Date.now() } 
+                    conteudo: { 
+                        maquinas, 
+                        operadores: operadoresGlobais, 
+                        produtos: produtosGlobais, 
+                        historico, 
+                        dadosMensais, 
+                        modoHoraExtra, 
+                        ts: Date.now() 
+                    } 
                 }).eq('id', 1);
             }
             showToast("Sincronizado");
@@ -429,74 +594,135 @@
             setTimeout(() => t.classList.add('hidden'), 2000);
         }
 
+        // ==========================================
+        // 4. LOGIN E CONTROLES DE ABAS
+        // ==========================================
         function autenticar(autoLogin = false) {
             const u = document.getElementById('login-user').value;
             const p = document.getElementById('login-pass').value;
             
             if(SENHAS[u] === p) {
                 userLogado = u;
-                if(!autoLogin) localStorage.setItem('triplast_session', u); 
+                
+                if(!autoLogin) {
+                    localStorage.setItem('triplast_session', u); 
+                }
 
                 document.getElementById('tela-login').style.display = 'none';
                 document.getElementById('app-content').classList.remove('hidden');
                 
                 if(u !== 'admin') {
-                    ['btn-op', 'btn-resumo', 'btn-historico', 'btn-graficos', 'btn-operadores'].forEach(id => document.getElementById(id).style.display = 'none');
+                    ['btn-op', 'btn-resumo', 'btn-historico', 'btn-graficos', 'btn-operadores'].forEach(id => {
+                        document.getElementById(id).style.display = 'none';
+                    });
                 }
                 
                 document.getElementById('f-maq').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-                renderPainel(); renderResumo(); renderHistorico(); renderCatalogo(); atualizarSelectProdutos(); iniciarGraficos();
+                
+                renderPainel(); 
+                renderResumo(); 
+                renderHistorico(); 
+                renderCatalogo(); 
+                atualizarSelectProdutos(); 
+                iniciarGraficos();
+                
                 if(modoHoraExtra) toggleHoraExtraVis();
-            } else { alert("Senha Incorreta!"); }
+            } else { 
+                alert("Senha Incorreta!"); 
+            }
         }
 
-        function fazerLogout() { localStorage.removeItem('triplast_session'); location.reload(); }
+        function fazerLogout() { 
+            localStorage.removeItem('triplast_session'); 
+            location.reload(); 
+        }
 
         function trocarAba(nome) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
             document.getElementById('aba-' + nome).classList.add('aba-ativa');
             document.getElementById('btn-' + nome).classList.add('active');
         }
 
-        function abrirModalOperadores() { document.getElementById('modal-operadores').style.display = 'flex'; renderEquipe(); }
-        function renderEquipe() {
+        // ==========================================
+        // 5. OPERADORES
+        // ==========================================
+        function abrirModalOperadores() { 
+            document.getElementById('modal-operadores').style.display = 'flex'; 
+            renderEquipe(); 
+        }
+        
+        function renderEquipe() { 
             document.getElementById('lista-equipe').innerHTML = operadoresGlobais.map((op, i) => `
                 <div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <span class="font-bold text-sm text-slate-700"><i class="fa-solid fa-user-tie text-blue-400 mr-2"></i> ${op}</span>
                     <button onclick="removerOperador(${i})" class="text-red-400 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                </div>`).join('');
+                </div>
+            `).join(''); 
         }
-        function addOperador() {
-            const val = document.getElementById('novo-op-nome').value;
-            if(val) { operadoresGlobais.push(val); document.getElementById('novo-op-nome').value = ""; renderEquipe(); renderPainel(); salvarAutomatico(); }
-        }
-        function removerOperador(i) { operadoresGlobais.splice(i, 1); renderEquipe(); renderPainel(); salvarAutomatico(); }
-        function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
 
+        function addOperador() { 
+            const val = document.getElementById('novo-op-nome').value;
+            if(val) { 
+                operadoresGlobais.push(val); 
+                document.getElementById('novo-op-nome').value = ""; 
+                renderEquipe(); 
+                renderPainel(); 
+                salvarAutomatico(); 
+            } 
+        }
+
+        function removerOperador(i) { 
+            operadoresGlobais.splice(i, 1); 
+            renderEquipe(); 
+            renderPainel(); 
+            salvarAutomatico(); 
+        }
+
+        function alterarOperador(id, op) { 
+            maquinas.find(m => m.id === id).operador = op; 
+            salvarAutomatico(); 
+        }
+
+        // ==========================================
+        // 6. RENDERIZAÇÃO DO PAINEL DE MÁQUINAS
+        // ==========================================
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
             grid.innerHTML = "";
+            
             let maquinasFilter = userLogado === 'admin' ? maquinas : maquinas.filter(m => m.id === userLogado);
             let widthClass = userLogado === 'admin' ? "w-full" : "w-full max-w-5xl mx-auto";
 
             maquinasFilter.forEach(m => {
                 let sClass = "status-parada"; 
                 
-                if(m.status === "04-PRODUÇÃO") sClass = "status-produzindo"; 
-                else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") sClass = "status-baixa"; 
-                else if(["22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA"].includes(m.status)) sClass = "status-sem-prog"; 
-                else if(m.status === "25-FIM DE SEMANA (PAUSADO)") sClass = "status-fds"; 
+                if(m.status === "04-PRODUÇÃO") {
+                    sClass = "status-produzindo"; 
+                } else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") {
+                    sClass = "status-baixa"; 
+                } else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA"].includes(m.status)) {
+                    sClass = "status-sem-prog"; 
+                } else if(m.status === "25-FIM DE SEMANA (PAUSADO)") {
+                    sClass = "status-fds"; 
+                }
 
                 let opNum = "--", prodNome = "Aguardando O.P", meta = 0, boas = 0, refugo = 0, progresso = 0;
                 let cardOp = ``;
                 
                 if(m.opAtiva) {
-                    opNum = m.opAtiva.op; prodNome = m.opAtiva.prod; meta = m.opAtiva.meta; boas = m.opAtiva.boas; refugo = m.opAtiva.refugo;
+                    opNum = m.opAtiva.op; 
+                    prodNome = m.opAtiva.prod; 
+                    meta = m.opAtiva.meta; 
+                    boas = m.opAtiva.boas; 
+                    refugo = m.opAtiva.refugo;
+                    
                     progresso = meta > 0 ? Math.min(((boas / meta) * 100), 100).toFixed(1) : 0;
                     
                     cardOp = `
-                    <div class="bg-slate-50 p-4 md:p-6 rounded-[24px] border border-slate-200 mt-4 shadow-inner">
+                    <div class="bg-slate-50 p-4 md:p-6 rounded-[24px] border border-slate-200 mt-4 shadow-inner relative">
+                        
                         <div class="flex flex-col md:flex-row justify-between md:items-center mb-5 border-b border-slate-200 pb-4 gap-2">
                             <span class="text-xs font-black text-slate-400 uppercase tracking-widest">O.P ATIVA: <span class="text-blue-600 text-2xl ml-2">${opNum}</span></span>
                             <span class="text-xs font-black text-slate-500 uppercase truncate bg-white px-3 py-1.5 rounded-lg border border-slate-200">${prodNome}</span>
@@ -517,6 +743,25 @@
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-4 gap-2 mb-5 bg-slate-800 rounded-xl p-3 text-center shadow-inner">
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Disp</p>
+                                <p id="oee-disp-${m.id}" class="text-sm md:text-base font-black text-blue-400 mt-0.5">0.0%</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Perf</p>
+                                <p id="oee-perf-${m.id}" class="text-sm md:text-base font-black text-amber-400 mt-0.5">0.0%</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Qual</p>
+                                <p id="oee-qual-${m.id}" class="text-sm md:text-base font-black text-emerald-400 mt-0.5">0.0%</p>
+                            </div>
+                            <div class="border-l border-slate-600 pl-2">
+                                <p class="text-[9px] text-slate-300 font-black uppercase tracking-widest">OEE Global</p>
+                                <p id="oee-total-${m.id}" class="text-sm md:text-base font-black text-white mt-0.5 animate-pulse">0.0%</p>
+                            </div>
+                        </div>
+
                         <div class="w-full bg-slate-200 rounded-full h-4 mb-5 shadow-inner overflow-hidden border border-slate-300">
                             <div class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full transition-all duration-500" style="width: ${progresso}%"></div>
                         </div>
@@ -531,7 +776,7 @@
                 let filaHTML = `<div class="text-center text-xs font-bold text-slate-400 p-6 border-2 border-dashed border-slate-300 rounded-2xl mt-2 bg-slate-50">Nenhuma O.P na Fila</div>`;
                 if(m.fila.length > 0) {
                     filaHTML = m.fila.map((f, index) => `
-                    <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm hover:shadow-md transition-all relative group mb-3">
+                    <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm relative mb-3">
                         <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
                             <div>
                                 <span class="font-black text-blue-700 text-base uppercase">O.P #${f.op}</span>
@@ -546,7 +791,7 @@
                                 <p class="text-[11px] font-black text-slate-700 mt-0.5">${f.ciclo || '--'}s / ${f.cavs || '--'}</p>
                             </div>
                             <div class="bg-slate-50 p-2 rounded text-center border border-slate-100">
-                                <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Material Estim.</p>
+                                <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Material</p>
                                 <p class="text-[11px] font-black text-blue-600 mt-0.5">${f.material || '--'}</p>
                             </div>
                         </div>
@@ -564,6 +809,7 @@
                 grid.innerHTML += `
                 <div class="${widthClass} card-producao ${sClass}">
                     <div class="card-esq">
+                        
                         <div class="flex flex-col md:flex-row justify-between items-start gap-3">
                             <div class="w-full md:w-auto">
                                 <h3 class="text-3xl md:text-4xl font-black text-slate-800 uppercase italic leading-none mb-3 tracking-tighter">${m.nome}</h3>
@@ -588,24 +834,19 @@
                             </div>
                             
                             <div class="bg-red-50/50 p-5 md:p-6 rounded-[24px] border border-red-200 text-center flex flex-col justify-between shadow-inner">
-                                <label class="text-xs md:text-sm font-black text-red-500 uppercase mb-3 tracking-widest">
-                                    <i class="fa-solid fa-recycle mr-1"></i> Refugo 
-                                    <span class="text-[10px] text-red-400 block mt-1">(Limite 2%: ${m.opAtiva && m.opAtiva.meta > 0 ? Math.ceil(m.opAtiva.meta * 0.02) : 0} pçs)</span>
-                                </label>
-                                
-                                <input type="number" id="refugo-qtd-${m.id}" placeholder="Quantidade..." class="input-industrial border-red-300 text-red-800 mb-2 !p-3 md:!p-4 bg-white shadow-sm text-lg">
-                                
+                                <label class="text-xs md:text-sm font-black text-red-500 uppercase mb-3 tracking-widest"><i class="fa-solid fa-recycle mr-1"></i> Lançar Refugo (%)</label>
+                                <input type="number" id="refugo-perc-${m.id}" placeholder="Ex: 2 para 2%" class="input-industrial border-red-300 text-red-800 mb-2 !p-3 md:!p-4 bg-white shadow-sm text-lg">
                                 <select id="motivo-${m.id}" class="w-full text-xs font-bold p-3 md:p-4 rounded-xl border border-red-300 outline-none text-red-700 bg-white mb-4 shadow-sm">
                                     <option value="">Motivo da perda...</option>
                                     ${motivosRefugo.map(mot => `<option value="${mot}">${mot}</option>`).join('')}
                                 </select>
-                                
                                 <button onclick="lancarRefugoManual('${m.id}')" class="w-full bg-red-100 border-2 border-red-400 text-red-600 py-3 md:py-4 rounded-xl font-black uppercase shadow-sm hover:bg-red-500 hover:text-white transition-all text-sm tracking-widest">
-                                    LANÇAR REFUGO
+                                    LANÇAR % REFUGO
                                 </button>
                             </div>
                         </div>
                     </div>
+                    
                     <div class="card-dir">
                         <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest border-b border-slate-200 pb-2"><i class="fa-solid fa-layer-group text-blue-400 mr-2"></i> Fila da Máquina</p>
                         <div class="fila-scroll-vertical pr-2">${filaHTML}</div>
@@ -614,186 +855,343 @@
             });
         }
 
-        function alterarStatus(id, st) { maquinas.find(m => m.id === id).status = st; renderPainel(); salvarAutomatico(); }
-        
-        function lancarPecas(id) {
-            const val = parseInt(document.getElementById(`boas-${id}`).value);
-            const maq = maquinas.find(m => m.id === id);
-            if(val > 0 && maq.opAtiva) { maq.opAtiva.boas += val; document.getElementById(`boas-${id}`).value = ""; renderPainel(); renderResumo(); salvarAutomatico(); }
+        // ==========================================
+        // 7. FUNÇÕES DE STATUS E APONTAMENTO
+        // ==========================================
+        function alterarStatus(id, st) { 
+            maquinas.find(m => m.id === id).status = st; 
+            renderPainel(); 
+            salvarAutomatico(); 
+        }
+
+        function lancarPecas(id) { 
+            const val = parseInt(document.getElementById(`boas-${id}`).value); 
+            const maq = maquinas.find(m => m.id === id); 
+            
+            if(val > 0 && maq.opAtiva) { 
+                maq.opAtiva.boas += val; 
+                document.getElementById(`boas-${id}`).value = ""; 
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico(); 
+            } 
         }
 
         function lancarRefugoManual(id) {
             const maq = maquinas.find(m => m.id === id);
-            const qtd = parseInt(document.getElementById(`refugo-qtd-${id}`).value);
+            const perc = parseFloat(document.getElementById(`refugo-perc-${id}`).value);
             const motivo = document.getElementById(`motivo-${id}`).value;
             
             if(!maq.opAtiva) { alert("Nenhuma O.P ativa nesta máquina."); return; }
-            if(isNaN(qtd) || qtd <= 0) { alert("Digite uma quantidade válida maior que zero."); return; }
+            if(isNaN(perc) || perc <= 0) { alert("Digite uma porcentagem válida (ex: 1, 2, 5.5)."); return; }
             if(!motivo) { alert("Selecione um motivo de refugo antes de lançar."); return; }
             
-            if(confirm(`Lançar ${qtd} peças como refugo por motivo de "${motivo}"?`)) {
-                maq.opAtiva.refugo += qtd; document.getElementById(`refugo-qtd-${id}`).value = ""; document.getElementById(`motivo-${id}`).value = ""; 
-                renderPainel(); renderResumo(); salvarAutomatico();
+            // Calcula a quantidade de peças baseado na % da META
+            const qtd = Math.ceil(maq.opAtiva.meta * (perc / 100));
+            
+            if(confirm(`Você digitou ${perc}%. Isso representa ${qtd} peças de refugo em relação a meta de ${maq.opAtiva.meta}. Confirmar lançamento por "${motivo}"?`)) {
+                maq.opAtiva.refugo += qtd; 
+                document.getElementById(`refugo-perc-${id}`).value = ""; 
+                document.getElementById(`motivo-${id}`).value = ""; 
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
             }
         }
 
         function concluirOP(id) {
             const maq = maquinas.find(m => m.id === id);
+            
             if(confirm(`Finalizar O.P e enviar para o Histórico?`)) {
-                historico.unshift({ data: new Date().toLocaleString('pt-BR'), maq: maq.nome, op: maq.opAtiva.op, prod: maq.opAtiva.prod, meta: maq.opAtiva.meta, boas: maq.opAtiva.boas, refugo: maq.opAtiva.refugo });
-                if(maq.fila.length > 0) {
-                    const p = maq.fila.shift(); maq.opAtiva = { op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, refugo: p.refugo || 0 }; maq.status = "04-PRODUÇÃO";
-                } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
-                renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
+                historico.unshift({ 
+                    data: new Date().toLocaleString('pt-BR'), 
+                    maq: maq.nome, 
+                    op: maq.opAtiva.op, 
+                    prod: maq.opAtiva.prod, 
+                    meta: maq.opAtiva.meta, 
+                    boas: maq.opAtiva.boas, 
+                    refugo: maq.opAtiva.refugo 
+                });
+                
+                if(maq.fila.length > 0) { 
+                    const p = maq.fila.shift(); 
+                    maq.opAtiva = { 
+                        op: p.op, 
+                        prod: p.prod, 
+                        meta: p.meta, 
+                        boas: p.boas || 0, 
+                        refugo: p.refugo || 0, 
+                        ciclo: p.ciclo || 1, 
+                        cavs: p.cavs || 1 
+                    }; 
+                    maq.status = "04-PRODUÇÃO"; 
+                } else { 
+                    maq.opAtiva = null; 
+                    maq.status = "22-SEM PROGRAMAÇÃO"; 
+                }
+                
+                renderPainel(); 
+                renderResumo(); 
+                renderHistorico(); 
+                salvarAutomatico();
             }
         }
 
         function pausarOP(id) {
             const maq = maquinas.find(m => m.id === id);
+            
             if(confirm(`Pausar a O.P atual e jogá-la para a Fila? (O progresso será salvo)`)) {
                 maq.fila.push(maq.opAtiva); 
-                if(maq.fila.length > 1) { maq.opAtiva = maq.fila.shift(); } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
-                renderPainel(); renderResumo(); salvarAutomatico();
+                
+                if(maq.fila.length > 1) { 
+                    maq.opAtiva = maq.fila.shift(); 
+                } else { 
+                    maq.opAtiva = null; 
+                    maq.status = "22-SEM PROGRAMAÇÃO"; 
+                }
+                
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
             }
         }
 
         function puxarOPFila(maqId, index) {
-            const maq = maquinas.find(m => m.id === maqId);
+            const maq = maquinas.find(m => m.id === maqId); 
             const opEscolhida = maq.fila[index];
+            
             if(confirm(`Deseja iniciar a O.P ${opEscolhida.op} na máquina agora?`)) {
                 if(maq.opAtiva) maq.fila.push(maq.opAtiva); 
+                
                 maq.fila.splice(index, 1); 
+                
                 if(opEscolhida.boas === undefined) opEscolhida.boas = 0; 
                 if(opEscolhida.refugo === undefined) opEscolhida.refugo = 0;
-                maq.opAtiva = opEscolhida; maq.status = "04-PRODUÇÃO";
-                renderPainel(); renderResumo(); salvarAutomatico();
+                
+                maq.opAtiva = opEscolhida; 
+                maq.status = "04-PRODUÇÃO";
+                
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
             }
         }
 
+        // ==========================================
+        // 8. CATÁLOGO DE PRODUTOS E CALCULADORA
+        // ==========================================
         function salvarNovoProduto() {
-            const nome = document.getElementById('novo-produto-nome').value;
-            const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value);
-            const cav = parseInt(document.getElementById('novo-produto-cavidades').value);
+            const nome = document.getElementById('novo-produto-nome').value; 
+            const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value); 
+            const cav = parseInt(document.getElementById('novo-produto-cavidades').value); 
             const peso = parseFloat(document.getElementById('novo-produto-peso').value);
+            
             if(nome && ciclo && cav && peso) {
                 produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso });
-                renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();
-                document.getElementById('novo-produto-nome').value = ""; document.getElementById('novo-produto-ciclo').value = ""; document.getElementById('novo-produto-cavidades').value = ""; document.getElementById('novo-produto-peso').value = "";
+                renderCatalogo(); 
+                atualizarSelectProdutos(); 
+                salvarAutomatico();
+                
+                document.getElementById('novo-produto-nome').value = ""; 
+                document.getElementById('novo-produto-ciclo').value = ""; 
+                document.getElementById('novo-produto-cavidades').value = ""; 
+                document.getElementById('novo-produto-peso').value = "";
             }
         }
 
-        function renderCatalogo() {
+        function renderCatalogo() { 
             document.getElementById('lista-catalogo').innerHTML = produtosGlobais.map((p,i) => `
                 <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold relative group">
                     <button onclick="produtosGlobais.splice(${i},1); renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] hidden group-hover:flex shadow-md">&times;</button>
                     <span class="text-blue-700">${p.nome}</span> <br>
                     <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}g</span>
                 </div>
-            `).join('');
+            `).join(''); 
         }
 
-        function atualizarSelectProdutos() {
-            document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + produtosGlobais.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+        function atualizarSelectProdutos() { 
+            document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + produtosGlobais.map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); 
         }
 
-        function autoFillCalculadora() {
-            const prod = produtosGlobais.find(p => p.id == document.getElementById('f-prod-select').value);
-            if(prod) {
-                document.getElementById('c-ciclo').value = prod.ciclo; document.getElementById('c-cav').value = prod.cav; document.getElementById('c-peso').value = prod.peso;
-                calcularTudo();
-            }
+        function autoFillCalculadora() { 
+            const prod = produtosGlobais.find(p => p.id == document.getElementById('f-prod-select').value); 
+            if(prod) { 
+                document.getElementById('c-ciclo').value = prod.ciclo; 
+                document.getElementById('c-cav').value = prod.cav; 
+                document.getElementById('c-peso').value = prod.peso; 
+                calcularTudo(); 
+            } 
         }
 
         function calcularTudo() {
-            const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0;
-            const cav = parseInt(document.getElementById('c-cav').value) || 1;
-            const peso = parseFloat(document.getElementById('c-peso').value) || 0;
+            const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0; 
+            const cav = parseInt(document.getElementById('c-cav').value) || 1; 
+            const peso = parseFloat(document.getElementById('c-peso').value) || 0; 
             const pigm = parseFloat(document.getElementById('c-pigm').value) || 0; 
             const meta = parseInt(document.getElementById('c-meta').value) || 0;
 
             if(meta > 0 && ciclo > 0 && cav > 0) {
-                const totalSec = (meta / cav) * ciclo;
+                const totalSec = (meta / cav) * ciclo; 
                 document.getElementById('res-tempo').innerText = `${Math.floor(totalSec/3600)}h ${Math.floor((totalSec%3600)/60)}m`;
                 
-                // CÁLCULO EXATO DO PESO (Total de Injetadas x Peso da Galhada)
-                const kgBruto = ((meta / cav) * peso) / 1000;
+                const kgBruto = ((meta / cav) * peso) / 1000; 
                 const kgTotal = kgBruto + (kgBruto * (pigm / 100));
                 
                 document.getElementById('res-material').innerText = `${kgTotal.toFixed(3)} KG`;
-            } else { document.getElementById('res-tempo').innerText = "00h 00m"; document.getElementById('res-material').innerText = "0.000 KG"; }
+            } else { 
+                document.getElementById('res-tempo').innerText = "00h 00m"; 
+                document.getElementById('res-material').innerText = "0.000 KG"; 
+            }
         }
 
         function lancarOP() {
-            const mId = document.getElementById('f-maq').value;
-            const op = document.getElementById('f-op').value;
-            const prodSel = document.getElementById('f-prod-select');
+            const mId = document.getElementById('f-maq').value; 
+            const op = document.getElementById('f-op').value; 
+            const prodSel = document.getElementById('f-prod-select'); 
             const meta = parseInt(document.getElementById('c-meta').value);
             
             if(op && prodSel.value && meta) {
                 maquinas.find(m => m.id === mId).fila.push({ 
-                    op, prod: prodSel.options[prodSel.selectedIndex].text, meta,
-                    ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, material: document.getElementById('res-material').innerText
+                    op, 
+                    prod: prodSel.options[prodSel.selectedIndex].text, 
+                    meta,
+                    ciclo: document.getElementById('c-ciclo').value, 
+                    cavs: document.getElementById('c-cav').value, 
+                    material: document.getElementById('res-material').innerText 
                 });
+                
                 alert(`O.P ${op} enviada para a fila da máquina ${mId.toUpperCase()}!`); 
-                document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
-                renderPainel(); salvarAutomatico();
-            } else { alert("Preencha O.P, selecione a Peça e a Meta!"); }
-        }
-
-        const fmtTm = s => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
-        function renderResumo() {
-            document.getElementById('tbody-resumo').innerHTML = maquinas.map(m => {
-                let boas = m.opAtiva?m.opAtiva.boas:0; let refugo = m.opAtiva?m.opAtiva.refugo:0;
-                let perda = (boas+refugo)>0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
-                return `<tr><td class="p-4 font-black text-blue-600">${m.nome}</td><td class="p-4 font-bold text-slate-800">${m.opAtiva?m.opAtiva.op:'--'}</td><td class="p-4 text-green-600">${boas}</td><td class="p-4 text-red-500">${refugo}</td><td class="p-4 text-slate-500">${perda}%</td><td class="p-4 text-green-600 font-mono">${fmtTm(m.tempos.prod)}</td><td class="p-4 text-orange-500 font-mono">${fmtTm(m.tempos.baixa)}</td><td class="p-4 text-red-600 font-mono">${fmtTm(m.tempos.parado)}</td><td class="p-4 text-slate-400 font-mono">${fmtTm(m.tempos.neutro)}</td></tr>`;
-            }).join('');
-        }
-        function renderHistorico() {
-            document.getElementById('tbody-historico').innerHTML = historico.map((h,i) => `<tr><td class="p-4 text-xs text-slate-400">${h.data}</td><td class="p-4 text-blue-600 font-black">${h.maq}</td><td class="p-4 font-black">${h.op}</td><td class="p-4 text-xs truncate max-w-[200px]">${h.prod}</td><td class="p-4 text-green-600 font-black">${h.boas}</td><td class="p-4 text-red-500 font-black">${h.refugo || 0}</td><td class="p-4 text-right"><button onclick="historico.splice(${i},1); renderHistorico(); salvarAutomatico();" class="text-red-400 hover:text-red-600 bg-red-50 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
-        }
-        function filtrarHistorico() {
-            const termo = document.getElementById('busca-historico').value.toLowerCase();
-            const linhas = document.querySelectorAll('#tbody-historico tr');
-            linhas.forEach(linha => { linha.style.display = linha.innerText.toLowerCase().includes(termo) ? '' : 'none'; });
-        }
-
-        function zerarMeta() { 
-            if(confirm("Deseja realmente zerar a meta de horas do mês?")) {
-                dadosMensais.metaAtualSec = 0; dadosMensais.horaExtraSec = 0; salvarAutomatico(); 
+                document.getElementById('f-op').value = ""; 
+                document.getElementById('c-meta').value = ""; 
+                document.getElementById('f-prod-select').value = "";
+                
+                renderPainel(); 
+                salvarAutomatico();
+            } else { 
+                alert("Preencha O.P, selecione a Peça e a Meta!"); 
             }
         }
-        function toggleHoraExtra() { modoHoraExtra = !modoHoraExtra; toggleHoraExtraVis(); salvarAutomatico(); }
-        function toggleHoraExtraVis() {
-            const btn = document.getElementById('btn-hora-extra');
-            if(modoHoraExtra) { btn.className = "bg-blue-600 text-white border border-blue-500 px-4 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/50 whitespace-nowrap flex items-center"; btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (ON)"; } 
-            else { btn.className = "bg-slate-800 text-slate-400 border border-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase whitespace-nowrap flex items-center"; btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (Off)"; }
+
+        // ==========================================
+        // 9. RESUMO E HISTÓRICO
+        // ==========================================
+        const fmtTm = s => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
+        
+        function renderResumo() { 
+            document.getElementById('tbody-resumo').innerHTML = maquinas.map(m => {
+                let boas = m.opAtiva ? m.opAtiva.boas : 0; 
+                let refugo = m.opAtiva ? m.opAtiva.refugo : 0;
+                let perda = (boas+refugo) > 0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
+                
+                return `
+                <tr>
+                    <td class="p-4 font-black text-blue-600">${m.nome}</td>
+                    <td class="p-4 font-bold text-slate-800">${m.opAtiva ? m.opAtiva.op : '--'}</td>
+                    <td class="p-4 text-green-600">${boas}</td>
+                    <td class="p-4 text-red-500">${refugo}</td>
+                    <td class="p-4 text-slate-500">${perda}%</td>
+                    <td class="p-4 text-green-600 font-mono">${fmtTm(m.tempos.prod)}</td>
+                    <td class="p-4 text-orange-500 font-mono">${fmtTm(m.tempos.baixa)}</td>
+                    <td class="p-4 text-red-600 font-mono">${fmtTm(m.tempos.parado)}</td>
+                    <td class="p-4 text-slate-400 font-mono">${fmtTm(m.tempos.neutro)}</td>
+                </tr>`; 
+            }).join(''); 
         }
 
-        function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
+        function renderHistorico() { 
+            document.getElementById('tbody-historico').innerHTML = historico.map((h,i) => `
+                <tr>
+                    <td class="p-4 text-xs text-slate-400">${h.data}</td>
+                    <td class="p-4 text-blue-600 font-black">${h.maq}</td>
+                    <td class="p-4 font-black">${h.op}</td>
+                    <td class="p-4 text-xs truncate max-w-[200px]">${h.prod}</td>
+                    <td class="p-4 text-green-600 font-black">${h.boas}</td>
+                    <td class="p-4 text-red-500 font-black">${h.refugo || 0}</td>
+                    <td class="p-4 text-right"><button onclick="historico.splice(${i},1); renderHistorico(); salvarAutomatico();" class="text-red-400 hover:text-red-600 bg-red-50 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `).join(''); 
+        }
 
+        function filtrarHistorico() { 
+            const termo = document.getElementById('busca-historico').value.toLowerCase(); 
+            const linhas = document.querySelectorAll('#tbody-historico tr'); 
+            linhas.forEach(linha => { 
+                linha.style.display = linha.innerText.toLowerCase().includes(termo) ? '' : 'none'; 
+            }); 
+        }
+
+        // ==========================================
+        // 10. HORA EXTRA E TURNOS
+        // ==========================================
+        function zerarMeta() { 
+            if(confirm("Deseja realmente zerar a meta de horas do mês?")) { 
+                dadosMensais.metaAtualSec = 0; 
+                dadosMensais.horaExtraSec = 0; 
+                salvarAutomatico(); 
+            } 
+        }
+
+        function toggleHoraExtra() { 
+            modoHoraExtra = !modoHoraExtra; 
+            toggleHoraExtraVis(); 
+            salvarAutomatico(); 
+        }
+
+        function toggleHoraExtraVis() {
+            const btn = document.getElementById('btn-hora-extra');
+            if(modoHoraExtra) { 
+                btn.className = "bg-blue-600 text-white border border-blue-500 px-4 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/50 whitespace-nowrap flex items-center"; 
+                btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (ON)"; 
+            } else { 
+                btn.className = "bg-slate-800 text-slate-400 border border-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase whitespace-nowrap flex items-center"; 
+                btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (Off)"; 
+            }
+        }
+
+        function forcarTurno(val) { 
+            turnoForcado = val; 
+            salvarAutomatico(); 
+        }
+
+        // ==========================================
+        // 11. MOTOR DO TEMPO REAL E OEE (Coração do MES)
+        // ==========================================
         setInterval(() => {
             const agora = new Date();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
             
+            // VERIFICA SE O MÊS VIROU E ZERA OS TEMPOS
             if (agora.getMonth() !== dadosMensais.mesAtual) {
                 dadosMensais.mesAtual = agora.getMonth();
                 dadosMensais.metaAtualSec = 0;
                 dadosMensais.horaExtraSec = 0;
                 dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-                maquinas.forEach(m => { m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; if(m.opAtiva) { m.opAtiva.boas = 0; m.opAtiva.refugo = 0; } });
-                salvarAutomatico(); renderPainel(); 
+                
+                maquinas.forEach(m => { 
+                    m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; 
+                    if(m.opAtiva) { 
+                        m.opAtiva.boas = 0; 
+                        m.opAtiva.refugo = 0; 
+                    } 
+                });
+                
+                salvarAutomatico(); 
+                renderPainel(); 
             }
 
+            // TURNO AUTOMÁTICO
             const selTurno = document.getElementById('select-turno');
             const optAuto = document.getElementById('opt-auto');
             const mTotal = agora.getHours() * 60 + agora.getMinutes();
             let textAuto = "Turno 3 (23h-05h)";
+            
             if (mTotal >= 300 && mTotal < 858) textAuto = "Turno 1 (05h-14h)";
             else if (mTotal >= 858 && mTotal < 1416) textAuto = "Turno 2 (14h-23h)";
             
             if(optAuto) optAuto.innerText = "Atual: " + textAuto;
             if(turnoForcado && turnoForcado !== "auto") selTurno.value = turnoForcado;
 
+            // FIM DE SEMANA
             const isWeekend = (agora.getDay() === 0 || agora.getDay() === 6);
             let contarTempo = true;
             let maqTrabalhando = false;
@@ -802,30 +1200,77 @@
                 contarTempo = false;
                 document.getElementById('badge-fds').classList.remove('hidden');
                 let statusMudou = false;
+                
                 maquinas.forEach(m => {
-                    if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { m.status = "25-FIM DE SEMANA (PAUSADO)"; statusMudou = true; }
+                    if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { 
+                        m.status = "25-FIM DE SEMANA (PAUSADO)"; 
+                        statusMudou = true; 
+                    }
                 });
                 if(statusMudou && document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
             } else {
                 document.getElementById('badge-fds').classList.add('hidden');
             }
 
+            // CONTAGEM DE TEMPOS E OEE
             if(contarTempo) {
                 let pProd = false, pBaixa = false, pParada = false, pNeutro = false;
                 
                 maquinas.forEach(m => {
-                    if(m.status === "04-PRODUÇÃO") { m.tempos.prod++; maqTrabalhando = true; pProd = true; }
-                    else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") { m.tempos.baixa++; maqTrabalhando = true; pBaixa = true; }
-                    else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE"].includes(m.status)) { m.tempos.neutro++; pNeutro = true; }
-                    else { m.tempos.parado++; pParada = true; } 
+                    // CÁLCULO DOS STATUS
+                    if(m.status === "04-PRODUÇÃO") { 
+                        m.tempos.prod++; maqTrabalhando = true; pProd = true; 
+                    }
+                    else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") { 
+                        m.tempos.baixa++; maqTrabalhando = true; pBaixa = true; 
+                    }
+                    else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE"].includes(m.status)) { 
+                        m.tempos.neutro++; pNeutro = true; 
+                    }
+                    else { 
+                        m.tempos.parado++; pParada = true; 
+                    } 
+                    
+                    // ==========================================
+                    // CÁLCULO OEE (AO VIVO)
+                    // ==========================================
+                    if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
+                        
+                        // 1. Disponibilidade = Prod / (Prod + Parada + Baixa) -> Neutro não entra na conta
+                        let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado;
+                        let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
+                        
+                        // 2. Performance = Prod. Real / Prod. Teórica (baseada no ciclo e tempo rodando)
+                        let ciclo = parseFloat(m.opAtiva.ciclo) || 1; 
+                        let cavs = parseInt(m.opAtiva.cavs) || 1;
+                        let teorica = (m.tempos.prod / ciclo) * cavs; // Quantas peças deveriam ter saído nesse tempo?
+                        let real = m.opAtiva.boas + m.opAtiva.refugo;
+                        
+                        let perf = teorica > 0 ? (real / teorica) : 0; 
+                        if(perf > 1) perf = 1; // Trava a performance máxima em 100%
+                        
+                        // 3. Qualidade = Boas / (Boas + Refugo)
+                        let qual = real > 0 ? (m.opAtiva.boas / real) : 0;
+                        
+                        // OEE = Disp x Perf x Qual
+                        let oee = disp * perf * qual;
+                        
+                        // Joga na Tela do Painel
+                        document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%';
+                        document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
+                        document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%';
+                        document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
+                    }
                 });
 
+                // Soma global para os gráficos gerais
                 if(pProd) dadosMensais.plantTempos.prod++;
                 if(pBaixa) dadosMensais.plantTempos.baixa++;
                 if(pParada) dadosMensais.plantTempos.parado++;
                 if(pNeutro) dadosMensais.plantTempos.neutro++;
             }
 
+            // META DE HORAS MENSAL
             const limiteSec = 1628 * 3600;
             if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
                 dadosMensais.metaAtualSec++;
@@ -836,6 +1281,7 @@
 
             if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
+            // Atualiza Gráfico de Status na Aba de Gráficos
             if (chartStatusInstance) {
                 chartStatusInstance.data.datasets[0].data = [
                     dadosMensais.plantTempos.prod, 
@@ -848,15 +1294,70 @@
 
         }, 1000);
 
-        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; iniciarGraficos(); }
+        // ==========================================
+        // 12. GRÁFICOS
+        // ==========================================
+        function alterarFiltroGrafico(valor) { 
+            filtroGraficoId = valor; 
+            iniciarGraficos(); 
+        }
+        
         function iniciarGraficos() {
             if(chartStatusInstance) chartStatusInstance.destroy();
-            const ctxStatus = document.getElementById('chartStatus').getContext('2d');
-            chartStatusInstance = new Chart(ctxStatus, { type: 'pie', data: { labels: ['Produzindo', 'Baixa Efi.', 'Paradas', 'Neutro'], datasets: [{ data: [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'] }] }, options: { maintainAspectRatio: false } });
             
-            new Chart(document.getElementById('chartGeral'), { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maquinas.map(m=>m.opAtiva?m.opAtiva.boas:0), backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { maintainAspectRatio: false } });
-            new Chart(document.getElementById('chartRefugo'), { type: 'line', data: { labels: ['S1', 'S2', 'S3', 'S4'], datasets: [{ label: '% Refugo', data: [1.2, 1.8, 0.9, 1.4], borderColor: '#f97316', tension: 0.4 }] }, options: { maintainAspectRatio: false } });
-            new Chart(document.getElementById('chartHoraExtra'), { type: 'bar', data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, options: { maintainAspectRatio: false } });
+            const ctxStatus = document.getElementById('chartStatus').getContext('2d');
+            chartStatusInstance = new Chart(ctxStatus, { 
+                type: 'pie', 
+                data: { 
+                    labels: ['Produzindo', 'Baixa Efi.', 'Paradas', 'Neutro'], 
+                    datasets: [{ 
+                        data: [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro], 
+                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'] 
+                    }] 
+                }, 
+                options: { maintainAspectRatio: false } 
+            });
+            
+            new Chart(document.getElementById('chartGeral'), { 
+                type: 'bar', 
+                data: { 
+                    labels: maquinas.map(m=>m.nome), 
+                    datasets: [{ 
+                        label: 'Boas', 
+                        data: maquinas.map(m=>m.opAtiva ? m.opAtiva.boas : 0), 
+                        backgroundColor: '#3b82f6', 
+                        borderRadius: 6 
+                    }] 
+                }, 
+                options: { maintainAspectRatio: false } 
+            });
+            
+            new Chart(document.getElementById('chartRefugo'), { 
+                type: 'line', 
+                data: { 
+                    labels: ['S1', 'S2', 'S3', 'S4'], 
+                    datasets: [{ 
+                        label: '% Refugo', 
+                        data: [1.2, 1.8, 0.9, 1.4], 
+                        borderColor: '#f97316', 
+                        tension: 0.4 
+                    }] 
+                }, 
+                options: { maintainAspectRatio: false } 
+            });
+            
+            new Chart(document.getElementById('chartHoraExtra'), { 
+                type: 'bar', 
+                data: { 
+                    labels: ['Extra Geral'], 
+                    datasets: [{ 
+                        label: 'Segundos Extra', 
+                        data: [dadosMensais.horaExtraSec], 
+                        backgroundColor: '#eab308' 
+                    }] 
+                }, 
+                options: { maintainAspectRatio: false } 
+            });
         }
     </script>
 </body>
