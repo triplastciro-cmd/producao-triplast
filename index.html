@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES V17 (Motor de Tempo Real Absoluto)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -528,7 +528,7 @@
         // 3. CACHE LOCAL E MOTOR DE SINCRONIZAÇÃO
         // ==========================================
         function carregarDadosLocais() {
-            const memory = localStorage.getItem('triplast_dados_v16');
+            const memory = localStorage.getItem('triplast_dados_v17');
             if(memory) {
                 try {
                     const db = JSON.parse(memory);
@@ -544,7 +544,7 @@
             }
         }
 
-        // FUNÇÃO NOVA: Sincroniza dados da nuvem em tempo real (para Notebook/Tablet)
+        // Sincroniza dados da nuvem em tempo real (para Notebook/Tablet)
         async function sincronizarNuvem() {
             if(!sb) return;
             try {
@@ -562,7 +562,6 @@
                     lastSyncTs = db.ts;
                     localStorage.setItem('triplast_ts', lastSyncTs);
                     
-                    // Atualiza a tela que estiver aberta no momento
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
                     if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
@@ -602,7 +601,7 @@
             lastSyncTs = Date.now();
             localStorage.setItem('triplast_ts', lastSyncTs);
             
-            localStorage.setItem('triplast_dados_v16', JSON.stringify({
+            localStorage.setItem('triplast_dados_v17', JSON.stringify({
                 maquinas, 
                 produtos: produtosGlobais, 
                 operadores: operadoresGlobais, 
@@ -1253,12 +1252,25 @@
         }
 
         // ==========================================
-        // 11. MOTOR DO TEMPO REAL PROPORCIONAL
+        // 11. MOTOR DO TEMPO REAL ABSOLUTO
+        // (Resolve o problema do "Contador Lento")
         // ==========================================
+        let ultimoTempoContado = Date.now();
+
         setInterval(() => {
-            const agora = new Date();
+            // Atualiza sempre o relógio do cabeçalho
+            const agora = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
+
+            // CÁLCULO DE TEMPO EXATO (Corrige se a aba dormiu)
+            const agoraMs = Date.now();
+            const deltaSegundos = Math.floor((agoraMs - ultimoTempoContado) / 1000);
+
+            // Só roda se passou pelo menos 1 segundo inteiro
+            if (deltaSegundos < 1) return;
             
+            ultimoTempoContado += deltaSegundos * 1000;
+
             if (agora.getMonth() !== dadosMensais.mesAtual) {
                 dadosMensais.mesAtual = agora.getMonth();
                 dadosMensais.metaAtualSec = 0;
@@ -1267,14 +1279,10 @@
                 
                 maquinas.forEach(m => { 
                     m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; 
-                    if(m.opAtiva) { 
-                        m.opAtiva.boas = 0; 
-                        m.opAtiva.refugo = 0; 
-                    } 
+                    if(m.opAtiva) { m.opAtiva.boas = 0; m.opAtiva.refugo = 0; } 
                 });
                 
-                salvarAutomatico(); 
-                renderPainel(); 
+                salvarAutomatico(); renderPainel(); 
             }
 
             const selTurno = document.getElementById('select-turno');
@@ -1309,7 +1317,6 @@
             }
 
             if(contarTempo) {
-                // Variáveis para a regra proporcional da fábrica
                 let cProd = 0, cBaixa = 0, cParada = 0, cNeutro = 0;
                 let maquinasAtivas = 0;
                 
@@ -1317,16 +1324,16 @@
                     maquinasAtivas++;
                     
                     if(m.status === "04-PRODUÇÃO") { 
-                        m.tempos.prod++; cProd++; maqTrabalhando = true; 
+                        m.tempos.prod += deltaSegundos; cProd++; maqTrabalhando = true; 
                     }
                     else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { 
-                        m.tempos.baixa++; cBaixa++; maqTrabalhando = true; 
+                        m.tempos.baixa += deltaSegundos; cBaixa++; maqTrabalhando = true; 
                     }
                     else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE"].includes(m.status)) { 
-                        m.tempos.neutro++; cNeutro++; 
+                        m.tempos.neutro += deltaSegundos; cNeutro++; 
                     }
                     else { 
-                        m.tempos.parado++; cParada++; 
+                        m.tempos.parado += deltaSegundos; cParada++; 
                     } 
                     
                     if(document.getElementById(`t-prod-${m.id}`)) {
@@ -1358,27 +1365,26 @@
                     }
                 });
 
-                // NOVO CÁLCULO PARA O GRÁFICO (PROPORCIONAL)
-                // Se o total de máquinas for 4, dividimos exatamente 1 segundo entre elas.
+                // CÁLCULO PROPORCIONAL COM DELTA TIME
                 if (maquinasAtivas > 0) {
-                    dadosMensais.plantTempos.prod += (cProd / maquinasAtivas);
-                    dadosMensais.plantTempos.baixa += (cBaixa / maquinasAtivas);
-                    dadosMensais.plantTempos.parado += (cParada / maquinasAtivas);
-                    dadosMensais.plantTempos.neutro += (cNeutro / maquinasAtivas);
+                    dadosMensais.plantTempos.prod += (cProd / maquinasAtivas) * deltaSegundos;
+                    dadosMensais.plantTempos.baixa += (cBaixa / maquinasAtivas) * deltaSegundos;
+                    dadosMensais.plantTempos.parado += (cParada / maquinasAtivas) * deltaSegundos;
+                    dadosMensais.plantTempos.neutro += (cNeutro / maquinasAtivas) * deltaSegundos;
                 }
             }
 
             const limiteSec = 1628 * 3600;
             if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
-                dadosMensais.metaAtualSec++;
-                if(modoHoraExtra) dadosMensais.horaExtraSec++;
+                dadosMensais.metaAtualSec += deltaSegundos;
+                if(modoHoraExtra) dadosMensais.horaExtraSec += deltaSegundos;
             }
+            
             document.getElementById('horas-mensal-txt').innerText = `${Math.floor(dadosMensais.metaAtualSec/3600)}h`;
             document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / limiteSec) * 100, 100)}%`;
 
             if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
-            // Atualiza os Contadores e Gráficos da Fábrica em Formato HH:MM:SS
             if (chartStatusInstance) {
                 let pSec = dadosMensais.plantTempos.prod;
                 let bSec = dadosMensais.plantTempos.baixa;
@@ -1397,7 +1403,7 @@
         }, 1000);
 
         // ==========================================
-        // 12. GRÁFICOS (COM TOOLTIP FORMATADA HH:MM:SS)
+        // 12. GRÁFICOS
         // ==========================================
         function alterarFiltroGrafico(valor) { 
             filtroGraficoId = valor; 
@@ -1432,7 +1438,6 @@
                             padding: 12,
                             callbacks: {
                                 label: function(context) {
-                                    // TRANSFORMA OS SEGUNDOS DO GRÁFICO EM HH:MM:SS AO PASSAR O MOUSE
                                     return ' ' + context.label + ': ' + fmtTm(context.raw);
                                 }
                             }
