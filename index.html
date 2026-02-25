@@ -502,13 +502,15 @@
         // 2. INICIALIZAÇÃO SEGURA (BOOT)
         // ==========================================
         window.onload = async () => {
+            // 1º Passo: Tentar forçar download da Nuvem antes de qualquer coisa
             await carregarDaNuvem();
             
+            // 2º Passo: Se não conseguiu nuvem (sem net), carrega o backup oficial
             if(!sistemaPronto) {
                 carregarDadosLocais();
             }
             
-            sistemaPronto = true;
+            sistemaPronto = true; // AGORA É SEGURO SALVAR
 
             let userSalvo = localStorage.getItem('triplast_session');
 
@@ -549,6 +551,8 @@
                     
                     lastSyncTs = db.ts || 0;
                     localStorage.setItem('triplast_ts', lastSyncTs);
+                    
+                    // Cria backup seguro
                     localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
                     
                     sistemaPronto = true;
@@ -559,6 +563,7 @@
         }
 
         function carregarDadosLocais() {
+            // Usa uma chave oficial permanente para sobreviver às atualizações do código
             const memory = localStorage.getItem('triplast_dados_oficial');
             if(memory) {
                 try {
@@ -575,6 +580,7 @@
             }
         }
 
+        // MOTOR INVISÍVEL DE SINCRONIZAÇÃO (ATUALIZA O TABLET SE O PAI MEXER NO NOTEBOOK)
         setInterval(async () => {
             if(!sb || !sistemaPronto) return;
             try {
@@ -592,6 +598,7 @@
                     lastSyncTs = db.ts;
                     localStorage.setItem('triplast_ts', lastSyncTs);
                     
+                    // Atualiza a tela que estiver aberta
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
                     if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
@@ -623,6 +630,7 @@
         }
 
         async function salvarAutomatico() { 
+            // IMPEDE SALVAR POR CIMA ANTES DE CARREGAR A NUVEM
             if(!sistemaPronto) return; 
 
             sanitizarDados();
@@ -1286,22 +1294,22 @@
 
         // ==========================================
         // 11. MOTOR DE TEMPO REAL OTIMIZADO E CRAVADO (1 PARA 1)
+        // Sem divisões, sem lentidão. Totalmente fiel ao relógio de Brasília.
         // ==========================================
         
         const optBSB = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        let ultimoTick = Date.now();
+        let ultimoTick = Math.floor(Date.now() / 1000); // Marca o segundo exato atual
 
         setInterval(() => {
             const relogioHtml = document.getElementById('relogio');
             if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', optBSB);
 
-            const agoraMs = Date.now();
-            const deltaSegundos = Math.round((agoraMs - ultimoTick) / 1000);
+            const agoraSegundoAtual = Math.floor(Date.now() / 1000);
+            const passados = agoraSegundoAtual - ultimoTick;
 
-            // A cada 1 segundo real (ou mais se o tablet dormiu)
-            if (deltaSegundos >= 1) {
-                ultimoTick = agoraMs; 
-                const passados = deltaSegundos; 
+            // Só processa se o segundo oficial do computador "virou"
+            if (passados >= 1) {
+                ultimoTick = agoraSegundoAtual; 
 
                 const agoraCompleto = new Date();
 
@@ -1361,37 +1369,35 @@
 
                 if(contarTempo) {
                     
-                    let pProd = false, pBaixa = false, pParada = false, pNeutro = false;
+                    // Flags (interruptores) para saber se a fábrica tem pelo menos 1 máquina nestes status
+                    let temProd = false;
+                    let temBaixa = false;
+                    let temParada = false;
+                    let temNeutro = false;
                     
                     maquinas.forEach(m => {
                         
                         // Incrementa o tempo INDIVIDUAL da máquina cravado
                         if(m.status === "04-PRODUÇÃO") { 
                             m.tempos.prod += passados; 
-                            pProd = true; 
+                            temProd = true; 
                             maqTrabalhando = true; 
                         }
                         else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { 
                             m.tempos.baixa += passados; 
-                            pBaixa = true; 
+                            temBaixa = true; 
                             maqTrabalhando = true; 
                         }
                         else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE", "09-LIMPEZA"].includes(m.status)) { 
                             m.tempos.neutro += passados; 
-                            pNeutro = true; 
+                            temNeutro = true; 
                         }
                         else { 
                             m.tempos.parado += passados; 
-                            pParada = true; 
+                            temParada = true; 
                         } 
                         
-                        if(document.getElementById(`t-prod-${m.id}`)) {
-                            document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
-                            document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
-                            document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado);
-                            document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
-                        }
-                        
+                        // OEE da Máquina
                         if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
                             let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; 
                             let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
@@ -1414,12 +1420,28 @@
                         }
                     });
 
-                    // CÁLCULO GERAL DA FÁBRICA (Todos sincronizados de 1 em 1 segundo!)
-                    // Se há pelo menos 1 máquina naquele status, o status da fábrica roda 1 segundo exato.
-                    if (pProd) dadosMensais.plantTempos.prod += passados;
-                    if (pBaixa) dadosMensais.plantTempos.baixa += passados;
-                    if (pParada) dadosMensais.plantTempos.parado += passados;
-                    if (pNeutro) dadosMensais.plantTempos.neutro += passados;
+                    // ========================================================
+                    // CÁLCULO GERAL DA FÁBRICA (Todos sincronizados de 1 em 1)
+                    // Sem divisões! Se há 1 máquina Produzindo, o cronômetro 
+                    // de Produção anda 1 segundo. Se há 1 Parada, o de 
+                    // Parada anda 1 segundo junto!
+                    // ========================================================
+                    if (temProd) dadosMensais.plantTempos.prod += passados;
+                    if (temBaixa) dadosMensais.plantTempos.baixa += passados;
+                    if (temParada) dadosMensais.plantTempos.parado += passados;
+                    if (temNeutro) dadosMensais.plantTempos.neutro += passados;
+                }
+
+                // Atualiza tela individual de máquinas visíveis
+                if(document.getElementById('aba-painel').classList.contains('aba-ativa')) {
+                    maquinas.forEach(m => {
+                        if(document.getElementById(`t-prod-${m.id}`)) {
+                            document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
+                            document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
+                            document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado);
+                            document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
+                        }
+                    });
                 }
 
                 const limiteSec = 1628 * 3600;
@@ -1449,7 +1471,7 @@
                     chartStatusInstance.update('none'); 
                 }
             }
-        }, 200); 
+        }, 200); // 200ms é só para a verificação, a contagem de tempo usa o timestamp absoluto de 1 segundo!
 
         // ==========================================
         // 12. GRÁFICOS (COM TOOLTIP FORMATADA HH:MM:SS)
