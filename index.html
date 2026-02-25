@@ -857,14 +857,20 @@
                         ${cardOp}
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div class="bg-green-50/50 p-5 md:p-6 rounded-[24px] border border-green-200 text-center flex flex-col justify-between shadow-inner">
-                                <label class="text-xs md:text-sm font-black text-green-600 uppercase mb-3 tracking-widest"><i class="fa-solid fa-plus-circle mr-1"></i> Peças Boas</label>
+                            <div class="bg-green-50/50 p-5 md:p-6 rounded-[24px] border border-green-200 text-center flex flex-col justify-between shadow-inner relative">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-xs md:text-sm font-black text-green-600 uppercase tracking-widest"><i class="fa-solid fa-plus-circle mr-1"></i> Peças Boas</label>
+                                    <button onclick="zerarBoas('${m.id}')" class="text-[9px] md:text-[10px] bg-green-100 border border-green-300 text-green-700 hover:bg-green-600 hover:text-white px-2 py-1 rounded-lg font-black uppercase transition-colors shadow-sm" title="Zerar Peças Boas da O.P Atual">Zerar</button>
+                                </div>
                                 <input type="number" id="boas-${m.id}" placeholder="0" class="input-industrial border-green-300 text-green-800 mb-4 !p-4 md:!p-5 bg-white shadow-sm">
                                 <button onclick="lancarPecas('${m.id}')" class="bg-green-500 text-white w-full py-4 md:py-5 rounded-xl font-black shadow-lg hover:bg-green-600 active:scale-95 text-base md:text-lg uppercase tracking-widest">LANÇAR BOAS</button>
                             </div>
                             
-                            <div class="bg-red-50/50 p-5 md:p-6 rounded-[24px] border border-red-200 text-center flex flex-col justify-between shadow-inner">
-                                <label class="text-xs md:text-sm font-black text-red-500 uppercase mb-3 tracking-widest"><i class="fa-solid fa-recycle mr-1"></i> Refugo (Qtd. de Peças)</label>
+                            <div class="bg-red-50/50 p-5 md:p-6 rounded-[24px] border border-red-200 text-center flex flex-col justify-between shadow-inner relative">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-xs md:text-sm font-black text-red-500 uppercase tracking-widest"><i class="fa-solid fa-recycle mr-1"></i> Refugo (Qtd)</label>
+                                    <button onclick="zerarRefugo('${m.id}')" class="text-[9px] md:text-[10px] bg-red-100 border border-red-300 text-red-600 hover:bg-red-500 hover:text-white px-2 py-1 rounded-lg font-black uppercase transition-colors shadow-sm" title="Zerar Refugos da O.P Atual">Zerar</button>
+                                </div>
                                 <input type="number" id="refugo-qtd-${m.id}" placeholder="Ex: 2" class="input-industrial border-red-300 text-red-800 mb-2 !p-3 md:!p-4 bg-white shadow-sm text-lg">
                                 
                                 <select id="motivo-${m.id}" class="w-full text-xs font-bold p-3 md:p-4 rounded-xl border border-red-300 outline-none text-red-700 bg-white mb-4 shadow-sm">
@@ -929,6 +935,32 @@
                 salvarAutomatico();
             }
         }
+
+        // --- FUNÇÕES DE ZERAR (RESET) ---
+        function zerarRefugo(id) {
+            const maq = maquinas.find(m => m.id === id);
+            if(!maq.opAtiva) { alert("Nenhuma O.P ativa nesta máquina."); return; }
+            
+            if(confirm(`Tem certeza que deseja ZERAR A CONTAGEM DE REFUGO desta O.P? (Atual: ${maq.opAtiva.refugo} peças)`)) {
+                maq.opAtiva.refugo = 0;
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
+            }
+        }
+
+        function zerarBoas(id) {
+            const maq = maquinas.find(m => m.id === id);
+            if(!maq.opAtiva) { alert("Nenhuma O.P ativa nesta máquina."); return; }
+            
+            if(confirm(`Tem certeza que deseja ZERAR A CONTAGEM DE PEÇAS BOAS desta O.P? (Atual: ${maq.opAtiva.boas} peças)`)) {
+                maq.opAtiva.boas = 0;
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
+            }
+        }
+        // --------------------------------
 
         function concluirOP(id) {
             const maq = maquinas.find(m => m.id === id);
@@ -1278,7 +1310,7 @@
 
             if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
-            // AQUI ESTÁ A MUDANÇA: O GRÁFICO E OS CONTADORES AGORA MOSTRAM HH:MM:SS
+            // AQUI O GRÁFICO PUXA O FORMATO HH:MM:SS
             if (chartStatusInstance) {
                 let pSec = dadosMensais.plantTempos.prod;
                 let bSec = dadosMensais.plantTempos.baixa;
@@ -1385,4 +1417,3 @@
     </script>
 </body>
 </html>
-
