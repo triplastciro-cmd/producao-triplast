@@ -161,8 +161,23 @@
         <main class="max-w-7xl mx-auto px-2 md:px-4 pb-16">
             
             <div id="aba-painel" class="aba-conteudo aba-ativa">
-                <div id="grid-maquinas" class="flex flex-col gap-6 md:gap-8 items-center">
+                
+                <div class="flex flex-col xl:flex-row gap-6">
+                    
+                    <div class="flex-1">
+                        <div id="grid-maquinas" class="flex flex-col gap-6 md:gap-8 items-center">
+                            </div>
                     </div>
+
+                    <div class="w-full xl:w-[350px] bg-white rounded-[24px] p-6 shadow-sm border border-slate-200 hidden xl:block sticky top-6 h-fit">
+                        <h2 class="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2 tracking-wide border-b pb-2">
+                            <i class="fa-solid fa-boxes-stacked text-blue-500"></i> Produção Global Cadastrada
+                        </h2>
+                        <div id="fila-lateral" class="space-y-3 max-h-[75vh] overflow-y-auto pr-2">
+                            </div>
+                    </div>
+
+                </div>
             </div>
 
             <div id="aba-op" class="aba-conteudo space-y-6">
@@ -301,8 +316,8 @@
         // ==========================================
         // 1. DADOS PADRÃO E LISTA DE STATUS COMPLETA
         // ==========================================
-        const supabaseUrl = 'https://supabase.com/dashboard/project/hgqnlqtvjiyuwnwypxxh'; // COLOQUE AQUI SUA URL DO SUPABASE
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; // COLOQUE AQUI SUA CHAVE DO SUPABASE
+        const supabaseUrl = 'https://supabase.com/dashboard/project/hgqnlqtvjiyuwnwypxxh'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
         let sb = null;
         try { sb = window.supabase.createClient(supabaseUrl, supabaseKey); } catch(e) {}
 
@@ -314,7 +329,7 @@
         
         let dadosMensais = { mesAtual: new Date().getMonth(), metaAtualSec: 0, horaExtraSec: 0, plantTempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } };
         let modoHoraExtra = false;
-        let produtosGlobais = [{ id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 0.045 }, { id: 2, nome: "Balde 20L", ciclo: 45, cav: 1, peso: 0.500 }];
+        let produtosGlobais = [{ id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45 }, { id: 2, nome: "Balde 20L", ciclo: 45, cav: 1, peso: 500 }];
         let operadoresGlobais = ["João Silva", "Carlos Souza", "Ana Maria", "Roberto"];
         let historico = [];
         let coresGlobais = {}; 
@@ -325,7 +340,6 @@
             { id: 'm4', nome: 'Injetora M4', status: '22-SEM PROGRAMAÇÃO', operador: '', opAtiva: null, fila: [], tempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } }
         ];
 
-        // LISTA DE STATUS COMPLETA FORNECIDA E ORDENADA
         const statusMaquinasList = [
             "01-TROCA DE MOLDE",
             "02-TROCA DE POSTIÇO",
@@ -485,8 +499,30 @@
         function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
 
         // ==========================================
-        // 4. PAINEL DE MÁQUINAS 
+        // 4. PAINEL DE MÁQUINAS E FILA LATERAL GLOBAL
         // ==========================================
+        function renderFilaLateral() {
+            const div = document.getElementById('fila-lateral');
+            if(!div) return;
+            
+            if(!produtosGlobais || produtosGlobais.length === 0) {
+                div.innerHTML = `<p class="text-xs text-slate-400 font-bold text-center py-4">Nenhum produto cadastrado.</p>`;
+                return;
+            }
+
+            div.innerHTML = produtosGlobais.map(p => `
+                <div class="p-4 border border-slate-100 bg-slate-50/50 rounded-2xl hover:border-blue-300 hover:bg-blue-50 transition-colors flex justify-between items-center group">
+                    <div>
+                        <div class="text-xs font-black text-slate-700 uppercase group-hover:text-blue-700">${p.nome}</div>
+                        <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase group-hover:text-blue-500">${p.cav} Cavidades | ${p.peso}g</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] font-black text-blue-600 bg-blue-100 px-2 py-1.5 rounded-lg shadow-sm"><i class="fa-solid fa-stopwatch mr-1"></i>${p.ciclo}s</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
             grid.innerHTML = "";
@@ -494,13 +530,12 @@
             let widthClass = userLogado === 'admin' ? "w-full" : "w-full max-w-5xl mx-auto";
 
             maquinasFilter.forEach(m => {
-                // DEFINIÇÃO DAS CORES DOS NOVOS STATUS
-                let sClass = "status-parada"; // Padrão Vermelho (Todas as outras paradas e manutenções)
+                let sClass = "status-parada"; 
                 
-                if(m.status === "04-PRODUÇÃO") sClass = "status-produzindo"; // Verde
-                else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") sClass = "status-baixa"; // Laranja
-                else if(["22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA"].includes(m.status)) sClass = "status-sem-prog"; // Cinza
-                else if(m.status === "25-FIM DE SEMANA (PAUSADO)") sClass = "status-fds"; // Cinza Escuro
+                if(m.status === "04-PRODUÇÃO") sClass = "status-produzindo"; 
+                else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") sClass = "status-baixa"; 
+                else if(["22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA"].includes(m.status)) sClass = "status-sem-prog"; 
+                else if(m.status === "25-FIM DE SEMANA (PAUSADO)") sClass = "status-fds"; 
 
                 let opNum = "--", prodNome = "Aguardando O.P", meta = 0, boas = 0, refugo = 0, progresso = 0;
                 let cardOp = ``;
@@ -594,7 +629,14 @@
                         
                         ${cardOp}
 
-                        <div class="bg-red-50/50 p-5 md:p-6 rounded-[24px] border border-red-200 text-center flex flex-col justify-between shadow-inner">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div class="bg-green-50/50 p-5 md:p-6 rounded-[24px] border border-green-200 text-center flex flex-col justify-between shadow-inner">
+                                <label class="text-xs md:text-sm font-black text-green-600 uppercase mb-3 tracking-widest"><i class="fa-solid fa-plus-circle mr-1"></i> Peças Boas</label>
+                                <input type="number" id="boas-${m.id}" placeholder="0" class="input-industrial border-green-300 text-green-800 mb-4 !p-4 md:!p-5 bg-white shadow-sm">
+                                <button onclick="lancarPecas('${m.id}')" class="bg-green-500 text-white w-full py-4 md:py-5 rounded-xl font-black shadow-lg hover:bg-green-600 active:scale-95 text-base md:text-lg uppercase tracking-widest">LANÇAR BOAS</button>
+                            </div>
+                            
+                            <div class="bg-red-50/50 p-5 md:p-6 rounded-[24px] border border-red-200 text-center flex flex-col justify-between shadow-inner">
                                 <label class="text-xs md:text-sm font-black text-red-500 uppercase mb-3 tracking-widest">
                                     <i class="fa-solid fa-recycle mr-1"></i> Refugo 
                                     <span class="text-[10px] text-red-400 block mt-1">(Limite 2%: ${m.opAtiva && m.opAtiva.meta > 0 ? Math.ceil(m.opAtiva.meta * 0.02) : 0} pçs)</span>
@@ -614,11 +656,14 @@
                         </div>
                     </div>
                     <div class="card-dir">
-                        <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest border-b border-slate-200 pb-2"><i class="fa-solid fa-layer-group text-blue-400 mr-2"></i> Fila de Produção</p>
+                        <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest border-b border-slate-200 pb-2"><i class="fa-solid fa-layer-group text-blue-400 mr-2"></i> Fila da Máquina</p>
                         <div class="fila-scroll-vertical pr-2">${filaHTML}</div>
                     </div>
                 </div>`;
             });
+            
+            // Renderiza a fila global lateral
+            renderFilaLateral();
         }
 
         // ==========================================
@@ -645,9 +690,7 @@
                 maq.opAtiva.refugo += qtd; 
                 document.getElementById(`refugo-qtd-${id}`).value = ""; 
                 document.getElementById(`motivo-${id}`).value = ""; 
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
+                renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
 
@@ -702,7 +745,7 @@
             const peso = parseFloat(document.getElementById('novo-produto-peso').value);
             if(nome && ciclo && cav && peso) {
                 produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso });
-                renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();
+                renderCatalogo(); atualizarSelectProdutos(); renderPainel(); salvarAutomatico();
                 document.getElementById('novo-produto-nome').value = ""; document.getElementById('novo-produto-ciclo').value = ""; document.getElementById('novo-produto-cavidades').value = ""; document.getElementById('novo-produto-peso').value = "";
             }
         }
@@ -710,9 +753,9 @@
         function renderCatalogo() {
             document.getElementById('lista-catalogo').innerHTML = produtosGlobais.map((p,i) => `
                 <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold relative group">
-                    <button onclick="produtosGlobais.splice(${i},1); renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] hidden group-hover:flex shadow-md">&times;</button>
+                    <button onclick="produtosGlobais.splice(${i},1); renderCatalogo(); atualizarSelectProdutos(); renderPainel(); salvarAutomatico();" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] hidden group-hover:flex shadow-md">&times;</button>
                     <span class="text-blue-700">${p.nome}</span> <br>
-                    <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}kg</span>
+                    <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}g</span>
                 </div>
             `).join('');
         }
@@ -732,24 +775,17 @@
         function calcularTudo() {
             const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0;
             const cav = parseInt(document.getElementById('c-cav').value) || 1;
-            // AGORA O PESO É LIDO EM GRAMAS
-            const pesoGramas = parseFloat(document.getElementById('c-peso').value) || 0;
+            const peso = parseFloat(document.getElementById('c-peso').value) || 0;
             const pigm = parseFloat(document.getElementById('c-pigm').value) || 0; 
             const meta = parseInt(document.getElementById('c-meta').value) || 0;
 
             if(meta > 0 && ciclo > 0 && cav > 0) {
-                // Cálculo de Tempo
                 const totalSec = (meta / cav) * ciclo;
                 document.getElementById('res-tempo').innerText = `${Math.floor(totalSec/3600)}h ${Math.floor((totalSec%3600)/60)}m`;
-                
-                // Cálculo de Material: (Meta * Peso da Peça em Gramas) / 1000 = KG
-                const kgBruto = (meta * pesoGramas) / 1000;
-                const kgTotal = kgBruto + (kgBruto * (pigm / 100)); // Adiciona a % do Pigmento
+                const kgBruto = (meta * peso) / 1000;
+                const kgTotal = kgBruto + (kgBruto * (pigm / 100));
                 document.getElementById('res-material').innerText = `${kgTotal.toFixed(3)} KG`;
-            } else { 
-                document.getElementById('res-tempo').innerText = "00h 00m"; 
-                document.getElementById('res-material').innerText = "0.000 KG"; 
-            }
+            } else { document.getElementById('res-tempo').innerText = "00h 00m"; document.getElementById('res-material').innerText = "0.000 KG"; }
         }
 
         function lancarOP() {
@@ -809,7 +845,7 @@
         function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
 
         // ==========================================
-        // 9. MOTOR DO TEMPO REAL
+        // 9. MOTOR DO TEMPO REAL E RESET MENSAL
         // ==========================================
         setInterval(() => {
             const agora = new Date();
@@ -856,8 +892,8 @@
                 maquinas.forEach(m => {
                     if(m.status === "04-PRODUÇÃO") { m.tempos.prod++; maqTrabalhando = true; pProd = true; }
                     else if(m.status === "21-BAIXA EFICIÊNCIA" || m.status === "03-MATÉRIA-PRIMA / AJUSTE") { m.tempos.baixa++; maqTrabalhando = true; pBaixa = true; }
-                    else if(["22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE"].includes(m.status)) { m.tempos.neutro++; pNeutro = true; }
-                    else { m.tempos.parado++; pParada = true; } // TODAS AS OUTRAS MANUTENÇÕES E FALHAS CAEM AQUI (PARADO/VERMELHO)
+                    else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE"].includes(m.status)) { m.tempos.neutro++; pNeutro = true; }
+                    else { m.tempos.parado++; pParada = true; } 
                 });
 
                 if(pProd) dadosMensais.plantTempos.prod++;
@@ -904,4 +940,3 @@
     </script>
 </body>
 </html>
-
