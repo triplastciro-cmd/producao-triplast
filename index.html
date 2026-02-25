@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES V11 (Design Premium)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,16 +19,16 @@
         .aba-ativa { display: block !important; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* CARDS INDUSTRIAIS OTIMIZADOS */
+        /* CARDS INDUSTRIAIS ESTICADOS */
         .card-producao {
             background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
             border-left: 12px solid #cbd5e1; transition: 0.3s; overflow: hidden;
-            display: flex; flex-direction: column; width: 100%;
+            display: flex; flex-direction: column; width: 100%; max-width: 1200px; margin: 0 auto;
         }
         @media (min-width: 1024px) {
             .card-producao { flex-direction: row; }
-            .card-esq { flex: 1; padding: 24px; }
-            .card-dir { width: 380px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column;}
+            .card-esq { flex: 1; padding: 32px; }
+            .card-dir { width: 400px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 32px; display: flex; flex-direction: column;}
         }
         @media (max-width: 1023px) {
             .card-esq { padding: 16px; }
@@ -161,23 +161,8 @@
         <main class="max-w-7xl mx-auto px-2 md:px-4 pb-16">
             
             <div id="aba-painel" class="aba-conteudo aba-ativa">
-                
-                <div class="flex flex-col xl:flex-row gap-6">
-                    
-                    <div class="flex-1">
-                        <div id="grid-maquinas" class="flex flex-col gap-6 md:gap-8 items-center">
-                            </div>
+                <div id="grid-maquinas" class="flex flex-col gap-6 md:gap-8 items-center w-full">
                     </div>
-
-                    <div class="w-full xl:w-[350px] bg-white rounded-[24px] p-6 shadow-sm border border-slate-200 hidden xl:block sticky top-6 h-fit">
-                        <h2 class="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2 tracking-wide border-b pb-2">
-                            <i class="fa-solid fa-boxes-stacked text-blue-500"></i> Produção Global Cadastrada
-                        </h2>
-                        <div id="fila-lateral" class="space-y-3 max-h-[75vh] overflow-y-auto pr-2">
-                            </div>
-                    </div>
-
-                </div>
             </div>
 
             <div id="aba-op" class="aba-conteudo space-y-6">
@@ -313,9 +298,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. DADOS PADRÃO E LISTA DE STATUS COMPLETA
-        // ==========================================
         const supabaseUrl = 'https://supabase.com/dashboard/project/hgqnlqtvjiyuwnwypxxh'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
         let sb = null;
@@ -371,9 +353,6 @@
         const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
         let chartStatusInstance = null;
 
-        // ==========================================
-        // 2. INICIALIZAÇÃO E CACHE LOCAL
-        // ==========================================
         window.onload = () => {
             carregarDadosLocais(); 
             let userSalvo = localStorage.getItem('triplast_session');
@@ -450,9 +429,6 @@
             setTimeout(() => t.classList.add('hidden'), 2000);
         }
 
-        // ==========================================
-        // 3. LOGIN, LOGOUT E OPERADORES
-        // ==========================================
         function autenticar(autoLogin = false) {
             const u = document.getElementById('login-user').value;
             const p = document.getElementById('login-pass').value;
@@ -497,31 +473,6 @@
         }
         function removerOperador(i) { operadoresGlobais.splice(i, 1); renderEquipe(); renderPainel(); salvarAutomatico(); }
         function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
-
-        // ==========================================
-        // 4. PAINEL DE MÁQUINAS E FILA LATERAL GLOBAL
-        // ==========================================
-        function renderFilaLateral() {
-            const div = document.getElementById('fila-lateral');
-            if(!div) return;
-            
-            if(!produtosGlobais || produtosGlobais.length === 0) {
-                div.innerHTML = `<p class="text-xs text-slate-400 font-bold text-center py-4">Nenhum produto cadastrado.</p>`;
-                return;
-            }
-
-            div.innerHTML = produtosGlobais.map(p => `
-                <div class="p-4 border border-slate-100 bg-slate-50/50 rounded-2xl hover:border-blue-300 hover:bg-blue-50 transition-colors flex justify-between items-center group">
-                    <div>
-                        <div class="text-xs font-black text-slate-700 uppercase group-hover:text-blue-700">${p.nome}</div>
-                        <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase group-hover:text-blue-500">${p.cav} Cavidades | ${p.peso}g</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-[10px] font-black text-blue-600 bg-blue-100 px-2 py-1.5 rounded-lg shadow-sm"><i class="fa-solid fa-stopwatch mr-1"></i>${p.ciclo}s</div>
-                    </div>
-                </div>
-            `).join('');
-        }
 
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
@@ -661,14 +612,8 @@
                     </div>
                 </div>`;
             });
-            
-            // Renderiza a fila global lateral
-            renderFilaLateral();
         }
 
-        // ==========================================
-        // 5. FUNÇÕES DE MÁQUINA E FILA
-        // ==========================================
         function alterarStatus(id, st) { maquinas.find(m => m.id === id).status = st; renderPainel(); salvarAutomatico(); }
         
         function lancarPecas(id) {
@@ -687,9 +632,7 @@
             if(!motivo) { alert("Selecione um motivo de refugo antes de lançar."); return; }
             
             if(confirm(`Lançar ${qtd} peças como refugo por motivo de "${motivo}"?`)) {
-                maq.opAtiva.refugo += qtd; 
-                document.getElementById(`refugo-qtd-${id}`).value = ""; 
-                document.getElementById(`motivo-${id}`).value = ""; 
+                maq.opAtiva.refugo += qtd; document.getElementById(`refugo-qtd-${id}`).value = ""; document.getElementById(`motivo-${id}`).value = ""; 
                 renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
@@ -699,9 +642,7 @@
             if(confirm(`Finalizar O.P e enviar para o Histórico?`)) {
                 historico.unshift({ data: new Date().toLocaleString('pt-BR'), maq: maq.nome, op: maq.opAtiva.op, prod: maq.opAtiva.prod, meta: maq.opAtiva.meta, boas: maq.opAtiva.boas, refugo: maq.opAtiva.refugo });
                 if(maq.fila.length > 0) {
-                    const p = maq.fila.shift(); 
-                    maq.opAtiva = { op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, refugo: p.refugo || 0 }; 
-                    maq.status = "04-PRODUÇÃO";
+                    const p = maq.fila.shift(); maq.opAtiva = { op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, refugo: p.refugo || 0 }; maq.status = "04-PRODUÇÃO";
                 } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
                 renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
             }
@@ -711,12 +652,7 @@
             const maq = maquinas.find(m => m.id === id);
             if(confirm(`Pausar a O.P atual e jogá-la para a Fila? (O progresso será salvo)`)) {
                 maq.fila.push(maq.opAtiva); 
-                if(maq.fila.length > 1) { 
-                    maq.opAtiva = maq.fila.shift();
-                } else {
-                    maq.opAtiva = null;
-                    maq.status = "22-SEM PROGRAMAÇÃO";
-                }
+                if(maq.fila.length > 1) { maq.opAtiva = maq.fila.shift(); } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
                 renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
@@ -729,15 +665,11 @@
                 maq.fila.splice(index, 1); 
                 if(opEscolhida.boas === undefined) opEscolhida.boas = 0; 
                 if(opEscolhida.refugo === undefined) opEscolhida.refugo = 0;
-                maq.opAtiva = opEscolhida;
-                maq.status = "04-PRODUÇÃO";
+                maq.opAtiva = opEscolhida; maq.status = "04-PRODUÇÃO";
                 renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
 
-        // ==========================================
-        // 6. GESTÃO O.P E CALCULADORA
-        // ==========================================
         function salvarNovoProduto() {
             const nome = document.getElementById('novo-produto-nome').value;
             const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value);
@@ -745,7 +677,7 @@
             const peso = parseFloat(document.getElementById('novo-produto-peso').value);
             if(nome && ciclo && cav && peso) {
                 produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso });
-                renderCatalogo(); atualizarSelectProdutos(); renderPainel(); salvarAutomatico();
+                renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();
                 document.getElementById('novo-produto-nome').value = ""; document.getElementById('novo-produto-ciclo').value = ""; document.getElementById('novo-produto-cavidades').value = ""; document.getElementById('novo-produto-peso').value = "";
             }
         }
@@ -753,7 +685,7 @@
         function renderCatalogo() {
             document.getElementById('lista-catalogo').innerHTML = produtosGlobais.map((p,i) => `
                 <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold relative group">
-                    <button onclick="produtosGlobais.splice(${i},1); renderCatalogo(); atualizarSelectProdutos(); renderPainel(); salvarAutomatico();" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] hidden group-hover:flex shadow-md">&times;</button>
+                    <button onclick="produtosGlobais.splice(${i},1); renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] hidden group-hover:flex shadow-md">&times;</button>
                     <span class="text-blue-700">${p.nome}</span> <br>
                     <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}g</span>
                 </div>
@@ -782,8 +714,11 @@
             if(meta > 0 && ciclo > 0 && cav > 0) {
                 const totalSec = (meta / cav) * ciclo;
                 document.getElementById('res-tempo').innerText = `${Math.floor(totalSec/3600)}h ${Math.floor((totalSec%3600)/60)}m`;
-                const kgBruto = (meta * peso) / 1000;
+                
+                // CÁLCULO EXATO DO PESO (Total de Injetadas x Peso da Galhada)
+                const kgBruto = ((meta / cav) * peso) / 1000;
                 const kgTotal = kgBruto + (kgBruto * (pigm / 100));
+                
                 document.getElementById('res-material').innerText = `${kgTotal.toFixed(3)} KG`;
             } else { document.getElementById('res-tempo').innerText = "00h 00m"; document.getElementById('res-material').innerText = "0.000 KG"; }
         }
@@ -797,9 +732,7 @@
             if(op && prodSel.value && meta) {
                 maquinas.find(m => m.id === mId).fila.push({ 
                     op, prod: prodSel.options[prodSel.selectedIndex].text, meta,
-                    ciclo: document.getElementById('c-ciclo').value,
-                    cavs: document.getElementById('c-cav').value,
-                    material: document.getElementById('res-material').innerText
+                    ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, material: document.getElementById('res-material').innerText
                 });
                 alert(`O.P ${op} enviada para a fila da máquina ${mId.toUpperCase()}!`); 
                 document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
@@ -807,9 +740,6 @@
             } else { alert("Preencha O.P, selecione a Peça e a Meta!"); }
         }
 
-        // ==========================================
-        // 7. RESUMO E HISTÓRICO 
-        // ==========================================
         const fmtTm = s => `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
         function renderResumo() {
             document.getElementById('tbody-resumo').innerHTML = maquinas.map(m => {
@@ -827,9 +757,6 @@
             linhas.forEach(linha => { linha.style.display = linha.innerText.toLowerCase().includes(termo) ? '' : 'none'; });
         }
 
-        // ==========================================
-        // 8. HORA EXTRA E TURNOS
-        // ==========================================
         function zerarMeta() { 
             if(confirm("Deseja realmente zerar a meta de horas do mês?")) {
                 dadosMensais.metaAtualSec = 0; dadosMensais.horaExtraSec = 0; salvarAutomatico(); 
@@ -844,9 +771,6 @@
 
         function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
 
-        // ==========================================
-        // 9. MOTOR DO TEMPO REAL E RESET MENSAL
-        // ==========================================
         setInterval(() => {
             const agora = new Date();
             document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
@@ -924,9 +848,6 @@
 
         }, 1000);
 
-        // ==========================================
-        // 10. GRÁFICOS
-        // ==========================================
         function alterarFiltroGrafico(valor) { filtroGraficoId = valor; iniciarGraficos(); }
         function iniciarGraficos() {
             if(chartStatusInstance) chartStatusInstance.destroy();
@@ -940,4 +861,3 @@
     </script>
 </body>
 </html>
-
