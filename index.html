@@ -160,6 +160,16 @@
             </div>
 
             <div id="aba-op" class="aba-conteudo space-y-6">
+
+                <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
+                    <h2 class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-palette text-blue-600"></i> GERENCIADOR DE CORES</h2>
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <input type="text" id="nova-cor-nome" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-blue-500 uppercase" placeholder="Digite uma nova cor (Ex: Azul Claro)...">
+                        <button onclick="adicionarCor()" class="w-full md:w-auto bg-green-600 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-green-500 shadow-md">Adicionar Cor</button>
+                    </div>
+                    <div id="lista-cores-gerenciador" class="flex flex-wrap gap-2">
+                        </div>
+                </div>
                 
                 <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                     <h2 class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-boxes-stacked text-blue-600"></i> CATÁLOGO DE PRODUTOS</h2>
@@ -183,7 +193,7 @@
                             </div>
                             <div class="w-24">
                                 <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Material</label>
-                                <input type="text" id="novo-produto-mat" placeholder="Ex: PP" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none">
+                                <input type="text" id="novo-produto-mat" placeholder="Ex: PP" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none uppercase">
                             </div>
                             <div class="w-32">
                                 <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Cor da Peça</label>
@@ -358,7 +368,7 @@
                                 <span id="lbl-chart-neutro" class="text-lg md:text-2xl font-black text-slate-500 font-mono">00:00:00</span>
                             </div>
                             <div class="text-center col-span-2 md:col-span-1 border-t md:border-t-0 border-slate-200 pt-2 md:pt-0">
-                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">OEE Global (Fábrica)</span>
+                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">OEE Global (Média)</span>
                                 <span id="lbl-chart-oee" class="text-lg md:text-2xl font-black text-blue-600 font-mono">0.0%</span>
                             </div>
                         </div>
@@ -368,12 +378,12 @@
                     
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                         <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Produção Total de Peças Boas</h3>
-                        <div class="h-[250px] md:h-[350px]"><canvas id="chartGeral"></canvas></div>
+                        <div class="h-[250px] md:h-[300px]"><canvas id="chartGeral"></canvas></div>
                     </div>
                     
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                         <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Índice de Refugo (%)</h3>
-                        <div class="h-[250px] md:h-[350px]"><canvas id="chartRefugo"></canvas></div>
+                        <div class="h-[250px] md:h-[300px]"><canvas id="chartRefugo"></canvas></div>
                     </div>
                     
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
@@ -403,7 +413,7 @@
 
     <script>
         // ==========================================
-        // FUNÇÃO GLOBAL DE FORMATAÇÃO DE TEMPO (00:00:00)
+        // FUNÇÃO GLOBAL DE FORMATAÇÃO DE TEMPO
         // ==========================================
         const fmtTm = s => {
             let tempo = Math.floor(s);
@@ -429,29 +439,16 @@
         let filtroGraficoId = 'hoje';
         let turnoForcado = null; 
         
-        // TRAVA DE SEGURANÇA PARA ATUALIZAÇÕES E DADOS
         let sistemaPronto = false; 
         let lastSyncTs = parseInt(localStorage.getItem('triplast_ts')) || 0;
         
-        let dadosMensais = { 
-            mesAtual: new Date().getMonth(), 
-            metaAtualSec: 0, 
-            horaExtraSec: 0, 
-            plantTempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } 
-        };
-        
+        let dadosMensais = { mesAtual: new Date().getMonth(), metaAtualSec: 0, horaExtraSec: 0, plantTempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } };
         let modoHoraExtra = false;
 
-        // LISTA DE CORES AUTOMÁTICA (Sem repetições)
-        const listaCoresBruta = ['Sem Cor', 'Branco', 'Preto', 'Azul', 'Vermelho', 'Verde', 'Amarelo', 'Laranja', 'Cinza', 'Prata', 'Ouro', 'Transparente'];
-        const coresGlobais = [...new Set(listaCoresBruta)].sort();
-
-        let produtosGlobais = [
-            { id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45, mat: "PP", cor: "Branco", pigm: 2 }, 
-            { id: 2, nome: "Balde 20L", ciclo: 45, cav: 1, peso: 500, mat: "PS", cor: "Azul", pigm: 0 }
-        ];
-        
-        let operadoresGlobais = ["João Silva", "Carlos Souza", "Ana Maria", "Roberto"];
+        // ESTADO GLOBAL DE CORES
+        let coresGlobais = [];
+        let produtosGlobais = [{ id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45, mat: "PP", cor: "", pigm: 2 }];
+        let operadoresGlobais = ["João Silva", "Carlos Souza"];
         let historico = [];
         
         let maquinas = [
@@ -469,9 +466,43 @@
             "17-TROCA DE BICO DE INJEÇÃO", "18-OUTROS", "19-ELÉTRICA DE MOLDE", "20-FALTA DE OPERADOR", 
             "21-BAIXA EFICIÊNCIA", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)"
         ];
-        
         const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
         let chartStatusInstance = null;
+
+        // ==========================================
+        // SISTEMA DE CORES DINÂMICO
+        // ==========================================
+        function renderCoresGerenciador() {
+            document.getElementById('lista-cores-gerenciador').innerHTML = coresGlobais.map((c, i) => `
+                <div class="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center shadow-sm">
+                    <i class="fa-solid fa-droplet mr-2 text-blue-400"></i> ${c}
+                    <button onclick="removerCor(${i})" class="ml-3 text-red-400 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function adicionarCor() {
+            let val = document.getElementById('nova-cor-nome').value.trim().toUpperCase();
+            if (val && !coresGlobais.includes(val)) {
+                coresGlobais.push(val);
+                coresGlobais.sort();
+                document.getElementById('nova-cor-nome').value = "";
+                renderCoresGerenciador();
+                atualizarSelectCores();
+                salvarAutomatico();
+            } else if (coresGlobais.includes(val)) {
+                alert("Esta cor já está cadastrada!");
+            }
+        }
+
+        function removerCor(index) {
+            if(confirm(`Deseja apagar a cor ${coresGlobais[index]} do sistema?`)) {
+                coresGlobais.splice(index, 1);
+                renderCoresGerenciador();
+                atualizarSelectCores();
+                salvarAutomatico();
+            }
+        }
 
         function atualizarSelectCores() {
             const options = '<option value="">-- Cor --</option>' + coresGlobais.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -480,22 +511,21 @@
         }
 
         // ==========================================
-        // 2. INICIALIZAÇÃO SEGURA (BOOT)
+        // 2. BOOT E NUVEM
         // ==========================================
         window.onload = async () => {
             await carregarDaNuvem();
-            if(!sistemaPronto) { carregarDadosLocais(); }
+            if(!sistemaPronto) carregarDadosLocais();
             
             sistemaPronto = true; 
-            let userSalvo = localStorage.getItem('triplast_session');
+            renderCoresGerenciador();
             atualizarSelectCores();
 
+            let userSalvo = localStorage.getItem('triplast_session');
             setTimeout(() => {
                 document.getElementById('tela-loading').classList.add('opacity-0');
-                
                 setTimeout(() => { 
                     document.getElementById('tela-loading').classList.add('hidden');
-                    
                     if (userSalvo && SENHAS[userSalvo]) {
                         document.getElementById('login-user').value = userSalvo;
                         document.getElementById('login-pass').value = SENHAS[userSalvo];
@@ -508,9 +538,6 @@
             }, 1000);
         };
 
-        // ==========================================
-        // 3. SINCRONIZAÇÃO DA NUVEM
-        // ==========================================
         async function carregarDaNuvem() {
             if(!sb) return;
             try {
@@ -523,6 +550,8 @@
                     historico = db.historico || historico;
                     dadosMensais = db.dadosMensais || dadosMensais;
                     modoHoraExtra = db.modoHoraExtra || false;
+                    coresGlobais = db.cores || coresGlobais;
+                    
                     lastSyncTs = db.ts || 0;
                     localStorage.setItem('triplast_ts', lastSyncTs);
                     localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
@@ -542,6 +571,7 @@
                     if(db.historico) historico = db.historico;
                     if(db.dadosMensais) dadosMensais = db.dadosMensais;
                     if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
+                    if(db.cores) coresGlobais = db.cores;
                 } catch(e) {}
             }
         }
@@ -558,14 +588,16 @@
                     historico = db.historico || historico;
                     dadosMensais = db.dadosMensais || dadosMensais;
                     modoHoraExtra = db.modoHoraExtra || false;
+                    coresGlobais = db.cores || coresGlobais;
                     lastSyncTs = db.ts;
                     localStorage.setItem('triplast_ts', lastSyncTs);
                     
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
                     if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
-                    renderCatalogo(); 
-                    atualizarSelectProdutos();
+                    if(document.getElementById('aba-op').classList.contains('aba-ativa')) {
+                        renderCoresGerenciador(); atualizarSelectCores(); renderCatalogo(); atualizarSelectProdutos();
+                    }
                 }
             } catch(e) {}
         }, 5000);
@@ -576,7 +608,6 @@
                 if(!m.fila) m.fila = [];
                 if(!m.operador) m.operador = "";
                 if(!m.ultimoMotivoRefugo) m.ultimoMotivoRefugo = "";
-                
                 if(m.opAtiva) {
                     m.opAtiva.boas = m.opAtiva.boas || 0;
                     m.opAtiva.refugo = m.opAtiva.refugo || 0;
@@ -587,6 +618,7 @@
                 }
             });
             if(!dadosMensais.plantTempos) dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
+            if(!coresGlobais) coresGlobais = [];
         }
 
         async function salvarAutomatico() { 
@@ -594,12 +626,12 @@
             sanitizarDados();
             lastSyncTs = Date.now();
             localStorage.setItem('triplast_ts', lastSyncTs);
-            localStorage.setItem('triplast_dados_oficial', JSON.stringify({ maquinas, produtos: produtosGlobais, operadores: operadoresGlobais, historico, dadosMensais, modoHoraExtra }));
+            localStorage.setItem('triplast_dados_oficial', JSON.stringify({ maquinas, produtos: produtosGlobais, operadores: operadoresGlobais, historico, dadosMensais, modoHoraExtra, cores: coresGlobais }));
             document.getElementById('status-nuvem').innerText = "⏳"; 
             if(saveTimeout) clearTimeout(saveTimeout); 
             saveTimeout = setTimeout(async () => { 
                 if(sb) {
-                    await sb.from('sistema').update({ conteudo: { maquinas, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, ts: lastSyncTs } }).eq('id', 1);
+                    await sb.from('sistema').update({ conteudo: { maquinas, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, cores: coresGlobais, ts: lastSyncTs } }).eq('id', 1);
                 }
                 document.getElementById('status-nuvem').innerText = "☁️"; 
             }, 1000); 
@@ -1086,7 +1118,6 @@
                     if (temProd) dadosMensais.plantTempos.prod += passados; if (temBaixa) dadosMensais.plantTempos.baixa += passados;
                     if (temParada) dadosMensais.plantTempos.parado += passados; if (temNeutro) dadosMensais.plantTempos.neutro += passados;
 
-                    // OEE Global Calculado (Média)
                     let globalOeeVal = oeeQtdGlob > 0 ? (oeeTotalGlob / oeeQtdGlob) * 100 : 0;
                     if(document.getElementById('lbl-chart-oee')) document.getElementById('lbl-chart-oee').innerText = globalOeeVal.toFixed(1) + '%';
                 }
