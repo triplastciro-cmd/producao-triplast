@@ -253,6 +253,7 @@
 
                 <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                     <h2 class="text-xl md:text-2xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-file-circle-plus text-blue-600"></i> LANÇAR O.P NA PRODUÇÃO</h2>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div>
                             <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Máquina</label>
@@ -269,17 +270,17 @@
                     </div>
 
                     <div class="bg-slate-900 p-4 md:p-6 rounded-[24px] mb-6 shadow-inner text-white">
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-4">
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Ciclo (s)</label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Ciclo (seg)</label>
                                 <input type="number" id="c-ciclo" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
                             </div>
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Cavidades</label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Nº Cavidade</label>
                                 <input type="number" id="c-cav" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
                             </div>
                             <div>
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Peso (Gramas)</label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Peso Prod. (g)</label>
                                 <input type="number" id="c-peso" step="0.001" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
                             </div>
                             <div>
@@ -287,18 +288,31 @@
                                 <input type="number" id="c-pigm" value="2" step="0.1" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none text-blue-400">
                             </div>
                             <div class="col-span-2 md:col-span-1">
-                                <label class="text-[10px] font-black text-emerald-400 uppercase mb-1 block">META (PEÇAS)</label>
+                                <label class="text-[10px] font-black text-emerald-400 uppercase mb-1 block">Qts (Uni) [META]</label>
                                 <input type="number" id="c-meta" oninput="calcularTudo()" class="w-full p-3 bg-white text-emerald-700 border-2 border-emerald-500 rounded-xl font-black outline-none shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                             </div>
                         </div>
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="flex-1 bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
-                                <span class="text-[10px] md:text-xs font-bold text-slate-400 uppercase">Tempo Est:</span>
-                                <span id="res-tempo" class="text-xl md:text-2xl font-black text-emerald-400">00h 00m</span>
+
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qts (KG) Material</span>
+                                <span id="res-mat" class="text-base md:text-lg font-black text-blue-400">0.00</span>
                             </div>
-                            <div class="flex-1 bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
-                                <span class="text-[10px] md:text-xs font-bold text-slate-400 uppercase">Material Total:</span>
-                                <span id="res-material" class="text-xl md:text-2xl font-black text-blue-400">0.000 KG</span>
+                            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qts Pig (KG)</span>
+                                <span id="res-pig" class="text-base md:text-lg font-black text-pink-400">0.00</span>
+                            </div>
+                            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Peso Líq/Bruto</span>
+                                <span id="res-total" class="text-base md:text-lg font-black text-white">0.00</span>
+                            </div>
+                            <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Horas Prod</span>
+                                <span id="res-tempo" class="text-base md:text-lg font-black text-emerald-400">00:00:00</span>
+                            </div>
+                            <div class="col-span-2 md:col-span-1 bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Meta/Hora</span>
+                                <span id="res-meta-hora" class="text-base md:text-lg font-black text-amber-400">0</span>
                             </div>
                         </div>
                     </div>
@@ -502,16 +516,10 @@
         // 2. INICIALIZAÇÃO SEGURA (BOOT)
         // ==========================================
         window.onload = async () => {
-            // 1º Passo: Tentar forçar download da Nuvem antes de qualquer coisa
             await carregarDaNuvem();
+            if(!sistemaPronto) { carregarDadosLocais(); }
             
-            // 2º Passo: Se não conseguiu nuvem (sem net), carrega o backup oficial
-            if(!sistemaPronto) {
-                carregarDadosLocais();
-            }
-            
-            sistemaPronto = true; // AGORA É SEGURO SALVAR
-
+            sistemaPronto = true; 
             let userSalvo = localStorage.getItem('triplast_session');
 
             setTimeout(() => {
@@ -533,7 +541,7 @@
         };
 
         // ==========================================
-        // 3. SINCRONIZAÇÃO E PREVENÇÃO DE PERDA DE DADOS
+        // 3. SINCRONIZAÇÃO
         // ==========================================
         async function carregarDaNuvem() {
             if(!sb) return;
@@ -541,29 +549,21 @@
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo) {
                     const db = data.conteudo;
-                    
                     maquinas = db.maquinas || maquinas;
                     produtosGlobais = db.produtos || produtosGlobais;
                     operadoresGlobais = db.operadores || operadoresGlobais;
                     historico = db.historico || historico;
                     dadosMensais = db.dadosMensais || dadosMensais;
                     modoHoraExtra = db.modoHoraExtra || false;
-                    
                     lastSyncTs = db.ts || 0;
                     localStorage.setItem('triplast_ts', lastSyncTs);
-                    
-                    // Cria backup seguro
                     localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
-                    
                     sistemaPronto = true;
                 }
-            } catch(e) { 
-                console.error("Erro no boot da nuvem"); 
-            }
+            } catch(e) { console.error("Erro no boot da nuvem"); }
         }
 
         function carregarDadosLocais() {
-            // Usa uma chave oficial permanente para sobreviver às atualizações do código
             const memory = localStorage.getItem('triplast_dados_oficial');
             if(memory) {
                 try {
@@ -574,31 +574,25 @@
                     if(db.historico) historico = db.historico;
                     if(db.dadosMensais) dadosMensais = db.dadosMensais;
                     if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
-                } catch(e) {
-                    console.log("Erro ao ler backup.");
-                }
+                } catch(e) {}
             }
         }
 
-        // MOTOR INVISÍVEL DE SINCRONIZAÇÃO (ATUALIZA O TABLET SE O PAI MEXER NO NOTEBOOK)
         setInterval(async () => {
             if(!sb || !sistemaPronto) return;
             try {
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
                     const db = data.conteudo;
-                    
                     maquinas = db.maquinas || maquinas;
                     produtosGlobais = db.produtos || produtosGlobais;
                     operadoresGlobais = db.operadores || operadoresGlobais;
                     historico = db.historico || historico;
                     dadosMensais = db.dadosMensais || dadosMensais;
                     modoHoraExtra = db.modoHoraExtra || false;
-                    
                     lastSyncTs = db.ts;
                     localStorage.setItem('triplast_ts', lastSyncTs);
                     
-                    // Atualiza a tela que estiver aberta
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
                     if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
@@ -614,7 +608,6 @@
                 if(!m.fila) m.fila = [];
                 if(!m.operador) m.operador = "";
                 if(!m.ultimoMotivoRefugo) m.ultimoMotivoRefugo = "";
-                
                 if(m.opAtiva) {
                     m.opAtiva.boas = m.opAtiva.boas || 0;
                     m.opAtiva.refugo = m.opAtiva.refugo || 0;
@@ -623,66 +616,34 @@
                     m.opAtiva.cavs = m.opAtiva.cavs || 1;
                 }
             });
-            
-            if(!dadosMensais.plantTempos) {
-                dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-            }
+            if(!dadosMensais.plantTempos) dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
         }
 
         async function salvarAutomatico() { 
-            // IMPEDE SALVAR POR CIMA ANTES DE CARREGAR A NUVEM
             if(!sistemaPronto) return; 
-
             sanitizarDados();
-            
             lastSyncTs = Date.now();
             localStorage.setItem('triplast_ts', lastSyncTs);
-            
-            localStorage.setItem('triplast_dados_oficial', JSON.stringify({
-                maquinas, 
-                produtos: produtosGlobais, 
-                operadores: operadoresGlobais, 
-                historico, 
-                dadosMensais, 
-                modoHoraExtra
-            }));
-
+            localStorage.setItem('triplast_dados_oficial', JSON.stringify({ maquinas, produtos: produtosGlobais, operadores: operadoresGlobais, historico, dadosMensais, modoHoraExtra }));
             document.getElementById('status-nuvem').innerText = "⏳"; 
-            
             if(saveTimeout) clearTimeout(saveTimeout); 
-            
             saveTimeout = setTimeout(async () => { 
                 if(sb) {
-                    await sb.from('sistema').update({ 
-                        conteudo: { 
-                            maquinas, 
-                            operadores: operadoresGlobais, 
-                            produtos: produtosGlobais, 
-                            historico, 
-                            dadosMensais, 
-                            modoHoraExtra, 
-                            ts: lastSyncTs 
-                        } 
-                    }).eq('id', 1);
+                    await sb.from('sistema').update({ conteudo: { maquinas, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, ts: lastSyncTs } }).eq('id', 1);
                 }
                 document.getElementById('status-nuvem').innerText = "☁️"; 
             }, 1000); 
         }
 
         // ==========================================
-        // 4. LOGIN E CONTROLES DE ABAS
+        // 4. LOGIN E ABAS
         // ==========================================
         function autenticar(autoLogin = false) {
             const u = document.getElementById('login-user').value;
             const p = document.getElementById('login-pass').value;
-            
             if(SENHAS[u] === p) {
                 userLogado = u;
-                
-                if(!autoLogin) {
-                    localStorage.setItem('triplast_session', u); 
-                }
-
+                if(!autoLogin) localStorage.setItem('triplast_session', u); 
                 document.getElementById('tela-login').style.display = 'none';
                 document.getElementById('app-content').classList.remove('hidden');
                 
@@ -691,31 +652,16 @@
                         document.getElementById(id).style.display = 'none';
                     });
                 }
-                
                 document.getElementById('f-maq').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-                
-                renderPainel(); 
-                renderResumo(); 
-                renderHistorico(); 
-                renderCatalogo(); 
-                atualizarSelectProdutos(); 
-                iniciarGraficos();
-                
+                renderPainel(); renderResumo(); renderHistorico(); renderCatalogo(); atualizarSelectProdutos(); iniciarGraficos();
                 if(modoHoraExtra) toggleHoraExtraVis();
-            } else { 
-                alert("Senha Incorreta!"); 
-            }
+            } else { alert("Senha Incorreta!"); }
         }
 
-        function fazerLogout() { 
-            localStorage.removeItem('triplast_session'); 
-            location.reload(); 
-        }
-
+        function fazerLogout() { localStorage.removeItem('triplast_session'); location.reload(); }
         function trocarAba(nome) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
             document.getElementById('aba-' + nome).classList.add('aba-ativa');
             document.getElementById('btn-' + nome).classList.add('active');
         }
@@ -723,11 +669,7 @@
         // ==========================================
         // 5. OPERADORES
         // ==========================================
-        function abrirModalOperadores() { 
-            document.getElementById('modal-operadores').style.display = 'flex'; 
-            renderEquipe(); 
-        }
-        
+        function abrirModalOperadores() { document.getElementById('modal-operadores').style.display = 'flex'; renderEquipe(); }
         function renderEquipe() { 
             document.getElementById('lista-equipe').innerHTML = operadoresGlobais.map((op, i) => `
                 <div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
@@ -736,68 +678,38 @@
                 </div>
             `).join(''); 
         }
-
         function addOperador() { 
             const val = document.getElementById('novo-op-nome').value;
-            if(val) { 
-                operadoresGlobais.push(val); 
-                document.getElementById('novo-op-nome').value = ""; 
-                renderEquipe(); 
-                renderPainel(); 
-                salvarAutomatico(); 
-            } 
+            if(val) { operadoresGlobais.push(val); document.getElementById('novo-op-nome').value = ""; renderEquipe(); renderPainel(); salvarAutomatico(); } 
         }
-
-        function removerOperador(i) { 
-            operadoresGlobais.splice(i, 1); 
-            renderEquipe(); 
-            renderPainel(); 
-            salvarAutomatico(); 
-        }
-
-        function alterarOperador(id, op) { 
-            maquinas.find(m => m.id === id).operador = op; 
-            salvarAutomatico(); 
-        }
+        function removerOperador(i) { operadoresGlobais.splice(i, 1); renderEquipe(); renderPainel(); salvarAutomatico(); }
+        function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO DO PAINEL DE MÁQUINAS
+        // 6. RENDERIZAÇÃO PAINEL
         // ==========================================
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
             grid.innerHTML = "";
-            
             let maquinasFilter = userLogado === 'admin' ? maquinas : maquinas.filter(m => m.id === userLogado);
             let widthClass = userLogado === 'admin' ? "w-full" : "w-full max-w-5xl mx-auto";
 
             maquinasFilter.forEach(m => {
                 let sClass = "status-parada"; 
-                
-                if(m.status === "04-PRODUÇÃO") {
-                    sClass = "status-produzindo"; 
-                } else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) {
-                    sClass = "status-baixa"; 
-                } else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA"].includes(m.status)) {
-                    sClass = "status-sem-prog"; 
-                } else if(m.status === "25-FIM DE SEMANA (PAUSADO)") {
-                    sClass = "status-fds"; 
-                }
+                if(m.status === "04-PRODUÇÃO") sClass = "status-produzindo"; 
+                else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) sClass = "status-baixa"; 
+                else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA"].includes(m.status)) sClass = "status-sem-prog"; 
+                else if(m.status === "25-FIM DE SEMANA (PAUSADO)") sClass = "status-fds"; 
 
                 let opNum = "--", prodNome = "Aguardando O.P", meta = 0, boas = 0, refugo = 0, progresso = 0;
                 let cardOp = ``;
                 
                 if(m.opAtiva) {
-                    opNum = m.opAtiva.op; 
-                    prodNome = m.opAtiva.prod; 
-                    meta = m.opAtiva.meta; 
-                    boas = m.opAtiva.boas; 
-                    refugo = m.opAtiva.refugo;
-                    
+                    opNum = m.opAtiva.op; prodNome = m.opAtiva.prod; meta = m.opAtiva.meta; boas = m.opAtiva.boas; refugo = m.opAtiva.refugo;
                     progresso = meta > 0 ? Math.min(((boas / meta) * 100), 100).toFixed(1) : 0;
                     
                     cardOp = `
                     <div class="bg-slate-50 p-4 md:p-6 rounded-[24px] border border-slate-200 mt-4 shadow-inner relative">
-                        
                         <div class="flex flex-col md:flex-row justify-between md:items-center mb-5 border-b border-slate-200 pb-4 gap-2">
                             <span class="text-xs font-black text-slate-400 uppercase tracking-widest">O.P ATIVA: <span class="text-blue-600 text-2xl ml-2">${opNum}</span></span>
                             <span class="text-xs font-black text-slate-500 uppercase truncate bg-white px-3 py-1.5 rounded-lg border border-slate-200">${prodNome}</span>
@@ -838,22 +750,10 @@
                         </div>
 
                         <div class="grid grid-cols-4 gap-2 mb-5 bg-slate-900 rounded-xl p-3 text-center shadow-inner">
-                            <div>
-                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Disp</p>
-                                <p id="oee-disp-${m.id}" class="text-sm md:text-base font-black text-blue-400 mt-0.5">0.0%</p>
-                            </div>
-                            <div>
-                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Perf</p>
-                                <p id="oee-perf-${m.id}" class="text-sm md:text-base font-black text-amber-400 mt-0.5">0.0%</p>
-                            </div>
-                            <div>
-                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Qual</p>
-                                <p id="oee-qual-${m.id}" class="text-sm md:text-base font-black text-emerald-400 mt-0.5">0.0%</p>
-                            </div>
-                            <div class="border-l border-slate-600 pl-2">
-                                <p class="text-[9px] text-slate-300 font-black uppercase tracking-widest">OEE Global</p>
-                                <p id="oee-total-${m.id}" class="text-sm md:text-base font-black text-white mt-0.5 animate-pulse">0.0%</p>
-                            </div>
+                            <div><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Disp</p><p id="oee-disp-${m.id}" class="text-sm md:text-base font-black text-blue-400 mt-0.5">0.0%</p></div>
+                            <div><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Perf</p><p id="oee-perf-${m.id}" class="text-sm md:text-base font-black text-amber-400 mt-0.5">0.0%</p></div>
+                            <div><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Qual</p><p id="oee-qual-${m.id}" class="text-sm md:text-base font-black text-emerald-400 mt-0.5">0.0%</p></div>
+                            <div class="border-l border-slate-600 pl-2"><p class="text-[9px] text-slate-300 font-black uppercase tracking-widest">OEE Global</p><p id="oee-total-${m.id}" class="text-sm md:text-base font-black text-white mt-0.5 animate-pulse">0.0%</p></div>
                         </div>
 
                         <div class="w-full bg-slate-200 rounded-full h-4 mb-5 shadow-inner overflow-hidden border border-slate-300">
@@ -868,7 +768,6 @@
                 }
 
                 let filaHTML = `<div class="text-center text-xs font-bold text-slate-400 p-6 border-2 border-dashed border-slate-300 rounded-2xl mt-2 bg-slate-50">Nenhuma O.P na Fila</div>`;
-                
                 if(m.fila.length > 0) {
                     filaHTML = m.fila.map((f, index) => `
                     <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm relative mb-3">
@@ -879,18 +778,16 @@
                             </div>
                             <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-black uppercase tracking-widest border border-slate-200">${index + 1}º</span>
                         </div>
-                        
                         <div class="grid grid-cols-2 gap-2 mb-3">
                             <div class="bg-slate-50 p-2 rounded text-center border border-slate-100">
                                 <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Ciclo/Cav</p>
                                 <p class="text-[11px] font-black text-slate-700 mt-0.5">${f.ciclo || '--'}s / ${f.cavs || '--'}</p>
                             </div>
                             <div class="bg-slate-50 p-2 rounded text-center border border-slate-100">
-                                <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Material</p>
+                                <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Mat/Pig</p>
                                 <p class="text-[11px] font-black text-blue-600 mt-0.5">${f.material || '--'}</p>
                             </div>
                         </div>
-
                         <div class="flex justify-between items-center mt-2 pt-3 border-t border-slate-200 border-dashed">
                             <div class="flex flex-col">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meta de Peças</span>
@@ -904,7 +801,6 @@
                 grid.innerHTML += `
                 <div class="${widthClass} card-producao ${sClass}">
                     <div class="card-esq">
-                        
                         <div class="flex flex-col md:flex-row justify-between items-start gap-3">
                             <div class="w-full md:w-auto">
                                 <h3 class="text-3xl md:text-4xl font-black text-slate-800 uppercase italic leading-none mb-3 tracking-tighter">${m.nome}</h3>
@@ -913,43 +809,34 @@
                                     ${operadoresGlobais.map(op => `<option value="${op}" ${m.operador === op ? 'selected' : ''}>👷 ${op}</option>`).join('')}
                                 </select>
                             </div>
-                            
                             <select onchange="alterarStatus('${m.id}', this.value)" class="bg-white border-2 border-slate-200 p-3.5 rounded-xl font-black text-[10px] md:text-xs uppercase outline-none focus:border-blue-500 text-slate-700 w-full md:w-56 cursor-pointer shadow-sm transition-colors">
                                 ${statusMaquinasList.map(st => `<option value="${st}" ${m.status === st ? 'selected' : ''}>${st}</option>`).join('')}
                             </select>
                         </div>
-                        
                         ${cardOp}
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div class="bg-green-50/50 p-5 md:p-6 rounded-[24px] border border-green-200 text-center flex flex-col justify-between shadow-inner relative">
                                 <div class="flex justify-between items-center mb-3">
                                     <label class="text-xs md:text-sm font-black text-green-600 uppercase tracking-widest"><i class="fa-solid fa-plus-circle mr-1"></i> Peças Boas</label>
-                                    <button onclick="zerarBoas('${m.id}')" class="text-[9px] md:text-[10px] bg-green-100 border border-green-300 text-green-700 hover:bg-green-600 hover:text-white px-2 py-1 rounded-lg font-black uppercase transition-colors shadow-sm" title="Zerar Peças Boas da O.P Atual">Zerar</button>
+                                    <button onclick="zerarBoas('${m.id}')" class="text-[9px] md:text-[10px] bg-green-100 border border-green-300 text-green-700 hover:bg-green-600 hover:text-white px-2 py-1 rounded-lg font-black uppercase transition-colors shadow-sm">Zerar</button>
                                 </div>
                                 <input type="number" id="boas-${m.id}" placeholder="0" class="input-industrial border-green-300 text-green-800 mb-4 !p-4 md:!p-5 bg-white shadow-sm">
                                 <button onclick="lancarPecas('${m.id}')" class="bg-green-500 text-white w-full py-4 md:py-5 rounded-xl font-black shadow-lg hover:bg-green-600 active:scale-95 text-base md:text-lg uppercase tracking-widest">LANÇAR BOAS</button>
                             </div>
-                            
                             <div class="bg-red-50/50 p-5 md:p-6 rounded-[24px] border border-red-200 text-center flex flex-col justify-between shadow-inner relative">
                                 <div class="flex justify-between items-center mb-3">
                                     <label class="text-xs md:text-sm font-black text-red-500 uppercase tracking-widest"><i class="fa-solid fa-recycle mr-1"></i> Refugo (Qtd)</label>
-                                    <button onclick="zerarRefugo('${m.id}')" class="text-[9px] md:text-[10px] bg-red-100 border border-red-300 text-red-600 hover:bg-red-500 hover:text-white px-2 py-1 rounded-lg font-black uppercase transition-colors shadow-sm" title="Zerar Refugos da O.P Atual">Zerar</button>
+                                    <button onclick="zerarRefugo('${m.id}')" class="text-[9px] md:text-[10px] bg-red-100 border border-red-300 text-red-600 hover:bg-red-500 hover:text-white px-2 py-1 rounded-lg font-black uppercase transition-colors shadow-sm">Zerar</button>
                                 </div>
                                 <input type="number" id="refugo-qtd-${m.id}" placeholder="Ex: 2" class="input-industrial border-red-300 text-red-800 mb-2 !p-3 md:!p-4 bg-white shadow-sm text-lg">
-                                
                                 <select id="motivo-${m.id}" class="w-full text-xs font-bold p-3 md:p-4 rounded-xl border border-red-300 outline-none text-red-700 bg-white mb-4 shadow-sm">
                                     <option value="">Motivo da perda...</option>
                                     ${motivosRefugo.map(mot => `<option value="${mot}" ${m.ultimoMotivoRefugo === mot ? 'selected' : ''}>${mot}</option>`).join('')}
                                 </select>
-                                
-                                <button onclick="lancarRefugoManual('${m.id}')" class="w-full bg-red-100 border-2 border-red-400 text-red-600 py-3 md:py-4 rounded-xl font-black uppercase shadow-sm hover:bg-red-500 hover:text-white transition-all text-sm tracking-widest">
-                                    LANÇAR REFUGO
-                                </button>
+                                <button onclick="lancarRefugoManual('${m.id}')" class="w-full bg-red-100 border-2 border-red-400 text-red-600 py-3 md:py-4 rounded-xl font-black uppercase shadow-sm hover:bg-red-500 hover:text-white transition-all text-sm tracking-widest">LANÇAR REFUGO</button>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="card-dir">
                         <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest border-b border-slate-200 pb-2"><i class="fa-solid fa-layer-group text-blue-400 mr-2"></i> Fila da Máquina</p>
                         <div class="fila-scroll-vertical pr-2">${filaHTML}</div>
@@ -961,185 +848,73 @@
         // ==========================================
         // 7. FUNÇÕES DE STATUS E APONTAMENTO
         // ==========================================
-        function alterarStatus(id, st) { 
-            maquinas.find(m => m.id === id).status = st; 
-            renderPainel(); 
-            salvarAutomatico(); 
-        }
-
+        function alterarStatus(id, st) { maquinas.find(m => m.id === id).status = st; renderPainel(); salvarAutomatico(); }
         function lancarPecas(id) { 
-            const val = parseInt(document.getElementById(`boas-${id}`).value); 
-            const maq = maquinas.find(m => m.id === id); 
-            
-            if(val > 0 && maq.opAtiva) { 
-                maq.opAtiva.boas += val; 
-                document.getElementById(`boas-${id}`).value = ""; 
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico(); 
-            } 
+            const val = parseInt(document.getElementById(`boas-${id}`).value); const maq = maquinas.find(m => m.id === id); 
+            if(val > 0 && maq.opAtiva) { maq.opAtiva.boas += val; document.getElementById(`boas-${id}`).value = ""; renderPainel(); renderResumo(); salvarAutomatico(); } 
         }
-
         function lancarRefugoManual(id) {
-            const maq = maquinas.find(m => m.id === id);
-            const qtd = parseInt(document.getElementById(`refugo-qtd-${id}`).value);
-            const motivo = document.getElementById(`motivo-${id}`).value;
-            
-            if(!maq.opAtiva) { 
-                alert("Nenhuma O.P ativa nesta máquina."); 
-                return; 
-            }
-            if(isNaN(qtd) || qtd <= 0) { 
-                alert("Digite uma quantidade válida de peças."); 
-                return; 
-            }
-            if(!motivo) { 
-                alert("Selecione um motivo de refugo antes de lançar."); 
-                return; 
-            }
-            
-            const perc = ((qtd / maq.opAtiva.meta) * 100).toFixed(2);
-            
-            if(confirm(`Você digitou ${qtd} peças. Isso representa ${perc}% da meta de ${maq.opAtiva.meta}. Confirma lançamento por "${motivo}"?`)) {
-                maq.opAtiva.refugo += qtd; 
-                maq.ultimoMotivoRefugo = motivo; 
-                document.getElementById(`refugo-qtd-${id}`).value = ""; 
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
+            const maq = maquinas.find(m => m.id === id); const qtd = parseInt(document.getElementById(`refugo-qtd-${id}`).value); const motivo = document.getElementById(`motivo-${id}`).value;
+            if(!maq.opAtiva) { alert("Nenhuma O.P ativa."); return; }
+            if(isNaN(qtd) || qtd <= 0) { alert("Quantidade inválida."); return; }
+            if(!motivo) { alert("Selecione um motivo."); return; }
+            if(confirm(`Confirma lançamento de ${qtd} peças por "${motivo}"?`)) {
+                maq.opAtiva.refugo += qtd; maq.ultimoMotivoRefugo = motivo; document.getElementById(`refugo-qtd-${id}`).value = ""; renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
-
         function zerarRefugo(id) {
             const maq = maquinas.find(m => m.id === id);
-            if(!maq.opAtiva) { 
-                alert("Nenhuma O.P ativa nesta máquina."); 
-                return; 
-            }
-            
-            if(confirm(`Tem certeza que deseja ZERAR A CONTAGEM DE REFUGO desta O.P? (Atual: ${maq.opAtiva.refugo} peças)`)) {
-                maq.opAtiva.refugo = 0;
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
-            }
+            if(!maq.opAtiva) return;
+            if(confirm("Deseja ZERAR O REFUGO?")) { maq.opAtiva.refugo = 0; renderPainel(); renderResumo(); salvarAutomatico(); }
         }
-
         function zerarBoas(id) {
             const maq = maquinas.find(m => m.id === id);
-            if(!maq.opAtiva) { 
-                alert("Nenhuma O.P ativa nesta máquina."); 
-                return; 
-            }
-            
-            if(confirm(`Tem certeza que deseja ZERAR A CONTAGEM DE PEÇAS BOAS desta O.P? (Atual: ${maq.opAtiva.boas} peças)`)) {
-                maq.opAtiva.boas = 0;
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
-            }
+            if(!maq.opAtiva) return;
+            if(confirm("Deseja ZERAR AS PEÇAS BOAS?")) { maq.opAtiva.boas = 0; renderPainel(); renderResumo(); salvarAutomatico(); }
         }
-
         function concluirOP(id) {
             const maq = maquinas.find(m => m.id === id);
-            
-            if(confirm(`Finalizar O.P e enviar para o Histórico?`)) {
-                historico.unshift({ 
-                    data: new Date().toLocaleString('pt-BR'), 
-                    maq: maq.nome, 
-                    op: maq.opAtiva.op, 
-                    prod: maq.opAtiva.prod, 
-                    meta: maq.opAtiva.meta, 
-                    boas: maq.opAtiva.boas, 
-                    refugo: maq.opAtiva.refugo 
-                });
-                
+            if(confirm("Finalizar O.P?")) {
+                historico.unshift({ data: new Date().toLocaleString('pt-BR'), maq: maq.nome, op: maq.opAtiva.op, prod: maq.opAtiva.prod, meta: maq.opAtiva.meta, boas: maq.opAtiva.boas, refugo: maq.opAtiva.refugo });
                 if(maq.fila.length > 0) { 
                     const p = maq.fila.shift(); 
-                    maq.opAtiva = { 
-                        op: p.op, 
-                        prod: p.prod, 
-                        meta: p.meta, 
-                        boas: p.boas || 0, 
-                        refugo: p.refugo || 0, 
-                        ciclo: p.ciclo || 1, 
-                        cavs: p.cavs || 1 
-                    }; 
+                    maq.opAtiva = { op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, refugo: p.refugo || 0, ciclo: p.ciclo || 1, cavs: p.cavs || 1 }; 
                     maq.status = "04-PRODUÇÃO"; 
-                } else { 
-                    maq.opAtiva = null; 
-                    maq.status = "22-SEM PROGRAMAÇÃO"; 
-                }
-                
-                renderPainel(); 
-                renderResumo(); 
-                renderHistorico(); 
-                salvarAutomatico();
+                } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
+                renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
             }
         }
-
         function pausarOP(id) {
             const maq = maquinas.find(m => m.id === id);
-            
-            if(confirm(`Pausar a O.P atual e jogá-la para a Fila? (O progresso será salvo)`)) {
+            if(confirm("Pausar a O.P atual e voltar para Fila?")) {
                 maq.fila.push(maq.opAtiva); 
-                
-                if(maq.fila.length > 1) { 
-                    maq.opAtiva = maq.fila.shift(); 
-                } else { 
-                    maq.opAtiva = null; 
-                    maq.status = "22-SEM PROGRAMAÇÃO"; 
-                }
-                
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
+                if(maq.fila.length > 1) { maq.opAtiva = maq.fila.shift(); } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
+                renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
-
         function puxarOPFila(maqId, index) {
-            const maq = maquinas.find(m => m.id === maqId); 
-            const opEscolhida = maq.fila[index];
-            
-            if(confirm(`Deseja iniciar a O.P ${opEscolhida.op} na máquina agora?`)) {
+            const maq = maquinas.find(m => m.id === maqId); const opEscolhida = maq.fila[index];
+            if(confirm(`Iniciar O.P ${opEscolhida.op}?`)) {
                 if(maq.opAtiva) maq.fila.push(maq.opAtiva); 
-                
                 maq.fila.splice(index, 1); 
-                
                 if(opEscolhida.boas === undefined) opEscolhida.boas = 0; 
                 if(opEscolhida.refugo === undefined) opEscolhida.refugo = 0;
-                
-                maq.opAtiva = opEscolhida; 
-                maq.status = "04-PRODUÇÃO";
-                
-                renderPainel(); 
-                renderResumo(); 
-                salvarAutomatico();
+                maq.opAtiva = opEscolhida; maq.status = "04-PRODUÇÃO";
+                renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
 
         // ==========================================
-        // 8. CATÁLOGO DE PRODUTOS E CALCULADORA
+        // 8. CATÁLOGO E CALCULADORA (IGUAL A PLANILHA DO EXCEL)
         // ==========================================
         function salvarNovoProduto() {
-            const nome = document.getElementById('novo-produto-nome').value; 
-            const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value); 
-            const cav = parseInt(document.getElementById('novo-produto-cavidades').value); 
-            const peso = parseFloat(document.getElementById('novo-produto-peso').value);
-            
+            const nome = document.getElementById('novo-produto-nome').value; const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value); const cav = parseInt(document.getElementById('novo-produto-cavidades').value); const peso = parseFloat(document.getElementById('novo-produto-peso').value);
             if(nome && ciclo && cav && peso) {
                 produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso });
-                renderCatalogo(); 
-                atualizarSelectProdutos(); 
-                salvarAutomatico();
-                
-                document.getElementById('novo-produto-nome').value = ""; 
-                document.getElementById('novo-produto-ciclo').value = ""; 
-                document.getElementById('novo-produto-cavidades').value = ""; 
-                document.getElementById('novo-produto-peso').value = "";
+                renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();
+                document.getElementById('novo-produto-nome').value = ""; document.getElementById('novo-produto-ciclo').value = ""; document.getElementById('novo-produto-cavidades').value = ""; document.getElementById('novo-produto-peso').value = "";
             }
         }
-
         function renderCatalogo() { 
             document.getElementById('lista-catalogo').innerHTML = produtosGlobais.map((p,i) => `
                 <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold relative group">
@@ -1149,68 +924,62 @@
                 </div>
             `).join(''); 
         }
-
-        function atualizarSelectProdutos() { 
-            document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + produtosGlobais.map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); 
-        }
-
+        function atualizarSelectProdutos() { document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + produtosGlobais.map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); }
         function autoFillCalculadora() { 
             const prod = produtosGlobais.find(p => p.id == document.getElementById('f-prod-select').value); 
-            if(prod) { 
-                document.getElementById('c-ciclo').value = prod.ciclo; 
-                document.getElementById('c-cav').value = prod.cav; 
-                document.getElementById('c-peso').value = prod.peso; 
-                calcularTudo(); 
-            } 
+            if(prod) { document.getElementById('c-ciclo').value = prod.ciclo; document.getElementById('c-cav').value = prod.cav; document.getElementById('c-peso').value = prod.peso; calcularTudo(); } 
         }
 
+        // LÓGICA DA PLANILHA ESPELHADA AQUI:
         function calcularTudo() {
             const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0; 
             const cav = parseInt(document.getElementById('c-cav').value) || 1; 
             const peso = parseFloat(document.getElementById('c-peso').value) || 0; 
             const pigm = parseFloat(document.getElementById('c-pigm').value) || 0; 
-            const meta = parseInt(document.getElementById('c-meta').value) || 0;
+            const meta = parseInt(document.getElementById('c-meta').value) || 0; // Esta é a Qts (Uni) da planilha
 
             if(meta > 0 && ciclo > 0 && cav > 0) {
+                
+                // Horas Prod
                 const totalSec = (meta / cav) * ciclo; 
                 document.getElementById('res-tempo').innerText = fmtTm(totalSec);
                 
-                const kgBruto = ((meta / cav) * peso) / 1000; 
-                const kgTotal = kgBruto + (kgBruto * (pigm / 100));
+                // Meta/Hora
+                const pzsHora = (3600 / ciclo) * cav;
+                document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
+
+                // Pesos
+                const kgMaterial = (meta * peso) / 1000;
+                const kgPigmento = kgMaterial * (pigm / 100);
+                const kgTotal = kgMaterial + kgPigmento;
                 
-                document.getElementById('res-material').innerText = `${kgTotal.toFixed(3)} KG`;
+                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2);
+                document.getElementById('res-pig').innerText = kgPigmento.toFixed(2);
+                document.getElementById('res-total').innerText = kgTotal.toFixed(2);
             } else { 
                 document.getElementById('res-tempo').innerText = "00:00:00"; 
-                document.getElementById('res-material').innerText = "0.000 KG"; 
+                document.getElementById('res-meta-hora').innerText = "0";
+                document.getElementById('res-mat').innerText = "0.00"; 
+                document.getElementById('res-pig').innerText = "0.00"; 
+                document.getElementById('res-total').innerText = "0.00"; 
             }
         }
 
         function lancarOP() {
-            const mId = document.getElementById('f-maq').value; 
-            const op = document.getElementById('f-op').value; 
-            const prodSel = document.getElementById('f-prod-select'); 
-            const meta = parseInt(document.getElementById('c-meta').value);
-            
+            const mId = document.getElementById('f-maq').value; const op = document.getElementById('f-op').value; const prodSel = document.getElementById('f-prod-select'); const meta = parseInt(document.getElementById('c-meta').value);
             if(op && prodSel.value && meta) {
+                const kgMat = document.getElementById('res-mat').innerText;
+                const kgPig = document.getElementById('res-pig').innerText;
+                const matFormatado = `${kgMat}kg Mat / ${kgPig}kg Pig`;
+
                 maquinas.find(m => m.id === mId).fila.push({ 
-                    op, 
-                    prod: prodSel.options[prodSel.selectedIndex].text, 
-                    meta,
-                    ciclo: document.getElementById('c-ciclo').value, 
-                    cavs: document.getElementById('c-cav').value, 
-                    material: document.getElementById('res-material').innerText 
+                    op, prod: prodSel.options[prodSel.selectedIndex].text, meta, ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, 
+                    material: matFormatado
                 });
-                
-                alert(`O.P ${op} enviada para a fila da máquina ${mId.toUpperCase()}!`); 
-                document.getElementById('f-op').value = ""; 
-                document.getElementById('c-meta').value = ""; 
-                document.getElementById('f-prod-select').value = "";
-                
-                renderPainel(); 
-                salvarAutomatico();
-            } else { 
-                alert("Preencha O.P, selecione a Peça e a Meta!"); 
-            }
+                alert(`O.P ${op} enviada para a fila!`); 
+                document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
+                renderPainel(); salvarAutomatico();
+            } else { alert("Preencha O.P, selecione a Peça e a Meta!"); }
         }
 
         // ==========================================
@@ -1218,87 +987,29 @@
         // ==========================================
         function renderResumo() { 
             document.getElementById('tbody-resumo').innerHTML = maquinas.map(m => {
-                let boas = m.opAtiva ? m.opAtiva.boas : 0; 
-                let refugo = m.opAtiva ? m.opAtiva.refugo : 0;
-                let perda = (boas+refugo) > 0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
-                
-                return `
-                <tr>
-                    <td class="p-4 font-black text-blue-600">${m.nome}</td>
-                    <td class="p-4 font-bold text-slate-800">${m.opAtiva ? m.opAtiva.op : '--'}</td>
-                    <td class="p-4 text-green-600">${boas}</td>
-                    <td class="p-4 text-red-500">${refugo}</td>
-                    <td class="p-4 text-slate-500">${perda}%</td>
-                    <td class="p-4 text-green-600 font-mono">${fmtTm(m.tempos.prod)}</td>
-                    <td class="p-4 text-orange-500 font-mono">${fmtTm(m.tempos.baixa)}</td>
-                    <td class="p-4 text-red-600 font-mono">${fmtTm(m.tempos.parado)}</td>
-                    <td class="p-4 text-slate-400 font-mono">${fmtTm(m.tempos.neutro)}</td>
-                </tr>`; 
+                let boas = m.opAtiva ? m.opAtiva.boas : 0; let refugo = m.opAtiva ? m.opAtiva.refugo : 0; let perda = (boas+refugo) > 0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
+                return `<tr><td class="p-4 font-black text-blue-600">${m.nome}</td><td class="p-4 font-bold text-slate-800">${m.opAtiva ? m.opAtiva.op : '--'}</td><td class="p-4 text-green-600">${boas}</td><td class="p-4 text-red-500">${refugo}</td><td class="p-4 text-slate-500">${perda}%</td><td class="p-4 text-green-600 font-mono">${fmtTm(m.tempos.prod)}</td><td class="p-4 text-orange-500 font-mono">${fmtTm(m.tempos.baixa)}</td><td class="p-4 text-red-600 font-mono">${fmtTm(m.tempos.parado)}</td><td class="p-4 text-slate-400 font-mono">${fmtTm(m.tempos.neutro)}</td></tr>`; 
             }).join(''); 
         }
-
         function renderHistorico() { 
-            document.getElementById('tbody-historico').innerHTML = historico.map((h,i) => `
-                <tr>
-                    <td class="p-4 text-xs text-slate-400">${h.data}</td>
-                    <td class="p-4 text-blue-600 font-black">${h.maq}</td>
-                    <td class="p-4 font-black">${h.op}</td>
-                    <td class="p-4 text-xs truncate max-w-[200px]">${h.prod}</td>
-                    <td class="p-4 text-green-600 font-black">${h.boas}</td>
-                    <td class="p-4 text-red-500 font-black">${h.refugo || 0}</td>
-                    <td class="p-4 text-right"><button onclick="historico.splice(${i},1); renderHistorico(); salvarAutomatico();" class="text-red-400 hover:text-red-600 bg-red-50 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button></td>
-                </tr>
-            `).join(''); 
+            document.getElementById('tbody-historico').innerHTML = historico.map((h,i) => `<tr><td class="p-4 text-xs text-slate-400">${h.data}</td><td class="p-4 text-blue-600 font-black">${h.maq}</td><td class="p-4 font-black">${h.op}</td><td class="p-4 text-xs truncate max-w-[200px]">${h.prod}</td><td class="p-4 text-green-600 font-black">${h.boas}</td><td class="p-4 text-red-500 font-black">${h.refugo || 0}</td><td class="p-4 text-right"><button onclick="historico.splice(${i},1); renderHistorico(); salvarAutomatico();" class="text-red-400 hover:text-red-600 bg-red-50 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button></td></tr>`).join(''); 
         }
-
-        function filtrarHistorico() { 
-            const termo = document.getElementById('busca-historico').value.toLowerCase(); 
-            const linhas = document.querySelectorAll('#tbody-historico tr'); 
-            linhas.forEach(linha => { 
-                linha.style.display = linha.innerText.toLowerCase().includes(termo) ? '' : 'none'; 
-            }); 
-        }
+        function filtrarHistorico() { const termo = document.getElementById('busca-historico').value.toLowerCase(); document.querySelectorAll('#tbody-historico tr').forEach(linha => { linha.style.display = linha.innerText.toLowerCase().includes(termo) ? '' : 'none'; }); }
 
         // ==========================================
-        // 10. HORA EXTRA E TURNOS
+        // 10. HORA EXTRA E MOTOR DE TEMPO
         // ==========================================
-        function zerarMeta() { 
-            if(confirm("Deseja realmente zerar a meta de horas do mês?")) { 
-                dadosMensais.metaAtualSec = 0; 
-                dadosMensais.horaExtraSec = 0; 
-                salvarAutomatico(); 
-            } 
-        }
-
-        function toggleHoraExtra() { 
-            modoHoraExtra = !modoHoraExtra; 
-            toggleHoraExtraVis(); 
-            salvarAutomatico(); 
-        }
-
+        function zerarMeta() { if(confirm("Zerar a meta de horas do mês?")) { dadosMensais.metaAtualSec = 0; dadosMensais.horaExtraSec = 0; salvarAutomatico(); } }
+        function toggleHoraExtra() { modoHoraExtra = !modoHoraExtra; toggleHoraExtraVis(); salvarAutomatico(); }
         function toggleHoraExtraVis() {
             const btn = document.getElementById('btn-hora-extra');
-            if(modoHoraExtra) { 
-                btn.className = "bg-blue-600 text-white border border-blue-500 px-4 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/50 whitespace-nowrap flex items-center"; 
-                btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (ON)"; 
-            } else { 
-                btn.className = "bg-slate-800 text-slate-400 border border-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase whitespace-nowrap flex items-center"; 
-                btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (Off)"; 
-            }
+            if(modoHoraExtra) { btn.className = "bg-blue-600 text-white border border-blue-500 px-4 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/50 whitespace-nowrap flex items-center"; btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (ON)"; } 
+            else { btn.className = "bg-slate-800 text-slate-400 border border-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase whitespace-nowrap flex items-center"; btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (Off)"; }
         }
+        function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
 
-        function forcarTurno(val) { 
-            turnoForcado = val; 
-            salvarAutomatico(); 
-        }
-
-        // ==========================================
-        // 11. MOTOR DE TEMPO REAL OTIMIZADO E CRAVADO (1 PARA 1)
-        // Sem divisões, sem lentidão. Totalmente fiel ao relógio de Brasília.
-        // ==========================================
-        
         const optBSB = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        let ultimoTick = Math.floor(Date.now() / 1000); // Marca o segundo exato atual
+        let ultimoTick = Math.floor(Date.now() / 1000);
 
         setInterval(() => {
             const relogioHtml = document.getElementById('relogio');
@@ -1307,256 +1018,92 @@
             const agoraSegundoAtual = Math.floor(Date.now() / 1000);
             const passados = agoraSegundoAtual - ultimoTick;
 
-            // Só processa se o segundo oficial do computador "virou"
             if (passados >= 1) {
                 ultimoTick = agoraSegundoAtual; 
-
                 const agoraCompleto = new Date();
 
                 if (agoraCompleto.getMonth() !== dadosMensais.mesAtual) {
-                    dadosMensais.mesAtual = agoraCompleto.getMonth(); 
-                    dadosMensais.metaAtualSec = 0; 
-                    dadosMensais.horaExtraSec = 0; 
-                    dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-                    
-                    maquinas.forEach(m => { 
-                        m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; 
-                        if(m.opAtiva) { 
-                            m.opAtiva.boas = 0; 
-                            m.opAtiva.refugo = 0; 
-                        } 
-                    });
-                    salvarAutomatico(); 
-                    renderPainel(); 
+                    dadosMensais.mesAtual = agoraCompleto.getMonth(); dadosMensais.metaAtualSec = 0; dadosMensais.horaExtraSec = 0; dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
+                    maquinas.forEach(m => { m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; if(m.opAtiva) { m.opAtiva.boas = 0; m.opAtiva.refugo = 0; } });
+                    salvarAutomatico(); renderPainel(); 
                 }
 
                 const mTotal = agoraCompleto.getHours() * 60 + agoraCompleto.getMinutes();
                 let textAuto = "Turno 3 (23h-05h)";
-                if (mTotal >= 300 && mTotal < 858) {
-                    textAuto = "Turno 1 (05h-14h)"; 
-                } else if (mTotal >= 858 && mTotal < 1416) {
-                    textAuto = "Turno 2 (14h-23h)";
-                }
-                
-                if(document.getElementById('opt-auto')) {
-                    document.getElementById('opt-auto').innerText = "Atual: " + textAuto; 
-                }
-                
-                if(turnoForcado && turnoForcado !== "auto") {
-                    document.getElementById('select-turno').value = turnoForcado;
-                }
+                if (mTotal >= 300 && mTotal < 858) textAuto = "Turno 1 (05h-14h)"; else if (mTotal >= 858 && mTotal < 1416) textAuto = "Turno 2 (14h-23h)";
+                if(document.getElementById('opt-auto')) document.getElementById('opt-auto').innerText = "Atual: " + textAuto; 
+                if(turnoForcado && turnoForcado !== "auto") document.getElementById('select-turno').value = turnoForcado;
 
                 const isWeekend = (agoraCompleto.getDay() === 0 || agoraCompleto.getDay() === 6);
-                let contarTempo = true;
-                let maqTrabalhando = false;
+                let contarTempo = true; let maqTrabalhando = false;
 
                 if (isWeekend && !modoHoraExtra) {
-                    contarTempo = false; 
-                    document.getElementById('badge-fds').classList.remove('hidden'); 
-                    let statusMudou = false;
-                    
-                    maquinas.forEach(m => { 
-                        if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { 
-                            m.status = "25-FIM DE SEMANA (PAUSADO)"; 
-                            statusMudou = true; 
-                        } 
-                    });
-                    
+                    contarTempo = false; document.getElementById('badge-fds').classList.remove('hidden'); let statusMudou = false;
+                    maquinas.forEach(m => { if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { m.status = "25-FIM DE SEMANA (PAUSADO)"; statusMudou = true; } });
                     if(statusMudou && document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
-                } else { 
-                    document.getElementById('badge-fds').classList.add('hidden'); 
-                }
+                } else { document.getElementById('badge-fds').classList.add('hidden'); }
 
                 if(contarTempo) {
-                    
-                    // Flags (interruptores) para saber se a fábrica tem pelo menos 1 máquina nestes status
-                    let temProd = false;
-                    let temBaixa = false;
-                    let temParada = false;
-                    let temNeutro = false;
-                    
+                    let temProd = false, temBaixa = false, temParada = false, temNeutro = false;
                     maquinas.forEach(m => {
+                        if(m.status === "04-PRODUÇÃO") { m.tempos.prod += passados; temProd = true; maqTrabalhando = true; }
+                        else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { m.tempos.baixa += passados; temBaixa = true; maqTrabalhando = true; }
+                        else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE", "09-LIMPEZA"].includes(m.status)) { m.tempos.neutro += passados; temNeutro = true; }
+                        else { m.tempos.parado += passados; temParada = true; } 
                         
-                        // Incrementa o tempo INDIVIDUAL da máquina cravado
-                        if(m.status === "04-PRODUÇÃO") { 
-                            m.tempos.prod += passados; 
-                            temProd = true; 
-                            maqTrabalhando = true; 
-                        }
-                        else if(["21-BAIXA EFICIÊNCIA", "03-MATÉRIA-PRIMA / AJUSTE"].includes(m.status)) { 
-                            m.tempos.baixa += passados; 
-                            temBaixa = true; 
-                            maqTrabalhando = true; 
-                        }
-                        else if(["02-FALTA DE PROGRAMAÇÃO", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "08-LANCHE", "09-LIMPEZA"].includes(m.status)) { 
-                            m.tempos.neutro += passados; 
-                            temNeutro = true; 
-                        }
-                        else { 
-                            m.tempos.parado += passados; 
-                            temParada = true; 
-                        } 
-                        
-                        // OEE da Máquina
                         if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
-                            let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; 
-                            let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
-                            
-                            let ciclo = parseFloat(m.opAtiva.ciclo) || 1; 
-                            let cavs = parseInt(m.opAtiva.cavs) || 1; 
-                            let teorica = (m.tempos.prod / ciclo) * cavs; 
+                            let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
+                            let teorica = (m.tempos.prod / (parseFloat(m.opAtiva.ciclo) || 1)) * (parseInt(m.opAtiva.cavs) || 1); 
                             let real = m.opAtiva.boas + m.opAtiva.refugo;
-                            
-                            let perf = teorica > 0 ? (real / teorica) : 0; 
-                            if(perf > 1) perf = 1; 
-                            
+                            let perf = teorica > 0 ? (real / teorica) : 0; if(perf > 1) perf = 1; 
                             let qual = real > 0 ? (m.opAtiva.boas / real) : 0; 
                             let oee = disp * perf * qual;
-                            
-                            document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%';
-                            document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
-                            document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%';
-                            document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
+                            document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%'; document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
+                            document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%'; document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
                         }
                     });
-
-                    // ========================================================
-                    // CÁLCULO GERAL DA FÁBRICA (Todos sincronizados de 1 em 1)
-                    // Sem divisões! Se há 1 máquina Produzindo, o cronômetro 
-                    // de Produção anda 1 segundo. Se há 1 Parada, o de 
-                    // Parada anda 1 segundo junto!
-                    // ========================================================
-                    if (temProd) dadosMensais.plantTempos.prod += passados;
-                    if (temBaixa) dadosMensais.plantTempos.baixa += passados;
-                    if (temParada) dadosMensais.plantTempos.parado += passados;
-                    if (temNeutro) dadosMensais.plantTempos.neutro += passados;
+                    if (temProd) dadosMensais.plantTempos.prod += passados; if (temBaixa) dadosMensais.plantTempos.baixa += passados;
+                    if (temParada) dadosMensais.plantTempos.parado += passados; if (temNeutro) dadosMensais.plantTempos.neutro += passados;
                 }
 
-                // Atualiza tela individual de máquinas visíveis
                 if(document.getElementById('aba-painel').classList.contains('aba-ativa')) {
                     maquinas.forEach(m => {
                         if(document.getElementById(`t-prod-${m.id}`)) {
-                            document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod);
-                            document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
-                            document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado);
-                            document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
+                            document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod); document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
+                            document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado); document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
                         }
                     });
                 }
 
                 const limiteSec = 1628 * 3600;
                 if(maqTrabalhando && dadosMensais.metaAtualSec < limiteSec && contarTempo) {
-                    dadosMensais.metaAtualSec += passados; 
-                    if(modoHoraExtra) dadosMensais.horaExtraSec += passados;
+                    dadosMensais.metaAtualSec += passados; if(modoHoraExtra) dadosMensais.horaExtraSec += passados;
                 }
-                
-                document.getElementById('horas-mensal-txt').innerText = `${Math.floor(dadosMensais.metaAtualSec/3600)}h`;
-                document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / limiteSec) * 100, 100)}%`;
-
+                document.getElementById('horas-mensal-txt').innerText = `${Math.floor(dadosMensais.metaAtualSec/3600)}h`; document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / limiteSec) * 100, 100)}%`;
                 if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
-                // GRÁFICOS DA FÁBRICA ATUALIZADOS COM PRECISÃO
                 if (chartStatusInstance) {
-                    let pSec = dadosMensais.plantTempos.prod;
-                    let bSec = dadosMensais.plantTempos.baixa;
-                    let paSec = dadosMensais.plantTempos.parado;
-                    let nSec = dadosMensais.plantTempos.neutro;
-
-                    document.getElementById('lbl-chart-prod').innerText = fmtTm(pSec);
-                    document.getElementById('lbl-chart-baixa').innerText = fmtTm(bSec);
-                    document.getElementById('lbl-chart-parado').innerText = fmtTm(paSec);
-                    document.getElementById('lbl-chart-neutro').innerText = fmtTm(nSec);
-
-                    chartStatusInstance.data.datasets[0].data = [pSec, bSec, paSec, nSec];
+                    document.getElementById('lbl-chart-prod').innerText = fmtTm(dadosMensais.plantTempos.prod); document.getElementById('lbl-chart-baixa').innerText = fmtTm(dadosMensais.plantTempos.baixa);
+                    document.getElementById('lbl-chart-parado').innerText = fmtTm(dadosMensais.plantTempos.parado); document.getElementById('lbl-chart-neutro').innerText = fmtTm(dadosMensais.plantTempos.neutro);
+                    chartStatusInstance.data.datasets[0].data = [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro];
                     chartStatusInstance.update('none'); 
                 }
             }
-        }, 200); // 200ms é só para a verificação, a contagem de tempo usa o timestamp absoluto de 1 segundo!
+        }, 200);
 
         // ==========================================
-        // 12. GRÁFICOS (COM TOOLTIP FORMATADA HH:MM:SS)
+        // 11. GRÁFICOS
         // ==========================================
-        function alterarFiltroGrafico(valor) { 
-            filtroGraficoId = valor; 
-            iniciarGraficos(); 
-        }
-        
+        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; iniciarGraficos(); }
         function iniciarGraficos() {
             if(chartStatusInstance) chartStatusInstance.destroy();
-            
-            const ctxStatus = document.getElementById('chartStatus').getContext('2d');
-            chartStatusInstance = new Chart(ctxStatus, { 
-                type: 'pie', 
-                data: { 
-                    labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], 
-                    datasets: [{ 
-                        data: [
-                            dadosMensais.plantTempos.prod, 
-                            dadosMensais.plantTempos.baixa, 
-                            dadosMensais.plantTempos.parado, 
-                            dadosMensais.plantTempos.neutro
-                        ], 
-                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'],
-                        borderWidth: 2,
-                        hoverOffset: 10
-                    }] 
-                }, 
-                options: { 
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            bodyFont: { size: 16, weight: 'bold' },
-                            padding: 12,
-                            callbacks: {
-                                label: function(context) {
-                                    return ' ' + context.label + ': ' + fmtTm(context.raw);
-                                }
-                            }
-                        }
-                    }
-                } 
+            chartStatusInstance = new Chart(document.getElementById('chartStatus').getContext('2d'), { 
+                type: 'pie', data: { labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], datasets: [{ data: [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'], borderWidth: 2, hoverOffset: 10}] }, 
+                options: { maintainAspectRatio: false, plugins: { tooltip: { bodyFont: { size: 16, weight: 'bold' }, padding: 12, callbacks: { label: function(context) { return ' ' + context.label + ': ' + fmtTm(context.raw); } } } } } 
             });
-            
-            new Chart(document.getElementById('chartGeral'), { 
-                type: 'bar', 
-                data: { 
-                    labels: maquinas.map(m=>m.nome), 
-                    datasets: [{ 
-                        label: 'Boas', 
-                        data: maquinas.map(m=>m.opAtiva ? m.opAtiva.boas : 0), 
-                        backgroundColor: '#3b82f6', 
-                        borderRadius: 6 
-                    }] 
-                }, 
-                options: { maintainAspectRatio: false } 
-            });
-            
-            new Chart(document.getElementById('chartRefugo'), { 
-                type: 'line', 
-                data: { 
-                    labels: ['S1', 'S2', 'S3', 'S4'], 
-                    datasets: [{ 
-                        label: '% Refugo', 
-                        data: [1.2, 1.8, 0.9, 1.4], 
-                        borderColor: '#f97316', 
-                        tension: 0.4 
-                    }] 
-                }, 
-                options: { maintainAspectRatio: false } 
-            });
-            
-            new Chart(document.getElementById('chartHoraExtra'), { 
-                type: 'bar', 
-                data: { 
-                    labels: ['Extra Geral'], 
-                    datasets: [{ 
-                        label: 'Segundos Extra', 
-                        data: [dadosMensais.horaExtraSec], 
-                        backgroundColor: '#eab308' 
-                    }] 
-                }, 
-                options: { maintainAspectRatio: false } 
-            });
+            new Chart(document.getElementById('chartGeral'), { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maquinas.map(m=>m.opAtiva ? m.opAtiva.boas : 0), backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { maintainAspectRatio: false } });
+            new Chart(document.getElementById('chartRefugo'), { type: 'line', data: { labels: ['S1', 'S2', 'S3', 'S4'], datasets: [{ label: '% Refugo', data: [1.2, 1.8, 0.9, 1.4], borderColor: '#f97316', tension: 0.4 }] }, options: { maintainAspectRatio: false } });
+            new Chart(document.getElementById('chartHoraExtra'), { type: 'bar', data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, options: { maintainAspectRatio: false } });
         }
     </script>
 </body>
