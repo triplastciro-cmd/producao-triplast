@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES V30 (Calendário & Alertas)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -253,8 +253,8 @@
                                 <span id="res-mat" class="text-base md:text-lg font-black text-blue-400">0.00</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qts Pig (KG)</span>
-                                <span id="res-pig" class="text-base md:text-lg font-black text-pink-400">0.00</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qts Pig (Grama)</span>
+                                <span id="res-pig" class="text-base md:text-lg font-black text-pink-400">0g</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Peso Líq/Bruto</span>
@@ -347,18 +347,16 @@
             </div>
 
             <div id="aba-graficos" class="aba-conteudo space-y-6">
-                <div class="flex justify-end">
-                    <select onchange="alterarFiltroGrafico(this.value)" class="bg-white border border-slate-200 p-2 rounded-xl font-bold text-slate-600 outline-none shadow-sm cursor-pointer hover:border-blue-500">
-                        <option value="hoje">Hoje</option>
-                        <option value="semana">Esta Semana</option>
-                        <option value="mes">Este Mês</option>
-                    </select>
+                
+                <div class="flex justify-end items-center gap-3">
+                    <label class="text-xs font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-calendar-days text-blue-500 mr-1"></i> Data do Relatório:</label>
+                    <input type="date" id="filtro-data-grafico" onchange="iniciarGraficos()" class="bg-white border-2 border-slate-200 p-3 rounded-xl font-bold text-slate-700 outline-none shadow-sm cursor-pointer hover:border-blue-500 transition-colors">
                 </div>
                 
                 <div class="grid grid-cols-1 gap-8">
                     
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
-                        <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Status Geral da Fábrica</h3>
+                        <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Status Geral da Fábrica (Tempo Real)</h3>
                         
                         <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
                             <div class="text-center md:border-r border-slate-200 mb-2 md:mb-0">
@@ -378,7 +376,7 @@
                                 <span id="lbl-chart-neutro" class="text-lg md:text-2xl font-black text-slate-500 font-mono">00:00:00</span>
                             </div>
                             <div class="text-center col-span-2 md:col-span-1 border-t md:border-t-0 border-slate-200 pt-2 md:pt-0">
-                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">OEE Global (Média)</span>
+                                <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">OEE Global</span>
                                 <span id="lbl-chart-oee" class="text-lg md:text-2xl font-black text-blue-600 font-mono">0.0%</span>
                             </div>
                         </div>
@@ -479,7 +477,12 @@
             "21-BAIXA EFICIÊNCIA", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)"
         ];
         const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
+        
+        // INSTÂNCIAS DE GRÁFICOS GLOBAIS
         let chartStatusInstance = null;
+        let chartGeralInstance = null;
+        let chartRefugoInstance = null;
+        let chartHoraExtraInstance = null;
 
         // ==========================================
         // SISTEMA DE CORES DINÂMICO E AUTOCOMPLETAR
@@ -487,10 +490,10 @@
         function verificarCodigoCor(e) {
             let val = e.target.value.trim().toUpperCase();
             if(!val) return;
-            // Busca se o que foi digitado bate com o CÓDIGO de alguma cor salva (antes do " | ")
-            let found = coresGlobais.find(c => c.split(' | ')[0].trim().toUpperCase() === val);
+            // Busca pelo código ou parte do nome
+            let found = coresGlobais.find(c => c.split(' | ')[0].trim().toUpperCase() === val || c.toUpperCase() === val);
             if(found) {
-                e.target.value = found; // Autocompleta o campo inteiro
+                e.target.value = found; // Preenche completo automático
             }
         }
 
@@ -543,6 +546,11 @@
         // 2. BOOT E NUVEM
         // ==========================================
         window.onload = async () => {
+            // Setar data de hoje no calendário de gráficos ao carregar
+            if(document.getElementById('filtro-data-grafico')) {
+                document.getElementById('filtro-data-grafico').value = new Date().toISOString().split('T')[0];
+            }
+
             await carregarDaNuvem();
             if(!sistemaPronto) carregarDadosLocais();
             
@@ -942,14 +950,18 @@
                 renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
             }
         }
+        
+        // NOVO CÓDIGO DO PAUSAR OP (Sem puxar próxima automaticamente)
         function pausarOP(id) {
             const maq = maquinas.find(m => m.id === id);
             if(confirm("Pausar a O.P atual e voltar para Fila?")) {
                 maq.fila.push(maq.opAtiva); 
-                if(maq.fila.length > 1) { maq.opAtiva = maq.fila.shift(); } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
+                maq.opAtiva = null; 
+                maq.status = "22-SEM PROGRAMAÇÃO"; 
                 renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
+        
         function puxarOPFila(maqId, index) {
             const maq = maquinas.find(m => m.id === maqId); const opEscolhida = maq.fila[index];
             if(confirm(`Iniciar O.P ${opEscolhida.op}?`)) {
@@ -1002,6 +1014,7 @@
             } 
         }
 
+        // LÓGICA DA PLANILHA ESPELHADA (Pigmento em gramas)
         function calcularTudo() {
             const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0; const cav = parseInt(document.getElementById('c-cav').value) || 1; 
             const peso = parseFloat(document.getElementById('c-peso').value) || 0; const pigm = parseFloat(document.getElementById('c-pigm').value) || 0; 
@@ -1015,11 +1028,12 @@
 
                 const kgMaterial = (meta * peso) / 1000; const kgPigmento = kgMaterial * (pigm / 100); const kgTotal = kgMaterial + kgPigmento;
                 
-                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); document.getElementById('res-pig').innerText = kgPigmento.toFixed(2);
+                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
+                document.getElementById('res-pig').innerText = (kgPigmento * 1000).toFixed(0) + 'g'; // AQUI ESTÁ EM GRAMAS
                 document.getElementById('res-total').innerText = kgTotal.toFixed(2);
             } else { 
                 document.getElementById('res-tempo').innerText = "00:00:00"; document.getElementById('res-meta-hora').innerText = "0";
-                document.getElementById('res-mat').innerText = "0.00"; document.getElementById('res-pig').innerText = "0.00"; document.getElementById('res-total').innerText = "0.00"; 
+                document.getElementById('res-mat').innerText = "0.00"; document.getElementById('res-pig').innerText = "0g"; document.getElementById('res-total').innerText = "0.00"; 
             }
         }
 
@@ -1031,9 +1045,9 @@
                 const corPeca = document.getElementById('c-cor').value || 'Sem Cor';
                 const percPigm = document.getElementById('c-pigm').value || 0;
 
-                const kgMat = document.getElementById('res-mat').innerText; const kgPig = document.getElementById('res-pig').innerText; const tempoEst = document.getElementById('res-tempo').innerText;
+                const kgMat = document.getElementById('res-mat').innerText; const gPig = document.getElementById('res-pig').innerText; const tempoEst = document.getElementById('res-tempo').innerText;
                 
-                const matFormatado = `${nomeMat} (${kgMat}kg) | Cor: ${corPeca} | Pigm: ${percPigm}% (${kgPig}kg)`;
+                const matFormatado = `${nomeMat} (${kgMat}kg) | Cor: ${corPeca} | Pigm: ${percPigm}% (${gPig})`;
 
                 maquinas.find(m => m.id === mId).fila.push({ 
                     op, prod: prodSel.options[prodSel.selectedIndex].text, meta, ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, 
@@ -1046,14 +1060,23 @@
         }
 
         // ==========================================
-        // 9. RESUMO E HISTÓRICO
+        // 9. RESUMO E HISTÓRICO (COM ALERTA DE REFUGO)
         // ==========================================
         function renderResumo() { 
             document.getElementById('tbody-resumo').innerHTML = maquinas.map(m => {
-                let boas = m.opAtiva ? m.opAtiva.boas : 0; let refugo = m.opAtiva ? m.opAtiva.refugo : 0; let perda = (boas+refugo) > 0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
-                return `<tr><td class="p-4 font-black text-blue-600">${m.nome}</td><td class="p-4 font-bold text-slate-800">${m.opAtiva ? m.opAtiva.op : '--'}</td><td class="p-4 text-green-600">${boas}</td><td class="p-4 text-red-500">${refugo}</td><td class="p-4 text-slate-500">${perda}%</td><td class="p-4 text-green-600 font-mono">${fmtTm(m.tempos.prod)}</td><td class="p-4 text-orange-500 font-mono">${fmtTm(m.tempos.baixa)}</td><td class="p-4 text-red-600 font-mono">${fmtTm(m.tempos.parado)}</td><td class="p-4 text-slate-400 font-mono">${fmtTm(m.tempos.neutro)}</td></tr>`; 
+                let boas = m.opAtiva ? m.opAtiva.boas : 0; 
+                let refugo = m.opAtiva ? m.opAtiva.refugo : 0; 
+                let perda = (boas+refugo) > 0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
+                
+                // ALERTA VERMELHO SE PASSAR DE 2%
+                let perdaHtml = perda > 2.0 
+                    ? `<span class="bg-red-100 text-red-600 px-2 py-1 rounded font-black border border-red-300 animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${perda}%</span>` 
+                    : `<span class="text-slate-500">${perda}%</span>`;
+
+                return `<tr><td class="p-4 font-black text-blue-600">${m.nome}</td><td class="p-4 font-bold text-slate-800">${m.opAtiva ? m.opAtiva.op : '--'}</td><td class="p-4 text-green-600">${boas}</td><td class="p-4 text-red-500">${refugo}</td><td class="p-4">${perdaHtml}</td><td class="p-4 text-green-600 font-mono">${fmtTm(m.tempos.prod)}</td><td class="p-4 text-orange-500 font-mono">${fmtTm(m.tempos.baixa)}</td><td class="p-4 text-red-600 font-mono">${fmtTm(m.tempos.parado)}</td><td class="p-4 text-slate-400 font-mono">${fmtTm(m.tempos.neutro)}</td></tr>`; 
             }).join(''); 
         }
+
         function renderHistorico() { 
             document.getElementById('tbody-historico').innerHTML = historico.map((h,i) => `
                 <tr>
@@ -1176,38 +1199,88 @@
         }, 200);
 
         // ==========================================
-        // 11. GRÁFICOS
+        // 11. GRÁFICOS (COM FILTRO DE CALENDÁRIO)
         // ==========================================
-        function alterarFiltroGrafico(valor) { filtroGraficoId = valor; iniciarGraficos(); }
         function iniciarGraficos() {
+            let dataFiltro = document.getElementById('filtro-data-grafico') ? document.getElementById('filtro-data-grafico').value : '';
+            
+            let maqBoas = maquinas.map(m=>0);
+            let maqRefugo = maquinas.map(m=>0);
+
+            // Verifica se a data é hoje, se for soma a O.P ativa + Histórico de Hoje
+            if (!dataFiltro || dataFiltro === new Date().toISOString().split('T')[0]) {
+                let hojeStr = new Date().toLocaleDateString('pt-BR'); // Ex: 15/10/2023
+                
+                maquinas.forEach((m, i) => {
+                    if (m.opAtiva) {
+                        maqBoas[i] += m.opAtiva.boas || 0;
+                        maqRefugo[i] += m.opAtiva.refugo || 0;
+                    }
+                });
+                
+                historico.forEach(h => {
+                    if (h.data.startsWith(hojeStr)) {
+                        let mIdx = maquinas.findIndex(m => m.nome === h.maq);
+                        if (mIdx !== -1) {
+                            maqBoas[mIdx] += parseInt(h.boas) || 0;
+                            maqRefugo[mIdx] += parseInt(h.refugo) || 0;
+                        }
+                    }
+                });
+            } else {
+                // Data do Passado (Vasculha só o Histórico)
+                let [y, m, d] = dataFiltro.split('-');
+                let dataStr = `${d}/${m}/${y}`; // Converte de YYYY-MM-DD para DD/MM/YYYY
+                
+                historico.forEach(h => {
+                    if (h.data.startsWith(dataStr)) {
+                        let mIdx = maquinas.findIndex(maq => maq.nome === h.maq);
+                        if (mIdx !== -1) {
+                            maqBoas[mIdx] += parseInt(h.boas) || 0;
+                            maqRefugo[mIdx] += parseInt(h.refugo) || 0;
+                        }
+                    }
+                });
+            }
+
             if(chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chartStatus').getContext('2d'), { 
                 type: 'pie', data: { labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], datasets: [{ data: [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'], borderWidth: 2, hoverOffset: 10}] }, 
                 options: { maintainAspectRatio: false, plugins: { tooltip: { bodyFont: { size: 16, weight: 'bold' }, padding: 12, callbacks: { label: function(context) { return ' ' + context.label + ': ' + fmtTm(context.raw); } } } } } 
             });
             
-            new Chart(document.getElementById('chartGeral'), { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maquinas.map(m=>m.opAtiva ? m.opAtiva.boas : 0), backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { maintainAspectRatio: false } });
+            if(chartGeralInstance) chartGeralInstance.destroy();
+            chartGeralInstance = new Chart(document.getElementById('chartGeral'), { 
+                type: 'bar', 
+                data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maqBoas, backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
+                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
+            });
             
-            new Chart(document.getElementById('chartRefugo'), { 
+            if(chartRefugoInstance) chartRefugoInstance.destroy();
+            chartRefugoInstance = new Chart(document.getElementById('chartRefugo'), { 
                 type: 'bar', 
                 data: { 
                     labels: maquinas.map(m=>m.nome), 
                     datasets: [{ 
                         label: '% Refugo', 
-                        data: maquinas.map(m => {
-                            if (!m.opAtiva || (m.opAtiva.boas + m.opAtiva.refugo) === 0) return 0;
-                            return ((m.opAtiva.refugo / (m.opAtiva.boas + m.opAtiva.refugo)) * 100).toFixed(1);
+                        data: maqBoas.map((boas, i) => {
+                            let total = boas + maqRefugo[i];
+                            return total > 0 ? ((maqRefugo[i] / total) * 100).toFixed(1) : 0;
                         }), 
                         backgroundColor: '#ef4444', 
                         borderRadius: 6 
                     }] 
                 }, 
-                options: { maintainAspectRatio: false } 
+                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
             });
             
-            new Chart(document.getElementById('chartHoraExtra'), { type: 'bar', data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, options: { maintainAspectRatio: false } });
+            if(chartHoraExtraInstance) chartHoraExtraInstance.destroy();
+            chartHoraExtraInstance = new Chart(document.getElementById('chartHoraExtra'), { 
+                type: 'bar', 
+                data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, 
+                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
+            });
         }
     </script>
 </body>
 </html>
-
