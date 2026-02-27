@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema Monitorado)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -420,12 +420,32 @@
 
     <script>
         // ==========================================
-        // FUNÇÃO GLOBAL DE FORMATAÇÃO DE TEMPO
+        // FUNÇÕES GLOBAIS
         // ==========================================
         const fmtTm = s => {
             let tempo = Math.floor(s);
             return `${Math.floor(tempo/3600).toString().padStart(2,'0')}:${Math.floor((tempo%3600)/60).toString().padStart(2,'0')}:${(tempo%60).toString().padStart(2,'0')}`;
         };
+
+        // LÓGICA DE DETECÇÃO DE COR PARA AS CAIXINHAS
+        function getCorDestaque(corStr) {
+            let str = (corStr || '').toLowerCase();
+            if(str.includes('verde')) return { bg: '#22c55e', text: '#ffffff' }; 
+            if(str.includes('azul')) return { bg: '#3b82f6', text: '#ffffff' }; 
+            if(str.includes('vermelh')) return { bg: '#ef4444', text: '#ffffff' }; 
+            if(str.includes('amarel')) return { bg: '#facc15', text: '#000000' }; 
+            if(str.includes('pret')) return { bg: '#0f172a', text: '#ffffff' }; 
+            if(str.includes('branc')) return { bg: '#ffffff', text: '#000000' }; 
+            if(str.includes('laranj')) return { bg: '#f97316', text: '#ffffff' }; 
+            if(str.includes('rosa') || str.includes('pink')) return { bg: '#ec4899', text: '#ffffff' }; 
+            if(str.includes('rox') || str.includes('violet') || str.includes('lilas') || str.includes('lilás')) return { bg: '#a855f7', text: '#ffffff' }; 
+            if(str.includes('cinz')) return { bg: '#64748b', text: '#ffffff' }; 
+            if(str.includes('marrom') || str.includes('cafe') || str.includes('café')) return { bg: '#78350f', text: '#ffffff' }; 
+            if(str.includes('cristal') || str.includes('transparent') || str.includes('natural')) return { bg: '#e2e8f0', text: '#0f172a' }; 
+            
+            // Cor Padrão Genérica
+            return { bg: '#f3e8ff', text: '#2e1065' }; 
+        }
 
         // ==========================================
         // 1. CONFIGURAÇÃO DO BANCO DE DADOS
@@ -676,7 +696,7 @@
         function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO PAINEL (INFO OP ATIVA & FILA)
+        // 6. RENDERIZAÇÃO PAINEL (CORES DINÂMICAS)
         // ==========================================
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
@@ -698,7 +718,6 @@
                     opNum = m.opAtiva.op; prodNome = m.opAtiva.prod; meta = m.opAtiva.meta; boas = m.opAtiva.boas; refugo = m.opAtiva.refugo;
                     progresso = meta > 0 ? Math.min(((boas / meta) * 100), 100).toFixed(1) : 0;
                     
-                    // EXTRAINDO AS CORES DA O.P ATIVA
                     let matPartAtiva = '--', corPartAtiva = '--', pigmPartAtiva = '--';
                     if(m.opAtiva.material && m.opAtiva.material.includes('|')) {
                         let p = m.opAtiva.material.split('|');
@@ -709,6 +728,9 @@
                         matPartAtiva = m.opAtiva.material || '--';
                     }
                     
+                    // APLICAÇÃO DA COR DINÂMICA (ATIVA)
+                    let estCorAtiva = getCorDestaque(corPartAtiva);
+                    
                     cardOp = `
                     <div class="bg-slate-50 p-4 md:p-6 rounded-[24px] border border-slate-200 mt-4 shadow-inner relative">
                         <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b border-slate-200 pb-4 gap-2">
@@ -717,17 +739,19 @@
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                            <div class="flex justify-between items-center bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg">
-                                <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest"><i class="fa-solid fa-cubes mr-1"></i> Material</span>
-                                <span class="text-[11px] font-black text-blue-800 truncate ml-2">${matPartAtiva}</span>
+                            <div class="flex justify-between items-center bg-blue-100 border border-blue-300 px-3 py-2.5 rounded-lg text-blue-900">
+                                <span class="text-[9px] font-black uppercase tracking-widest opacity-80"><i class="fa-solid fa-cubes mr-1"></i> Mat</span>
+                                <span class="text-[13px] font-black truncate ml-2">${matPartAtiva}</span>
                             </div>
-                            <div class="flex justify-between items-center bg-purple-50 border border-purple-200 px-3 py-2 rounded-lg">
-                                <span class="text-[9px] font-black text-purple-600 uppercase tracking-widest"><i class="fa-solid fa-palette mr-1"></i> Cor</span>
-                                <span class="text-[11px] font-black text-purple-800 truncate ml-2">${corPartAtiva}</span>
+                            
+                            <div class="flex justify-between items-center px-3 py-2.5 rounded-lg border shadow-md" style="background-color: ${estCorAtiva.bg}; color: ${estCorAtiva.text}; border-color: rgba(0,0,0,0.15);">
+                                <span class="text-[9px] font-black uppercase tracking-widest opacity-90"><i class="fa-solid fa-palette mr-1"></i> Cor</span>
+                                <span class="text-[13px] font-black truncate ml-2">${corPartAtiva}</span>
                             </div>
-                            <div class="flex justify-between items-center bg-pink-50 border border-pink-200 px-3 py-2 rounded-lg">
-                                <span class="text-[9px] font-black text-pink-600 uppercase tracking-widest"><i class="fa-solid fa-droplet mr-1"></i> Pigm</span>
-                                <span class="text-[11px] font-black text-pink-800 truncate ml-2">${pigmPartAtiva}</span>
+                            
+                            <div class="flex justify-between items-center bg-pink-100 border border-pink-300 px-3 py-2.5 rounded-lg text-pink-900">
+                                <span class="text-[9px] font-black uppercase tracking-widest opacity-80"><i class="fa-solid fa-droplet mr-1"></i> Pigm</span>
+                                <span class="text-[13px] font-black truncate ml-2">${pigmPartAtiva}</span>
                             </div>
                         </div>
                         
@@ -783,7 +807,6 @@
                     </div>`;
                 }
 
-                // CORTE DO TEXTO MATERIAL NA FILA
                 let filaHTML = `<div class="text-center text-xs font-bold text-slate-400 p-6 border-2 border-dashed border-slate-300 rounded-2xl mt-2 bg-slate-50">Nenhuma O.P na Fila</div>`;
                 if(m.fila.length > 0) {
                     filaHTML = m.fila.map((f, index) => {
@@ -796,6 +819,9 @@
                         } else {
                             matPart = f.material || '--';
                         }
+                        
+                        // APLICAÇÃO DA COR DINÂMICA (FILA)
+                        let estCorFila = getCorDestaque(corPart);
 
                         return `
                         <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm relative mb-3">
@@ -819,17 +845,19 @@
                             </div>
 
                             <div class="flex flex-col gap-1.5 mb-3 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                <div class="flex justify-between items-center bg-blue-100 border border-blue-200 px-2 py-1.5 rounded">
-                                    <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest"><i class="fa-solid fa-cubes mr-1"></i> Material</span>
-                                    <span class="text-[11px] font-black text-blue-800 truncate ml-2">${matPart}</span>
+                                <div class="flex justify-between items-center bg-blue-100 border border-blue-300 px-2 py-1.5 rounded text-blue-900">
+                                    <span class="text-[9px] font-black uppercase tracking-widest opacity-80"><i class="fa-solid fa-cubes mr-1"></i> Mat</span>
+                                    <span class="text-[11px] md:text-[12px] font-black truncate ml-2">${matPart}</span>
                                 </div>
-                                <div class="flex justify-between items-center bg-purple-100 border border-purple-200 px-2 py-1.5 rounded">
-                                    <span class="text-[9px] font-black text-purple-600 uppercase tracking-widest"><i class="fa-solid fa-palette mr-1"></i> Cor</span>
-                                    <span class="text-[11px] font-black text-purple-800 truncate ml-2">${corPart}</span>
+                                
+                                <div class="flex justify-between items-center px-2 py-1.5 rounded border shadow-sm" style="background-color: ${estCorFila.bg}; color: ${estCorFila.text}; border-color: rgba(0,0,0,0.15);">
+                                    <span class="text-[9px] font-black uppercase tracking-widest opacity-90"><i class="fa-solid fa-palette mr-1"></i> Cor</span>
+                                    <span class="text-[11px] md:text-[12px] font-black truncate ml-2">${corPart}</span>
                                 </div>
-                                <div class="flex justify-between items-center bg-pink-100 border border-pink-200 px-2 py-1.5 rounded">
-                                    <span class="text-[9px] font-black text-pink-600 uppercase tracking-widest"><i class="fa-solid fa-droplet mr-1"></i> Pigm</span>
-                                    <span class="text-[11px] font-black text-pink-800 truncate ml-2">${pigmPart}</span>
+                                
+                                <div class="flex justify-between items-center bg-pink-100 border border-pink-300 px-2 py-1.5 rounded text-pink-900">
+                                    <span class="text-[9px] font-black uppercase tracking-widest opacity-80"><i class="fa-solid fa-droplet mr-1"></i> Pigm</span>
+                                    <span class="text-[11px] md:text-[12px] font-black truncate ml-2">${pigmPart}</span>
                                 </div>
                             </div>
 
@@ -934,12 +962,10 @@
         function concluirOP(id) {
             const maq = maquinas.find(m => m.id === id);
             if(confirm("Finalizar O.P?")) {
-                
                 let motivosStr = "Nenhum refugo";
                 if (maq.opAtiva.motivosRefugo && Object.keys(maq.opAtiva.motivosRefugo).length > 0) {
                     motivosStr = Object.entries(maq.opAtiva.motivosRefugo).map(([m, q]) => `${m} x${q}`).join(', ');
                 }
-
                 historico.unshift({ 
                     data: new Date().toLocaleString('pt-BR'), maq: maq.nome, op: maq.opAtiva.op, prod: maq.opAtiva.prod, 
                     meta: maq.opAtiva.meta, boas: maq.opAtiva.boas, refugo: maq.opAtiva.refugo, motivosStr: motivosStr
@@ -953,7 +979,6 @@
                 renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
             }
         }
-        
         function pausarOP(id) {
             const maq = maquinas.find(m => m.id === id);
             if(confirm("Pausar a O.P atual e voltar para Fila?")) {
@@ -963,7 +988,6 @@
                 renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
-        
         function puxarOPFila(maqId, index) {
             const maq = maquinas.find(m => m.id === maqId); const opEscolhida = maq.fila[index];
             if(confirm(`Iniciar O.P ${opEscolhida.op}?`)) {
@@ -988,7 +1012,6 @@
             if(nome && ciclo && cav && peso) {
                 produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso, mat, cor, pigm });
                 renderCatalogo(); atualizarSelectProdutos(); salvarAutomatico();
-                
                 document.getElementById('novo-produto-nome').value = ""; document.getElementById('novo-produto-ciclo').value = ""; 
                 document.getElementById('novo-produto-cavidades').value = ""; document.getElementById('novo-produto-peso').value = "";
                 document.getElementById('novo-produto-mat').value = ""; document.getElementById('novo-produto-cor').value = "";
