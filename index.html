@@ -945,11 +945,19 @@
         function pausarOP(id) {
             const maq = maquinas.find(m => m.id === id);
             if(confirm("Pausar a O.P atual e voltar para Fila?")) {
+                // 1. Joga a O.P atual de volta para o final da fila
                 maq.fila.push(maq.opAtiva); 
-                if(maq.fila.length > 1) { maq.opAtiva = maq.fila.shift(); } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
-                renderPainel(); renderResumo(); salvarAutomatico();
+                
+                // 2. Limpa a máquina e muda o status para Parada / Sem Programação
+                maq.opAtiva = null; 
+                maq.status = "22-SEM PROGRAMAÇÃO"; 
+                
+                // 3. Atualiza a tela e salva na nuvem
+                renderPainel(); 
+                renderResumo(); 
+                salvarAutomatico();
             }
-        }
+        }}
         function puxarOPFila(maqId, index) {
             const maq = maquinas.find(m => m.id === maqId); const opEscolhida = maq.fila[index];
             if(confirm(`Iniciar O.P ${opEscolhida.op}?`)) {
@@ -1210,4 +1218,5 @@
     </script>
 </body>
 </html>
+
 
