@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema MES V30 (Calendário & Alertas)</title>
+    <title>Triplast - Sistema MES V32 (Ficha Organizada)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -231,12 +231,10 @@
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Peso (g)</label>
                                 <input type="number" id="c-peso" step="0.001" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
                             </div>
-                            
                             <div class="relative">
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Cor (Cód ou Nome)</label>
                                 <input type="text" id="c-cor" list="cores-datalist" onchange="verificarCodigoCor(event)" placeholder="Ex: 1206" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none text-blue-400 uppercase text-xs">
                             </div>
-
                             <div>
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Pigm (%)</label>
                                 <input type="number" id="c-pigm" value="2" step="0.1" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none text-blue-400">
@@ -286,8 +284,7 @@
                         </div>
                         <button onclick="adicionarCor()" class="w-full md:w-auto bg-green-600 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-green-500 shadow-md">Salvar Nova Cor</button>
                     </div>
-                    <div id="lista-cores-gerenciador" class="flex flex-wrap gap-2">
-                        </div>
+                    <div id="lista-cores-gerenciador" class="flex flex-wrap gap-2"></div>
                 </div>
 
             </div>
@@ -413,7 +410,7 @@
             </div>
             <div class="flex gap-2 mb-6">
                 <input type="text" id="novo-op-nome" class="flex-1 p-3 bg-slate-50 border rounded-xl font-bold outline-none focus:border-blue-500" placeholder="Nome...">
-                <button onclick="addOperador()" class="bg-green-600 text-white px-6 rounded-xl font-black text-xl shadow-md hover:bg-green-500 transition-colors">+</button>
+                <button onclick="addOperador()" class="bg-green-600 text-white px-6 rounded-xl font-black text-xl shadow-md hover:bg-green-50 transition-colors">+</button>
             </div>
             <div id="lista-equipe" class="space-y-2 max-h-48 overflow-y-auto pr-2"></div>
         </div>
@@ -455,8 +452,7 @@
         let dadosMensais = { mesAtual: new Date().getMonth(), metaAtualSec: 0, horaExtraSec: 0, plantTempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } };
         let modoHoraExtra = false;
 
-        // ESTADO GLOBAL DE CORES
-        let coresGlobais = ["1206-AG | VERDE MAÇÃ"]; // Exemplo inicial
+        let coresGlobais = ["1206-AG | VERDE MAÇÃ"]; 
         let produtosGlobais = [{ id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45, mat: "PP", cor: "1206-AG | VERDE MAÇÃ", pigm: 2 }];
         let operadoresGlobais = ["João Silva", "Carlos Souza"];
         let historico = [];
@@ -478,7 +474,6 @@
         ];
         const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
         
-        // INSTÂNCIAS DE GRÁFICOS GLOBAIS
         let chartStatusInstance = null;
         let chartGeralInstance = null;
         let chartRefugoInstance = null;
@@ -490,11 +485,8 @@
         function verificarCodigoCor(e) {
             let val = e.target.value.trim().toUpperCase();
             if(!val) return;
-            // Busca pelo código ou parte do nome
             let found = coresGlobais.find(c => c.split(' | ')[0].trim().toUpperCase() === val || c.toUpperCase() === val);
-            if(found) {
-                e.target.value = found; // Preenche completo automático
-            }
+            if(found) e.target.value = found; 
         }
 
         function renderCoresGerenciador() {
@@ -509,31 +501,20 @@
         function adicionarCor() {
             let cod = document.getElementById('nova-cor-cod').value.trim().toUpperCase();
             let nome = document.getElementById('nova-cor-nome').value.trim().toUpperCase();
-            
             if (cod && nome) {
                 let val = cod + ' | ' + nome;
                 if (!coresGlobais.includes(val)) {
-                    coresGlobais.push(val);
-                    coresGlobais.sort();
-                    document.getElementById('nova-cor-cod').value = "";
-                    document.getElementById('nova-cor-nome').value = "";
-                    renderCoresGerenciador();
-                    atualizarSelectCores();
-                    salvarAutomatico();
-                } else {
-                    alert("Esta cor já está cadastrada!");
-                }
-            } else {
-                alert("Preencha o Código e o Nome da Cor!");
-            }
+                    coresGlobais.push(val); coresGlobais.sort();
+                    document.getElementById('nova-cor-cod').value = ""; document.getElementById('nova-cor-nome').value = "";
+                    renderCoresGerenciador(); atualizarSelectCores(); salvarAutomatico();
+                } else { alert("Esta cor já está cadastrada!"); }
+            } else { alert("Preencha o Código e o Nome da Cor!"); }
         }
 
         function removerCor(index) {
             if(confirm(`Deseja apagar a cor ${coresGlobais[index]} do sistema?`)) {
                 coresGlobais.splice(index, 1);
-                renderCoresGerenciador();
-                atualizarSelectCores();
-                salvarAutomatico();
+                renderCoresGerenciador(); atualizarSelectCores(); salvarAutomatico();
             }
         }
 
@@ -546,11 +527,9 @@
         // 2. BOOT E NUVEM
         // ==========================================
         window.onload = async () => {
-            // Setar data de hoje no calendário de gráficos ao carregar
             if(document.getElementById('filtro-data-grafico')) {
                 document.getElementById('filtro-data-grafico').value = new Date().toISOString().split('T')[0];
             }
-
             await carregarDaNuvem();
             if(!sistemaPronto) carregarDadosLocais();
             
@@ -581,16 +560,10 @@
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo) {
                     const db = data.conteudo;
-                    maquinas = db.maquinas || maquinas;
-                    produtosGlobais = db.produtos || produtosGlobais;
-                    operadoresGlobais = db.operadores || operadoresGlobais;
-                    historico = db.historico || historico;
-                    dadosMensais = db.dadosMensais || dadosMensais;
-                    modoHoraExtra = db.modoHoraExtra || false;
-                    coresGlobais = db.cores || coresGlobais;
-                    
-                    lastSyncTs = db.ts || 0;
-                    localStorage.setItem('triplast_ts', lastSyncTs);
+                    maquinas = db.maquinas || maquinas; produtosGlobais = db.produtos || produtosGlobais;
+                    operadoresGlobais = db.operadores || operadoresGlobais; historico = db.historico || historico;
+                    dadosMensais = db.dadosMensais || dadosMensais; modoHoraExtra = db.modoHoraExtra || false; coresGlobais = db.cores || coresGlobais;
+                    lastSyncTs = db.ts || 0; localStorage.setItem('triplast_ts', lastSyncTs);
                     localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
                     sistemaPronto = true;
                 }
@@ -602,12 +575,9 @@
             if(memory) {
                 try {
                     const db = JSON.parse(memory);
-                    if(db.maquinas) maquinas = db.maquinas;
-                    if(db.produtos) produtosGlobais = db.produtos;
-                    if(db.operadores) operadoresGlobais = db.operadores;
-                    if(db.historico) historico = db.historico;
-                    if(db.dadosMensais) dadosMensais = db.dadosMensais;
-                    if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
+                    if(db.maquinas) maquinas = db.maquinas; if(db.produtos) produtosGlobais = db.produtos;
+                    if(db.operadores) operadoresGlobais = db.operadores; if(db.historico) historico = db.historico;
+                    if(db.dadosMensais) dadosMensais = db.dadosMensais; if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
                     if(db.cores) coresGlobais = db.cores;
                 } catch(e) {}
             }
@@ -619,15 +589,10 @@
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
                     const db = data.conteudo;
-                    maquinas = db.maquinas || maquinas;
-                    produtosGlobais = db.produtos || produtosGlobais;
-                    operadoresGlobais = db.operadores || operadoresGlobais;
-                    historico = db.historico || historico;
-                    dadosMensais = db.dadosMensais || dadosMensais;
-                    modoHoraExtra = db.modoHoraExtra || false;
-                    coresGlobais = db.cores || coresGlobais;
-                    lastSyncTs = db.ts;
-                    localStorage.setItem('triplast_ts', lastSyncTs);
+                    maquinas = db.maquinas || maquinas; produtosGlobais = db.produtos || produtosGlobais;
+                    operadoresGlobais = db.operadores || operadoresGlobais; historico = db.historico || historico;
+                    dadosMensais = db.dadosMensais || dadosMensais; modoHoraExtra = db.modoHoraExtra || false; coresGlobais = db.cores || coresGlobais;
+                    lastSyncTs = db.ts; localStorage.setItem('triplast_ts', lastSyncTs);
                     
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
@@ -642,15 +607,10 @@
         function sanitizarDados() {
             maquinas.forEach(m => {
                 if(!m.tempos) m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-                if(!m.fila) m.fila = [];
-                if(!m.operador) m.operador = "";
-                if(!m.ultimoMotivoRefugo) m.ultimoMotivoRefugo = "";
+                if(!m.fila) m.fila = []; if(!m.operador) m.operador = ""; if(!m.ultimoMotivoRefugo) m.ultimoMotivoRefugo = "";
                 if(m.opAtiva) {
-                    m.opAtiva.boas = m.opAtiva.boas || 0;
-                    m.opAtiva.refugo = m.opAtiva.refugo || 0;
-                    m.opAtiva.meta = m.opAtiva.meta || 0;
-                    m.opAtiva.ciclo = m.opAtiva.ciclo || 1;
-                    m.opAtiva.cavs = m.opAtiva.cavs || 1;
+                    m.opAtiva.boas = m.opAtiva.boas || 0; m.opAtiva.refugo = m.opAtiva.refugo || 0;
+                    m.opAtiva.meta = m.opAtiva.meta || 0; m.opAtiva.ciclo = m.opAtiva.ciclo || 1; m.opAtiva.cavs = m.opAtiva.cavs || 1;
                     if(!m.opAtiva.motivosRefugo) m.opAtiva.motivosRefugo = {};
                 }
             });
@@ -660,9 +620,7 @@
 
         async function salvarAutomatico() { 
             if(!sistemaPronto) return; 
-            sanitizarDados();
-            lastSyncTs = Date.now();
-            localStorage.setItem('triplast_ts', lastSyncTs);
+            sanitizarDados(); lastSyncTs = Date.now(); localStorage.setItem('triplast_ts', lastSyncTs);
             localStorage.setItem('triplast_dados_oficial', JSON.stringify({ maquinas, produtos: produtosGlobais, operadores: operadoresGlobais, historico, dadosMensais, modoHoraExtra, cores: coresGlobais }));
             document.getElementById('status-nuvem').innerText = "⏳"; 
             if(saveTimeout) clearTimeout(saveTimeout); 
@@ -678,18 +636,11 @@
         // 4. LOGIN E ABAS
         // ==========================================
         function autenticar(autoLogin = false) {
-            const u = document.getElementById('login-user').value;
-            const p = document.getElementById('login-pass').value;
+            const u = document.getElementById('login-user').value; const p = document.getElementById('login-pass').value;
             if(SENHAS[u] === p) {
-                userLogado = u;
-                if(!autoLogin) localStorage.setItem('triplast_session', u); 
-                document.getElementById('tela-login').style.display = 'none';
-                document.getElementById('app-content').classList.remove('hidden');
-                if(u !== 'admin') {
-                    ['btn-op', 'btn-resumo', 'btn-historico', 'btn-graficos', 'btn-operadores'].forEach(id => {
-                        document.getElementById(id).style.display = 'none';
-                    });
-                }
+                userLogado = u; if(!autoLogin) localStorage.setItem('triplast_session', u); 
+                document.getElementById('tela-login').style.display = 'none'; document.getElementById('app-content').classList.remove('hidden');
+                if(u !== 'admin') { ['btn-op', 'btn-resumo', 'btn-historico', 'btn-graficos', 'btn-operadores'].forEach(id => { document.getElementById(id).style.display = 'none'; }); }
                 document.getElementById('f-maq').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
                 renderPainel(); renderResumo(); renderHistorico(); renderCatalogo(); atualizarSelectProdutos(); iniciarGraficos();
                 if(modoHoraExtra) toggleHoraExtraVis();
@@ -725,7 +676,7 @@
         function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO PAINEL
+        // 6. RENDERIZAÇÃO PAINEL (NOVA FICHA ORGANIZADA)
         // ==========================================
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
@@ -806,39 +757,65 @@
                     </div>`;
                 }
 
+                // CORTE DO TEXTO MATERIAL E RECONSTRUÇÃO EM 3 BLOCOS
                 let filaHTML = `<div class="text-center text-xs font-bold text-slate-400 p-6 border-2 border-dashed border-slate-300 rounded-2xl mt-2 bg-slate-50">Nenhuma O.P na Fila</div>`;
                 if(m.fila.length > 0) {
-                    filaHTML = m.fila.map((f, index) => `
-                    <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm relative mb-3">
-                        <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
-                            <div>
-                                <span class="font-black text-blue-700 text-base uppercase">O.P #${f.op}</span>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase mt-1"><i class="fa-solid fa-box-open mr-1"></i>${f.prod}</p>
+                    filaHTML = m.fila.map((f, index) => {
+                        let matPart = '--', corPart = '--', pigmPart = '--';
+                        if(f.material && f.material.includes('|')) {
+                            let p = f.material.split('|');
+                            matPart = p[0] ? p[0].trim() : '--';
+                            corPart = p[1] ? p[1].replace(/Cor:/i, '').trim() : '--';
+                            pigmPart = p[2] ? p[2].replace(/Pigm:/i, '').trim() : '--';
+                        } else {
+                            matPart = f.material || '--';
+                        }
+
+                        return `
+                        <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm relative mb-3">
+                            <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
+                                <div>
+                                    <span class="font-black text-blue-700 text-base uppercase">O.P #${f.op}</span>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1"><i class="fa-solid fa-box-open mr-1"></i>${f.prod}</p>
+                                </div>
+                                <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-black uppercase tracking-widest border border-slate-200">${index + 1}º</span>
                             </div>
-                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-black uppercase tracking-widest border border-slate-200">${index + 1}º</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mb-3">
-                            <div class="bg-slate-50 p-2 rounded text-center border border-slate-100">
-                                <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Ciclo/Cav</p>
-                                <p class="text-[11px] font-black text-slate-700 mt-0.5">${f.ciclo || '--'}s / ${f.cavs || '--'}</p>
+                            
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div class="bg-slate-50 p-2 rounded text-center border border-slate-100">
+                                    <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Ciclo/Cav</p>
+                                    <p class="text-[11px] font-black text-slate-700 mt-0.5">${f.ciclo || '--'}s / ${f.cavs || '--'}</p>
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded text-center border border-slate-100">
+                                    <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Tempo Est.</p>
+                                    <p class="text-[11px] font-black text-emerald-600 mt-0.5">${f.tempoEst || '--'}</p>
+                                </div>
                             </div>
-                            <div class="bg-slate-50 p-2 rounded text-center border border-slate-100">
-                                <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Tempo Est.</p>
-                                <p class="text-[11px] font-black text-emerald-600 mt-0.5">${f.tempoEst || '--'}</p>
+
+                            <div class="flex flex-col gap-1.5 mb-3 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <div class="flex justify-between items-center bg-blue-100 border border-blue-200 px-2 py-1.5 rounded">
+                                    <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest"><i class="fa-solid fa-cubes mr-1"></i> Material</span>
+                                    <span class="text-[11px] font-black text-blue-800">${matPart}</span>
+                                </div>
+                                <div class="flex justify-between items-center bg-purple-100 border border-purple-200 px-2 py-1.5 rounded">
+                                    <span class="text-[9px] font-black text-purple-600 uppercase tracking-widest"><i class="fa-solid fa-palette mr-1"></i> Cor</span>
+                                    <span class="text-[11px] font-black text-purple-800">${corPart}</span>
+                                </div>
+                                <div class="flex justify-between items-center bg-pink-100 border border-pink-200 px-2 py-1.5 rounded">
+                                    <span class="text-[9px] font-black text-pink-600 uppercase tracking-widest"><i class="fa-solid fa-droplet mr-1"></i> Pigm</span>
+                                    <span class="text-[11px] font-black text-pink-800">${pigmPart}</span>
+                                </div>
                             </div>
-                            <div class="bg-slate-50 p-2 rounded text-center border border-slate-100 col-span-2">
-                                <p class="text-[8px] text-slate-400 uppercase font-bold tracking-widest">Material & Cor</p>
-                                <p class="text-[10px] font-black text-blue-600 mt-0.5">${f.material || '--'}</p>
+
+                            <div class="flex justify-between items-center mt-2 pt-3 border-t border-slate-200 border-dashed">
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meta de Peças</span>
+                                    <span class="text-sm font-black text-slate-800">${f.meta}</span>
+                                </div>
+                                <button onclick="puxarOPFila('${m.id}', ${index})" class="bg-blue-50 border border-blue-200 hover:bg-blue-600 hover:text-white text-blue-600 text-[10px] font-black px-4 py-2 rounded-lg transition-colors uppercase shadow-sm flex items-center"><i class="fa-solid fa-play mr-2"></i> Iniciar</button>
                             </div>
-                        </div>
-                        <div class="flex justify-between items-center mt-2 pt-3 border-t border-slate-200 border-dashed">
-                            <div class="flex flex-col">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meta de Peças</span>
-                                <span class="text-sm font-black text-slate-800">${f.meta}</span>
-                            </div>
-                            <button onclick="puxarOPFila('${m.id}', ${index})" class="bg-blue-50 border border-blue-200 hover:bg-blue-600 hover:text-white text-blue-600 text-[10px] font-black px-4 py-2 rounded-lg transition-colors uppercase shadow-sm flex items-center"><i class="fa-solid fa-play mr-2"></i> Iniciar</button>
-                        </div>
-                    </div>`).join('');
+                        </div>`;
+                    }).join('');
                 }
 
                 grid.innerHTML += `
@@ -951,7 +928,6 @@
             }
         }
         
-        // NOVO CÓDIGO DO PAUSAR OP (Sem puxar próxima automaticamente)
         function pausarOP(id) {
             const maq = maquinas.find(m => m.id === id);
             if(confirm("Pausar a O.P atual e voltar para Fila?")) {
@@ -1014,7 +990,6 @@
             } 
         }
 
-        // LÓGICA DA PLANILHA ESPELHADA (Pigmento em gramas)
         function calcularTudo() {
             const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0; const cav = parseInt(document.getElementById('c-cav').value) || 1; 
             const peso = parseFloat(document.getElementById('c-peso').value) || 0; const pigm = parseFloat(document.getElementById('c-pigm').value) || 0; 
@@ -1029,7 +1004,7 @@
                 const kgMaterial = (meta * peso) / 1000; const kgPigmento = kgMaterial * (pigm / 100); const kgTotal = kgMaterial + kgPigmento;
                 
                 document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
-                document.getElementById('res-pig').innerText = (kgPigmento * 1000).toFixed(0) + 'g'; // AQUI ESTÁ EM GRAMAS
+                document.getElementById('res-pig').innerText = (kgPigmento * 1000).toFixed(0) + 'g';
                 document.getElementById('res-total').innerText = kgTotal.toFixed(2);
             } else { 
                 document.getElementById('res-tempo').innerText = "00:00:00"; document.getElementById('res-meta-hora').innerText = "0";
@@ -1060,7 +1035,7 @@
         }
 
         // ==========================================
-        // 9. RESUMO E HISTÓRICO (COM ALERTA DE REFUGO)
+        // 9. RESUMO E HISTÓRICO
         // ==========================================
         function renderResumo() { 
             document.getElementById('tbody-resumo').innerHTML = maquinas.map(m => {
@@ -1068,7 +1043,6 @@
                 let refugo = m.opAtiva ? m.opAtiva.refugo : 0; 
                 let perda = (boas+refugo) > 0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
                 
-                // ALERTA VERMELHO SE PASSAR DE 2%
                 let perdaHtml = perda > 2.0 
                     ? `<span class="bg-red-100 text-red-600 px-2 py-1 rounded font-black border border-red-300 animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${perda}%</span>` 
                     : `<span class="text-slate-500">${perda}%</span>`;
@@ -1199,7 +1173,7 @@
         }, 200);
 
         // ==========================================
-        // 11. GRÁFICOS (COM FILTRO DE CALENDÁRIO)
+        // 11. GRÁFICOS
         // ==========================================
         function iniciarGraficos() {
             let dataFiltro = document.getElementById('filtro-data-grafico') ? document.getElementById('filtro-data-grafico').value : '';
@@ -1207,9 +1181,8 @@
             let maqBoas = maquinas.map(m=>0);
             let maqRefugo = maquinas.map(m=>0);
 
-            // Verifica se a data é hoje, se for soma a O.P ativa + Histórico de Hoje
             if (!dataFiltro || dataFiltro === new Date().toISOString().split('T')[0]) {
-                let hojeStr = new Date().toLocaleDateString('pt-BR'); // Ex: 15/10/2023
+                let hojeStr = new Date().toLocaleDateString('pt-BR'); 
                 
                 maquinas.forEach((m, i) => {
                     if (m.opAtiva) {
@@ -1228,9 +1201,8 @@
                     }
                 });
             } else {
-                // Data do Passado (Vasculha só o Histórico)
                 let [y, m, d] = dataFiltro.split('-');
-                let dataStr = `${d}/${m}/${y}`; // Converte de YYYY-MM-DD para DD/MM/YYYY
+                let dataStr = `${d}/${m}/${y}`; 
                 
                 historico.forEach(h => {
                     if (h.data.startsWith(dataStr)) {
