@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES V39 (Filtro Clientes vs Terceiros)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,12 +13,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         
-        body { 
-            background-color: #eef2f6; 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            padding: 0; 
-        }
+        body { background-color: #eef2f6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; animation: fadeIn 0.4s ease; }
@@ -165,7 +160,7 @@
                 <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                     <h2 class="text-xl md:text-2xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-calculator text-blue-600"></i> LANÇAR O.P NA PRODUÇÃO</h2>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                         <div>
                             <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Máquina</label>
                             <select id="f-maq" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none"></select>
@@ -173,6 +168,14 @@
                         <div>
                             <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Nº O.P</label>
                             <input type="text" id="f-op" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none uppercase">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Tipo de Pedido</label>
+                            <select id="f-tipo-filtro" onchange="atualizarSelectProdutos()" class="w-full p-3 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-xl font-bold outline-none uppercase text-xs">
+                                <option value="todos">🏭 Todos</option>
+                                <option value="cliente">👤 Clientes</option>
+                                <option value="terceiro">🤝 Terceiros</option>
+                            </select>
                         </div>
                         <div class="md:col-span-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Selecionar Produto</label>
@@ -382,6 +385,15 @@
                 <button onclick="fecharModalProdutos()" class="text-slate-400 hover:text-red-500 text-4xl font-black leading-none">&times;</button>
             </div>
             <div class="flex flex-col md:flex-row gap-3 items-end bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner mb-6">
+                
+                <div class="w-full md:w-32">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">TIPO</label>
+                    <select id="novo-produto-categoria-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-xs text-indigo-700">
+                        <option value="cliente">Cliente (Proprio)</option>
+                        <option value="terceiro">Terceiro</option>
+                    </select>
+                </div>
+
                 <div class="flex-1 w-full">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nome da Peça</label>
                     <input type="text" id="novo-produto-nome-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
@@ -498,7 +510,7 @@
         let modoHoraExtra = false;
 
         let coresGlobais = ["1206-AG | VERDE MAÇÃ"]; 
-        let produtosGlobais = [{ id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45, mat: "PP", cor: "1206-AG | VERDE MAÇÃ", pigm: 2 }];
+        let produtosGlobais = [{ id: 1, nome: "Pote 1L", ciclo: 15, cav: 4, peso: 45, mat: "PP", cor: "1206-AG | VERDE MAÇÃ", pigm: 2, categoria: "cliente" }];
         let operadoresGlobais = ["João Silva", "Carlos Souza"];
         let historico = [];
         
@@ -544,7 +556,7 @@
         
         function fecharModalCores() { 
             document.getElementById('modal-cores').style.display = 'none'; 
-            editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar";
+            editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar Cor";
             document.getElementById('nova-cor-cod-modal').value = ""; document.getElementById('nova-cor-nome-modal').value = "";
         }
 
@@ -556,21 +568,21 @@
                 if (editCorIndex !== null) {
                     let oldVal = coresGlobais[editCorIndex]; coresGlobais[editCorIndex] = val;
                     produtosGlobais.forEach(p => { if(p.cor === oldVal) p.cor = val; });
-                    editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar";
+                    editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar Cor";
                 } else {
-                    if (!coresGlobais.includes(val)) { coresGlobais.push(val); } else { alert("Cor já existe!"); return; }
+                    if (!coresGlobais.includes(val)) { coresGlobais.push(val); } else { alert("Esta cor já está cadastrada!"); return; }
                 }
                 coresGlobais.sort(); 
                 document.getElementById('nova-cor-cod-modal').value = ""; document.getElementById('nova-cor-nome-modal').value = "";
                 renderCoresModal(); atualizarSelectCores(); salvarAutomatico();
-            } else { alert("Preencha o Código e o Nome!"); }
+            } else { alert("Preencha o Código e o Nome da Cor!"); }
         }
 
         function editarCor(index) {
             let val = coresGlobais[index].split(' | ');
             document.getElementById('nova-cor-cod-modal').value = val[0] || '';
             document.getElementById('nova-cor-nome-modal').value = val[1] || '';
-            editCorIndex = index; document.getElementById('btn-salvar-cor').innerText = "Atualizar";
+            editCorIndex = index; document.getElementById('btn-salvar-cor').innerText = "Atualizar Cor";
         }
 
         function removerCor(index) {
@@ -595,14 +607,15 @@
         }
 
         // ==========================================
-        // MODAL DE PRODUTOS
+        // MODAL DE PRODUTOS E FILTRO CLIENTE/TERCEIRO
         // ==========================================
         let editProdutoId = null;
         function abrirModalProdutos() { document.getElementById('modal-produtos').style.display = 'flex'; renderCatalogoModal(); }
         function fecharModalProdutos() { document.getElementById('modal-produtos').style.display = 'none'; limparFormProduto(); }
         
         function limparFormProduto() {
-            editProdutoId = null; document.getElementById('btn-salvar-prod').innerText = "Salvar";
+            editProdutoId = null; document.getElementById('btn-salvar-prod').innerText = "Salvar Novo";
+            document.getElementById('novo-produto-categoria-modal').value = "cliente";
             document.getElementById('novo-produto-nome-modal').value = ""; document.getElementById('novo-produto-ciclo-modal').value = ""; 
             document.getElementById('novo-produto-cavidades-modal').value = ""; document.getElementById('novo-produto-peso-modal').value = "";
             document.getElementById('novo-produto-mat-modal').value = ""; document.getElementById('novo-produto-cor-modal').value = "";
@@ -610,6 +623,7 @@
         }
 
         function salvarProduto() {
+            const cat = document.getElementById('novo-produto-categoria-modal').value || "cliente";
             const nome = document.getElementById('novo-produto-nome-modal').value; 
             const ciclo = parseFloat(document.getElementById('novo-produto-ciclo-modal').value); 
             const cav = parseInt(document.getElementById('novo-produto-cavidades-modal').value); 
@@ -621,9 +635,9 @@
             if(nome && ciclo && cav && peso) {
                 if(editProdutoId !== null) {
                     let p = produtosGlobais.find(x => x.id === editProdutoId);
-                    if(p) { p.nome=nome; p.ciclo=ciclo; p.cav=cav; p.peso=peso; p.mat=mat; p.cor=cor; p.pigm=pigm; }
+                    if(p) { p.nome=nome; p.ciclo=ciclo; p.cav=cav; p.peso=peso; p.mat=mat; p.cor=cor; p.pigm=pigm; p.categoria=cat; }
                 } else {
-                    produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso, mat, cor, pigm });
+                    produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso, mat, cor, pigm, categoria: cat });
                 }
                 limparFormProduto(); renderCatalogoModal(); atualizarSelectProdutos(); salvarAutomatico();
             } else { alert("Preencha o Nome, Ciclo, Cavidades e Peso!"); }
@@ -632,6 +646,7 @@
         function editarProduto(id) {
             let p = produtosGlobais.find(x => x.id === id);
             if(p) {
+                document.getElementById('novo-produto-categoria-modal').value = p.categoria || "cliente";
                 document.getElementById('novo-produto-nome-modal').value = p.nome; document.getElementById('novo-produto-ciclo-modal').value = p.ciclo;
                 document.getElementById('novo-produto-cavidades-modal').value = p.cav; document.getElementById('novo-produto-peso-modal').value = p.peso;
                 document.getElementById('novo-produto-mat-modal').value = p.mat; document.getElementById('novo-produto-cor-modal').value = p.cor;
@@ -651,10 +666,15 @@
             let filtro = busca.toLowerCase();
             let filtrados = produtosGlobais.filter(p => p.nome.toLowerCase().includes(filtro) || p.mat.toLowerCase().includes(filtro) || (p.cor && p.cor.toLowerCase().includes(filtro)));
             
-            document.getElementById('lista-catalogo-modal').innerHTML = filtrados.map(p => `
-                <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold flex flex-col justify-between hover:shadow-md transition-shadow">
+            document.getElementById('lista-catalogo-modal').innerHTML = filtrados.map(p => {
+                let badge = (p.categoria === 'terceiro') ? '<span class="bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-[8px] font-black uppercase ml-2 border border-orange-200">Terceiro</span>' : '<span class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-[8px] font-black uppercase ml-2 border border-blue-200">Cliente</span>';
+                return `
+                <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold flex flex-col justify-between hover:shadow-md transition-shadow relative">
                     <div>
-                        <span class="text-indigo-700 text-lg break-words">${p.nome}</span> <br>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-indigo-700 text-lg break-words pr-2 leading-tight">${p.nome}</span>
+                            ${badge}
+                        </div>
                         <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">
                             CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}g<br>MAT: ${p.mat || '--'} <br>COR: ${p.cor || '--'} <br>PIGM: ${p.pigm || 0}%
                         </span>
@@ -664,16 +684,27 @@
                         <button onclick="removerProduto(${p.id})" class="flex-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 py-2 rounded-lg font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-trash mr-1"></i> Apagar</button>
                     </div>
                 </div>
-            `).join(''); 
+            `}).join(''); 
         }
 
+        // ==========================================
+        // CALCULADORA E LANÇAMENTO DA O.P.
+        // ==========================================
         function atualizarSelectProdutos() { 
-            document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + produtosGlobais.map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); 
+            let filtro = document.getElementById('f-tipo-filtro') ? document.getElementById('f-tipo-filtro').value : 'todos';
+            let prodsList = produtosGlobais;
+            if(filtro !== 'todos') {
+                prodsList = produtosGlobais.filter(p => (p.categoria || 'cliente') === filtro);
+            }
+            
+            document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + prodsList.map(p => {
+                let textTerceiro = (p.categoria === 'terceiro') ? '[TERCEIRO] ' : '';
+                return `<option value="${p.id}">${textTerceiro}${p.nome}</option>`;
+            }).join(''); 
+            
+            autoFillCalculadora();
         }
 
-        // ==========================================
-        // CALCULADORA LANÇAMENTO OP
-        // ==========================================
         function autoFillCalculadora() { 
             const prod = produtosGlobais.find(p => p.id == document.getElementById('f-prod-select').value); 
             if(prod) { 
@@ -734,7 +765,7 @@
         }
 
         // ==========================================
-        // INICIALIZAÇÃO
+        // INICIALIZAÇÃO E CARREGAMENTO
         // ==========================================
         window.onload = async () => {
             if(document.getElementById('filtro-data-grafico')) { document.getElementById('filtro-data-grafico').value = new Date().toISOString().split('T')[0]; }
@@ -835,7 +866,7 @@
         }
 
         // ==========================================
-        // 4. LOGIN E ABAS
+        // LOGIN E ABAS
         // ==========================================
         function autenticar(autoLogin = false) {
             const u = document.getElementById('login-user').value; const p = document.getElementById('login-pass').value;
@@ -859,7 +890,7 @@
         }
 
         // ==========================================
-        // 5. OPERADORES
+        // OPERADORES
         // ==========================================
         function abrirModalOperadores() { document.getElementById('modal-operadores').style.display = 'flex'; renderEquipe(); }
         function renderEquipe() { 
@@ -878,7 +909,7 @@
         function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
 
         // ==========================================
-        // 6. RENDERIZAÇÃO PAINEL (CORES DINÂMICAS)
+        // RENDERIZAÇÃO PAINEL PRINCIPAL
         // ==========================================
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
