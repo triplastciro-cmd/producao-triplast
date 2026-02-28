@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES V42 (Filtro Terceiros & Design Premium)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -97,7 +97,7 @@
         <span class="text-[10px] font-black uppercase tracking-widest" id="toast-msg">Nuvem Atualizada</span>
     </div>
 
-    <div id="tela-login" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-all duration-700">
+    <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-all duration-700">
         <div class="absolute inset-0 bg-slate-900"></div>
         <div class="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-slate-900 to-indigo-900/40"></div>
         
@@ -684,6 +684,7 @@
         function renderCoresModal(busca = '') {
             let filtro = busca.toLowerCase();
             
+            // Filtra e Garante a Ordem Alfabética na Janela
             let filtradas = coresGlobais.map((c, i) => ({c, i})).filter(item => item.c.toLowerCase().includes(filtro));
             filtradas.sort((a, b) => a.c.localeCompare(b.c));
 
@@ -773,6 +774,7 @@
             let filtro = busca.toLowerCase();
             let filtrados = produtosGlobais.filter(p => p.nome.toLowerCase().includes(filtro) || p.mat.toLowerCase().includes(filtro) || (p.cor && p.cor.toLowerCase().includes(filtro)));
             
+            // Garante a Ordem Alfabética na Janela de Catálogo
             filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
 
             document.getElementById('lista-catalogo-modal').innerHTML = filtrados.map(p => {
@@ -807,6 +809,7 @@
                 prodsList = produtosGlobais.filter(p => (p.categoria || 'cliente') === filtro);
             }
             
+            // Garante Ordem Alfabética na hora de Lançar a OP
             prodsList.sort((a, b) => a.nome.localeCompare(b.nome));
 
             document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + prodsList.map(p => {
@@ -879,9 +882,14 @@
                 const matFormatado = `${nomeMat} (${kgMat}kg) | Cor: ${corPeca} | Pigm: ${percPigm}% (${gPig})`;
 
                 maquinas.find(m => m.id === mId).fila.push({ 
-                    op, prod: prodSel.options[prodSel.selectedIndex].text, meta, 
-                    ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, 
-                    material: matFormatado, tempoEst: tempoEst
+                    op: op, 
+                    prod: produtoInfo.nome, // NOME PURO SEM [TERCEIRO]
+                    categoria: produtoInfo.categoria || 'cliente', // SALVA A CATEGORIA DA PEÇA NA O.P.
+                    meta: meta, 
+                    ciclo: document.getElementById('c-ciclo').value, 
+                    cavs: document.getElementById('c-cav').value, 
+                    material: matFormatado, 
+                    tempoEst: tempoEst
                 });
                 
                 alert(`O.P ${op} enviada para a fila!`); 
@@ -1018,7 +1026,13 @@
                     m.opAtiva.ciclo = m.opAtiva.ciclo || 1; 
                     m.opAtiva.cavs = m.opAtiva.cavs || 1;
                     if(!m.opAtiva.motivosRefugo) m.opAtiva.motivosRefugo = {};
+                    if(!m.opAtiva.categoria) m.opAtiva.categoria = 'cliente'; // Garante que a categoria exista
                 }
+                
+                // Sanitize Fila
+                m.fila.forEach(f => {
+                    if(!f.categoria) f.categoria = 'cliente';
+                });
             });
             if(!dadosMensais.plantTempos) dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
             if(!coresGlobais) coresGlobais = [];
@@ -1144,10 +1158,19 @@
                     
                     let estCorAtiva = getCorDestaque(corPartAtiva);
                     
+                    // Verificação do Selo de Terceiro na OP ATIVA
+                    let seloTerceiro = '';
+                    if(m.opAtiva.categoria === 'terceiro') {
+                        seloTerceiro = `<span class="bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md flex items-center gap-1"><i class="fa-solid fa-handshake"></i> Produto de Terceiro</span>`;
+                    }
+                    
                     cardOp = `
                     <div class="bg-slate-50 p-4 md:p-6 rounded-[24px] border border-slate-200 mt-4 shadow-inner relative">
                         <div class="flex flex-col md:flex-row justify-between md:items-center mb-4 border-b border-slate-200 pb-4 gap-2">
-                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">O.P ATIVA: <span class="text-blue-600 text-2xl ml-2">${opNum}</span></span>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span class="text-xs font-black text-slate-400 uppercase tracking-widest">O.P ATIVA: <span class="text-blue-600 text-2xl ml-1">${opNum}</span></span>
+                                ${seloTerceiro}
+                            </div>
                             <span class="text-xs font-black text-slate-500 uppercase break-words bg-white px-3 py-1.5 rounded-lg border border-slate-200 max-w-full text-right leading-tight">${prodNome}</span>
                         </div>
                         
@@ -1234,12 +1257,21 @@
                         }
                         
                         let estCorFila = getCorDestaque(corPart);
+                        
+                        // Verificação do Selo de Terceiro na FILA
+                        let seloFilaTerceiro = '';
+                        if(f.categoria === 'terceiro') {
+                            seloFilaTerceiro = `<span class="bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-[9px] font-black uppercase border border-orange-200 flex items-center gap-1"><i class="fa-solid fa-handshake"></i> Terceiro</span>`;
+                        }
 
                         return `
                         <div class="bg-white border border-slate-200 border-l-4 border-l-blue-500 rounded-xl p-4 shadow-sm relative mb-3">
                             <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
                                 <div class="max-w-[80%]">
-                                    <span class="font-black text-blue-700 text-base uppercase">O.P #${f.op}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-black text-blue-700 text-base uppercase">O.P #${f.op}</span>
+                                        ${seloFilaTerceiro}
+                                    </div>
                                     <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 break-words leading-tight"><i class="fa-solid fa-box-open mr-1"></i>${f.prod}</p>
                                 </div>
                                 <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-black uppercase tracking-widest border border-slate-200">${index + 1}º</span>
@@ -1393,7 +1425,18 @@
                 
                 if(maq.fila.length > 0) { 
                     const p = maq.fila.shift(); 
-                    maq.opAtiva = { op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, refugo: p.refugo || 0, ciclo: p.ciclo || 1, cavs: p.cavs || 1, motivosRefugo: {}, material: p.material }; 
+                    maq.opAtiva = { 
+                        op: p.op, 
+                        prod: p.prod, 
+                        categoria: p.categoria || 'cliente', // Mantém a categoria ao puxar da fila
+                        meta: p.meta, 
+                        boas: p.boas || 0, 
+                        refugo: p.refugo || 0, 
+                        ciclo: p.ciclo || 1, 
+                        cavs: p.cavs || 1, 
+                        motivosRefugo: p.motivosRefugo || {}, 
+                        material: p.material 
+                    }; 
                     maq.status = "04-PRODUÇÃO"; 
                 } else { maq.opAtiva = null; maq.status = "22-SEM PROGRAMAÇÃO"; }
                 renderPainel(); renderResumo(); renderHistorico(); salvarAutomatico();
@@ -1417,6 +1460,7 @@
                 maq.fila.splice(index, 1); 
                 if(opEscolhida.boas === undefined) opEscolhida.boas = 0; if(opEscolhida.refugo === undefined) opEscolhida.refugo = 0;
                 if(opEscolhida.motivosRefugo === undefined) opEscolhida.motivosRefugo = {};
+                if(!opEscolhida.categoria) opEscolhida.categoria = 'cliente'; // Fallback
                 maq.opAtiva = opEscolhida; maq.status = "04-PRODUÇÃO";
                 renderPainel(); renderResumo(); salvarAutomatico();
             }
