@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema MES V37 (Catálogos em Janela & Edição)</title>
+    <title>Triplast - Sistema MES V38 (Completo e Corrigido)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,20 +13,10 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         
-        body { 
-            background-color: #eef2f6; 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            padding: 0; 
-        }
-        
+        body { background-color: #eef2f6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; animation: fadeIn 0.4s ease; }
-        
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(5px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .card-producao {
             background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border-left: 12px solid #cbd5e1;
@@ -36,7 +26,6 @@
         @media (min-width: 1024px) {
             .card-producao { flex-direction: row; }
             .card-esq { flex: 1; padding: 32px; }
-            /* LARGURA DO PAINEL LATERAL AUMENTADA PARA 440px */
             .card-dir { width: 440px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column;}
         }
         
@@ -98,11 +87,9 @@
     </div>
 
     <div id="app-content" class="hidden">
-        
         <header class="bg-slate-900 text-white px-4 md:px-6 py-4 rounded-b-[32px] shadow-lg mb-6 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-800">
             <div class="flex items-center gap-4 md:gap-8 w-full md:w-auto justify-between md:justify-start">
                 <span class="text-2xl md:text-3xl font-black italic tracking-tighter">TRI<span class="text-blue-500">PLAST</span></span>
-                
                 <div class="relative bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl flex items-center gap-3 shadow-inner">
                     <i class="fa-solid fa-clock text-blue-400 text-lg"></i>
                     <div class="flex flex-col text-left">
@@ -139,7 +126,6 @@
                     </button>
                     <span id="badge-fds" class="hidden mt-1 bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded animate-pulse shadow-lg shadow-red-500/50">EMPRESA FECHADA</span>
                 </div>
-
                 <button onclick="fazerLogout()" class="bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white p-3 md:px-5 md:py-3 rounded-xl font-black text-sm uppercase transition-colors" title="Sair da Conta"><i class="fa-solid fa-power-off"></i></button>
             </div>
         </header>
@@ -156,15 +142,12 @@
         <main class="max-w-7xl mx-auto px-2 md:px-4 pb-16">
             
             <div id="aba-painel" class="aba-conteudo aba-ativa">
-                <div id="grid-maquinas" class="flex flex-col gap-6 md:gap-8 items-center w-full">
-                    </div>
+                <div id="grid-maquinas" class="flex flex-col gap-6 md:gap-8 items-center w-full"></div>
             </div>
 
             <div id="aba-op" class="aba-conteudo space-y-6">
-                
                 <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                     <h2 class="text-xl md:text-2xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-calculator text-blue-600"></i> LANÇAR O.P NA PRODUÇÃO</h2>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div>
                             <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Máquina</label>
@@ -237,15 +220,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <button onclick="abrirModalProdutos()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-6 md:p-8 rounded-[32px] shadow-xl font-black text-xl flex items-center justify-center gap-4 transition-all active:scale-95 border-b-4 border-indigo-800">
                         <i class="fa-solid fa-boxes-stacked text-4xl"></i>
-                        <span class="text-left leading-tight uppercase tracking-widest text-sm md:text-lg">Catálogo de<br>Produtos</span>
+                        <span class="text-left leading-tight uppercase tracking-widest text-sm md:text-lg">Gerenciar Catálogo<br>de Produtos</span>
                     </button>
-
                     <button onclick="abrirModalCores()" class="bg-purple-600 hover:bg-purple-700 text-white p-6 md:p-8 rounded-[32px] shadow-xl font-black text-xl flex items-center justify-center gap-4 transition-all active:scale-95 border-b-4 border-purple-800">
                         <i class="fa-solid fa-palette text-4xl"></i>
                         <span class="text-left leading-tight uppercase tracking-widest text-sm md:text-lg">Gerenciador<br>de Cores</span>
                     </button>
                 </div>
-
             </div>
 
             <div id="aba-resumo" class="aba-conteudo">
@@ -303,17 +284,13 @@
             </div>
 
             <div id="aba-graficos" class="aba-conteudo space-y-6">
-                
                 <div class="flex justify-end items-center gap-3">
                     <label class="text-xs font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-calendar-days text-blue-500 mr-1"></i> Data do Relatório:</label>
                     <input type="date" id="filtro-data-grafico" onchange="iniciarGraficos()" class="bg-white border-2 border-slate-200 p-3 rounded-xl font-bold text-slate-700 outline-none shadow-sm cursor-pointer hover:border-blue-500 transition-colors">
                 </div>
-                
                 <div class="grid grid-cols-1 gap-8">
-                    
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                         <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Status Geral da Fábrica (Tempo Real)</h3>
-                        
                         <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
                             <div class="text-center md:border-r border-slate-200 mb-2 md:mb-0">
                                 <span class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Produção</span>
@@ -336,28 +313,22 @@
                                 <span id="lbl-chart-oee" class="text-lg md:text-2xl font-black text-blue-600 font-mono">0.0%</span>
                             </div>
                         </div>
-
                         <div class="h-[250px] md:h-[300px] relative"><canvas id="chartStatus"></canvas></div>
                     </div>
-                    
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                         <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Produção Total de Peças Boas</h3>
                         <div class="h-[250px] md:h-[300px]"><canvas id="chartGeral"></canvas></div>
                     </div>
-                    
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                         <h3 class="font-black text-slate-500 text-sm uppercase mb-4 text-center tracking-widest">Índice de Refugo (%)</h3>
                         <div class="h-[250px] md:h-[300px]"><canvas id="chartRefugo"></canvas></div>
                     </div>
-                    
                     <div class="bg-white p-4 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
                         <h3 class="font-black text-blue-500 text-sm uppercase mb-4 text-center tracking-widest"><i class="fa-solid fa-bolt"></i> Horas Extras Cumpridas</h3>
                         <div class="h-[250px] md:h-[300px]"><canvas id="chartHoraExtra"></canvas></div>
                     </div>
-
                 </div>
             </div>
-
         </main>
     </div>
 
@@ -376,50 +347,47 @@
     </div>
 
     <div id="modal-produtos" class="fixed inset-0 bg-slate-900/80 z-[150] hidden items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" style="scrollbar-width: thin;">
+        <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto" style="scrollbar-width: thin;">
             <div class="flex justify-between items-center mb-6 border-b pb-4 border-slate-100">
-                <h3 class="font-black text-2xl text-slate-800"><i class="fa-solid fa-boxes-stacked text-indigo-600 mr-2"></i> Gerenciar Produtos</h3>
+                <h3 class="font-black text-2xl text-slate-800"><i class="fa-solid fa-boxes-stacked text-indigo-600 mr-2"></i> Catálogo de Produtos</h3>
                 <button onclick="fecharModalProdutos()" class="text-slate-400 hover:text-red-500 text-4xl font-black leading-none">&times;</button>
             </div>
-
             <div class="flex flex-col md:flex-row gap-3 items-end bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner mb-6">
                 <div class="flex-1 w-full">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nome da Peça</label>
-                    <input type="text" id="novo-produto-nome" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
+                    <input type="text" id="novo-produto-nome-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
                 </div>
                 <div class="w-full md:w-20">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Ciclo (s)</label>
-                    <input type="number" id="novo-produto-ciclo" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                    <input type="number" id="novo-produto-ciclo-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
                 </div>
                 <div class="w-full md:w-16">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cavs</label>
-                    <input type="number" id="novo-produto-cavidades" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                    <input type="number" id="novo-produto-cavidades-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
                 </div>
                 <div class="w-full md:w-24">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Peso (g)</label>
-                    <input type="number" step="0.001" id="novo-produto-peso" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                    <input type="number" step="0.001" id="novo-produto-peso-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
                 </div>
                 <div class="w-full md:w-24">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Material</label>
-                    <input type="text" id="novo-produto-mat" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
+                    <input type="text" id="novo-produto-mat-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
                 </div>
                 <div class="w-full md:w-32 relative">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cor (Cód/Nome)</label>
-                    <input type="text" id="novo-produto-cor" list="cores-datalist" onchange="verificarCodigoCor(event)" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-[10px]">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cor</label>
+                    <input type="text" id="novo-produto-cor-modal" list="cores-datalist" onchange="verificarCodigoCor(event)" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-[10px]">
                 </div>
-                <div class="w-full md:w-20">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Pigm(%)</label>
-                    <input type="number" step="0.1" id="novo-produto-pigm" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                <div class="w-full md:w-16">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Pigm%</label>
+                    <input type="number" step="0.1" id="novo-produto-pigm-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
                 </div>
-                <button id="btn-salvar-prod" onclick="salvarProduto()" class="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase hover:bg-indigo-700 shadow-md transition-colors text-xs whitespace-nowrap">Salvar Novo</button>
+                <button id="btn-salvar-prod" onclick="salvarProduto()" class="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase hover:bg-indigo-700 shadow-md transition-colors text-xs whitespace-nowrap">Salvar</button>
             </div>
-
             <div class="relative mb-6">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
                 <input type="text" placeholder="Buscar produto..." onkeyup="renderCatalogoModal(this.value)" class="w-full pl-10 p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-indigo-500 bg-slate-50">
             </div>
-
-            <div id="lista-catalogo" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            <div id="lista-catalogo-modal" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </div>
     </div>
 
@@ -429,34 +397,30 @@
                 <h3 class="font-black text-2xl text-slate-800"><i class="fa-solid fa-palette text-purple-600 mr-2"></i> Gerenciar Cores</h3>
                 <button onclick="fecharModalCores()" class="text-slate-400 hover:text-red-500 text-4xl font-black leading-none">&times;</button>
             </div>
-
             <div class="flex flex-col md:flex-row gap-3 items-end bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner mb-6">
                 <div class="flex-1 w-full">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Código</label>
-                    <input type="text" id="nova-cor-cod" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
+                    <input type="text" id="nova-cor-cod-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
                 </div>
                 <div class="flex-1 w-full">
                     <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nome da Cor</label>
-                    <input type="text" id="nova-cor-nome" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
+                    <input type="text" id="nova-cor-nome-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
                 </div>
-                <button id="btn-salvar-cor" onclick="salvarCor()" class="w-full md:w-auto bg-purple-600 text-white px-8 py-3.5 rounded-xl font-black uppercase hover:bg-purple-700 shadow-md transition-colors text-xs whitespace-nowrap">Salvar Cor</button>
+                <button id="btn-salvar-cor" onclick="salvarCor()" class="w-full md:w-auto bg-purple-600 text-white px-8 py-3.5 rounded-xl font-black uppercase hover:bg-purple-700 shadow-md transition-colors text-xs whitespace-nowrap">Salvar</button>
             </div>
-
             <div class="relative mb-6">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
                 <input type="text" placeholder="Buscar cor..." onkeyup="renderCoresModal(this.value)" class="w-full pl-10 p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-purple-500 bg-slate-50">
             </div>
-
             <div id="lista-cores-gerenciador" class="flex flex-wrap gap-2"></div>
         </div>
     </div>
-
 
     <datalist id="cores-datalist"></datalist>
 
     <script>
         // ==========================================
-        // FUNÇÕES GLOBAIS E UTILITÁRIOS
+        // FUNÇÕES GLOBAIS
         // ==========================================
         const fmtTm = s => {
             let tempo = Math.floor(s);
@@ -481,26 +445,16 @@
         }
 
         // ==========================================
-        // 1. CONFIGURAÇÃO DO BANCO DE DADOS
+        // CONFIGURAÇÃO DO BANCO DE DADOS
         // ==========================================
         const supabaseUrl = 'https://hgqnlqtvjiyuwnwypxxh.supabase.co'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhncW5scXR2aml5dXdud3lweHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjE1MDcsImV4cCI6MjA4NjQzNzUwN30.njSVfWDpIJK49IpRSgyMf6e5MEmJ-AROVT7-nOTZD9Y'; 
-        
         let sb = null;
-        try { 
-            sb = window.supabase.createClient(supabaseUrl, supabaseKey); 
-        } catch(e) {
-            console.error("Erro ao conectar no banco de dados.");
-        }
+        try { sb = window.supabase.createClient(supabaseUrl, supabaseKey); } catch(e) {}
 
         const SENHAS = { admin: '2026', m1: 'm1', m2: 'm2', m3: 'm3', m4: 'm4' };
-        let userLogado = "";
-        let saveTimeout;
-        let filtroGraficoId = 'hoje';
-        let turnoForcado = null; 
-        
-        let sistemaPronto = false; 
-        let lastSyncTs = parseInt(localStorage.getItem('triplast_ts')) || 0;
+        let userLogado = ""; let saveTimeout; let filtroGraficoId = 'hoje'; let turnoForcado = null; 
+        let sistemaPronto = false; let lastSyncTs = parseInt(localStorage.getItem('triplast_ts')) || 0;
         
         let dadosMensais = { mesAtual: new Date().getMonth(), metaAtualSec: 0, horaExtraSec: 0, plantTempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 } };
         let modoHoraExtra = false;
@@ -526,164 +480,230 @@
             "21-BAIXA EFICIÊNCIA", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "26-MÁQUINA PAUSADA"
         ];
         const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
-        
         let chartStatusInstance = null; let chartGeralInstance = null; let chartRefugoInstance = null; let chartHoraExtraInstance = null;
 
         // ==========================================
-        // 2. BOOT E NUVEM
+        // AUTOCOMPLETAR CORES
+        // ==========================================
+        function verificarCodigoCor(e) {
+            let val = e.target.value.trim().toUpperCase();
+            if(!val) return;
+            let found = coresGlobais.find(c => c.split(' | ')[0].trim().toUpperCase() === val || c.toUpperCase() === val);
+            if(found) e.target.value = found; 
+        }
+
+        function atualizarSelectCores() {
+            const options = coresGlobais.map(c => `<option value="${c}">`).join('');
+            if(document.getElementById('cores-datalist')) document.getElementById('cores-datalist').innerHTML = options;
+        }
+
+        // ==========================================
+        // MODAL DE CORES
+        // ==========================================
+        let editCorIndex = null;
+        function abrirModalCores() { document.getElementById('modal-cores').style.display = 'flex'; renderCoresModal(); }
+        function fecharModalCores() { 
+            document.getElementById('modal-cores').style.display = 'none'; 
+            editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar";
+            document.getElementById('nova-cor-cod-modal').value = ""; document.getElementById('nova-cor-nome-modal').value = "";
+        }
+
+        function salvarCor() {
+            let cod = document.getElementById('nova-cor-cod-modal').value.trim().toUpperCase();
+            let nome = document.getElementById('nova-cor-nome-modal').value.trim().toUpperCase();
+            if (cod && nome) {
+                let val = cod + ' | ' + nome;
+                if (editCorIndex !== null) {
+                    let oldVal = coresGlobais[editCorIndex]; coresGlobais[editCorIndex] = val;
+                    produtosGlobais.forEach(p => { if(p.cor === oldVal) p.cor = val; });
+                    editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar";
+                } else {
+                    if (!coresGlobais.includes(val)) { coresGlobais.push(val); } else { alert("Cor já existe!"); return; }
+                }
+                coresGlobais.sort(); 
+                document.getElementById('nova-cor-cod-modal').value = ""; document.getElementById('nova-cor-nome-modal').value = "";
+                renderCoresModal(); atualizarSelectCores(); salvarAutomatico();
+            } else { alert("Preencha o Código e o Nome!"); }
+        }
+
+        function editarCor(index) {
+            let val = coresGlobais[index].split(' | ');
+            document.getElementById('nova-cor-cod-modal').value = val[0] || '';
+            document.getElementById('nova-cor-nome-modal').value = val[1] || '';
+            editCorIndex = index; document.getElementById('btn-salvar-cor').innerText = "Atualizar";
+        }
+
+        function removerCor(index) {
+            if(confirm(`Deseja apagar a cor ${coresGlobais[index]} do sistema?`)) {
+                coresGlobais.splice(index, 1);
+                renderCoresModal(); atualizarSelectCores(); salvarAutomatico();
+            }
+        }
+
+        function renderCoresModal(busca = '') {
+            let filtro = busca.toLowerCase();
+            let filtradas = coresGlobais.map((c, i) => ({c, i})).filter(item => item.c.toLowerCase().includes(filtro));
+            document.getElementById('lista-cores-gerenciador').innerHTML = filtradas.map(item => `
+                <div class="bg-purple-50 text-purple-800 border border-purple-200 px-3 py-2 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center shadow-sm mb-2 w-full md:w-[48%] justify-between">
+                    <span><i class="fa-solid fa-droplet mr-2 text-purple-400"></i> ${item.c}</span>
+                    <div class="flex gap-2 ml-2">
+                        <button onclick="editarCor(${item.i})" class="text-amber-500 hover:text-amber-700 bg-white px-2 py-1 rounded shadow-sm border border-amber-200"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="removerCor(${item.i})" class="text-red-500 hover:text-red-700 bg-white px-2 py-1 rounded shadow-sm border border-red-200"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // MODAL DE PRODUTOS
+        // ==========================================
+        let editProdutoId = null;
+        function abrirModalProdutos() { document.getElementById('modal-produtos').style.display = 'flex'; renderCatalogoModal(); }
+        function fecharModalProdutos() { document.getElementById('modal-produtos').style.display = 'none'; limparFormProduto(); }
+        
+        function limparFormProduto() {
+            editProdutoId = null; document.getElementById('btn-salvar-prod').innerText = "Salvar";
+            document.getElementById('novo-produto-nome-modal').value = ""; document.getElementById('novo-produto-ciclo-modal').value = ""; 
+            document.getElementById('novo-produto-cavidades-modal').value = ""; document.getElementById('novo-produto-peso-modal').value = "";
+            document.getElementById('novo-produto-mat-modal').value = ""; document.getElementById('novo-produto-cor-modal').value = "";
+            document.getElementById('novo-produto-pigm-modal').value = "";
+        }
+
+        function salvarProduto() {
+            const nome = document.getElementById('novo-produto-nome-modal').value; const ciclo = parseFloat(document.getElementById('novo-produto-ciclo-modal').value); 
+            const cav = parseInt(document.getElementById('novo-produto-cavidades-modal').value); const peso = parseFloat(document.getElementById('novo-produto-peso-modal').value);
+            const mat = document.getElementById('novo-produto-mat-modal').value || ""; const cor = document.getElementById('novo-produto-cor-modal').value || "";
+            const pigm = parseFloat(document.getElementById('novo-produto-pigm-modal').value) || 0;
+
+            if(nome && ciclo && cav && peso) {
+                if(editProdutoId !== null) {
+                    let p = produtosGlobais.find(x => x.id === editProdutoId);
+                    if(p) { p.nome=nome; p.ciclo=ciclo; p.cav=cav; p.peso=peso; p.mat=mat; p.cor=cor; p.pigm=pigm; }
+                } else {
+                    produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso, mat, cor, pigm });
+                }
+                limparFormProduto(); renderCatalogoModal(); atualizarSelectProdutos(); salvarAutomatico();
+            } else { alert("Preencha o Nome, Ciclo, Cavidades e Peso!"); }
+        }
+
+        function editarProduto(id) {
+            let p = produtosGlobais.find(x => x.id === id);
+            if(p) {
+                document.getElementById('novo-produto-nome-modal').value = p.nome; document.getElementById('novo-produto-ciclo-modal').value = p.ciclo;
+                document.getElementById('novo-produto-cavidades-modal').value = p.cav; document.getElementById('novo-produto-peso-modal').value = p.peso;
+                document.getElementById('novo-produto-mat-modal').value = p.mat; document.getElementById('novo-produto-cor-modal').value = p.cor;
+                document.getElementById('novo-produto-pigm-modal').value = p.pigm;
+                editProdutoId = id; document.getElementById('btn-salvar-prod').innerText = "Atualizar";
+            }
+        }
+
+        function removerProduto(id) {
+            if(confirm("Deseja apagar este produto definitivamente?")) {
+                produtosGlobais = produtosGlobais.filter(x => x.id !== id);
+                renderCatalogoModal(); atualizarSelectProdutos(); salvarAutomatico();
+            }
+        }
+
+        function renderCatalogoModal(busca = '') { 
+            let filtro = busca.toLowerCase();
+            let filtrados = produtosGlobais.filter(p => p.nome.toLowerCase().includes(filtro) || p.mat.toLowerCase().includes(filtro) || (p.cor && p.cor.toLowerCase().includes(filtro)));
+            
+            document.getElementById('lista-catalogo-modal').innerHTML = filtrados.map(p => `
+                <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <span class="text-indigo-700 text-lg break-words">${p.nome}</span> <br>
+                        <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">
+                            CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}g<br>MAT: ${p.mat || '--'} <br>COR: ${p.cor || '--'} <br>PIGM: ${p.pigm || 0}%
+                        </span>
+                    </div>
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="editarProduto(${p.id})" class="flex-1 bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-200 py-2 rounded-lg font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-pen mr-1"></i> Editar</button>
+                        <button onclick="removerProduto(${p.id})" class="flex-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 py-2 rounded-lg font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-trash mr-1"></i> Apagar</button>
+                    </div>
+                </div>
+            `).join(''); 
+        }
+
+        function atualizarSelectProdutos() { document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + produtosGlobais.map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); }
+
+        // ==========================================
+        // CALCULADORA LANÇAMENTO OP
+        // ==========================================
+        function autoFillCalculadora() { 
+            const prod = produtosGlobais.find(p => p.id == document.getElementById('f-prod-select').value); 
+            if(prod) { 
+                document.getElementById('c-ciclo').value = prod.ciclo; document.getElementById('c-cav').value = prod.cav; document.getElementById('c-peso').value = prod.peso; 
+                if(prod.pigm !== undefined) document.getElementById('c-pigm').value = prod.pigm; 
+                if(prod.cor !== undefined) document.getElementById('c-cor').value = prod.cor; 
+                calcularTudo(); 
+            } 
+        }
+
+        function calcularTudo() {
+            const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0; const cav = parseInt(document.getElementById('c-cav').value) || 1; 
+            const peso = parseFloat(document.getElementById('c-peso').value) || 0; const pigm = parseFloat(document.getElementById('c-pigm').value) || 0; 
+            const meta = parseInt(document.getElementById('c-meta').value) || 0;
+
+            if(meta > 0 && ciclo > 0 && cav > 0) {
+                const batidas = Math.ceil(meta / cav); const totalSec = batidas * ciclo; 
+                document.getElementById('res-tempo').innerText = fmtTm(totalSec);
+                const pzsHora = (3600 / ciclo) * cav; document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
+                const kgMaterial = (meta * peso) / 1000; const kgPigmento = kgMaterial * (pigm / 100); const kgTotal = kgMaterial + kgPigmento;
+                
+                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
+                document.getElementById('res-pig').innerText = (kgPigmento * 1000).toFixed(0) + 'g';
+                document.getElementById('res-total').innerText = kgTotal.toFixed(2);
+            } else { 
+                document.getElementById('res-tempo').innerText = "00:00:00"; document.getElementById('res-meta-hora').innerText = "0";
+                document.getElementById('res-mat').innerText = "0.00"; document.getElementById('res-pig').innerText = "0g"; document.getElementById('res-total').innerText = "0.00"; 
+            }
+        }
+
+        function lancarOP() {
+            const mId = document.getElementById('f-maq').value; const op = document.getElementById('f-op').value; const prodSel = document.getElementById('f-prod-select'); const meta = parseInt(document.getElementById('c-meta').value);
+            if(op && prodSel.value && meta) {
+                const prodId = prodSel.value; const produtoInfo = produtosGlobais.find(p => p.id == prodId);
+                const nomeMat = produtoInfo && produtoInfo.mat ? produtoInfo.mat : '--';
+                const corPeca = document.getElementById('c-cor').value || 'Sem Cor';
+                const percPigm = document.getElementById('c-pigm').value || 0;
+
+                const kgMat = document.getElementById('res-mat').innerText; const gPig = document.getElementById('res-pig').innerText; const tempoEst = document.getElementById('res-tempo').innerText;
+                const matFormatado = `${nomeMat} (${kgMat}kg) | Cor: ${corPeca} | Pigm: ${percPigm}% (${gPig})`;
+
+                maquinas.find(m => m.id === mId).fila.push({ 
+                    op, prod: prodSel.options[prodSel.selectedIndex].text, meta, ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, 
+                    material: matFormatado, tempoEst: tempoEst
+                });
+                alert(`O.P ${op} enviada para a fila!`); 
+                document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
+                renderPainel(); salvarAutomatico();
+            } else { alert("Preencha O.P, selecione a Peça e a Meta!"); }
+        }
+
+        // ==========================================
+        // INICIALIZAÇÃO
         // ==========================================
         window.onload = async () => {
-            if(document.getElementById('filtro-data-grafico')) {
-                document.getElementById('filtro-data-grafico').value = new Date().toISOString().split('T')[0];
-            }
-            await carregarDaNuvem();
-            if(!sistemaPronto) carregarDadosLocais();
-            
+            if(document.getElementById('filtro-data-grafico')) { document.getElementById('filtro-data-grafico').value = new Date().toISOString().split('T')[0]; }
+            await carregarDaNuvem(); if(!sistemaPronto) carregarDadosLocais();
             sistemaPronto = true; 
-            atualizarSelectCores();
-            atualizarSelectProdutos();
-
+            atualizarSelectCores(); atualizarSelectProdutos();
             let userSalvo = localStorage.getItem('triplast_session');
             setTimeout(() => {
                 document.getElementById('tela-loading').classList.add('opacity-0');
                 setTimeout(() => { 
                     document.getElementById('tela-loading').classList.add('hidden');
-                    if (userSalvo && SENHAS[userSalvo]) {
-                        document.getElementById('login-user').value = userSalvo;
-                        document.getElementById('login-pass').value = SENHAS[userSalvo];
-                        autenticar(true); 
-                    } else {
-                        document.getElementById('tela-login').classList.remove('hidden');
-                        setTimeout(() => document.getElementById('tela-login').classList.remove('opacity-0'), 50);
-                    }
+                    if (userSalvo && SENHAS[userSalvo]) { document.getElementById('login-user').value = userSalvo; document.getElementById('login-pass').value = SENHAS[userSalvo]; autenticar(true); } 
+                    else { document.getElementById('tela-login').classList.remove('hidden'); setTimeout(() => document.getElementById('tela-login').classList.remove('opacity-0'), 50); }
                 }, 500);
             }, 1000);
         };
 
-        async function carregarDaNuvem() {
-            if(!sb) return;
-            try {
-                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
-                if(data && data.conteudo) {
-                    const db = data.conteudo;
-                    maquinas = db.maquinas || maquinas; produtosGlobais = db.produtos || produtosGlobais;
-                    operadoresGlobais = db.operadores || operadoresGlobais; historico = db.historico || historico;
-                    dadosMensais = db.dadosMensais || dadosMensais; modoHoraExtra = db.modoHoraExtra || false; coresGlobais = db.cores || coresGlobais;
-                    lastSyncTs = db.ts || 0; localStorage.setItem('triplast_ts', lastSyncTs);
-                    localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
-                    sistemaPronto = true;
-                }
-            } catch(e) { console.error("Erro no boot da nuvem"); }
-        }
-
-        function carregarDadosLocais() {
-            const memory = localStorage.getItem('triplast_dados_oficial');
-            if(memory) {
-                try {
-                    const db = JSON.parse(memory);
-                    if(db.maquinas) maquinas = db.maquinas; if(db.produtos) produtosGlobais = db.produtos;
-                    if(db.operadores) operadoresGlobais = db.operadores; if(db.historico) historico = db.historico;
-                    if(db.dadosMensais) dadosMensais = db.dadosMensais; if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
-                    if(db.cores) coresGlobais = db.cores;
-                } catch(e) {}
-            }
-        }
-
-        setInterval(async () => {
-            if(!sb || !sistemaPronto) return;
-            try {
-                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
-                if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
-                    const db = data.conteudo;
-                    maquinas = db.maquinas || maquinas; produtosGlobais = db.produtos || produtosGlobais;
-                    operadoresGlobais = db.operadores || operadoresGlobais; historico = db.historico || historico;
-                    dadosMensais = db.dadosMensais || dadosMensais; modoHoraExtra = db.modoHoraExtra || false; coresGlobais = db.cores || coresGlobais;
-                    lastSyncTs = db.ts; localStorage.setItem('triplast_ts', lastSyncTs);
-                    
-                    if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
-                    if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
-                    if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
-                }
-            } catch(e) {}
-        }, 5000);
-
-        function sanitizarDados() {
-            maquinas.forEach(m => {
-                if(!m.tempos) m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-                if(!m.fila) m.fila = []; if(!m.operador) m.operador = ""; if(!m.ultimoMotivoRefugo) m.ultimoMotivoRefugo = "";
-                if(m.opAtiva) {
-                    m.opAtiva.boas = m.opAtiva.boas || 0; m.opAtiva.refugo = m.opAtiva.refugo || 0;
-                    m.opAtiva.meta = m.opAtiva.meta || 0; m.opAtiva.ciclo = m.opAtiva.ciclo || 1; m.opAtiva.cavs = m.opAtiva.cavs || 1;
-                    if(!m.opAtiva.motivosRefugo) m.opAtiva.motivosRefugo = {};
-                }
-            });
-            if(!dadosMensais.plantTempos) dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-            if(!coresGlobais) coresGlobais = [];
-        }
-
-        async function salvarAutomatico() { 
-            if(!sistemaPronto) return; 
-            sanitizarDados(); lastSyncTs = Date.now(); localStorage.setItem('triplast_ts', lastSyncTs);
-            localStorage.setItem('triplast_dados_oficial', JSON.stringify({ maquinas, produtos: produtosGlobais, operadores: operadoresGlobais, historico, dadosMensais, modoHoraExtra, cores: coresGlobais }));
-            document.getElementById('status-nuvem').innerText = "⏳"; 
-            if(saveTimeout) clearTimeout(saveTimeout); 
-            saveTimeout = setTimeout(async () => { 
-                if(sb) {
-                    await sb.from('sistema').update({ conteudo: { maquinas, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, cores: coresGlobais, ts: lastSyncTs } }).eq('id', 1);
-                }
-                document.getElementById('status-nuvem').innerText = "☁️"; 
-            }, 1000); 
-        }
-
         // ==========================================
-        // 4. LOGIN E ABAS
-        // ==========================================
-        function autenticar(autoLogin = false) {
-            const u = document.getElementById('login-user').value; const p = document.getElementById('login-pass').value;
-            if(SENHAS[u] === p) {
-                userLogado = u; if(!autoLogin) localStorage.setItem('triplast_session', u); 
-                document.getElementById('tela-login').style.display = 'none'; document.getElementById('app-content').classList.remove('hidden');
-                if(u !== 'admin') { ['btn-op', 'btn-resumo', 'btn-historico', 'btn-graficos', 'btn-operadores'].forEach(id => { document.getElementById(id).style.display = 'none'; }); }
-                document.getElementById('f-maq').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-                renderPainel(); renderResumo(); renderHistorico(); atualizarSelectProdutos(); iniciarGraficos();
-                if(modoHoraExtra) toggleHoraExtraVis();
-            } else { alert("Senha Incorreta!"); }
-        }
-
-        function fazerLogout() { localStorage.removeItem('triplast_session'); location.reload(); }
-        function trocarAba(nome) {
-            document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('aba-' + nome).classList.add('aba-ativa');
-            document.getElementById('btn-' + nome).classList.add('active');
-            if (nome === 'graficos') iniciarGraficos();
-        }
-
-        // ==========================================
-        // 5. OPERADORES
-        // ==========================================
-        function abrirModalOperadores() { document.getElementById('modal-operadores').style.display = 'flex'; renderEquipe(); }
-        function renderEquipe() { 
-            document.getElementById('lista-equipe').innerHTML = operadoresGlobais.map((op, i) => `
-                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <span class="font-bold text-sm text-slate-700"><i class="fa-solid fa-user-tie text-blue-400 mr-2"></i> ${op}</span>
-                    <button onclick="removerOperador(${i})" class="text-red-400 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `).join(''); 
-        }
-        function addOperador() { 
-            const val = document.getElementById('novo-op-nome').value;
-            if(val) { operadoresGlobais.push(val); document.getElementById('novo-op-nome').value = ""; renderEquipe(); renderPainel(); salvarAutomatico(); } 
-        }
-        function removerOperador(i) { operadoresGlobais.splice(i, 1); renderEquipe(); renderPainel(); salvarAutomatico(); }
-        function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
-
-        // ==========================================
-        // 6. RENDERIZAÇÃO PAINEL (CORES E OVERFLOW)
+        // RENDERIZAÇÃO DO PAINEL PRINCIPAL
         // ==========================================
         function renderPainel() {
-            const grid = document.getElementById('grid-maquinas');
-            grid.innerHTML = "";
+            const grid = document.getElementById('grid-maquinas'); grid.innerHTML = "";
             let maquinasFilter = userLogado === 'admin' ? maquinas : maquinas.filter(m => m.id === userLogado);
             let widthClass = userLogado === 'admin' ? "w-full" : "w-full max-w-5xl mx-auto";
 
@@ -704,9 +724,7 @@
                     let matPartAtiva = '--', corPartAtiva = '--', pigmPartAtiva = '--';
                     if(m.opAtiva.material && m.opAtiva.material.includes('|')) {
                         let p = m.opAtiva.material.split('|');
-                        matPartAtiva = p[0] ? p[0].trim() : '--';
-                        corPartAtiva = p[1] ? p[1].replace(/Cor:/i, '').trim() : '--';
-                        pigmPartAtiva = p[2] ? p[2].replace(/Pigm:/i, '').trim() : '--';
+                        matPartAtiva = p[0] ? p[0].trim() : '--'; corPartAtiva = p[1] ? p[1].replace(/Cor:/i, '').trim() : '--'; pigmPartAtiva = p[2] ? p[2].replace(/Pigm:/i, '').trim() : '--';
                     } else { matPartAtiva = m.opAtiva.material || '--'; }
                     
                     let estCorAtiva = getCorDestaque(corPartAtiva);
@@ -791,9 +809,7 @@
                         let matPart = '--', corPart = '--', pigmPart = '--';
                         if(f.material && f.material.includes('|')) {
                             let p = f.material.split('|');
-                            matPart = p[0] ? p[0].trim() : '--';
-                            corPart = p[1] ? p[1].replace(/Cor:/i, '').trim() : '--';
-                            pigmPart = p[2] ? p[2].replace(/Pigm:/i, '').trim() : '--';
+                            matPart = p[0] ? p[0].trim() : '--'; corPart = p[1] ? p[1].replace(/Cor:/i, '').trim() : '--'; pigmPart = p[2] ? p[2].replace(/Pigm:/i, '').trim() : '--';
                         } else { matPart = f.material || '--'; }
                         
                         let estCorFila = getCorDestaque(corPart);
@@ -895,7 +911,7 @@
         }
 
         // ==========================================
-        // 7. FUNÇÕES DE STATUS E APONTAMENTO
+        // DEMAIS FUNÇÕES DE PAINEL E MOTOR
         // ==========================================
         function alterarStatus(id, st) { maquinas.find(m => m.id === id).status = st; renderPainel(); salvarAutomatico(); }
         function lancarPecas(id) { 
@@ -903,12 +919,8 @@
             if(val > 0 && maq.opAtiva) { maq.opAtiva.boas += val; document.getElementById(`boas-${id}`).value = ""; renderPainel(); renderResumo(); salvarAutomatico(); } 
         }
         function lancarRefugoManual(id) {
-            const maq = maquinas.find(m => m.id === id); 
-            const qtd = parseInt(document.getElementById(`refugo-qtd-${id}`).value); 
-            const motivo = document.getElementById(`motivo-${id}`).value;
-            if(!maq.opAtiva) { alert("Nenhuma O.P ativa."); return; }
-            if(isNaN(qtd) || qtd <= 0) { alert("Quantidade inválida."); return; }
-            if(!motivo) { alert("Selecione um motivo."); return; }
+            const maq = maquinas.find(m => m.id === id); const qtd = parseInt(document.getElementById(`refugo-qtd-${id}`).value); const motivo = document.getElementById(`motivo-${id}`).value;
+            if(!maq.opAtiva) { alert("Nenhuma O.P ativa."); return; } if(isNaN(qtd) || qtd <= 0) { alert("Quantidade inválida."); return; } if(!motivo) { alert("Selecione um motivo."); return; }
             if(confirm(`Confirma lançamento de ${qtd} peças por "${motivo}"?`)) {
                 maq.opAtiva.refugo += qtd; maq.ultimoMotivoRefugo = motivo; 
                 if(!maq.opAtiva.motivosRefugo) maq.opAtiva.motivosRefugo = {};
@@ -926,10 +938,7 @@
                 if (maq.opAtiva.motivosRefugo && Object.keys(maq.opAtiva.motivosRefugo).length > 0) {
                     motivosStr = Object.entries(maq.opAtiva.motivosRefugo).map(([m, q]) => `${m} x${q}`).join(', ');
                 }
-                historico.unshift({ 
-                    data: new Date().toLocaleString('pt-BR'), maq: maq.nome, op: maq.opAtiva.op, prod: maq.opAtiva.prod, 
-                    meta: maq.opAtiva.meta, boas: maq.opAtiva.boas, refugo: maq.opAtiva.refugo, motivosStr: motivosStr
-                });
+                historico.unshift({ data: new Date().toLocaleString('pt-BR'), maq: maq.nome, op: maq.opAtiva.op, prod: maq.opAtiva.prod, meta: maq.opAtiva.meta, boas: maq.opAtiva.boas, refugo: maq.opAtiva.refugo, motivosStr: motivosStr });
                 if(maq.fila.length > 0) { 
                     const p = maq.fila.shift(); 
                     maq.opAtiva = { op: p.op, prod: p.prod, meta: p.meta, boas: p.boas || 0, refugo: p.refugo || 0, ciclo: p.ciclo || 1, cavs: p.cavs || 1, motivosRefugo: {}, material: p.material }; 
@@ -942,10 +951,7 @@
         function pausarOP(id) {
             const maq = maquinas.find(m => m.id === id);
             if(confirm("Pausar a O.P atual e voltar para Fila?")) {
-                maq.fila.push(maq.opAtiva); 
-                maq.opAtiva = null; 
-                maq.status = "26-MÁQUINA PAUSADA";
-                renderPainel(); renderResumo(); salvarAutomatico();
+                maq.fila.push(maq.opAtiva); maq.opAtiva = null; maq.status = "26-MÁQUINA PAUSADA"; renderPainel(); renderResumo(); salvarAutomatico();
             }
         }
         
@@ -961,192 +967,25 @@
             }
         }
 
-        // ==========================================
-        // 8. JANELAS DE CATÁLOGO E CORES (EDição)
-        // ==========================================
-        let editProdutoId = null;
-        let editCorIndex = null;
-
-        function abrirModalProdutos() { document.getElementById('modal-produtos').style.display = 'flex'; renderCatalogoModal(); }
-        function fecharModalProdutos() { document.getElementById('modal-produtos').style.display = 'none'; limparFormProduto(); }
-        
-        function limparFormProduto() {
-            editProdutoId = null; document.getElementById('btn-salvar-prod').innerText = "Salvar Novo";
-            document.getElementById('novo-produto-nome').value = ""; document.getElementById('novo-produto-ciclo').value = ""; 
-            document.getElementById('novo-produto-cavidades').value = ""; document.getElementById('novo-produto-peso').value = "";
-            document.getElementById('novo-produto-mat').value = ""; document.getElementById('novo-produto-cor').value = "";
-            document.getElementById('novo-produto-pigm').value = "";
+        function renderResumo() { 
+            document.getElementById('tbody-resumo').innerHTML = maquinas.map(m => {
+                let boas = m.opAtiva ? m.opAtiva.boas : 0; let refugo = m.opAtiva ? m.opAtiva.refugo : 0; let perda = (boas+refugo) > 0 ? ((refugo/(boas+refugo))*100).toFixed(1) : 0;
+                let perdaHtml = perda > 2.0 ? `<span class="bg-red-100 text-red-600 px-2 py-1 rounded font-black border border-red-300 animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${perda}%</span>` : `<span class="text-slate-500">${perda}%</span>`;
+                return `<tr><td class="p-4 font-black text-blue-600">${m.nome}</td><td class="p-4 font-bold text-slate-800">${m.opAtiva ? m.opAtiva.op : '--'}</td><td class="p-4 text-green-600">${boas}</td><td class="p-4 text-red-500">${refugo}</td><td class="p-4">${perdaHtml}</td><td class="p-4 text-green-600 font-mono">${fmtTm(m.tempos.prod)}</td><td class="p-4 text-orange-500 font-mono">${fmtTm(m.tempos.baixa)}</td><td class="p-4 text-red-600 font-mono">${fmtTm(m.tempos.parado)}</td><td class="p-4 text-slate-400 font-mono">${fmtTm(m.tempos.neutro)}</td></tr>`; 
+            }).join(''); 
         }
 
-        function salvarProduto() {
-            const nome = document.getElementById('novo-produto-nome').value; const ciclo = parseFloat(document.getElementById('novo-produto-ciclo').value); 
-            const cav = parseInt(document.getElementById('novo-produto-cavidades').value); const peso = parseFloat(document.getElementById('novo-produto-peso').value);
-            const mat = document.getElementById('novo-produto-mat').value || ""; const cor = document.getElementById('novo-produto-cor').value || "";
-            const pigm = parseFloat(document.getElementById('novo-produto-pigm').value) || 0;
-
-            if(nome && ciclo && cav && peso) {
-                if(editProdutoId !== null) {
-                    let p = produtosGlobais.find(x => x.id === editProdutoId);
-                    if(p) { p.nome=nome; p.ciclo=ciclo; p.cav=cav; p.peso=peso; p.mat=mat; p.cor=cor; p.pigm=pigm; }
-                } else {
-                    produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso, mat, cor, pigm });
-                }
-                limparFormProduto(); renderCatalogoModal(); atualizarSelectProdutos(); salvarAutomatico();
-            } else { alert("Preencha o Nome, Ciclo, Cavidades e Peso!"); }
-        }
-
-        function editarProduto(id) {
-            let p = produtosGlobais.find(x => x.id === id);
-            if(p) {
-                document.getElementById('novo-produto-nome').value = p.nome; document.getElementById('novo-produto-ciclo').value = p.ciclo;
-                document.getElementById('novo-produto-cavidades').value = p.cav; document.getElementById('novo-produto-peso').value = p.peso;
-                document.getElementById('novo-produto-mat').value = p.mat; document.getElementById('novo-produto-cor').value = p.cor;
-                document.getElementById('novo-produto-pigm').value = p.pigm;
-                editProdutoId = id; document.getElementById('btn-salvar-prod').innerText = "Atualizar Produto";
-            }
-        }
-
-        function removerProduto(id) {
-            if(confirm("Deseja apagar este produto definitivamente?")) {
-                produtosGlobais = produtosGlobais.filter(x => x.id !== id);
-                renderCatalogoModal(); atualizarSelectProdutos(); salvarAutomatico();
-            }
-        }
-
-        function renderCatalogoModal(busca = '') { 
-            let filtro = busca.toLowerCase();
-            let filtrados = produtosGlobais.filter(p => p.nome.toLowerCase().includes(filtro) || p.mat.toLowerCase().includes(filtro) || (p.cor && p.cor.toLowerCase().includes(filtro)));
-            
-            document.getElementById('lista-catalogo').innerHTML = filtrados.map(p => `
-                <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold flex flex-col justify-between hover:shadow-md transition-shadow">
-                    <div>
-                        <span class="text-indigo-700 text-lg break-words">${p.nome}</span> <br>
-                        <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">
-                            CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}g<br>MAT: ${p.mat || '--'} <br>COR: ${p.cor || '--'} <br>PIGM: ${p.pigm || 0}%
-                        </span>
-                    </div>
-                    <div class="flex gap-2 mt-4">
-                        <button onclick="editarProduto(${p.id})" class="flex-1 bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-200 py-2 rounded-lg font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-pen mr-1"></i> Editar</button>
-                        <button onclick="removerProduto(${p.id})" class="flex-1 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 py-2 rounded-lg font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-trash mr-1"></i> Apagar</button>
-                    </div>
-                </div>
+        function renderHistorico() { 
+            document.getElementById('tbody-historico').innerHTML = historico.map((h,i) => `
+                <tr><td class="p-4 text-xs text-slate-400">${h.data}</td><td class="p-4 text-blue-600 font-black">${h.maq}</td><td class="p-4 font-black">${h.op}</td><td class="p-4 text-xs truncate max-w-[200px]">${h.prod}</td><td class="p-4 text-green-600 font-black">${h.boas}</td><td class="p-4 text-red-500 font-black leading-tight">${h.refugo || 0}${h.refugo > 0 && h.motivosStr ? `<br><span class="text-[9px] font-bold text-slate-400 mt-1 block">${h.motivosStr}</span>` : ''}</td><td class="p-4 text-right"><button onclick="historico.splice(${i},1); renderHistorico(); salvarAutomatico();" class="text-red-400 hover:text-red-600 bg-red-50 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button></td></tr>
             `).join(''); 
         }
+        function filtrarHistorico() { const termo = document.getElementById('busca-historico').value.toLowerCase(); document.querySelectorAll('#tbody-historico tr').forEach(linha => { linha.style.display = linha.innerText.toLowerCase().includes(termo) ? '' : 'none'; }); }
 
-        function abrirModalCores() { document.getElementById('modal-cores').style.display = 'flex'; renderCoresModal(); }
-        function fecharModalCores() { 
-            document.getElementById('modal-cores').style.display = 'none'; 
-            editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar Cor";
-            document.getElementById('nova-cor-cod').value = ""; document.getElementById('nova-cor-nome').value = "";
-        }
-
-        function salvarCor() {
-            let cod = document.getElementById('nova-cor-cod').value.trim().toUpperCase();
-            let nome = document.getElementById('nova-cor-nome').value.trim().toUpperCase();
-            if (cod && nome) {
-                let val = cod + ' | ' + nome;
-                if (editCorIndex !== null) {
-                    let oldVal = coresGlobais[editCorIndex];
-                    coresGlobais[editCorIndex] = val;
-                    // Atualiza produtos que usavam a cor antiga
-                    produtosGlobais.forEach(p => { if(p.cor === oldVal) p.cor = val; });
-                    editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar Cor";
-                } else {
-                    if (!coresGlobais.includes(val)) { coresGlobais.push(val); } else { alert("Cor já existe!"); return; }
-                }
-                coresGlobais.sort(); document.getElementById('nova-cor-cod').value = ""; document.getElementById('nova-cor-nome').value = "";
-                renderCoresModal(); atualizarSelectCores(); salvarAutomatico();
-            } else { alert("Preencha o Código e o Nome!"); }
-        }
-
-        function editarCor(index) {
-            let val = coresGlobais[index].split(' | ');
-            document.getElementById('nova-cor-cod').value = val[0] || '';
-            document.getElementById('nova-cor-nome').value = val[1] || '';
-            editCorIndex = index; document.getElementById('btn-salvar-cor').innerText = "Atualizar Cor";
-        }
-
-        function renderCoresModal(busca = '') {
-            let filtro = busca.toLowerCase();
-            let filtradas = coresGlobais.map((c, i) => ({c, i})).filter(item => item.c.toLowerCase().includes(filtro));
-
-            document.getElementById('lista-cores-gerenciador').innerHTML = filtradas.map(item => `
-                <div class="bg-purple-50 text-purple-800 border border-purple-200 px-3 py-2 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center shadow-sm mb-2 w-full md:w-[48%] justify-between">
-                    <span><i class="fa-solid fa-droplet mr-2 text-purple-400"></i> ${item.c}</span>
-                    <div class="flex gap-2 ml-2">
-                        <button onclick="editarCor(${item.i})" class="text-amber-500 hover:text-amber-700 bg-white px-2 py-1 rounded shadow-sm border border-amber-200"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="removerCor(${item.i})" class="text-red-500 hover:text-red-700 bg-white px-2 py-1 rounded shadow-sm border border-red-200"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ==========================================
-        // CALCULADORA LANÇAMENTO
-        // ==========================================
-        function verificarCodigoCor(e) {
-            let val = e.target.value.trim().toUpperCase();
-            if(!val) return;
-            let found = coresGlobais.find(c => c.split(' | ')[0].trim().toUpperCase() === val || c.toUpperCase() === val);
-            if(found) e.target.value = found; 
-        }
-
-        function atualizarSelectProdutos() { document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + produtosGlobais.map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); }
-
-        function calcularTudo() {
-            const ciclo = parseFloat(document.getElementById('c-ciclo').value) || 0; const cav = parseInt(document.getElementById('c-cav').value) || 1; 
-            const peso = parseFloat(document.getElementById('c-peso').value) || 0; const pigm = parseFloat(document.getElementById('c-pigm').value) || 0; 
-            const meta = parseInt(document.getElementById('c-meta').value) || 0;
-
-            if(meta > 0 && ciclo > 0 && cav > 0) {
-                const batidas = Math.ceil(meta / cav); const totalSec = batidas * ciclo; 
-                document.getElementById('res-tempo').innerText = fmtTm(totalSec);
-                const pzsHora = (3600 / ciclo) * cav; document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
-                const kgMaterial = (meta * peso) / 1000; const kgPigmento = kgMaterial * (pigm / 100); const kgTotal = kgMaterial + kgPigmento;
-                
-                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
-                document.getElementById('res-pig').innerText = (kgPigmento * 1000).toFixed(0) + 'g';
-                document.getElementById('res-total').innerText = kgTotal.toFixed(2);
-            } else { 
-                document.getElementById('res-tempo').innerText = "00:00:00"; document.getElementById('res-meta-hora').innerText = "0";
-                document.getElementById('res-mat').innerText = "0.00"; document.getElementById('res-pig').innerText = "0g"; document.getElementById('res-total').innerText = "0.00"; 
-            }
-        }
-
-        function lancarOP() {
-            const mId = document.getElementById('f-maq').value; const op = document.getElementById('f-op').value; const prodSel = document.getElementById('f-prod-select'); const meta = parseInt(document.getElementById('c-meta').value);
-            if(op && prodSel.value && meta) {
-                const prodId = prodSel.value; const produtoInfo = produtosGlobais.find(p => p.id == prodId);
-                const nomeMat = produtoInfo && produtoInfo.mat ? produtoInfo.mat : '--';
-                const corPeca = document.getElementById('c-cor').value || 'Sem Cor';
-                const percPigm = document.getElementById('c-pigm').value || 0;
-
-                const kgMat = document.getElementById('res-mat').innerText; const gPig = document.getElementById('res-pig').innerText; const tempoEst = document.getElementById('res-tempo').innerText;
-                const matFormatado = `${nomeMat} (${kgMat}kg) | Cor: ${corPeca} | Pigm: ${percPigm}% (${gPig})`;
-
-                maquinas.find(m => m.id === mId).fila.push({ 
-                    op, prod: prodSel.options[prodSel.selectedIndex].text, meta, ciclo: document.getElementById('c-ciclo').value, cavs: document.getElementById('c-cav').value, 
-                    material: matFormatado, tempoEst: tempoEst
-                });
-                alert(`O.P ${op} enviada para a fila!`); 
-                document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
-                renderPainel(); salvarAutomatico();
-            } else { alert("Preencha O.P, selecione a Peça e a Meta!"); }
-        }
-
-        // ==========================================
-        // 10. HORA EXTRA E MOTOR DE TEMPO
-        // ==========================================
         function zerarMeta() { 
             let mudou = false;
-            if(confirm("Deseja ZERAR a Meta Global de Produção do Mês (1.628h)?")) { 
-                dadosMensais.metaAtualSec = 0; 
-                mudou = true;
-            }
-            if(confirm("Deseja ZERAR o Banco Global de HORAS EXTRAS?")) {
-                dadosMensais.horaExtraSec = 0;
-                mudou = true;
-            }
+            if(confirm("Deseja ZERAR a Meta Global de Produção do Mês (1.628h)?")) { dadosMensais.metaAtualSec = 0; mudou = true; }
+            if(confirm("Deseja ZERAR o Banco Global de HORAS EXTRAS?")) { dadosMensais.horaExtraSec = 0; mudou = true; }
             if(mudou) { salvarAutomatico(); iniciarGraficos(); }
         }
 
@@ -1158,20 +997,14 @@
         }
         function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
 
-        const optBSB = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         let ultimoTick = Math.floor(Date.now() / 1000);
 
         setInterval(() => {
             const relogioHtml = document.getElementById('relogio');
-            if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', optBSB);
-
-            const agoraSegundoAtual = Math.floor(Date.now() / 1000);
-            const passados = agoraSegundoAtual - ultimoTick;
-
+            if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const agoraSegundoAtual = Math.floor(Date.now() / 1000); const passados = agoraSegundoAtual - ultimoTick;
             if (passados >= 1) {
-                ultimoTick = agoraSegundoAtual; 
-                const agoraCompleto = new Date();
-
+                ultimoTick = agoraSegundoAtual; const agoraCompleto = new Date();
                 if (agoraCompleto.getMonth() !== dadosMensais.mesAtual) {
                     dadosMensais.mesAtual = agoraCompleto.getMonth(); dadosMensais.metaAtualSec = 0; dadosMensais.horaExtraSec = 0; dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
                     maquinas.forEach(m => { m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; if(m.opAtiva) { m.opAtiva.boas = 0; m.opAtiva.refugo = 0; } });
@@ -1179,14 +1012,12 @@
                 }
 
                 const mTotal = agoraCompleto.getHours() * 60 + agoraCompleto.getMinutes();
-                let textAuto = "Turno 3 (23h-05h)";
-                if (mTotal >= 300 && mTotal < 858) textAuto = "Turno 1 (05h-14h)"; else if (mTotal >= 858 && mTotal < 1416) textAuto = "Turno 2 (14h-23h)";
+                let textAuto = "Turno 3 (23h-05h)"; if (mTotal >= 300 && mTotal < 858) textAuto = "Turno 1 (05h-14h)"; else if (mTotal >= 858 && mTotal < 1416) textAuto = "Turno 2 (14h-23h)";
                 if(document.getElementById('opt-auto')) document.getElementById('opt-auto').innerText = "Atual: " + textAuto; 
                 if(turnoForcado && turnoForcado !== "auto") document.getElementById('select-turno').value = turnoForcado;
 
                 const isWeekend = (agoraCompleto.getDay() === 0 || agoraCompleto.getDay() === 6);
                 let contarTempo = true; let maqTrabalhando = false;
-
                 if (isWeekend && !modoHoraExtra) {
                     contarTempo = false; document.getElementById('badge-fds').classList.remove('hidden'); let statusMudou = false;
                     maquinas.forEach(m => { if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { m.status = "25-FIM DE SEMANA (PAUSADO)"; statusMudou = true; } });
@@ -1194,10 +1025,7 @@
                 } else { document.getElementById('badge-fds').classList.add('hidden'); }
 
                 if(contarTempo) {
-                    let temProd = false, temBaixa = false, temParada = false, temNeutro = false;
-                    let oeeTotalGlob = 0; let oeeQtdGlob = 0;
-                    
-                    let somaTotalProducaoTodasMaquinas = 0;
+                    let temProd = false, temBaixa = false, temParada = false, temNeutro = false; let oeeTotalGlob = 0; let oeeQtdGlob = 0; let somaTotalProducaoTodasMaquinas = 0;
 
                     maquinas.forEach(m => {
                         if(m.status === "04-PRODUÇÃO") { m.tempos.prod += passados; temProd = true; maqTrabalhando = true; }
@@ -1210,13 +1038,9 @@
                         if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
                             let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
                             let teorica = (m.tempos.prod / (parseFloat(m.opAtiva.ciclo) || 1)) * (parseInt(m.opAtiva.cavs) || 1); 
-                            let real = m.opAtiva.boas + m.opAtiva.refugo;
-                            let perf = teorica > 0 ? (real / teorica) : 0; if(perf > 1) perf = 1; 
-                            let qual = real > 0 ? (m.opAtiva.boas / real) : 0; 
-                            let oee = disp * perf * qual;
-                            
+                            let real = m.opAtiva.boas + m.opAtiva.refugo; let perf = teorica > 0 ? (real / teorica) : 0; if(perf > 1) perf = 1; 
+                            let qual = real > 0 ? (m.opAtiva.boas / real) : 0; let oee = disp * perf * qual;
                             oeeTotalGlob += oee; oeeQtdGlob++;
-
                             document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%'; document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
                             document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%'; document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
                         }
@@ -1227,7 +1051,6 @@
                     if (maqTrabalhando && modoHoraExtra) dadosMensais.horaExtraSec += passados;
 
                     dadosMensais.metaAtualSec = somaTotalProducaoTodasMaquinas;
-
                     let globalOeeVal = oeeQtdGlob > 0 ? (oeeTotalGlob / oeeQtdGlob) * 100 : 0;
                     if(document.getElementById('lbl-chart-oee')) document.getElementById('lbl-chart-oee').innerText = globalOeeVal.toFixed(1) + '%';
                 }
@@ -1241,11 +1064,9 @@
                     });
                 }
 
-                const limiteSec = 1628 * 3600;
                 let horasDecimais = (dadosMensais.metaAtualSec / 3600).toFixed(1).replace('.', ',');
-                
-                if(document.getElementById('horas-mensal-txt')) { document.getElementById('horas-mensal-txt').innerText = `${horasDecimais}h`; }
-                if(document.getElementById('barra-mensal')) { document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / limiteSec) * 100, 100)}%`; }
+                if(document.getElementById('horas-mensal-txt')) document.getElementById('horas-mensal-txt').innerText = `${horasDecimais}h`; 
+                if(document.getElementById('barra-mensal')) document.getElementById('barra-mensal').style.width = `${Math.min((dadosMensais.metaAtualSec / (1628 * 3600)) * 100, 100)}%`;
                 if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
                 if (chartStatusInstance) {
@@ -1257,34 +1078,17 @@
             }
         }, 200);
 
-        // ==========================================
-        // 11. GRÁFICOS
-        // ==========================================
         function iniciarGraficos() {
             let dataFiltro = document.getElementById('filtro-data-grafico') ? document.getElementById('filtro-data-grafico').value : '';
-            
-            let maqBoas = maquinas.map(m=>0);
-            let maqRefugo = maquinas.map(m=>0);
+            let maqBoas = maquinas.map(m=>0); let maqRefugo = maquinas.map(m=>0);
 
             if (!dataFiltro || dataFiltro === new Date().toISOString().split('T')[0]) {
                 let hojeStr = new Date().toLocaleDateString('pt-BR'); 
-                maquinas.forEach((m, i) => {
-                    if (m.opAtiva) { maqBoas[i] += m.opAtiva.boas || 0; maqRefugo[i] += m.opAtiva.refugo || 0; }
-                });
-                historico.forEach(h => {
-                    if (h.data.startsWith(hojeStr)) {
-                        let mIdx = maquinas.findIndex(m => m.nome === h.maq);
-                        if (mIdx !== -1) { maqBoas[mIdx] += parseInt(h.boas) || 0; maqRefugo[mIdx] += parseInt(h.refugo) || 0; }
-                    }
-                });
+                maquinas.forEach((m, i) => { if (m.opAtiva) { maqBoas[i] += m.opAtiva.boas || 0; maqRefugo[i] += m.opAtiva.refugo || 0; } });
+                historico.forEach(h => { if (h.data.startsWith(hojeStr)) { let mIdx = maquinas.findIndex(m => m.nome === h.maq); if (mIdx !== -1) { maqBoas[mIdx] += parseInt(h.boas) || 0; maqRefugo[mIdx] += parseInt(h.refugo) || 0; } } });
             } else {
                 let [y, m, d] = dataFiltro.split('-'); let dataStr = `${d}/${m}/${y}`; 
-                historico.forEach(h => {
-                    if (h.data.startsWith(dataStr)) {
-                        let mIdx = maquinas.findIndex(maq => maq.nome === h.maq);
-                        if (mIdx !== -1) { maqBoas[mIdx] += parseInt(h.boas) || 0; maqRefugo[mIdx] += parseInt(h.refugo) || 0; }
-                    }
-                });
+                historico.forEach(h => { if (h.data.startsWith(dataStr)) { let mIdx = maquinas.findIndex(maq => maq.nome === h.maq); if (mIdx !== -1) { maqBoas[mIdx] += parseInt(h.boas) || 0; maqRefugo[mIdx] += parseInt(h.refugo) || 0; } } });
             }
 
             if(chartStatusInstance) chartStatusInstance.destroy();
@@ -1292,24 +1096,12 @@
                 type: 'pie', data: { labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], datasets: [{ data: [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'], borderWidth: 2, hoverOffset: 10}] }, 
                 options: { maintainAspectRatio: false, plugins: { tooltip: { bodyFont: { size: 16, weight: 'bold' }, padding: 12, callbacks: { label: function(context) { return ' ' + context.label + ': ' + fmtTm(context.raw); } } } } } 
             });
-            
             if(chartGeralInstance) chartGeralInstance.destroy();
-            chartGeralInstance = new Chart(document.getElementById('chartGeral'), { 
-                type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maqBoas, backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
-                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
-            });
-            
+            chartGeralInstance = new Chart(document.getElementById('chartGeral'), { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maqBoas, backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
             if(chartRefugoInstance) chartRefugoInstance.destroy();
-            chartRefugoInstance = new Chart(document.getElementById('chartRefugo'), { 
-                type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: '% Refugo', data: maqBoas.map((boas, i) => { let total = boas + maqRefugo[i]; return total > 0 ? ((maqRefugo[i] / total) * 100).toFixed(1) : 0; }), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
-                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
-            });
-            
+            chartRefugoInstance = new Chart(document.getElementById('chartRefugo'), { type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: '% Refugo', data: maqBoas.map((boas, i) => { let total = boas + maqRefugo[i]; return total > 0 ? ((maqRefugo[i] / total) * 100).toFixed(1) : 0; }), backgroundColor: '#ef4444', borderRadius: 6 }] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
             if(chartHoraExtraInstance) chartHoraExtraInstance.destroy();
-            chartHoraExtraInstance = new Chart(document.getElementById('chartHoraExtra'), { 
-                type: 'bar', data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, 
-                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
-            });
+            chartHoraExtraInstance = new Chart(document.getElementById('chartHoraExtra'), { type: 'bar', data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
         }
     </script>
 </body>
