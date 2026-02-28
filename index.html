@@ -97,27 +97,57 @@
         <span class="text-[10px] font-black uppercase tracking-widest" id="toast-msg">Nuvem Atualizada</span>
     </div>
 
-    <div id="tela-login" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-all duration-500">
-        <div class="bg-white p-10 rounded-[32px] shadow-2xl w-full max-w-sm text-center border border-slate-200">
-            <h1 class="text-4xl font-black italic tracking-tighter mb-2 text-slate-800 logo-animada">
-                TRI<span class="text-blue-600">PLAST</span>
-            </h1>
-            <div class="space-y-4 text-left mt-8">
-                <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Usuário / Máquina</label>
-                    <select id="login-user" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-blue-500 shadow-inner">
-                        <option value="admin">👨‍💻 Gestão Triplast (Admin)</option>
-                        <option value="m1">🏭 Injetora M1</option>
-                        <option value="m2">🏭 Injetora M2</option>
-                        <option value="m3">🏭 Injetora M3</option>
-                        <option value="m4">🏭 Injetora M4</option>
-                    </select>
+    <div id="tela-login" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden opacity-0 transition-all duration-700">
+        <div class="absolute inset-0 bg-slate-900"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-slate-900 to-indigo-900/40"></div>
+        
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+
+        <div class="relative bg-white/10 backdrop-blur-xl p-1.5 rounded-[40px] shadow-2xl w-full max-w-md transform transition-all translate-y-10 duration-500" id="login-card-anim">
+            <div class="bg-white p-8 md:p-10 rounded-[34px] shadow-inner w-full relative overflow-hidden">
+                
+                <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600"></div>
+                
+                <div class="text-center mb-10 mt-2">
+                    <h1 class="text-5xl font-black italic tracking-tighter text-slate-800 logo-animada drop-shadow-sm">
+                        TRI<span class="text-blue-600">PLAST</span>
+                    </h1>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-3">Controle de Produção</p>
                 </div>
-                <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Senha</label>
-                    <input type="password" id="login-pass" placeholder="****" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-blue-500 shadow-inner">
+
+                <div class="space-y-6 text-left">
+                    <div class="relative">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 ml-1">Usuário / Máquina</label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-user-astronaut absolute left-4 text-blue-500 text-lg"></i>
+                            <select id="login-user" class="w-full pl-12 pr-10 p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl font-black text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer shadow-sm text-sm">
+                                <option value="admin">👨‍💻 Gestão Triplast (Admin)</option>
+                                <option value="m1">🏭 Injetora M1</option>
+                                <option value="m2">🏭 Injetora M2</option>
+                                <option value="m3">🏭 Injetora M3</option>
+                                <option value="m4">🏭 Injetora M4</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-4 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 ml-1">Senha de Acesso</label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-lock absolute left-4 text-blue-500 text-lg"></i>
+                            <input type="password" id="login-pass" placeholder="••••••••" class="w-full pl-12 p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl font-black text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all shadow-sm tracking-widest text-lg">
+                        </div>
+                    </div>
+                    
+                    <button onclick="autenticar()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-4 md:py-5 rounded-2xl text-base shadow-[0_10px_25px_rgba(59,130,246,0.4)] hover:shadow-[0_15px_35px_rgba(59,130,246,0.6)] active:scale-95 transition-all mt-8 uppercase tracking-widest flex items-center justify-center gap-3">
+                        Entrar no Sistema <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
                 </div>
-                <button onclick="autenticar()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl text-lg shadow-lg active:scale-95 transition-all mt-4">ENTRAR</button>
+                
+                <div class="mt-8 text-center border-t border-slate-100 pt-6">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-shield-halved mr-1"></i> Ambiente 100% Seguro</span>
+                </div>
             </div>
         </div>
     </div>
@@ -653,6 +683,7 @@
 
         function renderCoresModal(busca = '') {
             let filtro = busca.toLowerCase();
+            
             let filtradas = coresGlobais.map((c, i) => ({c, i})).filter(item => item.c.toLowerCase().includes(filtro));
             filtradas.sort((a, b) => a.c.localeCompare(b.c));
 
@@ -904,7 +935,11 @@
                         autenticar(true); 
                     } else { 
                         document.getElementById('tela-login').classList.remove('hidden'); 
-                        setTimeout(() => document.getElementById('tela-login').classList.remove('opacity-0'), 50); 
+                        setTimeout(() => {
+                            document.getElementById('tela-login').classList.remove('opacity-0');
+                            document.getElementById('login-card-anim').classList.remove('translate-y-10');
+                            document.getElementById('login-card-anim').classList.add('translate-y-0');
+                        }, 50); 
                     }
                 }, 500);
             }, 1000);
