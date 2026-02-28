@@ -1233,15 +1233,31 @@
         // ==========================================
         function zerarMeta() { 
             let mudou = false;
-            if(confirm("Deseja ZERAR a Meta Global de Produção do Mês (1.628h)?")) { 
+            
+            // CORREÇÃO: Para zerar a meta de forma persistente, precisamos zerar o T.PROD de todas as máquinas.
+            if(confirm("Deseja ZERAR a Meta Global de Produção do Mês (1.628h)? (Isso vai zerar o tempo acumulado de todas as máquinas).")) { 
                 dadosMensais.metaAtualSec = 0; 
+                dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
+                maquinas.forEach(m => {
+                    m.tempos.prod = 0;
+                    m.tempos.baixa = 0;
+                    m.tempos.parado = 0;
+                    m.tempos.neutro = 0;
+                });
                 mudou = true;
             }
+            
             if(confirm("Deseja ZERAR o Banco Global de HORAS EXTRAS?")) {
                 dadosMensais.horaExtraSec = 0;
                 mudou = true;
             }
-            if(mudou) { salvarAutomatico(); iniciarGraficos(); }
+            
+            if(mudou) { 
+                salvarAutomatico(); 
+                iniciarGraficos(); 
+                renderPainel();
+                renderResumo();
+            }
         }
 
         function toggleHoraExtra() { modoHoraExtra = !modoHoraExtra; toggleHoraExtraVis(); salvarAutomatico(); }
