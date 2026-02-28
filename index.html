@@ -13,7 +13,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         
-        body { background-color: #eef2f6; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { 
+            background-color: #eef2f6; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        }
         
         .aba-conteudo { display: none !important; }
         .aba-ativa { display: block !important; animation: fadeIn 0.4s ease; }
@@ -24,9 +29,17 @@
         }
 
         .card-producao {
-            background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
-            border-left: 12px solid #cbd5e1; transition: 0.3s; overflow: hidden; 
-            display: flex; flex-direction: column; width: 100%; max-width: 1250px; margin: 0 auto;
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
+            border-left: 12px solid #cbd5e1; 
+            transition: 0.3s; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            max-width: 1250px; 
+            margin: 0 auto;
         }
         
         @media (min-width: 1024px) {
@@ -46,12 +59,29 @@
         .status-parada { border-left-color: #ef4444 !important; } 
         .status-fds { border-left-color: #475569 !important; background-color: #f1f5f9; }
 
-        .info-badge { background: #ffffff; padding: 16px; border-radius: 16px; border: 2px solid #e2e8f0; text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        .fila-scroll-vertical { flex: 1; overflow-y: auto; gap: 12px; display: flex; flex-direction: column; padding-right: 5px; scrollbar-width: thin; max-height: 500px; }
-        .tab-btn { background: white; padding: 12px 24px; border-radius: 16px; font-weight: 900; font-size: 12px; color: #64748b; transition: 0.2s; border: 2px solid transparent; text-transform: uppercase; white-space: nowrap; }
-        .tab-btn.active { background: #3b82f6; color: white; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
+        .info-badge { 
+            background: #ffffff; padding: 16px; border-radius: 16px; border: 2px solid #e2e8f0; 
+            text-align: center; display: flex; flex-direction: column; justify-content: space-between; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); 
+        }
+        .fila-scroll-vertical { 
+            flex: 1; overflow-y: auto; gap: 12px; display: flex; flex-direction: column; 
+            padding-right: 5px; scrollbar-width: thin; max-height: 500px; 
+        }
+        .tab-btn { 
+            background: white; padding: 12px 24px; border-radius: 16px; font-weight: 900; 
+            font-size: 12px; color: #64748b; transition: 0.2s; border: 2px solid transparent; 
+            text-transform: uppercase; white-space: nowrap; 
+        }
+        .tab-btn.active { 
+            background: #3b82f6; color: white; border-color: #2563eb; 
+            box-shadow: 0 4px 10px rgba(37,99,235,0.3); 
+        }
 
-        .input-industrial { font-size: 1.5rem; font-weight: 900; text-align: center; border: 2px solid #cbd5e1; border-radius: 12px; padding: 10px; width: 100%; outline: none; }
+        .input-industrial { 
+            font-size: 1.5rem; font-weight: 900; text-align: center; border: 2px solid #cbd5e1; 
+            border-radius: 12px; padding: 10px; width: 100%; outline: none; 
+        }
         .input-industrial:focus { border-color: #3b82f6; }
         input[type="number"]::-webkit-inner-spin-button { display: none; }
     </style>
@@ -158,7 +188,9 @@
             <div id="aba-op" class="aba-conteudo space-y-6">
                 
                 <div class="bg-white p-6 md:p-8 rounded-[32px] shadow-xl border border-slate-100">
-                    <h2 class="text-xl md:text-2xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4"><i class="fa-solid fa-calculator text-blue-600"></i> LANÇAR O.P NA PRODUÇÃO</h2>
+                    <h2 class="text-xl md:text-2xl font-black mb-6 text-slate-800 flex items-center gap-2 border-b pb-4">
+                        <i class="fa-solid fa-calculator text-blue-600"></i> LANÇAR O.P NA PRODUÇÃO
+                    </h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                         <div>
@@ -171,15 +203,15 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Tipo de Pedido</label>
-                            <select id="f-tipo-filtro" onchange="atualizarSelectProdutos()" class="w-full p-3 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-xl font-bold outline-none uppercase text-xs">
+                            <select id="f-tipo-filtro" onchange="atualizarSelectProdutos()" class="w-full p-3 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-xl font-bold outline-none uppercase text-xs cursor-pointer">
                                 <option value="todos">🏭 Todos</option>
-                                <option value="cliente">👤 Clientes</option>
+                                <option value="cliente">👤 Clientes (Próprio)</option>
                                 <option value="terceiro">🤝 Terceiros</option>
                             </select>
                         </div>
                         <div class="md:col-span-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Selecionar Produto</label>
-                            <select id="f-prod-select" onchange="autoFillCalculadora()" class="w-full p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl font-bold outline-none uppercase"></select>
+                            <select id="f-prod-select" onchange="autoFillCalculadora()" class="w-full p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl font-bold outline-none uppercase cursor-pointer"></select>
                         </div>
                     </div>
 
@@ -187,15 +219,15 @@
                         <div class="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4 mb-6">
                             <div>
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Ciclo (seg)</label>
-                                <input type="number" id="c-ciclo" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
+                                <input type="number" id="c-ciclo" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none text-white">
                             </div>
                             <div>
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Nº Cavidade</label>
-                                <input type="number" id="c-cav" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
+                                <input type="number" id="c-cav" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none text-white">
                             </div>
                             <div>
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Peso (g)</label>
-                                <input type="number" id="c-peso" step="0.001" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none">
+                                <input type="number" id="c-peso" step="0.001" oninput="calcularTudo()" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold outline-none text-white">
                             </div>
                             <div class="relative">
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Cor (Cód ou Nome)</label>
@@ -234,7 +266,10 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="lancarOP()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 md:p-5 rounded-2xl font-black text-lg uppercase shadow-lg transition-all active:scale-95"><i class="fa-solid fa-paper-plane mr-2"></i> Lançar O.P na Fila da Máquina</button>
+                    
+                    <button onclick="lancarOP()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 md:p-5 rounded-2xl font-black text-lg uppercase shadow-lg transition-all active:scale-95">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Lançar O.P na Fila da Máquina
+                    </button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -384,50 +419,58 @@
                 <h3 class="font-black text-2xl text-slate-800"><i class="fa-solid fa-boxes-stacked text-indigo-600 mr-2"></i> Catálogo de Produtos</h3>
                 <button onclick="fecharModalProdutos()" class="text-slate-400 hover:text-red-500 text-4xl font-black leading-none">&times;</button>
             </div>
-            <div class="flex flex-col md:flex-row gap-3 items-end bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner mb-6">
+            
+            <div class="flex flex-col gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner mb-6">
+                <div class="flex flex-col md:flex-row gap-4 w-full">
+                    <div class="w-full md:w-1/4">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">TIPO DE PEDIDO</label>
+                        <select id="novo-produto-categoria-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-xs text-indigo-700 cursor-pointer">
+                            <option value="cliente">👤 Cliente (Próprio)</option>
+                            <option value="terceiro">🤝 Terceiro</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-3/4">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nome da Peça</label>
+                        <input type="text" id="novo-produto-nome-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-black outline-none uppercase text-base text-indigo-900" placeholder="Digite o nome completo do produto...">
+                    </div>
+                </div>
                 
-                <div class="w-full md:w-32">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">TIPO</label>
-                    <select id="novo-produto-categoria-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-xs text-indigo-700">
-                        <option value="cliente">Cliente (Proprio)</option>
-                        <option value="terceiro">Terceiro</option>
-                    </select>
+                <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
+                    <div class="w-full sm:w-auto flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Ciclo (s)</label>
+                        <input type="number" id="novo-produto-ciclo-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                    </div>
+                    <div class="w-full sm:w-auto flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cavs</label>
+                        <input type="number" id="novo-produto-cavidades-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                    </div>
+                    <div class="w-full sm:w-auto flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Peso (g)</label>
+                        <input type="number" step="0.001" id="novo-produto-peso-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                    </div>
+                    <div class="w-full sm:w-auto flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Material</label>
+                        <input type="text" id="novo-produto-mat-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
+                    </div>
+                    <div class="w-full sm:w-auto flex-1 relative">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cor</label>
+                        <input type="text" id="novo-produto-cor-modal" list="cores-datalist" onchange="verificarCodigoCor(event)" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-xs">
+                    </div>
+                    <div class="w-full sm:w-auto flex-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Pigm (%)</label>
+                        <input type="number" step="0.1" id="novo-produto-pigm-modal" class="w-full p-3 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <button id="btn-salvar-prod" onclick="salvarProduto()" class="w-full bg-indigo-600 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-indigo-700 shadow-md transition-colors text-xs whitespace-nowrap">Salvar</button>
+                    </div>
                 </div>
-
-                <div class="flex-1 w-full">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nome da Peça</label>
-                    <input type="text" id="novo-produto-nome-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
-                </div>
-                <div class="w-full md:w-20">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Ciclo (s)</label>
-                    <input type="number" id="novo-produto-ciclo-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
-                </div>
-                <div class="w-full md:w-16">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cavs</label>
-                    <input type="number" id="novo-produto-cavidades-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
-                </div>
-                <div class="w-full md:w-24">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Peso (g)</label>
-                    <input type="number" step="0.001" id="novo-produto-peso-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
-                </div>
-                <div class="w-full md:w-24">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Material</label>
-                    <input type="text" id="novo-produto-mat-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-sm">
-                </div>
-                <div class="w-full md:w-32 relative">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cor</label>
-                    <input type="text" id="novo-produto-cor-modal" list="cores-datalist" onchange="verificarCodigoCor(event)" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none uppercase text-[10px]">
-                </div>
-                <div class="w-full md:w-16">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Pigm%</label>
-                    <input type="number" step="0.1" id="novo-produto-pigm-modal" class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold outline-none text-sm">
-                </div>
-                <button id="btn-salvar-prod" onclick="salvarProduto()" class="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase hover:bg-indigo-700 shadow-md transition-colors text-xs whitespace-nowrap">Salvar</button>
             </div>
+
             <div class="relative mb-6">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
                 <input type="text" placeholder="Buscar produto..." onkeyup="renderCatalogoModal(this.value)" class="w-full pl-10 p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-indigo-500 bg-slate-50">
             </div>
+            
             <div id="lista-catalogo-modal" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         </div>
     </div>
@@ -461,7 +504,7 @@
 
     <script>
         // ==========================================
-        // FUNÇÕES GLOBAIS
+        // FUNÇÕES GLOBAIS E DE FORMATAÇÃO
         // ==========================================
         const fmtTm = s => {
             let tempo = Math.floor(s);
@@ -544,57 +587,76 @@
         }
 
         function atualizarSelectCores() {
+            // Garante Ordem Alfabética no AutoCompletar
+            coresGlobais.sort((a, b) => a.localeCompare(b));
             const options = coresGlobais.map(c => `<option value="${c}">`).join('');
             if(document.getElementById('cores-datalist')) document.getElementById('cores-datalist').innerHTML = options;
         }
 
         // ==========================================
-        // MODAL DE CORES
+        // MODAL DE CORES (COM ORDEM ALFABÉTICA)
         // ==========================================
         let editCorIndex = null;
         function abrirModalCores() { document.getElementById('modal-cores').style.display = 'flex'; renderCoresModal(); }
         
         function fecharModalCores() { 
             document.getElementById('modal-cores').style.display = 'none'; 
-            editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar Cor";
+            editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar";
             document.getElementById('nova-cor-cod-modal').value = ""; document.getElementById('nova-cor-nome-modal').value = "";
         }
 
         function salvarCor() {
             let cod = document.getElementById('nova-cor-cod-modal').value.trim().toUpperCase();
             let nome = document.getElementById('nova-cor-nome-modal').value.trim().toUpperCase();
+            
             if (cod && nome) {
                 let val = cod + ' | ' + nome;
                 if (editCorIndex !== null) {
-                    let oldVal = coresGlobais[editCorIndex]; coresGlobais[editCorIndex] = val;
+                    let oldVal = coresGlobais[editCorIndex]; 
+                    coresGlobais[editCorIndex] = val;
                     produtosGlobais.forEach(p => { if(p.cor === oldVal) p.cor = val; });
-                    editCorIndex = null; document.getElementById('btn-salvar-cor').innerText = "Salvar Cor";
+                    editCorIndex = null; 
+                    document.getElementById('btn-salvar-cor').innerText = "Salvar Cor";
                 } else {
                     if (!coresGlobais.includes(val)) { coresGlobais.push(val); } else { alert("Esta cor já está cadastrada!"); return; }
                 }
-                coresGlobais.sort(); 
-                document.getElementById('nova-cor-cod-modal').value = ""; document.getElementById('nova-cor-nome-modal').value = "";
-                renderCoresModal(); atualizarSelectCores(); salvarAutomatico();
-            } else { alert("Preencha o Código e o Nome da Cor!"); }
+                
+                coresGlobais.sort((a, b) => a.localeCompare(b)); 
+                document.getElementById('nova-cor-cod-modal').value = ""; 
+                document.getElementById('nova-cor-nome-modal').value = "";
+                
+                renderCoresModal(); 
+                atualizarSelectCores(); 
+                salvarAutomatico();
+            } else { 
+                alert("Preencha o Código e o Nome da Cor!"); 
+            }
         }
 
         function editarCor(index) {
             let val = coresGlobais[index].split(' | ');
             document.getElementById('nova-cor-cod-modal').value = val[0] || '';
             document.getElementById('nova-cor-nome-modal').value = val[1] || '';
-            editCorIndex = index; document.getElementById('btn-salvar-cor').innerText = "Atualizar Cor";
+            editCorIndex = index; 
+            document.getElementById('btn-salvar-cor').innerText = "Atualizar Cor";
         }
 
         function removerCor(index) {
             if(confirm(`Deseja apagar a cor ${coresGlobais[index]} do sistema?`)) {
                 coresGlobais.splice(index, 1);
-                renderCoresModal(); atualizarSelectCores(); salvarAutomatico();
+                renderCoresModal(); 
+                atualizarSelectCores(); 
+                salvarAutomatico();
             }
         }
 
         function renderCoresModal(busca = '') {
             let filtro = busca.toLowerCase();
+            
+            // Filtra e Garante a Ordem Alfabética na Janela
             let filtradas = coresGlobais.map((c, i) => ({c, i})).filter(item => item.c.toLowerCase().includes(filtro));
+            filtradas.sort((a, b) => a.c.localeCompare(b.c));
+
             document.getElementById('lista-cores-gerenciador').innerHTML = filtradas.map(item => `
                 <div class="bg-purple-50 text-purple-800 border border-purple-200 px-3 py-2 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center shadow-sm mb-2 w-full md:w-[48%] justify-between">
                     <span><i class="fa-solid fa-droplet mr-2 text-purple-400"></i> ${item.c}</span>
@@ -614,11 +676,15 @@
         function fecharModalProdutos() { document.getElementById('modal-produtos').style.display = 'none'; limparFormProduto(); }
         
         function limparFormProduto() {
-            editProdutoId = null; document.getElementById('btn-salvar-prod').innerText = "Salvar Novo";
+            editProdutoId = null; 
+            document.getElementById('btn-salvar-prod').innerText = "Salvar Novo";
             document.getElementById('novo-produto-categoria-modal').value = "cliente";
-            document.getElementById('novo-produto-nome-modal').value = ""; document.getElementById('novo-produto-ciclo-modal').value = ""; 
-            document.getElementById('novo-produto-cavidades-modal').value = ""; document.getElementById('novo-produto-peso-modal').value = "";
-            document.getElementById('novo-produto-mat-modal').value = ""; document.getElementById('novo-produto-cor-modal').value = "";
+            document.getElementById('novo-produto-nome-modal').value = ""; 
+            document.getElementById('novo-produto-ciclo-modal').value = ""; 
+            document.getElementById('novo-produto-cavidades-modal').value = ""; 
+            document.getElementById('novo-produto-peso-modal').value = "";
+            document.getElementById('novo-produto-mat-modal').value = ""; 
+            document.getElementById('novo-produto-cor-modal').value = "";
             document.getElementById('novo-produto-pigm-modal').value = "";
         }
 
@@ -639,26 +705,37 @@
                 } else {
                     produtosGlobais.push({ id: Date.now(), nome, ciclo, cav, peso, mat, cor, pigm, categoria: cat });
                 }
-                limparFormProduto(); renderCatalogoModal(); atualizarSelectProdutos(); salvarAutomatico();
-            } else { alert("Preencha o Nome, Ciclo, Cavidades e Peso!"); }
+                limparFormProduto(); 
+                renderCatalogoModal(); 
+                atualizarSelectProdutos(); 
+                salvarAutomatico();
+            } else { 
+                alert("Preencha o Nome da Peça, Ciclo, Cavidades e Peso!"); 
+            }
         }
 
         function editarProduto(id) {
             let p = produtosGlobais.find(x => x.id === id);
             if(p) {
                 document.getElementById('novo-produto-categoria-modal').value = p.categoria || "cliente";
-                document.getElementById('novo-produto-nome-modal').value = p.nome; document.getElementById('novo-produto-ciclo-modal').value = p.ciclo;
-                document.getElementById('novo-produto-cavidades-modal').value = p.cav; document.getElementById('novo-produto-peso-modal').value = p.peso;
-                document.getElementById('novo-produto-mat-modal').value = p.mat; document.getElementById('novo-produto-cor-modal').value = p.cor;
+                document.getElementById('novo-produto-nome-modal').value = p.nome; 
+                document.getElementById('novo-produto-ciclo-modal').value = p.ciclo;
+                document.getElementById('novo-produto-cavidades-modal').value = p.cav; 
+                document.getElementById('novo-produto-peso-modal').value = p.peso;
+                document.getElementById('novo-produto-mat-modal').value = p.mat; 
+                document.getElementById('novo-produto-cor-modal').value = p.cor;
                 document.getElementById('novo-produto-pigm-modal').value = p.pigm;
-                editProdutoId = id; document.getElementById('btn-salvar-prod').innerText = "Atualizar";
+                editProdutoId = id; 
+                document.getElementById('btn-salvar-prod').innerText = "Atualizar";
             }
         }
 
         function removerProduto(id) {
             if(confirm("Deseja apagar este produto definitivamente?")) {
                 produtosGlobais = produtosGlobais.filter(x => x.id !== id);
-                renderCatalogoModal(); atualizarSelectProdutos(); salvarAutomatico();
+                renderCatalogoModal(); 
+                atualizarSelectProdutos(); 
+                salvarAutomatico();
             }
         }
 
@@ -666,16 +743,19 @@
             let filtro = busca.toLowerCase();
             let filtrados = produtosGlobais.filter(p => p.nome.toLowerCase().includes(filtro) || p.mat.toLowerCase().includes(filtro) || (p.cor && p.cor.toLowerCase().includes(filtro)));
             
+            // Garante a Ordem Alfabética na Janela de Catálogo
+            filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
+
             document.getElementById('lista-catalogo-modal').innerHTML = filtrados.map(p => {
                 let badge = (p.categoria === 'terceiro') ? '<span class="bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-[8px] font-black uppercase ml-2 border border-orange-200">Terceiro</span>' : '<span class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-[8px] font-black uppercase ml-2 border border-blue-200">Cliente</span>';
                 return `
                 <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-sm font-bold flex flex-col justify-between hover:shadow-md transition-shadow relative">
                     <div>
-                        <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-start justify-between mb-2">
                             <span class="text-indigo-700 text-lg break-words pr-2 leading-tight">${p.nome}</span>
                             ${badge}
                         </div>
-                        <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block">
+                        <span class="text-[10px] font-black text-slate-400 tracking-widest mt-1 inline-block leading-relaxed">
                             CICLO: ${p.ciclo}s | CAV: ${p.cav} | PESO: ${p.peso}g<br>MAT: ${p.mat || '--'} <br>COR: ${p.cor || '--'} <br>PIGM: ${p.pigm || 0}%
                         </span>
                     </div>
@@ -693,10 +773,14 @@
         function atualizarSelectProdutos() { 
             let filtro = document.getElementById('f-tipo-filtro') ? document.getElementById('f-tipo-filtro').value : 'todos';
             let prodsList = produtosGlobais;
+            
             if(filtro !== 'todos') {
                 prodsList = produtosGlobais.filter(p => (p.categoria || 'cliente') === filtro);
             }
             
+            // Garante Ordem Alfabética na hora de Lançar a OP
+            prodsList.sort((a, b) => a.nome.localeCompare(b.nome));
+
             document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + prodsList.map(p => {
                 let textTerceiro = (p.categoria === 'terceiro') ? '[TERCEIRO] ' : '';
                 return `<option value="${p.id}">${textTerceiro}${p.nome}</option>`;
@@ -708,7 +792,9 @@
         function autoFillCalculadora() { 
             const prod = produtosGlobais.find(p => p.id == document.getElementById('f-prod-select').value); 
             if(prod) { 
-                document.getElementById('c-ciclo').value = prod.ciclo; document.getElementById('c-cav').value = prod.cav; document.getElementById('c-peso').value = prod.peso; 
+                document.getElementById('c-ciclo').value = prod.ciclo; 
+                document.getElementById('c-cav').value = prod.cav; 
+                document.getElementById('c-peso').value = prod.peso; 
                 if(prod.pigm !== undefined) document.getElementById('c-pigm').value = prod.pigm; 
                 if(prod.cor !== undefined) document.getElementById('c-cor').value = prod.cor; 
                 calcularTudo(); 
@@ -723,26 +809,38 @@
             const meta = parseInt(document.getElementById('c-meta').value) || 0;
 
             if(meta > 0 && ciclo > 0 && cav > 0) {
-                const batidas = Math.ceil(meta / cav); const totalSec = batidas * ciclo; 
+                const batidas = Math.ceil(meta / cav); 
+                const totalSec = batidas * ciclo; 
                 document.getElementById('res-tempo').innerText = fmtTm(totalSec);
-                const pzsHora = (3600 / ciclo) * cav; document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
-                const kgMaterial = (meta * peso) / 1000; const kgPigmento = kgMaterial * (pigm / 100); const kgTotal = kgMaterial + kgPigmento;
+                
+                const pzsHora = (3600 / ciclo) * cav; 
+                document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
+                
+                const kgMaterial = (meta * peso) / 1000; 
+                const kgPigmento = kgMaterial * (pigm / 100); 
+                const kgTotal = kgMaterial + kgPigmento;
                 
                 document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
                 document.getElementById('res-pig').innerText = (kgPigmento * 1000).toFixed(0) + 'g';
                 document.getElementById('res-total').innerText = kgTotal.toFixed(2);
             } else { 
-                document.getElementById('res-tempo').innerText = "00:00:00"; document.getElementById('res-meta-hora').innerText = "0";
-                document.getElementById('res-mat').innerText = "0.00"; document.getElementById('res-pig').innerText = "0g"; document.getElementById('res-total').innerText = "0.00"; 
+                document.getElementById('res-tempo').innerText = "00:00:00"; 
+                document.getElementById('res-meta-hora').innerText = "0";
+                document.getElementById('res-mat').innerText = "0.00"; 
+                document.getElementById('res-pig').innerText = "0g"; 
+                document.getElementById('res-total').innerText = "0.00"; 
             }
         }
 
         function lancarOP() {
-            const mId = document.getElementById('f-maq').value; const op = document.getElementById('f-op').value; 
-            const prodSel = document.getElementById('f-prod-select'); const meta = parseInt(document.getElementById('c-meta').value);
+            const mId = document.getElementById('f-maq').value; 
+            const op = document.getElementById('f-op').value; 
+            const prodSel = document.getElementById('f-prod-select'); 
+            const meta = parseInt(document.getElementById('c-meta').value);
             
             if(op && prodSel.value && meta) {
-                const prodId = prodSel.value; const produtoInfo = produtosGlobais.find(p => p.id == prodId);
+                const prodId = prodSel.value; 
+                const produtoInfo = produtosGlobais.find(p => p.id == prodId);
                 const nomeMat = produtoInfo && produtoInfo.mat ? produtoInfo.mat : '--';
                 const corPeca = document.getElementById('c-cor').value || 'Sem Cor';
                 const percPigm = document.getElementById('c-pigm').value || 0;
@@ -759,19 +857,30 @@
                 });
                 
                 alert(`O.P ${op} enviada para a fila!`); 
-                document.getElementById('f-op').value = ""; document.getElementById('c-meta').value = ""; document.getElementById('f-prod-select').value = "";
-                renderPainel(); salvarAutomatico();
-            } else { alert("Preencha O.P, selecione a Peça e a Meta!"); }
+                document.getElementById('f-op').value = ""; 
+                document.getElementById('c-meta').value = ""; 
+                document.getElementById('f-prod-select').value = "";
+                renderPainel(); 
+                salvarAutomatico();
+            } else { 
+                alert("Preencha o Nº O.P, selecione a Peça e insira a Meta!"); 
+            }
         }
 
         // ==========================================
-        // INICIALIZAÇÃO E CARREGAMENTO
+        // INICIALIZAÇÃO E CARREGAMENTO DA NUVEM
         // ==========================================
         window.onload = async () => {
-            if(document.getElementById('filtro-data-grafico')) { document.getElementById('filtro-data-grafico').value = new Date().toISOString().split('T')[0]; }
-            await carregarDaNuvem(); if(!sistemaPronto) carregarDadosLocais();
+            if(document.getElementById('filtro-data-grafico')) { 
+                document.getElementById('filtro-data-grafico').value = new Date().toISOString().split('T')[0]; 
+            }
+            
+            await carregarDaNuvem(); 
+            if(!sistemaPronto) carregarDadosLocais();
+            
             sistemaPronto = true; 
-            atualizarSelectCores(); atualizarSelectProdutos();
+            atualizarSelectCores(); 
+            atualizarSelectProdutos();
             
             let userSalvo = localStorage.getItem('triplast_session');
             setTimeout(() => {
@@ -796,10 +905,15 @@
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo) {
                     const db = data.conteudo;
-                    maquinas = db.maquinas || maquinas; produtosGlobais = db.produtos || produtosGlobais;
-                    operadoresGlobais = db.operadores || operadoresGlobais; historico = db.historico || historico;
-                    dadosMensais = db.dadosMensais || dadosMensais; modoHoraExtra = db.modoHoraExtra || false; coresGlobais = db.cores || coresGlobais;
-                    lastSyncTs = db.ts || 0; localStorage.setItem('triplast_ts', lastSyncTs);
+                    maquinas = db.maquinas || maquinas; 
+                    produtosGlobais = db.produtos || produtosGlobais;
+                    operadoresGlobais = db.operadores || operadoresGlobais; 
+                    historico = db.historico || historico;
+                    dadosMensais = db.dadosMensais || dadosMensais; 
+                    modoHoraExtra = db.modoHoraExtra || false; 
+                    coresGlobais = db.cores || coresGlobais;
+                    lastSyncTs = db.ts || 0; 
+                    localStorage.setItem('triplast_ts', lastSyncTs);
                     localStorage.setItem('triplast_dados_oficial', JSON.stringify(db)); 
                     sistemaPronto = true;
                 }
@@ -811,9 +925,12 @@
             if(memory) {
                 try {
                     const db = JSON.parse(memory);
-                    if(db.maquinas) maquinas = db.maquinas; if(db.produtos) produtosGlobais = db.produtos;
-                    if(db.operadores) operadoresGlobais = db.operadores; if(db.historico) historico = db.historico;
-                    if(db.dadosMensais) dadosMensais = db.dadosMensais; if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
+                    if(db.maquinas) maquinas = db.maquinas; 
+                    if(db.produtos) produtosGlobais = db.produtos;
+                    if(db.operadores) operadoresGlobais = db.operadores; 
+                    if(db.historico) historico = db.historico;
+                    if(db.dadosMensais) dadosMensais = db.dadosMensais; 
+                    if(db.modoHoraExtra !== undefined) modoHoraExtra = db.modoHoraExtra;
                     if(db.cores) coresGlobais = db.cores;
                 } catch(e) {}
             }
@@ -825,10 +942,15 @@
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
                     const db = data.conteudo;
-                    maquinas = db.maquinas || maquinas; produtosGlobais = db.produtos || produtosGlobais;
-                    operadoresGlobais = db.operadores || operadoresGlobais; historico = db.historico || historico;
-                    dadosMensais = db.dadosMensais || dadosMensais; modoHoraExtra = db.modoHoraExtra || false; coresGlobais = db.cores || coresGlobais;
-                    lastSyncTs = db.ts; localStorage.setItem('triplast_ts', lastSyncTs);
+                    maquinas = db.maquinas || maquinas; 
+                    produtosGlobais = db.produtos || produtosGlobais;
+                    operadoresGlobais = db.operadores || operadoresGlobais; 
+                    historico = db.historico || historico;
+                    dadosMensais = db.dadosMensais || dadosMensais; 
+                    modoHoraExtra = db.modoHoraExtra || false; 
+                    coresGlobais = db.cores || coresGlobais;
+                    lastSyncTs = db.ts; 
+                    localStorage.setItem('triplast_ts', lastSyncTs);
                     
                     if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
                     if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
@@ -840,10 +962,15 @@
         function sanitizarDados() {
             maquinas.forEach(m => {
                 if(!m.tempos) m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
-                if(!m.fila) m.fila = []; if(!m.operador) m.operador = ""; if(!m.ultimoMotivoRefugo) m.ultimoMotivoRefugo = "";
+                if(!m.fila) m.fila = []; 
+                if(!m.operador) m.operador = ""; 
+                if(!m.ultimoMotivoRefugo) m.ultimoMotivoRefugo = "";
                 if(m.opAtiva) {
-                    m.opAtiva.boas = m.opAtiva.boas || 0; m.opAtiva.refugo = m.opAtiva.refugo || 0;
-                    m.opAtiva.meta = m.opAtiva.meta || 0; m.opAtiva.ciclo = m.opAtiva.ciclo || 1; m.opAtiva.cavs = m.opAtiva.cavs || 1;
+                    m.opAtiva.boas = m.opAtiva.boas || 0; 
+                    m.opAtiva.refugo = m.opAtiva.refugo || 0;
+                    m.opAtiva.meta = m.opAtiva.meta || 0; 
+                    m.opAtiva.ciclo = m.opAtiva.ciclo || 1; 
+                    m.opAtiva.cavs = m.opAtiva.cavs || 1;
                     if(!m.opAtiva.motivosRefugo) m.opAtiva.motivosRefugo = {};
                 }
             });
@@ -853,10 +980,14 @@
 
         async function salvarAutomatico() { 
             if(!sistemaPronto) return; 
-            sanitizarDados(); lastSyncTs = Date.now(); localStorage.setItem('triplast_ts', lastSyncTs);
+            sanitizarDados(); 
+            lastSyncTs = Date.now(); 
+            localStorage.setItem('triplast_ts', lastSyncTs);
             localStorage.setItem('triplast_dados_oficial', JSON.stringify({ maquinas, produtos: produtosGlobais, operadores: operadoresGlobais, historico, dadosMensais, modoHoraExtra, cores: coresGlobais }));
             document.getElementById('status-nuvem').innerText = "⏳"; 
+            
             if(saveTimeout) clearTimeout(saveTimeout); 
+            
             saveTimeout = setTimeout(async () => { 
                 if(sb) {
                     await sb.from('sistema').update({ conteudo: { maquinas, operadores: operadoresGlobais, produtos: produtosGlobais, historico, dadosMensais, modoHoraExtra, cores: coresGlobais, ts: lastSyncTs } }).eq('id', 1);
@@ -866,21 +997,41 @@
         }
 
         // ==========================================
-        // LOGIN E ABAS
+        // LOGIN E NAVEGAÇÃO ENTRE ABAS
         // ==========================================
         function autenticar(autoLogin = false) {
-            const u = document.getElementById('login-user').value; const p = document.getElementById('login-pass').value;
+            const u = document.getElementById('login-user').value; 
+            const p = document.getElementById('login-pass').value;
+            
             if(SENHAS[u] === p) {
-                userLogado = u; if(!autoLogin) localStorage.setItem('triplast_session', u); 
-                document.getElementById('tela-login').style.display = 'none'; document.getElementById('app-content').classList.remove('hidden');
-                if(u !== 'admin') { ['btn-op', 'btn-resumo', 'btn-historico', 'btn-graficos', 'btn-operadores'].forEach(id => { document.getElementById(id).style.display = 'none'; }); }
+                userLogado = u; 
+                if(!autoLogin) localStorage.setItem('triplast_session', u); 
+                document.getElementById('tela-login').style.display = 'none'; 
+                document.getElementById('app-content').classList.remove('hidden');
+                
+                if(u !== 'admin') { 
+                    ['btn-op', 'btn-resumo', 'btn-historico', 'btn-graficos', 'btn-operadores'].forEach(id => { 
+                        document.getElementById(id).style.display = 'none'; 
+                    }); 
+                }
+                
                 document.getElementById('f-maq').innerHTML = maquinas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
-                renderPainel(); renderResumo(); renderHistorico(); atualizarSelectProdutos(); iniciarGraficos();
+                renderPainel(); 
+                renderResumo(); 
+                renderHistorico(); 
+                atualizarSelectProdutos(); 
+                iniciarGraficos();
                 if(modoHoraExtra) toggleHoraExtraVis();
-            } else { alert("Senha Incorreta!"); }
+            } else { 
+                alert("Senha Incorreta!"); 
+            }
         }
 
-        function fazerLogout() { localStorage.removeItem('triplast_session'); location.reload(); }
+        function fazerLogout() { 
+            localStorage.removeItem('triplast_session'); 
+            location.reload(); 
+        }
+        
         function trocarAba(nome) {
             document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('aba-ativa'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -890,7 +1041,7 @@
         }
 
         // ==========================================
-        // OPERADORES
+        // GERENCIADOR DE OPERADORES
         // ==========================================
         function abrirModalOperadores() { document.getElementById('modal-operadores').style.display = 'flex'; renderEquipe(); }
         function renderEquipe() { 
@@ -909,7 +1060,7 @@
         function alterarOperador(id, op) { maquinas.find(m => m.id === id).operador = op; salvarAutomatico(); }
 
         // ==========================================
-        // RENDERIZAÇÃO PAINEL PRINCIPAL
+        // RENDERIZAÇÃO PAINEL PRINCIPAL (MÁQUINAS)
         // ==========================================
         function renderPainel() {
             const grid = document.getElementById('grid-maquinas');
@@ -928,7 +1079,11 @@
                 let cardOp = ``;
                 
                 if(m.opAtiva) {
-                    opNum = m.opAtiva.op; prodNome = m.opAtiva.prod; meta = m.opAtiva.meta; boas = m.opAtiva.boas; refugo = m.opAtiva.refugo;
+                    opNum = m.opAtiva.op; 
+                    prodNome = m.opAtiva.prod; 
+                    meta = m.opAtiva.meta; 
+                    boas = m.opAtiva.boas; 
+                    refugo = m.opAtiva.refugo;
                     progresso = meta > 0 ? Math.min(((boas / meta) * 100), 100).toFixed(1) : 0;
                     
                     let matPartAtiva = '--', corPartAtiva = '--', pigmPartAtiva = '--';
@@ -1265,7 +1420,6 @@
         function zerarMeta() { 
             let mudou = false;
             
-            // CORREÇÃO: Para zerar a meta de forma persistente, precisamos zerar o T.PROD de todas as máquinas.
             if(confirm("Deseja ZERAR a Meta Global de Produção do Mês (1.628h)? (Isso vai zerar o tempo acumulado de todas as máquinas).")) { 
                 dadosMensais.metaAtualSec = 0; 
                 dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
@@ -1292,11 +1446,18 @@
         }
 
         function toggleHoraExtra() { modoHoraExtra = !modoHoraExtra; toggleHoraExtraVis(); salvarAutomatico(); }
+        
         function toggleHoraExtraVis() {
             const btn = document.getElementById('btn-hora-extra');
-            if(modoHoraExtra) { btn.className = "bg-blue-600 text-white border border-blue-500 px-4 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/50 whitespace-nowrap flex items-center"; btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (ON)"; } 
-            else { btn.className = "bg-slate-800 text-slate-400 border border-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase whitespace-nowrap flex items-center"; btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (Off)"; }
+            if(modoHoraExtra) { 
+                btn.className = "bg-blue-600 text-white border border-blue-500 px-4 py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/50 whitespace-nowrap flex items-center"; 
+                btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (ON)"; 
+            } else { 
+                btn.className = "bg-slate-800 text-slate-400 border border-slate-700 px-4 py-3 rounded-xl text-[10px] font-black uppercase whitespace-nowrap flex items-center"; 
+                btn.innerHTML = "<i class='fa-solid fa-bolt mr-2'></i> Extra (Off)"; 
+            }
         }
+        
         function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
 
         const optBSB = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -1314,31 +1475,41 @@
                 const agoraCompleto = new Date();
 
                 if (agoraCompleto.getMonth() !== dadosMensais.mesAtual) {
-                    dadosMensais.mesAtual = agoraCompleto.getMonth(); dadosMensais.metaAtualSec = 0; dadosMensais.horaExtraSec = 0; dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
+                    dadosMensais.mesAtual = agoraCompleto.getMonth(); 
+                    dadosMensais.metaAtualSec = 0; 
+                    dadosMensais.horaExtraSec = 0; 
+                    dadosMensais.plantTempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 };
                     maquinas.forEach(m => { m.tempos = { prod: 0, baixa: 0, parado: 0, neutro: 0 }; if(m.opAtiva) { m.opAtiva.boas = 0; m.opAtiva.refugo = 0; } });
                     salvarAutomatico(); renderPainel(); 
                 }
 
                 const mTotal = agoraCompleto.getHours() * 60 + agoraCompleto.getMinutes();
                 let textAuto = "Turno 3 (23h-05h)";
-                if (mTotal >= 300 && mTotal < 858) textAuto = "Turno 1 (05h-14h)"; else if (mTotal >= 858 && mTotal < 1416) textAuto = "Turno 2 (14h-23h)";
+                if (mTotal >= 300 && mTotal < 858) textAuto = "Turno 1 (05h-14h)"; 
+                else if (mTotal >= 858 && mTotal < 1416) textAuto = "Turno 2 (14h-23h)";
+                
                 if(document.getElementById('opt-auto')) document.getElementById('opt-auto').innerText = "Atual: " + textAuto; 
                 if(turnoForcado && turnoForcado !== "auto") document.getElementById('select-turno').value = turnoForcado;
 
                 const isWeekend = (agoraCompleto.getDay() === 0 || agoraCompleto.getDay() === 6);
-                let contarTempo = true; let maqTrabalhando = false;
+                let contarTempo = true; 
+                let maqTrabalhando = false;
 
                 if (isWeekend && !modoHoraExtra) {
-                    contarTempo = false; document.getElementById('badge-fds').classList.remove('hidden'); let statusMudou = false;
+                    contarTempo = false; 
+                    document.getElementById('badge-fds').classList.remove('hidden'); 
+                    let statusMudou = false;
                     maquinas.forEach(m => { if(m.status !== "25-FIM DE SEMANA (PAUSADO)") { m.status = "25-FIM DE SEMANA (PAUSADO)"; statusMudou = true; } });
                     if(statusMudou && document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
-                } else { document.getElementById('badge-fds').classList.add('hidden'); }
+                } else { 
+                    document.getElementById('badge-fds').classList.add('hidden'); 
+                }
 
                 if(contarTempo) {
                     let temProd = false, temBaixa = false, temParada = false, temNeutro = false;
                     let oeeTotalGlob = 0; let oeeQtdGlob = 0;
                     
-                    // SOMA GLOBAL (Cálculo do PCP): Soma o tempo de todas as máquinas
+                    // SOMA GLOBAL: Somatório exato das máquinas rodando
                     let somaTotalProducaoTodasMaquinas = 0;
 
                     maquinas.forEach(m => {
@@ -1350,25 +1521,32 @@
                         somaTotalProducaoTodasMaquinas += (m.tempos.prod || 0);
                         
                         if(m.opAtiva && document.getElementById(`oee-disp-${m.id}`)) {
-                            let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
+                            let tProg = m.tempos.prod + m.tempos.baixa + m.tempos.parado; 
+                            let disp = tProg > 0 ? (m.tempos.prod / tProg) : 0;
                             let teorica = (m.tempos.prod / (parseFloat(m.opAtiva.ciclo) || 1)) * (parseInt(m.opAtiva.cavs) || 1); 
                             let real = m.opAtiva.boas + m.opAtiva.refugo;
-                            let perf = teorica > 0 ? (real / teorica) : 0; if(perf > 1) perf = 1; 
+                            let perf = teorica > 0 ? (real / teorica) : 0; 
+                            if(perf > 1) perf = 1; 
                             let qual = real > 0 ? (m.opAtiva.boas / real) : 0; 
                             let oee = disp * perf * qual;
                             
-                            oeeTotalGlob += oee; oeeQtdGlob++;
+                            oeeTotalGlob += oee; 
+                            oeeQtdGlob++;
 
-                            document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%'; document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
-                            document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%'; document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
+                            document.getElementById(`oee-disp-${m.id}`).innerText = (disp * 100).toFixed(1) + '%'; 
+                            document.getElementById(`oee-perf-${m.id}`).innerText = (perf * 100).toFixed(1) + '%';
+                            document.getElementById(`oee-qual-${m.id}`).innerText = (qual * 100).toFixed(1) + '%'; 
+                            document.getElementById(`oee-total-${m.id}`).innerText = (oee * 100).toFixed(1) + '%';
                         }
                     });
                     
-                    if (temProd) dadosMensais.plantTempos.prod += passados; if (temBaixa) dadosMensais.plantTempos.baixa += passados;
-                    if (temParada) dadosMensais.plantTempos.parado += passados; if (temNeutro) dadosMensais.plantTempos.neutro += passados;
+                    if (temProd) dadosMensais.plantTempos.prod += passados; 
+                    if (temBaixa) dadosMensais.plantTempos.baixa += passados;
+                    if (temParada) dadosMensais.plantTempos.parado += passados; 
+                    if (temNeutro) dadosMensais.plantTempos.neutro += passados;
                     if (maqTrabalhando && modoHoraExtra) dadosMensais.horaExtraSec += passados;
 
-                    // O valor Global de Segundos passa a ser a SOMA de todas as máquinas em Tempo Produzindo
+                    // Aplica a soma real das maquinas na Meta Global
                     dadosMensais.metaAtualSec = somaTotalProducaoTodasMaquinas;
 
                     let globalOeeVal = oeeQtdGlob > 0 ? (oeeTotalGlob / oeeQtdGlob) * 100 : 0;
@@ -1378,8 +1556,10 @@
                 if(document.getElementById('aba-painel').classList.contains('aba-ativa')) {
                     maquinas.forEach(m => {
                         if(document.getElementById(`t-prod-${m.id}`)) {
-                            document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod); document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
-                            document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado); document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
+                            document.getElementById(`t-prod-${m.id}`).innerText = fmtTm(m.tempos.prod); 
+                            document.getElementById(`t-baixa-${m.id}`).innerText = fmtTm(m.tempos.baixa);
+                            document.getElementById(`t-parado-${m.id}`).innerText = fmtTm(m.tempos.parado); 
+                            document.getElementById(`t-neutro-${m.id}`).innerText = fmtTm(m.tempos.neutro);
                         }
                     });
                 }
@@ -1397,9 +1577,17 @@
                 if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
 
                 if (chartStatusInstance) {
-                    document.getElementById('lbl-chart-prod').innerText = fmtTm(dadosMensais.plantTempos.prod); document.getElementById('lbl-chart-baixa').innerText = fmtTm(dadosMensais.plantTempos.baixa);
-                    document.getElementById('lbl-chart-parado').innerText = fmtTm(dadosMensais.plantTempos.parado); document.getElementById('lbl-chart-neutro').innerText = fmtTm(dadosMensais.plantTempos.neutro);
-                    chartStatusInstance.data.datasets[0].data = [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro];
+                    document.getElementById('lbl-chart-prod').innerText = fmtTm(dadosMensais.plantTempos.prod); 
+                    document.getElementById('lbl-chart-baixa').innerText = fmtTm(dadosMensais.plantTempos.baixa);
+                    document.getElementById('lbl-chart-parado').innerText = fmtTm(dadosMensais.plantTempos.parado); 
+                    document.getElementById('lbl-chart-neutro').innerText = fmtTm(dadosMensais.plantTempos.neutro);
+                    
+                    chartStatusInstance.data.datasets[0].data = [
+                        dadosMensais.plantTempos.prod, 
+                        dadosMensais.plantTempos.baixa, 
+                        dadosMensais.plantTempos.parado, 
+                        dadosMensais.plantTempos.neutro
+                    ];
                     chartStatusInstance.update('none'); 
                 }
             }
@@ -1437,29 +1625,42 @@
 
             if(chartStatusInstance) chartStatusInstance.destroy();
             chartStatusInstance = new Chart(document.getElementById('chartStatus').getContext('2d'), { 
-                type: 'pie', data: { labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], datasets: [{ data: [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro], backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'], borderWidth: 2, hoverOffset: 10}] }, 
-                options: { maintainAspectRatio: false, plugins: { tooltip: { bodyFont: { size: 16, weight: 'bold' }, padding: 12, callbacks: { label: function(context) { return ' ' + context.label + ': ' + fmtTm(context.raw); } } } } } 
+                type: 'pie', 
+                data: { 
+                    labels: ['Produzindo', 'Baixa Eficiência', 'Máquinas Paradas', 'Tempo Neutro'], 
+                    datasets: [{ 
+                        data: [dadosMensais.plantTempos.prod, dadosMensais.plantTempos.baixa, dadosMensais.plantTempos.parado, dadosMensais.plantTempos.neutro], 
+                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#94a3b8'], 
+                        borderWidth: 2, hoverOffset: 10
+                    }] 
+                }, 
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { tooltip: { bodyFont: { size: 16, weight: 'bold' }, padding: 12, callbacks: { label: function(context) { return ' ' + context.label + ': ' + fmtTm(context.raw); } } } } 
+                } 
             });
             
             if(chartGeralInstance) chartGeralInstance.destroy();
             chartGeralInstance = new Chart(document.getElementById('chartGeral'), { 
-                type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maqBoas, backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
+                type: 'bar', 
+                data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: 'Boas', data: maqBoas, backgroundColor: '#3b82f6', borderRadius: 6 }] }, 
                 options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
             });
             
             if(chartRefugoInstance) chartRefugoInstance.destroy();
             chartRefugoInstance = new Chart(document.getElementById('chartRefugo'), { 
-                type: 'bar', data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: '% Refugo', data: maqBoas.map((boas, i) => { let total = boas + maqRefugo[i]; return total > 0 ? ((maqRefugo[i] / total) * 100).toFixed(1) : 0; }), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
+                type: 'bar', 
+                data: { labels: maquinas.map(m=>m.nome), datasets: [{ label: '% Refugo', data: maqBoas.map((boas, i) => { let total = boas + maqRefugo[i]; return total > 0 ? ((maqRefugo[i] / total) * 100).toFixed(1) : 0; }), backgroundColor: '#ef4444', borderRadius: 6 }] }, 
                 options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
             });
             
             if(chartHoraExtraInstance) chartHoraExtraInstance.destroy();
             chartHoraExtraInstance = new Chart(document.getElementById('chartHoraExtra'), { 
-                type: 'bar', data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, 
+                type: 'bar', 
+                data: { labels: ['Extra Geral'], datasets: [{ label: 'Segundos Extra', data: [dadosMensais.horaExtraSec], backgroundColor: '#eab308' }] }, 
                 options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
             });
         }
     </script>
 </body>
 </html>
-
