@@ -288,15 +288,15 @@
                         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qts (KG) Material</span>
-                                <span id="res-mat" class="text-base md:text-lg font-black text-blue-400">0.00</span>
+                                <span id="res-mat" class="text-base md:text-lg font-black text-blue-400">0,00</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qts Pig (Grama)</span>
-                                <span id="res-pig" class="text-base md:text-lg font-black text-pink-400">0g</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Pig / Peça (Grama)</span>
+                                <span id="res-pig" class="text-base md:text-lg font-black text-pink-400">0,0g</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Peso Líq/Bruto</span>
-                                <span id="res-total" class="text-base md:text-lg font-black text-white">0.00</span>
+                                <span id="res-total" class="text-base md:text-lg font-black text-white">0,00</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Horas Prod</span>
@@ -855,7 +855,6 @@
             
             prodsList.sort((a, b) => a.nome.localeCompare(b.nome));
 
-            // REMOVIDO: [TERCEIRO] da lista de seleção. O nome fica PURO.
             document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + prodsList.map(p => {
                 return `<option value="${p.id}">${p.nome}</option>`;
             }).join(''); 
@@ -891,18 +890,21 @@
                 document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
                 
                 const kgMaterial = (meta * peso) / 1000; 
-                const kgPigmento = kgMaterial * (pigm / 100); 
-                const kgTotal = kgMaterial + kgPigmento;
+                const kgTotal = kgMaterial + (kgMaterial * (pigm / 100));
                 
-                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
-                document.getElementById('res-pig').innerText = (kgPigmento * 1000).toFixed(0) + 'g';
-                document.getElementById('res-total').innerText = kgTotal.toFixed(2);
+                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2).replace('.', ','); 
+                
+                // Cálculo ajustado: gramas de pigmento por PEÇA, formatado com vírgula.
+                const gramasPorPeca = peso * (pigm / 100);
+                document.getElementById('res-pig').innerText = gramasPorPeca.toFixed(1).replace('.', ',') + 'g';
+                
+                document.getElementById('res-total').innerText = kgTotal.toFixed(2).replace('.', ',');
             } else { 
                 document.getElementById('res-tempo').innerText = "00:00:00"; 
                 document.getElementById('res-meta-hora').innerText = "0";
-                document.getElementById('res-mat').innerText = "0.00"; 
-                document.getElementById('res-pig').innerText = "0g"; 
-                document.getElementById('res-total').innerText = "0.00"; 
+                document.getElementById('res-mat').innerText = "0,00"; 
+                document.getElementById('res-pig').innerText = "0,0g"; 
+                document.getElementById('res-total').innerText = "0,00"; 
             }
         }
 
@@ -926,8 +928,8 @@
 
                 maquinas.find(m => m.id === mId).fila.push({ 
                     op: op, 
-                    prod: produtoInfo.nome, // NOME PURO SEM ADIÇÕES
-                    categoria: produtoInfo.categoria || 'cliente', // SALVA A CATEGORIA DA PEÇA NA O.P.
+                    prod: produtoInfo.nome, 
+                    categoria: produtoInfo.categoria || 'cliente', 
                     meta: meta, 
                     ciclo: document.getElementById('c-ciclo').value, 
                     cavs: document.getElementById('c-cav').value, 
@@ -961,7 +963,7 @@
         }
 
         // ==========================================
-        // INICIALIZAÇÃO E CARREGAMENTO DA NUVEM COM ANIMAÇÃO
+        // INICIALIZAÇÃO E CARREGAMENTO DA NUVEM (ANIMAÇÃO PREMIUM)
         // ==========================================
         window.onload = async () => {
             if(document.getElementById('filtro-data-grafico')) { 
@@ -1021,7 +1023,7 @@
             }, 300);
         };
 
-        // Função do novo botão de acesso
+        // Função do botão de acesso
         function entrarLogin() {
             let userSalvo = localStorage.getItem('triplast_session');
             document.getElementById('tela-loading').classList.add('opacity-0');
@@ -1117,7 +1119,7 @@
                     m.opAtiva.ciclo = m.opAtiva.ciclo || 1; 
                     m.opAtiva.cavs = m.opAtiva.cavs || 1;
                     if(!m.opAtiva.motivosRefugo) m.opAtiva.motivosRefugo = {};
-                    if(!m.opAtiva.categoria) m.opAtiva.categoria = 'cliente';
+                    if(!m.opAtiva.categoria) m.opAtiva.categoria = 'cliente'; // Garante que a categoria exista
                 }
                 
                 m.fila.forEach(f => {
