@@ -888,26 +888,27 @@
                 
                 const pzsHora = (3600 / ciclo) * cav; 
                 document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
-                
+
+                // O SEU CÁLCULO ORIGINAL FOI MANTIDO INTACTO AQUI:
                 const kgMaterial = (meta * peso) / 1000; 
-                const kgTotal = kgMaterial + (kgMaterial * (pigm / 100));
+                const kgPigmento = kgMaterial * (pigm / 100); 
+                const kgTotal = kgMaterial + kgPigmento;
                 
-                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2).replace('.', ','); 
+                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
                 
-                // Cálculo ajustado: gramas de pigmento por PEÇA, formatado com vírgula.
-                const gramasPorPeca = peso * (pigm / 100);
-                document.getElementById('res-pig').innerText = gramasPorPeca.toFixed(1).replace('.', ',') + 'g';
+                // AQUI ESTÁ A CORREÇÃO DA VÍRGULA E DA CASA DECIMAL (Ex: 4.0 -> 4,0g)
+                document.getElementById('res-pig').innerText = kgPigmento.toFixed(1).replace('.', ',') + 'g';
                 
-                document.getElementById('res-total').innerText = kgTotal.toFixed(2).replace('.', ',');
+                document.getElementById('res-total').innerText = kgTotal.toFixed(2);
             } else { 
                 document.getElementById('res-tempo').innerText = "00:00:00"; 
                 document.getElementById('res-meta-hora').innerText = "0";
-                document.getElementById('res-mat').innerText = "0,00"; 
+                document.getElementById('res-mat').innerText = "0.00"; 
                 document.getElementById('res-pig').innerText = "0,0g"; 
-                document.getElementById('res-total').innerText = "0,00"; 
+                document.getElementById('res-total').innerText = "0.00"; 
             }
         }
-
+        
         function lancarOP() {
             const mId = document.getElementById('f-maq').value; 
             const op = document.getElementById('f-op').value; 
@@ -1858,3 +1859,4 @@
     </script>
 </body>
 </html>
+
