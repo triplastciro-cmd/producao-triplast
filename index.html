@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES V43 (Filtro e Nomes Corrigidos)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -498,9 +498,18 @@
                 </div>
             </div>
 
-            <div class="relative mb-6">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                <input type="text" placeholder="Buscar produto..." onkeyup="renderCatalogoModal(this.value)" class="w-full pl-10 p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-indigo-500 bg-slate-50">
+            <div class="flex flex-col md:flex-row gap-3 mb-6">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                    <input type="text" id="busca-catalogo-modal" placeholder="Buscar produto por nome, cor ou material..." onkeyup="renderCatalogoModal()" class="w-full pl-10 p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-indigo-500 bg-slate-50">
+                </div>
+                <div class="w-full md:w-48">
+                    <select id="filtro-categoria-modal" onchange="renderCatalogoModal()" class="w-full p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-indigo-500 bg-slate-50 text-slate-600 uppercase text-xs cursor-pointer">
+                        <option value="todos">🏭 Todos</option>
+                        <option value="cliente">👤 Clientes</option>
+                        <option value="terceiro">🤝 Terceiros</option>
+                    </select>
+                </div>
             </div>
             
             <div id="lista-catalogo-modal" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
@@ -526,7 +535,7 @@
             </div>
             <div class="relative mb-6">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                <input type="text" placeholder="Buscar cor..." onkeyup="renderCoresModal(this.value)" class="w-full pl-10 p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-purple-500 bg-slate-50">
+                <input type="text" id="busca-cor-modal" placeholder="Buscar cor..." onkeyup="renderCoresModal()" class="w-full pl-10 p-3 rounded-xl border border-slate-300 font-bold outline-none focus:border-purple-500 bg-slate-50">
             </div>
             <div id="lista-cores-gerenciador" class="flex flex-wrap gap-2"></div>
         </div>
@@ -681,10 +690,10 @@
             }
         }
 
-        function renderCoresModal(busca = '') {
-            let filtro = busca.toLowerCase();
+        function renderCoresModal() {
+            let buscaElement = document.getElementById('busca-cor-modal');
+            let filtro = buscaElement ? buscaElement.value.toLowerCase() : '';
             
-            // Filtra e Garante a Ordem Alfabética na Janela
             let filtradas = coresGlobais.map((c, i) => ({c, i})).filter(item => item.c.toLowerCase().includes(filtro));
             filtradas.sort((a, b) => a.c.localeCompare(b.c));
 
@@ -770,11 +779,19 @@
             }
         }
 
-        function renderCatalogoModal(busca = '') { 
-            let filtro = busca.toLowerCase();
-            let filtrados = produtosGlobais.filter(p => p.nome.toLowerCase().includes(filtro) || p.mat.toLowerCase().includes(filtro) || (p.cor && p.cor.toLowerCase().includes(filtro)));
+        function renderCatalogoModal() { 
+            let buscaElement = document.getElementById('busca-catalogo-modal');
+            let filtroCatElement = document.getElementById('filtro-categoria-modal');
             
-            // Garante a Ordem Alfabética na Janela de Catálogo
+            let busca = buscaElement ? buscaElement.value.toLowerCase() : '';
+            let catFiltro = filtroCatElement ? filtroCatElement.value : 'todos';
+
+            let filtrados = produtosGlobais.filter(p => {
+                let matchBusca = p.nome.toLowerCase().includes(busca) || p.mat.toLowerCase().includes(busca) || (p.cor && p.cor.toLowerCase().includes(busca));
+                let matchCat = (catFiltro === 'todos') || ((p.categoria || 'cliente') === catFiltro);
+                return matchBusca && matchCat;
+            });
+            
             filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
 
             document.getElementById('lista-catalogo-modal').innerHTML = filtrados.map(p => {
@@ -809,12 +826,11 @@
                 prodsList = produtosGlobais.filter(p => (p.categoria || 'cliente') === filtro);
             }
             
-            // Garante Ordem Alfabética na hora de Lançar a OP
             prodsList.sort((a, b) => a.nome.localeCompare(b.nome));
 
+            // REMOVIDO: [TERCEIRO] da lista de seleção. O nome fica PURO.
             document.getElementById('f-prod-select').innerHTML = '<option value="">-- Selecione a Peça --</option>' + prodsList.map(p => {
-                let textTerceiro = (p.categoria === 'terceiro') ? '[TERCEIRO] ' : '';
-                return `<option value="${p.id}">${textTerceiro}${p.nome}</option>`;
+                return `<option value="${p.id}">${p.nome}</option>`;
             }).join(''); 
             
             autoFillCalculadora();
@@ -883,7 +899,7 @@
 
                 maquinas.find(m => m.id === mId).fila.push({ 
                     op: op, 
-                    prod: produtoInfo.nome, // NOME PURO SEM [TERCEIRO]
+                    prod: produtoInfo.nome, // NOME PURO SEM ADIÇÕES
                     categoria: produtoInfo.categoria || 'cliente', // SALVA A CATEGORIA DA PEÇA NA O.P.
                     meta: meta, 
                     ciclo: document.getElementById('c-ciclo').value, 
@@ -1026,10 +1042,9 @@
                     m.opAtiva.ciclo = m.opAtiva.ciclo || 1; 
                     m.opAtiva.cavs = m.opAtiva.cavs || 1;
                     if(!m.opAtiva.motivosRefugo) m.opAtiva.motivosRefugo = {};
-                    if(!m.opAtiva.categoria) m.opAtiva.categoria = 'cliente'; // Garante que a categoria exista
+                    if(!m.opAtiva.categoria) m.opAtiva.categoria = 'cliente';
                 }
                 
-                // Sanitize Fila
                 m.fila.forEach(f => {
                     if(!f.categoria) f.categoria = 'cliente';
                 });
@@ -1158,7 +1173,6 @@
                     
                     let estCorAtiva = getCorDestaque(corPartAtiva);
                     
-                    // Verificação do Selo de Terceiro na OP ATIVA
                     let seloTerceiro = '';
                     if(m.opAtiva.categoria === 'terceiro') {
                         seloTerceiro = `<span class="bg-gradient-to-r from-orange-400 to-amber-500 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md flex items-center gap-1"><i class="fa-solid fa-handshake"></i> Produto de Terceiro</span>`;
@@ -1258,7 +1272,6 @@
                         
                         let estCorFila = getCorDestaque(corPart);
                         
-                        // Verificação do Selo de Terceiro na FILA
                         let seloFilaTerceiro = '';
                         if(f.categoria === 'terceiro') {
                             seloFilaTerceiro = `<span class="bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-[9px] font-black uppercase border border-orange-200 flex items-center gap-1"><i class="fa-solid fa-handshake"></i> Terceiro</span>`;
@@ -1428,7 +1441,7 @@
                     maq.opAtiva = { 
                         op: p.op, 
                         prod: p.prod, 
-                        categoria: p.categoria || 'cliente', // Mantém a categoria ao puxar da fila
+                        categoria: p.categoria || 'cliente', 
                         meta: p.meta, 
                         boas: p.boas || 0, 
                         refugo: p.refugo || 0, 
@@ -1460,7 +1473,7 @@
                 maq.fila.splice(index, 1); 
                 if(opEscolhida.boas === undefined) opEscolhida.boas = 0; if(opEscolhida.refugo === undefined) opEscolhida.refugo = 0;
                 if(opEscolhida.motivosRefugo === undefined) opEscolhida.motivosRefugo = {};
-                if(!opEscolhida.categoria) opEscolhida.categoria = 'cliente'; // Fallback
+                if(!opEscolhida.categoria) opEscolhida.categoria = 'cliente'; 
                 maq.opAtiva = opEscolhida; maq.status = "04-PRODUÇÃO";
                 renderPainel(); renderResumo(); salvarAutomatico();
             }
@@ -1508,7 +1521,7 @@
         }
 
         // ==========================================
-        // 10. HORA EXTRA E MOTOR DE TEMPO (OEE E META GLOBAL)
+        // 10. HORA EXTRA E MOTOR DE TEMPO
         // ==========================================
         function zerarMeta() { 
             let mudou = false;
@@ -1602,7 +1615,6 @@
                     let temProd = false, temBaixa = false, temParada = false, temNeutro = false;
                     let oeeTotalGlob = 0; let oeeQtdGlob = 0;
                     
-                    // SOMA GLOBAL: Somatório exato das máquinas rodando
                     let somaTotalProducaoTodasMaquinas = 0;
 
                     maquinas.forEach(m => {
@@ -1639,7 +1651,6 @@
                     if (temNeutro) dadosMensais.plantTempos.neutro += passados;
                     if (maqTrabalhando && modoHoraExtra) dadosMensais.horaExtraSec += passados;
 
-                    // Aplica a soma real das maquinas na Meta Global
                     dadosMensais.metaAtualSec = somaTotalProducaoTodasMaquinas;
 
                     let globalOeeVal = oeeQtdGlob > 0 ? (oeeTotalGlob / oeeQtdGlob) * 100 : 0;
