@@ -224,7 +224,7 @@
             
             <div id="aba-painel" class="aba-conteudo aba-ativa">
                 <div id="grid-maquinas" class="flex flex-col gap-6 md:gap-8 items-center w-full">
-                    </div>
+                </div>
             </div>
 
             <div id="aba-op" class="aba-conteudo space-y-6">
@@ -291,8 +291,8 @@
                                 <span id="res-mat" class="text-base md:text-lg font-black text-blue-400">0,00</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Pig / Peça (Grama)</span>
-                                <span id="res-pig" class="text-base md:text-lg font-black text-pink-400">0,0g</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qtd Pigmento</span>
+                                <span id="res-pig" class="text-base md:text-lg font-black text-pink-400">0,0 kg</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Peso Líq/Bruto</span>
@@ -631,7 +631,7 @@
             { id: 'm4', nome: 'Injetora M4', status: '22-SEM PROGRAMAÇÃO', operador: '', opAtiva: null, fila: [], tempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 }, ultimoMotivoRefugo: "" }
         ];
 
-        // NOVOS MOTIVOS DE REFUGO ADICIONADOS
+        // NOVOS MOTIVOS DE REFUGO ADICIONADOS AQUI
         const statusMaquinasList = [
             "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATÉRIA-PRIMA / AJUSTE", "04-PRODUÇÃO", 
             "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", "08-LANCHE", 
@@ -893,23 +893,22 @@
                 const pzsHora = (3600 / ciclo) * cav; 
                 document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
 
-                // O CÁLCULO ORIGINAL MANTIDO E FORMATADO COM VÍRGULA
+                // O CÁLCULO TOTAL MANTIDO E FORMATADO COM VÍRGULA
                 const kgMaterial = (meta * peso) / 1000; 
                 const kgPigmento = kgMaterial * (pigm / 100); 
                 const kgTotal = kgMaterial + kgPigmento;
                 
                 document.getElementById('res-mat').innerText = kgMaterial.toFixed(2).replace('.', ','); 
                 
-                // CORREÇÃO DO PIGMENTO: Gramas por PEÇA formatado com 1 casa decimal e vírgula
-                const gramasPorPeca = peso * (pigm / 100);
-                document.getElementById('res-pig').innerText = gramasPorPeca.toFixed(1).replace('.', ',') + 'g';
+                // QTD PIGMENTO TOTAL EM KG: Formatado para 1 casa decimal e vírgula
+                document.getElementById('res-pig').innerText = kgPigmento.toFixed(1).replace('.', ',') + ' kg';
                 
                 document.getElementById('res-total').innerText = kgTotal.toFixed(2).replace('.', ',');
             } else { 
                 document.getElementById('res-tempo').innerText = "00:00:00"; 
                 document.getElementById('res-meta-hora').innerText = "0";
                 document.getElementById('res-mat').innerText = "0,00"; 
-                document.getElementById('res-pig').innerText = "0,0g"; 
+                document.getElementById('res-pig').innerText = "0,0 kg"; 
                 document.getElementById('res-total').innerText = "0,00"; 
             }
         }
@@ -930,6 +929,8 @@
                 const kgMat = document.getElementById('res-mat').innerText; 
                 const gPig = document.getElementById('res-pig').innerText; 
                 const tempoEst = document.getElementById('res-tempo').innerText;
+                
+                // Formatação limpa na OP da Fila
                 const matFormatado = `${nomeMat} (${kgMat}kg) | Cor: ${corPeca} | Pigm: ${percPigm}% (${gPig})`;
 
                 maquinas.find(m => m.id === mId).fila.push({ 
@@ -1864,4 +1865,3 @@
     </script>
 </body>
 </html>
-
