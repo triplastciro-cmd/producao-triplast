@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Triplast - Sistema Monitorado</title>
+    <title>Triplast - Sistema MES Premium</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -287,7 +287,7 @@
 
                         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qts (KG) Material</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Qtd Material</span>
                                 <span id="res-mat" class="text-base md:text-lg font-black text-blue-400">0,00</span>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col justify-center items-center text-center">
@@ -631,6 +631,7 @@
             { id: 'm4', nome: 'Injetora M4', status: '22-SEM PROGRAMAÇÃO', operador: '', opAtiva: null, fila: [], tempos: { prod: 0, baixa: 0, parado: 0, neutro: 0 }, ultimoMotivoRefugo: "" }
         ];
 
+        // NOVOS MOTIVOS DE REFUGO ADICIONADOS
         const statusMaquinasList = [
             "01-TROCA DE MOLDE", "02-TROCA DE POSTIÇO", "03-MATÉRIA-PRIMA / AJUSTE", "04-PRODUÇÃO", 
             "05-AQUECIMENTO DE MÁQUINA", "06-TROCA DE COR", "07-MANUTENÇÃO GELADEIRA", "08-LANCHE", 
@@ -640,7 +641,11 @@
             "21-BAIXA EFICIÊNCIA", "22-SEM PROGRAMAÇÃO", "23-EMPRESA FECHADA", "24-PARADA PROGRAMADA", "25-FIM DE SEMANA (PAUSADO)", "26-MÁQUINA PAUSADA"
         ];
         
-        const motivosRefugo = ["Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba"];
+        const motivosRefugo = [
+            "Falha de injeção", "Arranhão", "Mancha", "Ponto Preto", "Queima", "Rebarba",
+            "Início de injeção", "Fora de cor", "Peça presa no molde", "Bolha", "Trinca", "Espirros", "Material contaminado"
+        ];
+        
         let chartStatusInstance = null; let chartGeralInstance = null; let chartRefugoInstance = null; let chartHoraExtraInstance = null;
 
         // ==========================================
@@ -720,7 +725,6 @@
             let buscaElement = document.getElementById('busca-cor-modal');
             let filtro = buscaElement ? buscaElement.value.toLowerCase() : '';
             
-            // Filtra e Garante a Ordem Alfabética na Janela
             let filtradas = coresGlobais.map((c, i) => ({c, i})).filter(item => item.c.toLowerCase().includes(filtro));
             filtradas.sort((a, b) => a.c.localeCompare(b.c));
 
@@ -843,7 +847,7 @@
         }
 
         // ==========================================
-        // CALCULADORA E LANÇAMENTO DA O.P.
+        // CALCULADORA E LANÇAMENTO DA O.P. (CORRIGIDO)
         // ==========================================
         function atualizarSelectProdutos() { 
             let filtro = document.getElementById('f-tipo-filtro') ? document.getElementById('f-tipo-filtro').value : 'todos';
@@ -889,26 +893,27 @@
                 const pzsHora = (3600 / ciclo) * cav; 
                 document.getElementById('res-meta-hora').innerText = Math.floor(pzsHora);
 
-                // O SEU CÁLCULO ORIGINAL FOI MANTIDO INTACTO AQUI:
+                // O CÁLCULO ORIGINAL MANTIDO E FORMATADO COM VÍRGULA
                 const kgMaterial = (meta * peso) / 1000; 
                 const kgPigmento = kgMaterial * (pigm / 100); 
                 const kgTotal = kgMaterial + kgPigmento;
                 
-                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2); 
+                document.getElementById('res-mat').innerText = kgMaterial.toFixed(2).replace('.', ','); 
                 
-                // AQUI ESTÁ A CORREÇÃO DA VÍRGULA E DA CASA DECIMAL (Ex: 4.0 -> 4,0g)
-                document.getElementById('res-pig').innerText = kgPigmento.toFixed(1).replace('.', ',') + 'g';
+                // CORREÇÃO DO PIGMENTO: Gramas por PEÇA formatado com 1 casa decimal e vírgula
+                const gramasPorPeca = peso * (pigm / 100);
+                document.getElementById('res-pig').innerText = gramasPorPeca.toFixed(1).replace('.', ',') + 'g';
                 
-                document.getElementById('res-total').innerText = kgTotal.toFixed(2);
+                document.getElementById('res-total').innerText = kgTotal.toFixed(2).replace('.', ',');
             } else { 
                 document.getElementById('res-tempo').innerText = "00:00:00"; 
                 document.getElementById('res-meta-hora').innerText = "0";
-                document.getElementById('res-mat').innerText = "0.00"; 
+                document.getElementById('res-mat').innerText = "0,00"; 
                 document.getElementById('res-pig').innerText = "0,0g"; 
-                document.getElementById('res-total').innerText = "0.00"; 
+                document.getElementById('res-total').innerText = "0,00"; 
             }
         }
-        
+
         function lancarOP() {
             const mId = document.getElementById('f-maq').value; 
             const op = document.getElementById('f-op').value; 
@@ -1120,7 +1125,7 @@
                     m.opAtiva.ciclo = m.opAtiva.ciclo || 1; 
                     m.opAtiva.cavs = m.opAtiva.cavs || 1;
                     if(!m.opAtiva.motivosRefugo) m.opAtiva.motivosRefugo = {};
-                    if(!m.opAtiva.categoria) m.opAtiva.categoria = 'cliente'; // Garante que a categoria exista
+                    if(!m.opAtiva.categoria) m.opAtiva.categoria = 'cliente'; 
                 }
                 
                 m.fila.forEach(f => {
@@ -1194,7 +1199,7 @@
         }
 
         // ==========================================
-        // GERENCIADOR DE OPERADORES (PREMIUM)
+        // GERENCIADOR DE OPERADORES
         // ==========================================
         function abrirModalOperadores() { document.getElementById('modal-operadores').style.display = 'flex'; renderEquipe(); }
         
@@ -1859,4 +1864,3 @@
     </script>
 </body>
 </html>
-
