@@ -1091,51 +1091,27 @@
         }
 
         setInterval(async () => {
-    if(!sb || !sistemaPronto) return;
-    try {
-        const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
-        if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
-            const db = data.conteudo;
-            
-            // 1. TRAVA DO TEMPO: Impede o tempo de voltar
-            if (db.maquinas && typeof maquinas !== 'undefined' && maquinas.length > 0) {
-                db.maquinas.forEach((maqNuvem, i) => {
-                    if (maquinas[i]) {
-                        if (maqNuvem.tempos.prod > maquinas[i].tempos.prod) maquinas[i].tempos.prod = maqNuvem.tempos.prod;
-                        if (maqNuvem.tempos.parado > maquinas[i].tempos.parado) maquinas[i].tempos.parado = maqNuvem.tempos.parado;
-                        if (maqNuvem.tempos.baixa > maquinas[i].tempos.baixa) maquinas[i].tempos.baixa = maqNuvem.tempos.baixa;
-                        if (maqNuvem.tempos.neutro > maquinas[i].tempos.neutro) maquinas[i].tempos.neutro = maqNuvem.tempos.neutro;
-                        
-                        maquinas[i].status = maqNuvem.status;
-                        maquinas[i].opAtiva = maqNuvem.opAtiva;
-                        maquinas[i].fila = maqNuvem.fila;
-                    }
-                });
-            } else {
-                maquinas = db.maquinas || maquinas; 
-            }
-
-            // 2. TRAVA DE SEGURANÇA: Nunca deixa as listas sumirem!
-            if (db.produtos && db.produtos.length > 0) produtosGlobais = db.produtos;
-            if (db.operadores && db.operadores.length > 0) operadoresGlobais = db.operadores; 
-            
-            historico = db.historico || historico;
-            
-            if (db.dadosMensais && (!dadosMensais || db.dadosMensais.horaExtraSec >= dadosMensais.horaExtraSec)) {
-                dadosMensais = db.dadosMensais; 
-            }
-            
-            modoHoraExtra = db.modoHoraExtra || false; 
-            coresGlobais = db.cores || coresGlobais;
-            lastSyncTs = db.ts; 
-            localStorage.setItem('triplast_ts', lastSyncTs);
-            
-            if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
-            if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
-            if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
-        }
-    } catch(e) {}
-}, 5000);
+            if(!sb || !sistemaPronto) return;
+            try {
+                const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
+                if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
+                    const db = data.conteudo;
+                    maquinas = db.maquinas || maquinas; 
+                    produtosGlobais = db.produtos || produtosGlobais;
+                    operadoresGlobais = db.operadores || operadoresGlobais; 
+                    historico = db.historico || historico;
+                    dadosMensais = db.dadosMensais || dadosMensais; 
+                    modoHoraExtra = db.modoHoraExtra || false; 
+                    coresGlobais = db.cores || coresGlobais;
+                    lastSyncTs = db.ts; 
+                    localStorage.setItem('triplast_ts', lastSyncTs);
+                    
+                    if(document.getElementById('aba-painel').classList.contains('aba-ativa')) renderPainel();
+                    if(document.getElementById('aba-resumo').classList.contains('aba-ativa')) renderResumo();
+                    if(document.getElementById('aba-historico').classList.contains('aba-ativa')) renderHistorico();
+                }
+            } catch(e) {}
+        }, 5000);
 
         function sanitizarDados() {
             maquinas.forEach(m => {
@@ -1686,27 +1662,18 @@
         function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
 
         const optBSB = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        let ultimoTick = localStorage.getItem('triplast_ultimo_tick') ? parseInt(localStorage.getItem('triplast_ultimo_tick')) : Math.floor(Date.now() / 1000);
+        let ultimoTick = Math.floor(Date.now() / 1000);
 
         setInterval(() => {
-    // ESTA É A TRAVA: O relógio fica em pausa até a nuvem carregar os dados!
-    if (typeof sistemaPronto === 'undefined' || !sistemaPronto || typeof maquinas === 'undefined' || maquinas.length === 0) return;
-
-    const relogioHtml = document.getElementById('relogio');
-    if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', optBSB);
-
-    const agoraSegundoAtual = Math.floor(Date.now() / 1000);
-    const passados = agoraSegundoAtual - ultimoTick;
-    // ... resto do seu código ...
+            const relogioHtml = document.getElementById('relogio');
             if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', optBSB);
 
             const agoraSegundoAtual = Math.floor(Date.now() / 1000);
             const passados = agoraSegundoAtual - ultimoTick;
 
             if (passados >= 1) {
-            ultimoTick = agoraSegundoAtual; 
-            localStorage.setItem('triplast_ultimo_tick', ultimoTick); // <--- ADICIONE ESTA LINHA AQUI!
-            const agoraCompleto = new Date();
+                ultimoTick = agoraSegundoAtual; 
+                const agoraCompleto = new Date();
 
                 if (agoraCompleto.getMonth() !== dadosMensais.mesAtual) {
                     dadosMensais.mesAtual = agoraCompleto.getMonth(); 
@@ -1774,21 +1741,12 @@
                         }
                     });
                     
-                    // CORREÇÃO: HIERARQUIA DE FÁBRICA (Impede a fábrica de travar por causa de 1 máquina)
-if (temProd) {
-    dadosMensais.plantTempos.prod += passados; 
-} else if (temBaixa) {
-    dadosMensais.plantTempos.baixa += passados;
-} else if (temParada) {
-    dadosMensais.plantTempos.parado += passados; 
-} else if (temNeutro) {
-    dadosMensais.plantTempos.neutro += passados;
-}
+                    if (temProd) dadosMensais.plantTempos.prod += passados; 
+                    if (temBaixa) dadosMensais.plantTempos.baixa += passados;
+                    if (temParada) dadosMensais.plantTempos.parado += passados; 
+                    if (temNeutro) dadosMensais.plantTempos.neutro += passados;
+                    if (maqTrabalhando && modoHoraExtra) dadosMensais.horaExtraSec += passados;
 
-// CORREÇÃO: FORÇA SALVAR NA NUVEM A CADA 5 SEGUNDOS (Impede o tempo de voltar)
-if (agoraSegundoAtual % 5 === 0) {
-    if (typeof salvarAutomatico === 'function') salvarAutomatico();
-}
                     // Aplica a soma real das maquinas na Meta Global
                     dadosMensais.metaAtualSec = somaTotalProducaoTodasMaquinas;
 
@@ -1907,5 +1865,3 @@ if (agoraSegundoAtual % 5 === 0) {
     </script>
 </body>
 </html>
-
-
