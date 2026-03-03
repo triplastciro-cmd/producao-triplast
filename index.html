@@ -1689,7 +1689,15 @@
         let ultimoTick = localStorage.getItem('triplast_ultimo_tick') ? parseInt(localStorage.getItem('triplast_ultimo_tick')) : Math.floor(Date.now() / 1000);
 
         setInterval(() => {
-            const relogioHtml = document.getElementById('relogio');
+    // ESTA É A TRAVA: O relógio fica em pausa até a nuvem carregar os dados!
+    if (typeof sistemaPronto === 'undefined' || !sistemaPronto || typeof maquinas === 'undefined' || maquinas.length === 0) return;
+
+    const relogioHtml = document.getElementById('relogio');
+    if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', optBSB);
+
+    const agoraSegundoAtual = Math.floor(Date.now() / 1000);
+    const passados = agoraSegundoAtual - ultimoTick;
+    // ... resto do seu código ...
             if(relogioHtml) relogioHtml.innerText = new Date().toLocaleTimeString('pt-BR', optBSB);
 
             const agoraSegundoAtual = Math.floor(Date.now() / 1000);
@@ -1899,4 +1907,5 @@ if (agoraSegundoAtual % 5 === 0) {
     </script>
 </body>
 </html>
+
 
