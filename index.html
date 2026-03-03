@@ -1862,6 +1862,120 @@
                 options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } 
             });
         }
+
+    // Variável global para guardar o tempo total em segundos
+let tempoGlobalDeProducao = 0;
+
+// Função para checar se a fábrica está rodando
+function verificarFabricaRodando() {
+    let rodando = false;
+    // Ele olha todas as máquinas
+    for (let i = 0; i < maquinas.length; i++) {
+        let status = maquinas[i].status;
+        // Se pelo menos uma estiver produzindo, a fábrica inteira conta tempo!
+        if (status === 'produzindo' || status === 'baixa_eficiencia' || status === 'rodando') {
+            rodando = true;
+            break;
+        }
+    }
+    return rodando;
+}
+
+// Função que roda assim que o site abre para recuperar o tempo com ele fechado
+function carregarTempoReal() {
+    let tempoSalvo = localStorage.getItem('tempoAcumulado') || 0;
+    let ultimaVezSalvo = localStorage.getItem('ultimaAtualizacao'); // O momento exato que fechou a aba
+    
+    tempoGlobalDeProducao = parseInt(tempoSalvo);
+
+    // Se o site já tinha sido aberto antes
+    if (ultimaVezSalvo) {
+        let horarioAgora = Date.now();
+        // Descobre quantos segundos o site ficou fechado
+        let segundosPassados = Math.floor((horarioAgora - parseInt(ultimaVezSalvo)) / 1000);
+        
+        // Se a fábrica estava rodando, ele soma todo esse tempo de tela apagada!
+        if (verificarFabricaRodando()) {
+             tempoGlobalDeProducao += segundosPassados;
+        }
+    }
+}
+
+// Chama a função logo que o site carrega
+carregarTempoReal();
+
+    // =========================================================
+// NOVO MOTOR DE TEMPO GLOBAL (Resistente a fechar a aba)
+// =========================================================
+
+// O pai tem razão: Um turno de 8h e 48m tem exatos 31.680 segundos.
+const SEGUNDOS_POR_TURNO = 31680;
+
+function iniciarCronometroIndestrutivel() {
+    // Pega o tempo que já passou ou começa do zero
+    let tempoSalvo = localStorage.getItem('tempoDeProducaoSalvo') || 0;
+    let ultimaVezSalvo = localStorage.getItem('horaExataPC');
+    let agora = Date.now();
+
+    // Se o site foi fechado antes, calcula o tempo que ficou com a tela apagada
+    if (ultimaVezSalvo) {
+        let segundosFechado = Math.floor((agora - parseInt(ultimaVezSalvo)) / 1000);
+        
+        // Verifica se existia a variável "maquinas" para ver se estava produzindo
+        if (typeof maquinas !== 'undefined') {
+            let estavaProduzindo = false;
+            for (let i = 0; i < maquinas.length; i++) {
+                if (maquinas[i].status === 'produzindo' || maquinas[i].status === 'baixa_eficiencia' || maquinas[i].status === 'rodando') {
+                    estavaProduzindo = true;
+                    break;
+                }
+            }
+            // Só recupera o tempo perdido se a fábrica não estava 100% parada
+            if (estavaProduzindo) {
+                tempoSalvo = parseInt(tempoSalvo) + segundosFechado;
+            }
+        }
+    }
+
+    localStorage.setItem('tempoDeProducaoSalvo', tempoSalvo);
+    localStorage.setItem('horaExataPC', agora);
+
+    // Cria o nosso Cronômetro de 1 em 1 segundo (1000ms)
+    setInterval(() => {
+        let algumaProduzindo = false;
+        
+        // Nova Regra: Se 1 máquina estiver produzindo, a fábrica inteira não para de contar!
+        if (typeof maquinas !== 'undefined') {
+            for (let i = 0; i < maquinas.length; i++) {
+                if (maquinas[i].status === 'produzindo' || maquinas[i].status === 'baixa_eficiencia' || maquinas[i].status === 'rodando') {
+                    algumaProduzindo = true;
+                    break;
+                }
+            }
+        }
+
+        if (algumaProduzindo) {
+            let tempoAtual = parseInt(localStorage.getItem('tempoDeProducaoSalvo') || 0);
+            tempoAtual++; // Sobe 1 segundo
+            
+            // Salva na memória blindada do navegador (se der F5, não perde)
+            localStorage.setItem('tempoDeProducaoSalvo', tempoAtual);
+            localStorage.setItem('horaExataPC', Date.now());
+            
+            // Vincula com o gráfico do seu sistema original
+            if (typeof dadosMensais !== 'undefined') {
+                 // Força o seu sistema a usar esse nosso tempo indestrutível
+                 dadosMensais.horaExtraSec = tempoAtual;
+            }
+        }
+    }, 1000);
+}
+
+// Liga o motor assim que a página abre
+iniciarCronometroIndestrutivel();
+// =========================================================
+        
     </script>
 </body>
 </html>
+
