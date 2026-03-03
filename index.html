@@ -1096,7 +1096,22 @@
                 const { data, error } = await sb.from('sistema').select('conteudo').eq('id', 1).single();
                 if(data && data.conteudo && data.conteudo.ts > lastSyncTs) {
                     const db = data.conteudo;
-                    maquinas = db.maquinas || maquinas; 
+                    // Trava contra voltar no tempo
+                    if (db.maquinas && typeof maquinas !== 'undefined' && maquinas.length > 0) {
+                        db.maquinas.forEach((maqNuvem, i) => {
+                            if (maquinas[i]) {
+                                if (maqNuvem.tempos.prod > maquinas[i].tempos.prod) maquinas[i].tempos.prod = maqNuvem.tempos.prod;
+                                if (maqNuvem.tempos.parado > maquinas[i].tempos.parado) maquinas[i].tempos.parado = maqNuvem.tempos.parado;
+                                if (maqNuvem.tempos.baixa > maquinas[i].tempos.baixa) maquinas[i].tempos.baixa = maqNuvem.tempos.baixa;
+                                if (maqNuvem.tempos.neutro > maquinas[i].tempos.neutro) maquinas[i].tempos.neutro = maqNuvem.tempos.neutro;
+                                maquinas[i].status = maqNuvem.status;
+                                maquinas[i].opAtiva = maqNuvem.opAtiva;
+                                maquinas[i].fila = maqNuvem.fila;
+                            }
+                        });
+                    } else {
+                        maquinas = db.maquinas || maquinas; 
+                    }
                     produtosGlobais = db.produtos || produtosGlobais;
                     operadoresGlobais = db.operadores || operadoresGlobais; 
                     historico = db.historico || historico;
@@ -1741,11 +1756,21 @@
                         }
                     });
                     
-                    if (temProd) dadosMensais.plantTempos.prod += passados; 
-                    if (temBaixa) dadosMensais.plantTempos.baixa += passados;
-                    if (temParada) dadosMensais.plantTempos.parado += passados; 
-                    if (temNeutro) dadosMensais.plantTempos.neutro += passados;
-                    if (maqTrabalhando && modoHoraExtra) dadosMensais.horaExtraSec += passados;
+                    // Hierarquia de fábrica (impede o conflito de tempo)
+                    if (temProd) {
+                        dadosMensais.plantTempos.prod += passados; 
+                    } else if (temBaixa) {
+                        dadosMensais.plantTempos.baixa += passados;
+                    } else if (temParada) {
+                        dadosMensais.plantTempos.parado += passados; 
+                    } else if (temNeutro) {
+                        dadosMensais.plantTempos.neutro += passados;
+                    }
+                    
+                    // Força o salvamento constante para ajudar a nuvem
+                    if (Math.floor(Date.now() / 1000) % 5 === 0) {
+                        if (typeof salvarAutomatico === 'function') salvarAutomatico();
+                    }
 
                     // Aplica a soma real das maquinas na Meta Global
                     dadosMensais.metaAtualSec = somaTotalProducaoTodasMaquinas;
@@ -1865,3 +1890,4 @@
     </script>
 </body>
 </html>
+
