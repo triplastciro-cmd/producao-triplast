@@ -1686,7 +1686,7 @@
         function forcarTurno(val) { turnoForcado = val; salvarAutomatico(); }
 
         const optBSB = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        let ultimoTick = Math.floor(Date.now() / 1000);
+        let ultimoTick = localStorage.getItem('triplast_ultimo_tick') ? parseInt(localStorage.getItem('triplast_ultimo_tick')) : Math.floor(Date.now() / 1000);
 
         setInterval(() => {
             const relogioHtml = document.getElementById('relogio');
@@ -1696,8 +1696,9 @@
             const passados = agoraSegundoAtual - ultimoTick;
 
             if (passados >= 1) {
-                ultimoTick = agoraSegundoAtual; 
-                const agoraCompleto = new Date();
+            ultimoTick = agoraSegundoAtual; 
+            localStorage.setItem('triplast_ultimo_tick', ultimoTick); // <--- ADICIONE ESTA LINHA AQUI!
+            const agoraCompleto = new Date();
 
                 if (agoraCompleto.getMonth() !== dadosMensais.mesAtual) {
                     dadosMensais.mesAtual = agoraCompleto.getMonth(); 
@@ -1898,3 +1899,4 @@ if (agoraSegundoAtual % 5 === 0) {
     </script>
 </body>
 </html>
+
